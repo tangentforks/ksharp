@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="K3CSharp.Tests\**" />
+    <Compile Remove="K3TestRunner\**" />
+    <EmbeddedResource Remove="K3CSharp.Tests\**" />
+    <EmbeddedResource Remove="K3TestRunner\**" />
+    <None Remove="K3CSharp.Tests\**" />
+    <None Remove="K3TestRunner\**" />
+  </ItemGroup>
+
+</Project>
