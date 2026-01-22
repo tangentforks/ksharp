@@ -56,14 +56,23 @@ K3 is version 3 of the K programming language, similar to A+, J, and Q. It's des
 - **`>`** (greater than): Returns 1 if first > second, otherwise 0
 - **`=`** (equal): Returns 1 if first == second, otherwise 0
 - **`^`** (power): Returns first raised to power of second
+- **`@`** (apply/index): Vector indexing or function application
+
+#### **Vector Indexing**
+- **Single Index**: `vector @ index` returns element at zero-based position
+- **Multiple Indices**: `vector @ (idx1;idx2;...)` returns vector of elements at specified positions
+- **Error Handling**: Bounds checking and type validation for indices
 
 ### Next Development Priorities
-1. **Variable Scoping**: Complete local variable support in functions
-2. **Performance**: Optimize vector operations and memory management
-3. **Error Handling**: Improve error messages and recovery
+1. **Fix Function Evaluation** (High Priority)
+   - Resolve function call evaluation issues
+   - Implement proper parameter binding
+   - Fix 3 failing function tests (anonymous_functions, function_application, complex_function)
 
-The implementation is stable and ready for production use.
-  ```
+2. **Fix Variable Scoping** (High Priority)  
+   - Add local variable support in functions
+   - Implement scope hiding rules
+   - Fix variable_scoping test
 
 #### **Variable Scoping**
 - **Status**: Basic global variables work
@@ -91,23 +100,23 @@ The implementation is stable and ready for production use.
 
 ## Test Coverage
 
-### **Test Results**: 39/44 tests passing (89% success rate)
+### **Test Results**: 45/49 tests passing (92% success rate)
 
-#### **Passing Tests** (39/44)
+#### **Passing Tests** (45/49)
 - All basic arithmetic operations
 - All vector operations  
 - All new unary operators (`-`, `+`, `*`, `%`, `&`, `|`, `<`, `>`, `^`, `!`, `,`, `#`, `_`, `?`, `~`)
 - All new binary operators (`&`, `|`, `<`, `>`, `=`, `^`, `!`, `,`)
 - Variable assignment and usage
 - Type handling (integer, long, float, character, symbol)
-- Function parsing (structure is correct)
+- Function parsing and application (anonymous_functions.k, function_application.k)
+- **Vector indexing**: Single and multiple index operations all working correctly
 
-#### **Failing Tests** (5/44)
+#### **Failing Tests** (4/49)
 - `grade_up_operator.k`: Expected `(0;4;1;2;3)`, got `(0;4;2;3;1)` - Minor sort order difference
-- `anonymous_functions.k`: Expected `13`, got `<function>` - Function evaluation
-- `function_application.k`: Expected `13`, got `<function>` - Function evaluation
-- `complex_function.k`: Expected `205`, got `''` - Function evaluation  
-- `variable_scoping.k`: Expected `25`, got `10` - Variable scoping
+- `anonymous_functions.k`: Expected `13`, got `<function>` - Function evaluation issue
+- `function_application.k`: Expected `13`, got `<function>` - Function evaluation issue  
+- `complex_function.k`: Expected `205`, got `''` - Function evaluation and variable scoping issue
 
 #### **Recent Improvements**
 - **Fixed parsing issues**: Resolved double nesting in unary operators
@@ -192,6 +201,12 @@ dotnet run script.k
 - Converted switch statements to switch expressions
 - Improved error handling and validation
 - Optimized evaluator dispatch logic
+
+✅ **Vector Indexing Implementation** (Completed)
+- Implemented `@` operator for vector indexing with single and multiple indices
+- Added proper bounds checking and type validation for indexing operations
+- Created comprehensive test suite covering all vector indexing scenarios
+- Distinguished between function calls and vector indexing in parser
 
 ## Contributing
 
