@@ -143,6 +143,16 @@ namespace K3CSharp
                     tokens.Add(new Token(TokenType.QUESTION, "?", position));
                     Advance();
                 }
+                else if (c == '@')
+                {
+                    tokens.Add(new Token(TokenType.APPLY, "@", position));
+                    Advance();
+                }
+                else if (c == '.')
+                {
+                    tokens.Add(new Token(TokenType.DOT_APPLY, ".", position));
+                    Advance();
+                }
                 else if (c == ':')
                 {
                     tokens.Add(new Token(TokenType.ASSIGNMENT, ":", position));

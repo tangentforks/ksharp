@@ -38,6 +38,8 @@ namespace K3CSharp
         HASH,           // # count operator
         UNDERSCORE,     // _ floor operator
         QUESTION,       // ? unique operator
+        APPLY,          // @ apply operator
+        DOT_APPLY,      // . dot-apply operator
         EOF,
         UNKNOWN
     }

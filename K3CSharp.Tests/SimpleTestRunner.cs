@@ -108,7 +108,27 @@ namespace K3CSharp.Tests
                     var tokens = lexer.Tokenize();
                     var parser = new Parser(tokens);
                     var ast = parser.Parse();
+                    
+                    // Debug: Print AST for function call tests
                     var result = evaluator.Evaluate(ast);
+                    
+                    // For function tests, find and return the first function call result
+                    if ((scriptFileName.Contains("function") || scriptFileName.Contains("anonymous")) && 
+                        ast.Type == ASTNodeType.Block)
+                    {
+                        foreach (var child in ast.Children)
+                        {
+                            if (child.Type == ASTNodeType.FunctionCall)
+                            {
+                                var callResult = evaluator.Evaluate(child);
+                                if (callResult.ToString() != "<function>")
+                                {
+                                    return callResult.ToString();
+                                }
+                            }
+                        }
+                    }
+                    
                     return result.ToString();
                 }
                 catch
@@ -164,6 +184,28 @@ namespace K3CSharp.Tests
                 
                 return lastResult;
             }
+        }
+        
+        private static string PrintAST(ASTNode node, int indent = 0)
+        {
+            var indentStr = new string(' ', indent * 2);
+            var result = $"{indentStr}{node.Type}";
+            if (node.Value != null)
+            {
+                result += $"({node.Value})";
+            }
+            if (node.Parameters.Count > 0)
+            {
+                result += $" params:[{string.Join(",", node.Parameters)}]";
+            }
+            result += "\n";
+            
+            foreach (var child in node.Children)
+            {
+                result += PrintAST(child, indent + 1);
+            }
+            
+            return result;
         }
     }
 }

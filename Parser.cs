@@ -137,23 +137,26 @@ namespace K3CSharp
         {
             var left = ParseTerm();
 
-            // Check for function call first (higher precedence than binary ops)
-            if (Match(TokenType.LEFT_BRACKET))
+            // Check for function call using @ or . operators (higher precedence than binary ops)
+            if (Match(TokenType.APPLY) || Match(TokenType.DOT_APPLY))
             {
+                var op = PreviousToken().Type;
                 var arguments = new List<ASTNode>();
                 
-                if (!Match(TokenType.RIGHT_BRACKET))
+                // For @ operator: parse a single expression (vector or scalar)
+                if (op == TokenType.APPLY)
                 {
                     arguments.Add(ParseExpression());
-                    
-                    while (Match(TokenType.SEMICOLON))
+                }
+                // For . operator: parse space-separated arguments
+                else if (op == TokenType.DOT_APPLY)
+                {
+                    arguments.Add(ParseExpression());
+                    while (!IsAtEnd() && CurrentToken().Type != TokenType.SEMICOLON && 
+                           CurrentToken().Type != TokenType.NEWLINE && CurrentToken().Type != TokenType.RIGHT_PAREN &&
+                           CurrentToken().Type != TokenType.RIGHT_BRACE && CurrentToken().Type != TokenType.RIGHT_BRACKET)
                     {
                         arguments.Add(ParseExpression());
-                    }
-                    
-                    if (!Match(TokenType.RIGHT_BRACKET))
-                    {
-                        throw new Exception("Expected ']' after function arguments");
                     }
                 }
                 
@@ -166,29 +169,6 @@ namespace K3CSharp
             {
                 var op = PreviousToken().Type;
                 var right = ParseTerm();
-                
-                // Check for function call on right side
-                if (Match(TokenType.LEFT_BRACKET))
-                {
-                    var arguments = new List<ASTNode>();
-                    
-                    if (!Match(TokenType.RIGHT_BRACKET))
-                    {
-                        arguments.Add(ParseExpression());
-                        
-                        while (Match(TokenType.SEMICOLON))
-                        {
-                            arguments.Add(ParseExpression());
-                        }
-                        
-                        if (!Match(TokenType.RIGHT_BRACKET))
-                        {
-                            throw new Exception("Expected ']' after function arguments");
-                        }
-                    }
-                    
-                    right = ASTNode.MakeFunctionCall(right, arguments);
-                }
                 
                 left = ASTNode.MakeBinaryOp(op, left, right);
             }
@@ -237,6 +217,8 @@ namespace K3CSharp
                    CurrentToken().Type != TokenType.NEWLINE &&
                    CurrentToken().Type != TokenType.ASSIGNMENT &&
                    CurrentToken().Type != TokenType.LEFT_BRACKET &&
+                   CurrentToken().Type != TokenType.APPLY &&
+                   CurrentToken().Type != TokenType.DOT_APPLY &&
                    CurrentToken().Type != TokenType.IDENTIFIER &&
                    CurrentToken().Type != TokenType.EOF)
             {
@@ -493,29 +475,6 @@ namespace K3CSharp
                 // Debug: Let's see what token we're getting
                 var currentToken = CurrentToken();
                 throw new Exception($"Unexpected token: {currentToken.Type}({currentToken.Lexeme})");
-            }
-
-            // Check for function call after any primary expression
-            if (result != null && Match(TokenType.LEFT_BRACKET))
-            {
-                var arguments = new List<ASTNode>();
-                
-                if (!Match(TokenType.RIGHT_BRACKET))
-                {
-                    arguments.Add(ParseExpression());
-                    
-                    while (Match(TokenType.SEMICOLON))
-                    {
-                        arguments.Add(ParseExpression());
-                    }
-                    
-                    if (!Match(TokenType.RIGHT_BRACKET))
-                    {
-                        throw new Exception("Expected ']' after function arguments");
-                    }
-                }
-                
-                return ASTNode.MakeFunctionCall(result, arguments);
             }
 
             return result;
