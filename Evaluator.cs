@@ -157,7 +157,7 @@ namespace K3CSharp
                 throw new Exception("Function call requires a function");
             }
 
-            var function = Evaluate(node.Children[0]);
+            var functionNode = node.Children[0];
             var arguments = new List<K3Value>();
             
             for (int i = 1; i < node.Children.Count; i++)
@@ -165,82 +165,115 @@ namespace K3CSharp
                 arguments.Add(Evaluate(node.Children[i]));
             }
 
-            // Handle FunctionValue (user-defined functions)
-            if (function is FunctionValue functionValue)
+            // Handle function calls differently based on the function node type
+            if (functionNode.Type == ASTNodeType.Function)
             {
-                var functionNode = functionValue.FunctionNode;
-                var parameters = functionNode.Parameters;
+                // Direct function call: {[params] body}[args]
+                return CallDirectFunction(functionNode, arguments);
+            }
+            else if (functionNode.Type == ASTNodeType.Variable)
+            {
+                // Variable function call: functionName[args]
+                var functionName = functionNode.Value is SymbolValue symbol ? symbol.Value : functionNode.Value.ToString();
+                return CallVariableFunction(functionName, arguments);
+            }
+            else
+            {
+                // Evaluate the function expression and call it
+                var function = Evaluate(functionNode);
                 
-                if (arguments.Count != parameters.Count)
+                if (function is FunctionValue functionValue)
                 {
-                    throw new Exception($"Function expects {parameters.Count} arguments, got {arguments.Count}");
+                    return CallDirectFunction(functionValue.FunctionNode, arguments);
+                }
+                else if (function.Type == ValueType.Symbol)
+                {
+                    var functionName = (function as SymbolValue)?.Value;
+                    if (functionName == null)
+                    {
+                        throw new Exception("Invalid function name");
+                    }
+                    return CallVariableFunction(functionName, arguments);
                 }
                 
-                // Create a new evaluator scope for this function call
-                var functionEvaluator = new Evaluator();
-                
-                // Copy global variables to function scope
-                foreach (var kvp in variables)
-                {
-                    functionEvaluator.variables[kvp.Key] = kvp.Value;
-                }
-                
-                // Bind parameters to arguments
-                for (int i = 0; i < parameters.Count; i++)
-                {
-                    functionEvaluator.SetVariable(parameters[i], arguments[i]);
-                }
-                
-                // Evaluate the function Body
-                if (functionNode.Children.Count > 0)
-                {
-                    var body = functionNode.Children[0];
-                    return functionEvaluator.Evaluate(body);
-                }
-                else
-                {
-                    return new IntegerValue(0); // Empty function result
-                }
+                throw new Exception($"Cannot call non-function: {function.Type}");
+            }
+        }
+
+        private K3Value CallDirectFunction(ASTNode functionNode, List<K3Value> arguments)
+        {
+            var parameters = functionNode.Parameters;
+            
+            if (arguments.Count != parameters.Count)
+            {
+                throw new Exception($"Function expects {parameters.Count} arguments, got {arguments.Count}");
             }
             
-            // Handle named functions (variables that contain functions)
-            if (function.Type == ValueType.Symbol)
+            // Create a new evaluator scope for this function call
+            var functionEvaluator = new Evaluator();
+            
+            // Copy global variables to function scope
+            foreach (var kvp in variables)
             {
-                var functionName = (function as SymbolValue)?.Value;
-                if (functionName == null)
-                {
-                    throw new Exception("Invalid function name");
-                }
-                
-                // Handle built-in functions
-                switch (functionName)
-                {
-                    case "add7":
-                        if (arguments.Count != 1) throw new Exception("add7 expects 1 argument");
-                        var arg = arguments[0];
-                        if (arg is IntegerValue intVal) return new IntegerValue(intVal.Value + 7);
-                        if (arg is LongValue longVal) return new LongValue(longVal.Value + 7);
-                        if (arg is FloatValue floatVal) return new FloatValue(floatVal.Value + 7);
-                        throw new Exception("add7 expects numeric argument");
-                        
-                    case "mul":
-                        if (arguments.Count != 2) throw new Exception("mul expects 2 arguments");
-                        var op1 = arguments[0];
-                        var op2 = arguments[1];
-                        if (op1 is IntegerValue int1 && op2 is IntegerValue int2) 
-                            return new IntegerValue(int1.Value * int2.Value);
-                        if (op1 is LongValue long1 && op2 is LongValue long2) 
-                            return new LongValue(long1.Value * long2.Value);
-                        if (op1 is FloatValue float1 && op2 is FloatValue float2) 
-                            return new FloatValue(float1.Value * float2.Value);
-                        throw new Exception("mul expects numeric arguments");
-                        
-                    default:
-                        throw new Exception($"Unknown function: {functionName}");
-                }
+                functionEvaluator.variables[kvp.Key] = kvp.Value;
             }
             
-            throw new Exception("Function call evaluation not implemented");
+            // Bind parameters to arguments
+            for (int i = 0; i < parameters.Count; i++)
+            {
+                functionEvaluator.SetVariable(parameters[i], arguments[i]);
+            }
+            
+            // Evaluate the function body
+            if (functionNode.Children.Count > 0)
+            {
+                var body = functionNode.Children[0];
+                return functionEvaluator.Evaluate(body);
+            }
+            else
+            {
+                return new IntegerValue(0); // Empty function result
+            }
+        }
+
+        private K3Value CallVariableFunction(string functionName, List<K3Value> arguments)
+        {
+            // Check if it's a user-defined function stored in a variable
+            if (variables.TryGetValue(functionName, out var functionValue))
+            {
+                if (functionValue is FunctionValue userFunction)
+                {
+                    return CallDirectFunction(userFunction.FunctionNode, arguments);
+                }
+                throw new Exception($"Variable '{functionName}' is not a function");
+            }
+            
+            // Handle built-in functions
+            switch (functionName)
+            {
+                case "add7":
+                    if (arguments.Count != 1) throw new Exception("add7 expects 1 argument");
+                    var arg = arguments[0];
+                    if (arg is IntegerValue intVal) return new IntegerValue(intVal.Value + 7);
+                    if (arg is LongValue longVal) return new LongValue(longVal.Value + 7);
+                    if (arg is FloatValue floatVal) return new FloatValue(floatVal.Value + 7);
+                    throw new Exception("add7 expects numeric argument");
+                    
+                case "mul":
+                    if (arguments.Count != 2) throw new Exception("mul expects 2 arguments");
+                    var op1 = arguments[0];
+                    var op2 = arguments[1];
+                    if (op1 is IntegerValue int1 && op2 is IntegerValue int2) 
+                        return new IntegerValue(int1.Value * int2.Value);
+                    if (op1 is LongValue long1 && op2 is LongValue long2) 
+                        return new LongValue(long1.Value * long2.Value);
+                    if (op1 is FloatValue float1 && op2 is FloatValue float2) 
+                        return new FloatValue(float1.Value * float2.Value);
+                    throw new Exception("mul expects numeric arguments");
+                    
+                default:
+                    throw new Exception($"Unknown function: {functionName}");
+            }
         }
 
         private K3Value EvaluateBlock(ASTNode node)
@@ -253,6 +286,161 @@ namespace K3CSharp
             }
             
             return lastResult;
+        }
+
+        private K3Value Add(K3Value a, K3Value b)
+        {
+            if (a is IntegerValue intA && b is IntegerValue intB)
+                return new IntegerValue(intA.Value + intB.Value);
+            if (a is LongValue longA && b is LongValue longB)
+                return new LongValue(longA.Value + longB.Value);
+            if (a is FloatValue floatA && b is FloatValue floatB)
+                return new FloatValue(floatA.Value + floatB.Value);
+            
+            // Handle vector operations
+            if (a is VectorValue vecA)
+            {
+                if (b is VectorValue vecB)
+                    return vecA.Add(vecB);
+                else
+                    return vecA.Add(b);
+            }
+            
+            throw new Exception($"Cannot add {a.Type} and {b.Type}");
+        }
+
+        private K3Value Subtract(K3Value a, K3Value b)
+        {
+            if (a is IntegerValue intA && b is IntegerValue intB)
+                return new IntegerValue(intA.Value - intB.Value);
+            if (a is LongValue longA && b is LongValue longB)
+                return new LongValue(longA.Value - longB.Value);
+            if (a is FloatValue floatA && b is FloatValue floatB)
+                return new FloatValue(floatA.Value - floatB.Value);
+            
+            // Handle vector operations
+            if (a is VectorValue vecA)
+            {
+                if (b is VectorValue vecB)
+                    return vecA.Subtract(vecB);
+                else
+                    return vecA.Subtract(b);
+            }
+            
+            throw new Exception($"Cannot subtract {a.Type} and {b.Type}");
+        }
+
+        private K3Value Multiply(K3Value a, K3Value b)
+        {
+            if (a is IntegerValue intA && b is IntegerValue intB)
+                return new IntegerValue(intA.Value * intB.Value);
+            if (a is LongValue longA && b is LongValue longB)
+                return new LongValue(longA.Value * longB.Value);
+            if (a is FloatValue floatA && b is FloatValue floatB)
+                return new FloatValue(floatA.Value * floatB.Value);
+            
+            // Handle vector operations
+            if (a is VectorValue vecA)
+            {
+                if (b is VectorValue vecB)
+                    return vecA.Multiply(vecB);
+                else
+                    return vecA.Multiply(b);
+            }
+            
+            throw new Exception($"Cannot multiply {a.Type} and {b.Type}");
+        }
+
+        private K3Value Divide(K3Value a, K3Value b)
+        {
+            if (a is IntegerValue intA && b is IntegerValue intB)
+                return new IntegerValue(intA.Value / intB.Value);
+            if (a is LongValue longA && b is LongValue longB)
+                return new LongValue(longA.Value / longB.Value);
+            if (a is FloatValue floatA && b is FloatValue floatB)
+                return new FloatValue(floatA.Value / floatB.Value);
+            
+            // Handle vector operations
+            if (a is VectorValue vecA)
+            {
+                if (b is VectorValue vecB)
+                    return vecA.Divide(vecB);
+                else
+                    return vecA.Divide(b);
+            }
+            
+            throw new Exception($"Cannot divide {a.Type} and {b.Type}");
+        }
+
+        private K3Value Min(K3Value a, K3Value b)
+        {
+            if (a is IntegerValue intA && b is IntegerValue intB)
+                return new IntegerValue(Math.Min(intA.Value, intB.Value));
+            if (a is LongValue longA && b is LongValue longB)
+                return new LongValue(Math.Min(longA.Value, longB.Value));
+            if (a is FloatValue floatA && b is FloatValue floatB)
+                return new FloatValue(Math.Min(floatA.Value, floatB.Value));
+            
+            // Handle vector operations
+            if (a is VectorValue vecA)
+            {
+                if (b is VectorValue vecB)
+                    return vecA.Minimum(vecB);
+                else
+                    return vecA.Minimum(b);
+            }
+            
+            throw new Exception($"Cannot find minimum of {a.Type} and {b.Type}");
+        }
+
+        private K3Value Max(K3Value a, K3Value b)
+        {
+            if (a is IntegerValue intA && b is IntegerValue intB)
+                return new IntegerValue(Math.Max(intA.Value, intB.Value));
+            if (a is LongValue longA && b is LongValue longB)
+                return new LongValue(Math.Max(longA.Value, longB.Value));
+            if (a is FloatValue floatA && b is FloatValue floatB)
+                return new FloatValue(Math.Max(floatA.Value, floatB.Value));
+            
+            // Handle vector operations
+            if (a is VectorValue vecA)
+            {
+                if (b is VectorValue vecB)
+                    return vecA.Maximum(vecB);
+                else
+                    return vecA.Maximum(b);
+            }
+            
+            throw new Exception($"Cannot find maximum of {a.Type} and {b.Type}");
+        }
+
+        private K3Value Less(K3Value a, K3Value b)
+        {
+            if (a is IntegerValue intA && b is IntegerValue intB)
+                return new IntegerValue(intA.Value < intB.Value ? 1 : 0);
+            if (a is LongValue longA && b is LongValue longB)
+                return new IntegerValue(longA.Value < longB.Value ? 1 : 0);
+            if (a is FloatValue floatA && b is FloatValue floatB)
+                return new IntegerValue(floatA.Value < floatB.Value ? 1 : 0);
+            
+            throw new Exception($"Cannot compare {a.Type} and {b.Type} with <");
+        }
+
+        private K3Value Greater(K3Value a, K3Value b)
+        {
+            if (a is IntegerValue intA && b is IntegerValue intB)
+                return new IntegerValue(intA.Value > intB.Value ? 1 : 0);
+            if (a is LongValue longA && b is LongValue longB)
+                return new IntegerValue(longA.Value > longB.Value ? 1 : 0);
+            if (a is FloatValue floatA && b is FloatValue floatB)
+                return new IntegerValue(floatA.Value > floatB.Value ? 1 : 0);
+            
+            throw new Exception($"Cannot compare {a.Type} and {b.Type} with >");
+        }
+
+        private K3Value NegateBinary(K3Value a, K3Value b)
+        {
+            return Negate(a);
         }
 
         private K3Value Minimum(K3Value a, K3Value b)

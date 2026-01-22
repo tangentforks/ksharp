@@ -100,15 +100,21 @@ namespace K3CSharp
             var result = ParseExpression();
 
             // Only look for additional statements if we haven't consumed all tokens
-            // and the next token is a semicolon (indicating multiple statements on same line)
-            if (!IsAtEnd() && CurrentToken().Type == TokenType.SEMICOLON)
+            // and the next token is a semicolon or newline (indicating multiple statements)
+            if (!IsAtEnd() && (CurrentToken().Type == TokenType.SEMICOLON || CurrentToken().Type == TokenType.NEWLINE))
             {
                 var statements = new List<ASTNode>();
                 statements.Add(result);
                 
-                // Parse additional statements separated by semicolons
-                while (Match(TokenType.SEMICOLON))
+                // Parse additional statements separated by semicolons or newlines
+                while (Match(TokenType.SEMICOLON) || Match(TokenType.NEWLINE))
                 {
+                    // Skip empty lines
+                    while (!IsAtEnd() && CurrentToken().Type == TokenType.NEWLINE)
+                    {
+                        Match(TokenType.NEWLINE);
+                    }
+                    
                     if (!IsAtEnd())
                     {
                         statements.Add(ParseExpression());
@@ -127,121 +133,9 @@ namespace K3CSharp
             return result;
         }
 
-        private Token CurrentToken()
-        {
-            return current < tokens.Count ? tokens[current] : new Token(TokenType.EOF, "", -1);
-        }
-
-        private Token PreviousToken()
-        {
-            return current > 0 ? tokens[current - 1] : new Token(TokenType.EOF, "", -1);
-        }
-
-        private bool IsAtEnd()
-        {
-            return current >= tokens.Count || CurrentToken().Type == TokenType.EOF;
-        }
-
-        private bool Match(TokenType type)
-        {
-            if (CurrentToken().Type == type)
-            {
-                Advance();
-                return true;
-            }
-            return false;
-        }
-
-        private void Advance()
-        {
-            current++;
-        }
-
         private ASTNode ParseExpression()
         {
-            // Handle unary operators first
-            if (Match(TokenType.MINUS) || Match(TokenType.PLUS) || Match(TokenType.MULTIPLY) || 
-                Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || 
-                Match(TokenType.LESS) || Match(TokenType.GREATER) || Match(TokenType.POWER) || 
-                Match(TokenType.MODULUS) || Match(TokenType.JOIN) || Match(TokenType.HASH) || 
-                Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || Match(TokenType.NEGATE))
-            {
-                // This is a unary operator, go back and handle it in ParsePrimary
-                current--; // Back up one token
-                var left = ParsePrimary();
-                
-                // Check for function call first (higher precedence than binary ops)
-                if (Match(TokenType.LEFT_BRACKET))
-                {
-                    var arguments = new List<ASTNode>();
-                    
-                    if (!Match(TokenType.RIGHT_BRACKET))
-                    {
-                        arguments.Add(ParseExpression());
-                        
-                        while (Match(TokenType.SEMICOLON))
-                        {
-                            arguments.Add(ParseExpression());
-                        }
-                        
-                        if (!Match(TokenType.RIGHT_BRACKET))
-                        {
-                            throw new Exception("Expected ']' after function arguments");
-                        }
-                    }
-                    
-                    left = ASTNode.MakeFunctionCall(left, arguments);
-                }
-
-                while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) || Match(TokenType.DIVIDE) ||
-                       Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
-                       Match(TokenType.EQUAL) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN))
-                {
-                    var op = PreviousToken().Type;
-                    var right = ParseTerm();
-                    
-                    // Check for function call on right side
-                    if (Match(TokenType.LEFT_BRACKET))
-                    {
-                        var arguments = new List<ASTNode>();
-                        
-                        if (!Match(TokenType.RIGHT_BRACKET))
-                        {
-                            arguments.Add(ParseExpression());
-                            
-                            while (Match(TokenType.SEMICOLON))
-                            {
-                                arguments.Add(ParseExpression());
-                            }
-                            
-                            if (!Match(TokenType.RIGHT_BRACKET))
-                            {
-                                throw new Exception("Expected ']' after function arguments");
-                            }
-                        }
-                        
-                        right = ASTNode.MakeFunctionCall(right, arguments);
-                    }
-                    
-                    left = ASTNode.MakeBinaryOp(op, left, right);
-                }
-
-                // Check for assignment
-                if (Match(TokenType.ASSIGNMENT))
-                {
-                    if (left.Type != ASTNodeType.Variable)
-                    {
-                        throw new Exception("Assignment target must be a variable");
-                    }
-                    var value = ParseExpression();
-                    var variableName = left.Value is SymbolValue symbol ? symbol.Value : throw new Exception("Variable node must contain variable name");
-                    return ASTNode.MakeAssignment(variableName, value);
-                }
-
-                return left;
-            }
-
-            var leftTerm = ParseTerm();
+            var left = ParseTerm();
 
             // Check for function call first (higher precedence than binary ops)
             if (Match(TokenType.LEFT_BRACKET))
@@ -263,7 +157,7 @@ namespace K3CSharp
                     }
                 }
                 
-                leftTerm = ASTNode.MakeFunctionCall(leftTerm, arguments);
+                left = ASTNode.MakeFunctionCall(left, arguments);
             }
 
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) || Match(TokenType.DIVIDE) ||
@@ -296,22 +190,22 @@ namespace K3CSharp
                     right = ASTNode.MakeFunctionCall(right, arguments);
                 }
                 
-                leftTerm = ASTNode.MakeBinaryOp(op, leftTerm, right);
+                left = ASTNode.MakeBinaryOp(op, left, right);
             }
 
             // Check for assignment
             if (Match(TokenType.ASSIGNMENT))
             {
-                if (leftTerm.Type != ASTNodeType.Variable)
+                if (left.Type != ASTNodeType.Variable)
                 {
                     throw new Exception("Assignment target must be a variable");
                 }
                 var value = ParseExpression();
-                var variableName = leftTerm.Value is SymbolValue symbol ? symbol.Value : throw new Exception("Variable node must contain variable name");
+                var variableName = left.Value is SymbolValue symbol ? symbol.Value : throw new Exception("Variable node must contain variable name");
                 return ASTNode.MakeAssignment(variableName, value);
             }
 
-            return leftTerm;
+            return left;
         }
 
         private ASTNode ParseTerm()
@@ -342,6 +236,7 @@ namespace K3CSharp
                    CurrentToken().Type != TokenType.SEMICOLON &&
                    CurrentToken().Type != TokenType.NEWLINE &&
                    CurrentToken().Type != TokenType.ASSIGNMENT &&
+                   CurrentToken().Type != TokenType.LEFT_BRACKET &&
                    CurrentToken().Type != TokenType.IDENTIFIER &&
                    CurrentToken().Type != TokenType.EOF)
             {
@@ -386,10 +281,9 @@ namespace K3CSharp
                 var identifier = PreviousToken().Lexeme;
                 result = ASTNode.MakeVariable(identifier);
             }
-            // Handle unary operators (when backed up from ParseExpression)
+            // Handle unary operators
             else if (Match(TokenType.NEGATE))
             {
-                // Handle unary negation operator ~
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("NEGATE");
@@ -398,7 +292,6 @@ namespace K3CSharp
             }
             else if (Match(TokenType.MINUS))
             {
-                // Handle unary minus operator -
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("UNARY_MINUS");
@@ -407,7 +300,6 @@ namespace K3CSharp
             }
             else if (Match(TokenType.PLUS))
             {
-                // Handle unary plus operator + (transpose)
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("TRANSPOSE");
@@ -416,7 +308,6 @@ namespace K3CSharp
             }
             else if (Match(TokenType.MULTIPLY))
             {
-                // Handle unary first operator *
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("FIRST");
@@ -425,7 +316,6 @@ namespace K3CSharp
             }
             else if (Match(TokenType.DIVIDE))
             {
-                // Handle unary reciprocal operator %
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("RECIPROCAL");
@@ -434,7 +324,6 @@ namespace K3CSharp
             }
             else if (Match(TokenType.MIN))
             {
-                // Handle unary generate operator &
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("GENERATE");
@@ -443,7 +332,6 @@ namespace K3CSharp
             }
             else if (Match(TokenType.MAX))
             {
-                // Handle unary reverse operator |
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("REVERSE");
@@ -452,7 +340,6 @@ namespace K3CSharp
             }
             else if (Match(TokenType.LESS))
             {
-                // Handle unary grade up operator <
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("GRADE_UP");
@@ -461,7 +348,6 @@ namespace K3CSharp
             }
             else if (Match(TokenType.GREATER))
             {
-                // Handle unary grade down operator >
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("GRADE_DOWN");
@@ -470,7 +356,6 @@ namespace K3CSharp
             }
             else if (Match(TokenType.POWER))
             {
-                // Handle unary shape operator ^
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("SHAPE");
@@ -479,7 +364,6 @@ namespace K3CSharp
             }
             else if (Match(TokenType.MODULUS))
             {
-                // Handle unary enumerate operator !
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("ENUMERATE");
@@ -488,7 +372,6 @@ namespace K3CSharp
             }
             else if (Match(TokenType.JOIN))
             {
-                // Handle unary enlist operator ,
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("ENLIST");
@@ -497,7 +380,6 @@ namespace K3CSharp
             }
             else if (Match(TokenType.HASH))
             {
-                // Handle unary count operator #
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("COUNT");
@@ -506,7 +388,6 @@ namespace K3CSharp
             }
             else if (Match(TokenType.UNDERSCORE))
             {
-                // Handle unary floor operator _
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("FLOOR");
@@ -515,7 +396,6 @@ namespace K3CSharp
             }
             else if (Match(TokenType.QUESTION))
             {
-                // Handle unary unique operator ?
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("UNIQUE");
@@ -528,7 +408,6 @@ namespace K3CSharp
                 
                 if (!Match(TokenType.RIGHT_PAREN))
                 {
-                    // Parse first element
                     elements.Add(ParsePrimary());
                     
                     while (Match(TokenType.SEMICOLON))
@@ -640,6 +519,36 @@ namespace K3CSharp
             }
 
             return result;
+        }
+
+        private Token CurrentToken()
+        {
+            return current < tokens.Count ? tokens[current] : new Token(TokenType.EOF, "", -1);
+        }
+
+        private Token PreviousToken()
+        {
+            return current > 0 ? tokens[current - 1] : new Token(TokenType.EOF, "", -1);
+        }
+
+        private bool IsAtEnd()
+        {
+            return current >= tokens.Count || CurrentToken().Type == TokenType.EOF;
+        }
+
+        private bool Match(TokenType type)
+        {
+            if (CurrentToken().Type == type)
+            {
+                Advance();
+                return true;
+            }
+            return false;
+        }
+
+        private void Advance()
+        {
+            current++;
         }
     }
 }
