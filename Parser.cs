@@ -10,6 +10,7 @@ namespace K3CSharp
         Vector,
         BinaryOp,
         Assignment,
+        GlobalAssignment,
         Variable,
         Function,
         FunctionCall,
@@ -22,6 +23,8 @@ namespace K3CSharp
         public K3Value Value { get; set; }
         public List<ASTNode> Children { get; }
         public List<string> Parameters { get; set; } = new List<string>();
+        public int StartPosition { get; set; } = -1;
+        public int EndPosition { get; set; } = -1;
 
         public ASTNode(ASTNodeType type, K3Value value = null, List<ASTNode> children = null)
         {
@@ -45,13 +48,29 @@ namespace K3CSharp
             var node = new ASTNode(ASTNodeType.BinaryOp);
             node.Children.Add(left);
             node.Children.Add(right);
-            node.Value = new SymbolValue(op.ToString());
+            
+            // Handle special case for TYPE operator
+            string symbolValue = op switch
+            {
+                TokenType.TYPE => "TYPE",
+                _ => op.ToString()
+            };
+            
+            node.Value = new SymbolValue(symbolValue);
             return node;
         }
 
         public static ASTNode MakeAssignment(string variableName, ASTNode value)
         {
             var node = new ASTNode(ASTNodeType.Assignment);
+            node.Value = new SymbolValue(variableName);
+            node.Children.Add(value);
+            return node;
+        }
+
+        public static ASTNode MakeGlobalAssignment(string variableName, ASTNode value)
+        {
+            var node = new ASTNode(ASTNodeType.GlobalAssignment);
             node.Value = new SymbolValue(variableName);
             node.Children.Add(value);
             return node;
@@ -83,11 +102,13 @@ namespace K3CSharp
     {
         private List<Token> tokens;
         private int current;
+        private string sourceText;
 
-        public Parser(List<Token> tokens)
+        public Parser(List<Token> tokens, string sourceText = "")
         {
             this.tokens = tokens;
-            current = 0;
+            this.current = 0;
+            this.sourceText = sourceText;
         }
 
         public ASTNode Parse()
@@ -176,9 +197,11 @@ namespace K3CSharp
                 }
             }
 
-            while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) || Match(TokenType.DIVIDE) ||
+            while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
                    Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
-                   Match(TokenType.EQUAL) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN))
+                   Match(TokenType.EQUAL) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
+                   Match(TokenType.ADVERB_SLASH) || Match(TokenType.ADVERB_BACKSLASH) || Match(TokenType.ADVERB_TICK) ||
+                   Match(TokenType.TYPE))
             {
                 var op = PreviousToken().Type;
                 var right = ParseTerm();
@@ -198,6 +221,18 @@ namespace K3CSharp
                 return ASTNode.MakeAssignment(variableName, value);
             }
 
+            // Check for global assignment
+            if (Match(TokenType.GLOBAL_ASSIGNMENT))
+            {
+                if (left.Type != ASTNodeType.Variable)
+                {
+                    throw new Exception("Global assignment target must be a variable");
+                }
+                var value = ParseExpression();
+                var variableName = left.Value is SymbolValue symbol ? symbol.Value : throw new Exception("Variable node must contain variable name");
+                return ASTNode.MakeGlobalAssignment(variableName, value);
+            }
+
             return left;
         }
 
@@ -211,7 +246,6 @@ namespace K3CSharp
                    CurrentToken().Type != TokenType.PLUS &&
                    CurrentToken().Type != TokenType.MINUS &&
                    CurrentToken().Type != TokenType.MULTIPLY &&
-                   CurrentToken().Type != TokenType.DIVIDE &&
                    CurrentToken().Type != TokenType.MIN &&
                    CurrentToken().Type != TokenType.MAX &&
                    CurrentToken().Type != TokenType.LESS &&
@@ -232,6 +266,7 @@ namespace K3CSharp
                    CurrentToken().Type != TokenType.LEFT_BRACKET &&
                    CurrentToken().Type != TokenType.APPLY &&
                    CurrentToken().Type != TokenType.DOT_APPLY &&
+                   CurrentToken().Type != TokenType.TYPE &&
                    CurrentToken().Type != TokenType.IDENTIFIER &&
                    CurrentToken().Type != TokenType.EOF)
             {
@@ -266,15 +301,34 @@ namespace K3CSharp
 
             if (Match(TokenType.INTEGER))
             {
-                result = ASTNode.MakeLiteral(new IntegerValue(int.Parse(PreviousToken().Lexeme)));
+                var lexeme = PreviousToken().Lexeme;
+                // Check if it's a special value
+                if (lexeme == "0I" || lexeme == "0N" || lexeme == "-0I")
+                    result = ASTNode.MakeLiteral(new IntegerValue(lexeme));
+                else
+                    result = ASTNode.MakeLiteral(new IntegerValue(int.Parse(lexeme)));
             }
             else if (Match(TokenType.LONG))
             {
-                result = ASTNode.MakeLiteral(new LongValue(long.Parse(PreviousToken().Lexeme.Substring(0, PreviousToken().Lexeme.Length - 1))));
+                var lexeme = PreviousToken().Lexeme;
+                // Check if it's a special long value
+                if (lexeme == "0IL" || lexeme == "0NL" || lexeme == "-0IL")
+                    result = ASTNode.MakeLiteral(new LongValue(lexeme));
+                else
+                    result = ASTNode.MakeLiteral(new LongValue(long.Parse(lexeme.Substring(0, lexeme.Length - 1))));
             }
             else if (Match(TokenType.FLOAT))
             {
-                result = ASTNode.MakeLiteral(new FloatValue(double.Parse(PreviousToken().Lexeme)));
+                var lexeme = PreviousToken().Lexeme;
+                // Check if it's a special float value
+                if (lexeme == "0i" || lexeme == "0n" || lexeme == "-0i")
+                    result = ASTNode.MakeLiteral(new FloatValue(lexeme));
+                else
+                    result = ASTNode.MakeLiteral(new FloatValue(double.Parse(lexeme)));
+            }
+            else if (Match(TokenType.NULL))
+            {
+                result = ASTNode.MakeLiteral(new NullValue());
             }
             else if (Match(TokenType.CHARACTER))
             {
@@ -323,19 +377,19 @@ namespace K3CSharp
                 node.Children.Add(operand);
                 return node;
             }
-            else if (Match(TokenType.DIVIDE))
-            {
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("RECIPROCAL");
-                node.Children.Add(operand);
-                return node;
-            }
             else if (Match(TokenType.MIN))
             {
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("GENERATE");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.DIVIDE))
+            {
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("RECIPROCAL");
                 node.Children.Add(operand);
                 return node;
             }
@@ -478,6 +532,8 @@ namespace K3CSharp
                 }
                 
                 // Parse function body
+                int leftBracePos = CurrentToken().Position; // Position of the opening brace
+                int bodyStartTokenIndex = current; // Store the token index where body starts
                 ASTNode body;
                 if (CurrentToken().Type == TokenType.RIGHT_BRACE)
                 {
@@ -495,7 +551,62 @@ namespace K3CSharp
                     throw new Exception("Expected '}' after function body");
                 }
                 
+                // Extract the source text of the function body
+                int rightBracePos = PreviousToken().Position; // Position of the closing brace
+                string bodyText = "";
+                List<Token> preParsedTokens = null;
+                
+                // Reconstruct function body text from tokens between the braces
+                var bodyTokens = new List<Token>();
+                int tokenIndex = current - 1; // Start from the token before the closing brace
+                
+                // Work backwards to collect tokens from the function body (excluding braces)
+                while (tokenIndex >= bodyStartTokenIndex && tokens[tokenIndex].Type != TokenType.LEFT_BRACE)
+                {
+                    bodyTokens.Insert(0, tokens[tokenIndex]); // Insert at beginning to maintain order
+                    tokenIndex--;
+                }
+                
+                // Reconstruct the function body text from tokens
+                if (bodyTokens.Count > 0)
+                {
+                    bodyText = string.Join(" ", bodyTokens.Select(t => t.Lexeme));
+                    
+                    // Pre-parse the function body for better performance
+                    try
+                    {
+                        var bodyLexer = new Lexer(bodyText);
+                        preParsedTokens = bodyLexer.Tokenize();
+                    }
+                    catch
+                    {
+                        // If pre-parsing fails, we'll defer to runtime (per spec)
+                        // This is acceptable - validation is deferred until execution
+                        preParsedTokens = null;
+                    }
+                }
+                else
+                {
+                    // Empty function body
+                    bodyText = "";
+                }
+                
                 result = ASTNode.MakeFunction(parameters, body);
+                result.StartPosition = leftBracePos;
+                result.EndPosition = rightBracePos;
+                result.Value = new FunctionValue(bodyText, parameters, preParsedTokens);
+            }
+            else if (Match(TokenType.ADVERB_SLASH))
+            {
+                return ParseAdverbChain("ADVERB_SLASH");
+            }
+            else if (Match(TokenType.ADVERB_BACKSLASH))
+            {
+                return ParseAdverbChain("ADVERB_BACKSLASH");
+            }
+            else if (Match(TokenType.ADVERB_TICK))
+            {
+                return ParseAdverbChain("ADVERB_TICK");
             }
             else
             {
@@ -505,6 +616,34 @@ namespace K3CSharp
             }
 
             return result;
+        }
+
+        private ASTNode ParseAdverbChain(string firstAdverb)
+        {
+            var adverbs = new List<string> { firstAdverb };
+            
+            // Collect additional adverbs for chaining
+            while (Match(TokenType.ADVERB_SLASH) || Match(TokenType.ADVERB_BACKSLASH) || Match(TokenType.ADVERB_TICK))
+            {
+                adverbs.Add(PreviousToken().Type.ToString().Replace("TokenType.", ""));
+            }
+            
+            // Parse the operand (the verb or data the adverbs apply to)
+            var operand = ParsePrimary();
+            
+            // Create a chained adverb node
+            var node = new ASTNode(ASTNodeType.BinaryOp);
+            node.Value = new SymbolValue("ADVERB_CHAIN");
+            node.Children.Add(operand);
+            
+            // Add adverbs as metadata
+            foreach (var adverb in adverbs)
+            {
+                var adverbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(adverb));
+                node.Children.Add(adverbNode);
+            }
+            
+            return node;
         }
 
         private Token CurrentToken()

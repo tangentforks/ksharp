@@ -40,6 +40,12 @@ namespace K3CSharp
         QUESTION,       // ? unique operator
         APPLY,          // @ apply operator
         DOT_APPLY,      // . dot-apply operator
+        ADVERB_SLASH,   // / adverb
+        ADVERB_BACKSLASH, // \ adverb  
+        ADVERB_TICK,    // ' adverb
+        NULL,           // _n null value
+        TYPE,           // 4: type operator
+        GLOBAL_ASSIGNMENT, // :: global assignment operator
         EOF,
         UNKNOWN
     }

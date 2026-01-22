@@ -16,7 +16,8 @@ namespace K3CSharp
                 try
                 {
                     var content = File.ReadAllText(args[0]);
-                    ExecuteLine(content, evaluator);
+                    var result = ExecuteLine(content, evaluator);
+                    Console.WriteLine(result);
                 }
                 catch (Exception ex)
                 {
@@ -61,7 +62,7 @@ namespace K3CSharp
         {
             var lexer = new Lexer(input);
             var tokens = lexer.Tokenize();
-            var parser = new Parser(tokens);
+            var parser = new Parser(tokens, input);
             var ast = parser.Parse();
             return evaluator.Evaluate(ast);
         }

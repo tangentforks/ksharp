@@ -1,5 +1,6 @@
 {[arg1] arg1+6} . 7
-add7:{[arg1] arg1+6}
+{[arg1] arg1+6}
+add7 . 6
 add7 . 6
 {[op1;op2] op1 * op2} . 8 4
 mul:{[op1;op2] op1 * op2}

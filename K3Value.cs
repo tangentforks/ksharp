@@ -11,7 +11,8 @@ namespace K3CSharp
         Character,
         Symbol,
         Vector,
-        Function
+        Function,
+        Null
     }
 
     public abstract class K3Value
@@ -28,11 +29,30 @@ namespace K3CSharp
     public class IntegerValue : K3Value
     {
         public int Value { get; }
+        public bool IsSpecial { get; }
+        public string SpecialName { get; }
 
         public IntegerValue(int value)
         {
             Value = value;
             Type = ValueType.Integer;
+            IsSpecial = false;
+        }
+
+        public IntegerValue(string specialName)
+        {
+            SpecialName = specialName;
+            IsSpecial = true;
+            Type = ValueType.Integer;
+            
+            // Set the actual integer values for special cases
+            switch (specialName)
+            {
+                case "0I": Value = int.MaxValue; break;
+                case "0N": Value = int.MinValue; break;
+                case "-0I": Value = int.MinValue + 1; break;
+                default: throw new ArgumentException($"Unknown special integer: {specialName}");
+            }
         }
 
         public override K3Value Add(K3Value other)
@@ -85,6 +105,8 @@ namespace K3CSharp
 
         public override string ToString()
         {
+            if (IsSpecial)
+                return SpecialName;
             return Value.ToString();
         }
     }
@@ -92,11 +114,30 @@ namespace K3CSharp
     public class LongValue : K3Value
     {
         public long Value { get; }
+        public bool IsSpecial { get; }
+        public string SpecialName { get; }
 
         public LongValue(long value)
         {
             Value = value;
             Type = ValueType.Long;
+            IsSpecial = false;
+        }
+
+        public LongValue(string specialName)
+        {
+            SpecialName = specialName;
+            IsSpecial = true;
+            Type = ValueType.Long;
+            
+            // Set the actual long values for special cases
+            switch (specialName)
+            {
+                case "0IL": Value = long.MaxValue; break;
+                case "0NL": Value = long.MinValue; break;
+                case "-0IL": Value = long.MinValue + 1; break;
+                default: throw new ArgumentException($"Unknown special long: {specialName}");
+            }
         }
 
         public override K3Value Add(K3Value other)
@@ -149,6 +190,8 @@ namespace K3CSharp
 
         public override string ToString()
         {
+            if (IsSpecial)
+                return SpecialName;
             return Value.ToString() + "L";
         }
     }
@@ -156,11 +199,30 @@ namespace K3CSharp
     public class FloatValue : K3Value
     {
         public double Value { get; }
+        public bool IsSpecial { get; }
+        public string SpecialName { get; }
 
         public FloatValue(double value)
         {
             Value = value;
             Type = ValueType.Float;
+            IsSpecial = false;
+        }
+
+        public FloatValue(string specialName)
+        {
+            SpecialName = specialName;
+            IsSpecial = true;
+            Type = ValueType.Float;
+            
+            // Set the actual double values for special cases
+            switch (specialName)
+            {
+                case "0i": Value = double.PositiveInfinity; break;
+                case "0n": Value = double.NaN; break;
+                case "-0i": Value = double.NegativeInfinity; break;
+                default: throw new ArgumentException($"Unknown special float: {specialName}");
+            }
         }
 
         public override K3Value Add(K3Value other)
@@ -213,6 +275,8 @@ namespace K3CSharp
 
         public override string ToString()
         {
+            if (IsSpecial)
+                return SpecialName;
             return Value.ToString();
         }
     }
@@ -480,12 +544,18 @@ namespace K3CSharp
 
     public class FunctionValue : K3Value
     {
-        public ASTNode FunctionNode { get; }
+        public string BodyText { get; }
+        public List<string> Parameters { get; }
+        public int Valence { get; }
+        public List<Token> PreParsedTokens { get; }
 
-        public FunctionValue(ASTNode functionNode)
+        public FunctionValue(string bodyText, List<string> parameters, List<Token> preParsedTokens = null)
         {
-            FunctionNode = functionNode;
+            BodyText = bodyText;
+            Parameters = parameters;
             Type = ValueType.Function;
+            Valence = parameters.Count;
+            PreParsedTokens = preParsedTokens;
         }
 
         public override K3Value Add(K3Value other)
@@ -510,7 +580,42 @@ namespace K3CSharp
 
         public override string ToString()
         {
-            return "<function>";
+            // Generate representative textual representation
+            var paramsStr = Parameters.Count > 0 ? "[" + string.Join(";", Parameters) + "] " : "";
+            return "{" + paramsStr + BodyText + "}";
+        }
+    }
+
+    public class NullValue : K3Value
+    {
+        public NullValue()
+        {
+            Type = ValueType.Null;
+        }
+
+        public override K3Value Add(K3Value other)
+        {
+            throw new InvalidOperationException("Cannot add Null values");
+        }
+
+        public override K3Value Subtract(K3Value other)
+        {
+            throw new InvalidOperationException("Cannot subtract Null values");
+        }
+
+        public override K3Value Multiply(K3Value other)
+        {
+            throw new InvalidOperationException("Cannot multiply Null values");
+        }
+
+        public override K3Value Divide(K3Value other)
+        {
+            throw new InvalidOperationException("Cannot divide Null values");
+        }
+
+        public override string ToString()
+        {
+            return "_n";
         }
     }
 }

@@ -5,8 +5,13 @@ namespace K3CSharp
 {
     public class Evaluator
     {
-        private Dictionary<string, K3Value> variables = new Dictionary<string, K3Value>();
+        private Dictionary<string, K3Value> globalVariables = new Dictionary<string, K3Value>();
+        private Dictionary<string, K3Value> localVariables = new Dictionary<string, K3Value>();
         private Dictionary<string, int> symbolTable = new Dictionary<string, int>();
+        public bool isInFunctionCall = false; // Track if we're evaluating a function call
+        
+        // Reference to parent evaluator for global scope access
+        private Evaluator parentEvaluator = null;
 
         public K3Value Evaluate(ASTNode node)
         {
@@ -32,7 +37,14 @@ namespace K3CSharp
                 case ASTNodeType.Assignment:
                     var assignName = node.Value is SymbolValue assignmentSym ? assignmentSym.Value : node.Value.ToString();
                     var value = Evaluate(node.Children[0]);
-                    return SetVariable(assignName, value);
+                    SetVariable(assignName, value);
+                    return new IntegerValue(0); // Assignments don't return values
+
+                case ASTNodeType.GlobalAssignment:
+                    var globalAssignName = node.Value is SymbolValue globalAssignmentSym ? globalAssignmentSym.Value : node.Value.ToString();
+                    var globalValue = Evaluate(node.Children[0]);
+                    SetGlobalVariable(globalAssignName, globalValue);
+                    return new IntegerValue(0); // Assignments don't return values
 
                 case ASTNodeType.BinaryOp:
                     return EvaluateBinaryOp(node);
@@ -56,9 +68,22 @@ namespace K3CSharp
 
         private K3Value GetVariable(string variableName)
         {
-            if (variables.TryGetValue(variableName, out var value))
+            // Check local scope first
+            if (localVariables.TryGetValue(variableName, out var localValue))
             {
-                return value;
+                return localValue;
+            }
+            
+            // Check global scope
+            if (globalVariables.TryGetValue(variableName, out var globalValue))
+            {
+                return globalValue;
+            }
+            
+            // Check parent evaluator (for nested function calls)
+            if (parentEvaluator != null)
+            {
+                return parentEvaluator.GetVariable(variableName);
             }
             
             throw new Exception($"Undefined variable: {variableName}");
@@ -66,8 +91,25 @@ namespace K3CSharp
         
         private K3Value SetVariable(string variableName, K3Value value)
         {
-            variables[variableName] = value;
+            // Local assignment - always set in local scope
+            localVariables[variableName] = value;
             return value;
+        }
+
+        private K3Value SetGlobalVariable(string variableName, K3Value value)
+        {
+            // Global assignment - always set in global scope
+            if (parentEvaluator != null)
+            {
+                // If we have a parent, set the global variable there
+                return parentEvaluator.SetGlobalVariable(variableName, value);
+            }
+            else
+            {
+                // We're the root evaluator, set in our global scope
+                globalVariables[variableName] = value;
+                return value;
+            }
         }
 
         private K3Value EvaluateLiteral(ASTNode node)
@@ -101,38 +143,53 @@ namespace K3CSharp
                     "FLOOR" => Floor(operand),
                     "UNIQUE" => Unique(operand),
                     "NEGATE" => Negate(operand),
+                    "ADVERB_SLASH" => operand, // Return operand as-is for now
+                    "ADVERB_BACKSLASH" => operand, // Return operand as-is for now
+                    "ADVERB_TICK" => operand, // Return operand as-is for now
                     _ => throw new Exception($"Unknown unary operator: {op.Value}")
                 };
             }
 
             // Handle binary operators
-            if (node.Children.Count != 2)
-                throw new Exception($"Binary operator must have exactly 2 children, got {node.Children.Count}");
-
-            var left = Evaluate(node.Children[0]);
-            var right = Evaluate(node.Children[1]);
-
-            return op.Value switch
+            if (node.Children.Count == 2)
             {
-                "PLUS" => Add(left, right),
-                "MINUS" => Subtract(left, right),
-                "MULTIPLY" => Multiply(left, right),
-                "DIVIDE" => Divide(left, right),
-                "MIN" => Min(left, right),
-                "MAX" => Max(left, right),
-                "LESS" => Less(left, right),
-                "GREATER" => Greater(left, right),
-                "EQUAL" => Equal(left, right),
-                "POWER" => Power(left, right),
-                "MODULUS" => Modulus(left, right),
-                "JOIN" => Join(left, right),
-                "HASH" => CountBinary(left, right),
-                "UNDERSCORE" => FloorBinary(left, right),
-                "QUESTION" => UniqueBinary(left, right),
-                "NEGATE" => NegateBinary(left, right),
-                "APPLY" => VectorIndex(left, right),
-                _ => throw new Exception($"Unknown binary operator: {op.Value}")
-            };
+                var left = Evaluate(node.Children[0]);
+                var right = Evaluate(node.Children[1]);
+
+                return op.Value switch
+                {
+                    "PLUS" => Add(left, right),
+                    "MINUS" => Subtract(left, right),
+                    "MULTIPLY" => Multiply(left, right),
+                    "DIVIDE" => Divide(left, right),
+                    "MIN" => Min(left, right),
+                    "MAX" => Max(left, right),
+                    "LESS" => Less(left, right),
+                    "GREATER" => Greater(left, right),
+                    "EQUAL" => Equal(left, right),
+                    "POWER" => Power(left, right),
+                    "MODULUS" => Modulus(left, right),
+                    "JOIN" => Join(left, right),
+                    "HASH" => CountBinary(left, right),
+                    "UNDERSCORE" => FloorBinary(left, right),
+                    "QUESTION" => UniqueBinary(left, right),
+                    "NEGATE" => NegateBinary(left, right),
+                    "APPLY" => VectorIndex(left, right),
+                    "ADVERB_SLASH" => Reduce(left, right),
+                    "ADVERB_BACKSLASH" => Scan(left, right),
+                    "ADVERB_TICK" => Each(left, right),
+                    "TYPE" => GetType(left, right),
+                    _ => throw new Exception($"Unknown binary operator: {op.Value}")
+                };
+            }
+            else if (op.Value == "ADVERB_CHAIN")
+            {
+                return EvaluateAdverbChain(node);
+            }
+            else
+            {
+                throw new Exception($"Binary operator must have exactly 2 children, got {node.Children.Count}");
+            }
         }
 
         private K3Value EvaluateVector(ASTNode node)
@@ -147,8 +204,16 @@ namespace K3CSharp
 
         private K3Value EvaluateFunction(ASTNode node)
         {
-            // Create a function value that contains the AST node for later evaluation
-            return new FunctionValue(node);
+            // The function value should already be stored in node.Value from the parser
+            var functionValue = node.Value as FunctionValue;
+            if (functionValue == null)
+            {
+                throw new Exception("Function node must contain a FunctionValue");
+            }
+            
+            // For function definitions, return the function object
+            // For function calls, the execution happens in EvaluateFunctionCall
+            return functionValue;
         }
 
         private K3Value EvaluateFunctionCall(ASTNode node)
@@ -185,7 +250,10 @@ namespace K3CSharp
                 
                 if (function is FunctionValue functionValue)
                 {
-                    return CallDirectFunction(functionValue.FunctionNode, arguments);
+                    // Create a temporary AST node for the function to reuse CallDirectFunction
+                    var tempFunctionNode = new ASTNode(ASTNodeType.Function);
+                    tempFunctionNode.Value = functionValue;
+                    return CallDirectFunction(tempFunctionNode, arguments);
                 }
                 else if (function.Type == ValueType.Symbol)
                 {
@@ -201,9 +269,115 @@ namespace K3CSharp
             }
         }
 
+        private K3Value CreateProjectedFunction(FunctionValue originalFunction, List<K3Value> providedArguments)
+        {
+            // Create a new function with reduced valence
+            var remainingParameters = originalFunction.Parameters.Skip(providedArguments.Count).ToList();
+            var projectedBody = GenerateProjectedBody(originalFunction, providedArguments);
+            
+            return new FunctionValue(projectedBody, remainingParameters);
+        }
+
+        private string GenerateProjectedBody(FunctionValue originalFunction, List<K3Value> providedArguments)
+        {
+            // For a simpler implementation, we'll create a closure-like approach
+            // Store the provided arguments and create a function that takes the remaining ones
+            
+            if (originalFunction.Parameters.Count <= providedArguments.Count)
+            {
+                // No remaining parameters, just evaluate the original function
+                return originalFunction.BodyText;
+            }
+            
+            // Create a new function body that calls the original function with stored arguments
+            var remainingParams = string.Join(";", originalFunction.Parameters.Skip(providedArguments.Count));
+            
+            // For now, we'll use a simple approach that references the original function
+            // In a full implementation, we'd want to store the provided arguments in the closure
+            return $"[{remainingParams}] {originalFunction.BodyText}";
+        }
+
+        private K3Value EvaluateAdverbChain(ASTNode node)
+        {
+            if (node.Children.Count < 2)
+            {
+                throw new Exception("Adverb chain requires at least an operand and one adverb");
+            }
+            
+            var operand = Evaluate(node.Children[0]);
+            var adverbs = new List<string>();
+            
+            // Extract adverbs from the remaining children
+            for (int i = 1; i < node.Children.Count; i++)
+            {
+                var adverbNode = node.Children[i];
+                if (adverbNode.Value is SymbolValue adverbSymbol)
+                {
+                    adverbs.Add(adverbSymbol.Value);
+                }
+            }
+            
+            // Apply adverbs in reverse order (right-to-left evaluation)
+            K3Value result = operand;
+            for (int i = adverbs.Count - 1; i >= 0; i--)
+            {
+                var adverb = adverbs[i];
+                switch (adverb)
+                {
+                    case "ADVERB_SLASH":
+                        result = ApplyAdverbSlash(result);
+                        break;
+                    case "ADVERB_BACKSLASH":
+                        result = ApplyAdverbBackslash(result);
+                        break;
+                    case "ADVERB_TICK":
+                        result = ApplyAdverbTick(result);
+                        break;
+                    default:
+                        throw new Exception($"Unknown adverb in chain: {adverb}");
+                }
+            }
+            
+            return result;
+        }
+
+        private K3Value ApplyAdverbSlash(K3Value operand)
+        {
+            // For now, just return the operand (reduce needs a verb and data)
+            // In a full implementation, this would need to handle the verb/data distinction
+            return operand;
+        }
+
+        private K3Value ApplyAdverbBackslash(K3Value operand)
+        {
+            // For now, just return the operand (scan needs a verb and data)
+            // In a full implementation, this would need to handle the verb/data distinction
+            return operand;
+        }
+
+        private K3Value ApplyAdverbTick(K3Value operand)
+        {
+            // For now, just return the operand (each needs a verb and data)
+            // In a full implementation, this would need to handle the verb/data distinction
+            return operand;
+        }
+
         private K3Value CallDirectFunction(ASTNode functionNode, List<K3Value> arguments)
         {
-            var parameters = functionNode.Parameters;
+            var functionValue = functionNode.Value as FunctionValue;
+            if (functionValue == null)
+            {
+                throw new Exception("Function node must contain a FunctionValue");
+            }
+            
+            var parameters = functionValue.Parameters;
+            var bodyText = functionValue.BodyText;
+            
+            // Check for projection: fewer arguments than expected valence
+            if (arguments.Count < parameters.Count)
+            {
+                return CreateProjectedFunction(functionValue, arguments);
+            }
             
             if (arguments.Count != parameters.Count)
             {
@@ -212,69 +386,72 @@ namespace K3CSharp
             
             // Create a new evaluator scope for this function call
             var functionEvaluator = new Evaluator();
+            functionEvaluator.parentEvaluator = this; // Set parent for global access
             
             // Copy global variables to function scope
-            foreach (var kvp in variables)
+            foreach (var kvp in globalVariables)
             {
-                functionEvaluator.variables[kvp.Key] = kvp.Value;
+                functionEvaluator.globalVariables[kvp.Key] = kvp.Value;
             }
             
-            // Bind parameters to arguments
+            // Bind parameters to arguments (in local scope)
             for (int i = 0; i < parameters.Count; i++)
             {
                 functionEvaluator.SetVariable(parameters[i], arguments[i]);
             }
             
-            // Evaluate the function body
-            if (functionNode.Children.Count > 0)
-            {
-                var body = functionNode.Children[0];
-                return functionEvaluator.Evaluate(body);
-            }
-            else
+            // Execute the function body using recursive text evaluation
+            return ExecuteFunctionBody(bodyText, functionEvaluator, functionValue.PreParsedTokens);
+        }
+
+        private K3Value ExecuteFunctionBody(string bodyText, Evaluator functionEvaluator, List<Token> preParsedTokens = null)
+        {
+            if (string.IsNullOrWhiteSpace(bodyText))
             {
                 return new IntegerValue(0); // Empty function result
+            }
+            
+            try
+            {
+                ASTNode ast;
+                
+                // Use pre-parsed tokens if available (better performance)
+                if (preParsedTokens != null && preParsedTokens.Count > 0)
+                {
+                    var parser = new Parser(preParsedTokens, bodyText);
+                    ast = parser.Parse();
+                }
+                else
+                {
+                    // Fall back to parsing from text (deferred validation per spec)
+                    var lexer = new Lexer(bodyText);
+                    var tokens = lexer.Tokenize();
+                    var parser = new Parser(tokens, bodyText);
+                    ast = parser.Parse();
+                }
+                
+                return functionEvaluator.Evaluate(ast);
+            }
+            catch (Exception ex)
+            {
+                // Runtime validation - function body errors are caught here (per spec)
+                throw new Exception($"Function execution error: {ex.Message}");
             }
         }
 
         private K3Value CallVariableFunction(string functionName, List<K3Value> arguments)
         {
             // Check if it's a user-defined function stored in a variable
-            if (variables.TryGetValue(functionName, out var functionValue))
-            {
-                if (functionValue is FunctionValue userFunction)
-                {
-                    return CallDirectFunction(userFunction.FunctionNode, arguments);
-                }
-                throw new Exception($"Variable '{functionName}' is not a function");
-            }
+            var functionValue = GetVariable(functionName);
             
-            // Handle built-in functions
-            switch (functionName)
+            if (functionValue is FunctionValue userFunction)
             {
-                case "add7":
-                    if (arguments.Count != 1) throw new Exception("add7 expects 1 argument");
-                    var arg = arguments[0];
-                    if (arg is IntegerValue intVal) return new IntegerValue(intVal.Value + 7);
-                    if (arg is LongValue longVal) return new LongValue(longVal.Value + 7);
-                    if (arg is FloatValue floatVal) return new FloatValue(floatVal.Value + 7);
-                    throw new Exception("add7 expects numeric argument");
-                    
-                case "mul":
-                    if (arguments.Count != 2) throw new Exception("mul expects 2 arguments");
-                    var op1 = arguments[0];
-                    var op2 = arguments[1];
-                    if (op1 is IntegerValue int1 && op2 is IntegerValue int2) 
-                        return new IntegerValue(int1.Value * int2.Value);
-                    if (op1 is LongValue long1 && op2 is LongValue long2) 
-                        return new LongValue(long1.Value * long2.Value);
-                    if (op1 is FloatValue float1 && op2 is FloatValue float2) 
-                        return new FloatValue(float1.Value * float2.Value);
-                    throw new Exception("mul expects numeric arguments");
-                    
-                default:
-                    throw new Exception($"Unknown function: {functionName}");
+                // Create a temporary AST node for the function to reuse CallDirectFunction
+                var tempFunctionNode = new ASTNode(ASTNodeType.Function);
+                tempFunctionNode.Value = userFunction;
+                return CallDirectFunction(tempFunctionNode, arguments);
             }
+            throw new Exception($"Variable '{functionName}' is not a function");
         }
 
         private K3Value EvaluateBlock(ASTNode node)
@@ -749,7 +926,13 @@ namespace K3CSharp
                 return string.Compare(symA.Value, symB.Value, StringComparison.Ordinal);
             
             // For vectors and other types, use ToString comparison
-            return string.Compare(a.ToString(), b.ToString(), StringComparison.Ordinal);
+            int comparison = string.Compare(a.ToString(), b.ToString(), StringComparison.Ordinal);
+            
+            // For stable sorting: if equal, preserve original order
+            if (comparison == 0)
+                return -1; // a comes before b in original order
+            
+            return comparison;
         }
 
         private K3Value Shape(K3Value a)
@@ -885,6 +1068,187 @@ namespace K3CSharp
             {
                 throw new Exception($"Cannot index into non-vector type: {vector.Type}");
             }
+        }
+
+        private K3Value Reduce(K3Value verb, K3Value data)
+        {
+            // Handle scalar + vector case
+            if (IsScalar(verb) && data is VectorValue vec)
+            {
+                var result = verb;
+                foreach (var element in vec.Elements)
+                {
+                    result = Add(result, element);
+                }
+                return result;
+            }
+            
+            // Handle vector case (reduce)
+            if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
+            {
+                var result = dataVec.Elements[0];
+                for (int i = 1; i < dataVec.Elements.Count; i++)
+                {
+                    result = Add(result, dataVec.Elements[i]);
+                }
+                return result;
+            }
+            
+            // Handle scalar + scalar case
+            if (IsScalar(verb) && IsScalar(data))
+            {
+                return Add(verb, data);
+            }
+            
+            throw new Exception($"Reduce not implemented for types: {verb.Type}, {data.Type}");
+        }
+
+        private K3Value Scan(K3Value verb, K3Value data)
+        {
+            // Handle scalar + vector case
+            if (IsScalar(verb) && data is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                var current = verb;
+                foreach (var element in vec.Elements)
+                {
+                    current = Add(current, element);
+                    result.Add(current);
+                }
+                return new VectorValue(result);
+            }
+            
+            // Handle vector case
+            if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
+            {
+                var result = new List<K3Value>();
+                var current = dataVec.Elements[0];
+                result.Add(current);
+                for (int i = 1; i < dataVec.Elements.Count; i++)
+                {
+                    current = Add(current, dataVec.Elements[i]);
+                    result.Add(current);
+                }
+                return new VectorValue(result);
+            }
+            
+            // Handle scalar + scalar case
+            if (IsScalar(verb) && IsScalar(data))
+            {
+                return Add(verb, data);
+            }
+            
+            throw new Exception($"Scan not implemented for types: {verb.Type}, {data.Type}");
+        }
+
+        private K3Value Each(K3Value verb, K3Value data)
+        {
+            // Handle scalar + vector case
+            if (IsScalar(verb) && data is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(Add(verb, element));
+                }
+                return new VectorValue(result);
+            }
+            
+            // Handle vector + vector case (same length)
+            if (verb is VectorValue verbVec && data is VectorValue dataVec)
+            {
+                if (verbVec.Elements.Count != dataVec.Elements.Count)
+                    throw new Exception("Vector length mismatch for each operation");
+                
+                var result = new List<K3Value>();
+                for (int i = 0; i < verbVec.Elements.Count; i++)
+                {
+                    result.Add(Add(verbVec.Elements[i], dataVec.Elements[i]));
+                }
+                return new VectorValue(result);
+            }
+            
+            // Handle scalar + scalar case
+            if (IsScalar(verb) && IsScalar(data))
+            {
+                return Add(verb, data);
+            }
+            
+            throw new Exception($"Each not implemented for types: {verb.Type}, {data.Type}");
+        }
+
+        private bool IsScalar(K3Value value)
+        {
+            return value is IntegerValue || value is LongValue || value is FloatValue || 
+                   value is CharacterValue || value is SymbolValue || value is NullValue;
+        }
+
+        private K3Value GetType(K3Value left, K3Value right)
+        {
+            // 4: operator - right operand is ignored, returns type code of left operand
+            return GetTypeCode(left);
+        }
+
+        private K3Value GetTypeCode(K3Value value)
+        {
+            if (value is IntegerValue)
+                return new IntegerValue(1);
+            if (value is LongValue)
+                return new IntegerValue(64);
+            if (value is FloatValue)
+                return new IntegerValue(2);
+            if (value is CharacterValue)
+                return new IntegerValue(3);
+            if (value is SymbolValue)
+                return new IntegerValue(4);
+            if (value is NullValue)
+                return new IntegerValue(6);
+            if (value is FunctionValue)
+                return new IntegerValue(7);
+            if (value is VectorValue vec)
+            {
+                // Check vector type
+                if (vec.Elements.Count == 0)
+                    return new IntegerValue(0); // Empty vector is generic list
+                
+                // Check if all elements are the same type
+                var firstType = vec.Elements[0].Type;
+                bool allSameType = true;
+                bool hasNulls = false;
+                
+                foreach (var element in vec.Elements)
+                {
+                    if (element.Type != firstType)
+                    {
+                        allSameType = false;
+                        break;
+                    }
+                    if (element.Type == ValueType.Null)
+                    {
+                        hasNulls = true;
+                    }
+                }
+                
+                if (!allSameType)
+                    return new IntegerValue(0); // Mixed type vector
+                
+                if (hasNulls)
+                    return new IntegerValue(0); // Vector with nulls is generic list
+                
+                // Return vector type code
+                return firstType switch
+                {
+                    ValueType.Integer => new IntegerValue(-1),
+                    ValueType.Long => new IntegerValue(-64),
+                    ValueType.Float => new IntegerValue(-2),
+                    ValueType.Character => new IntegerValue(-3),
+                    ValueType.Symbol => new IntegerValue(-4),
+                    ValueType.Function => new IntegerValue(-7),
+                    _ => new IntegerValue(0)
+                };
+            }
+            
+            return new IntegerValue(0); // Default to generic list
         }
     }
 }

@@ -83,6 +83,21 @@ namespace K3CSharp
                     tokens.Add(new Token(TokenType.DIVIDE, "%", position));
                     Advance();
                 }
+                else if (c == '/')
+                {
+                    tokens.Add(new Token(TokenType.ADVERB_SLASH, "/", position));
+                    Advance();
+                }
+                else if (c == '\\')
+                {
+                    tokens.Add(new Token(TokenType.ADVERB_BACKSLASH, "\\", position));
+                    Advance();
+                }
+                else if (c == '\'')
+                {
+                    tokens.Add(new Token(TokenType.ADVERB_TICK, "'", position));
+                    Advance();
+                }
                 else if (c == '&')
                 {
                     tokens.Add(new Token(TokenType.MIN, "&", position));
@@ -135,8 +150,18 @@ namespace K3CSharp
                 }
                 else if (c == '_')
                 {
-                    tokens.Add(new Token(TokenType.UNDERSCORE, "_", position));
-                    Advance();
+                    // Check for _n null value
+                    if (position + 1 < input.Length && input[position + 1] == 'n')
+                    {
+                        tokens.Add(new Token(TokenType.NULL, "_n", position));
+                        Advance(); // Skip _
+                        Advance(); // Skip n
+                    }
+                    else
+                    {
+                        tokens.Add(new Token(TokenType.UNDERSCORE, "_", position));
+                        Advance();
+                    }
                 }
                 else if (c == '?')
                 {
@@ -155,8 +180,26 @@ namespace K3CSharp
                 }
                 else if (c == ':')
                 {
-                    tokens.Add(new Token(TokenType.ASSIGNMENT, ":", position));
-                    Advance();
+                    // Check for 4: type operator
+                    if (position > 0 && input[position - 1] == '4')
+                    {
+                        // Replace the previous token with TYPE operator
+                        tokens.RemoveAt(tokens.Count - 1);
+                        tokens.Add(new Token(TokenType.TYPE, "4:", position - 1));
+                        Advance();
+                    }
+                    // Check for :: global assignment operator
+                    else if (position + 1 < input.Length && input[position + 1] == ':')
+                    {
+                        tokens.Add(new Token(TokenType.GLOBAL_ASSIGNMENT, "::", position));
+                        Advance();
+                        Advance();
+                    }
+                    else
+                    {
+                        tokens.Add(new Token(TokenType.ASSIGNMENT, ":", position));
+                        Advance();
+                    }
                 }
                 else if (c == ';')
                 {
@@ -237,6 +280,56 @@ namespace K3CSharp
             string number = "";
             bool hasDecimal = false;
             bool hasExponent = false;
+            
+            // Check for special values starting with 0
+            if (currentChar == '0' && position + 1 < input.Length)
+            {
+                char nextChar = input[position + 1];
+                if (nextChar == 'I' || nextChar == 'N' || nextChar == 'i' || nextChar == 'n')
+                {
+                    // Handle special values
+                    if (position + 2 < input.Length && input[position + 2] == 'L')
+                    {
+                        // Long special values: 0IL, 0NL, -0IL
+                        string special = input.Substring(position, 3);
+                        position += 3;
+                        return new Token(TokenType.LONG, special, start);
+                    }
+                    else
+                    {
+                        // Integer or float special values: 0I, 0N, 0i, 0n
+                        string special = input.Substring(position, 2);
+                        position += 2;
+                        if (nextChar == 'i' || nextChar == 'n')
+                            return new Token(TokenType.FLOAT, special, start);
+                        else
+                            return new Token(TokenType.INTEGER, special, start);
+                    }
+                }
+            }
+            
+            // Handle negative special values
+            if (currentChar == '-' && position + 2 < input.Length && 
+                input[position + 1] == '0' && 
+                (input[position + 2] == 'I' || input[position + 2] == 'i'))
+            {
+                if (position + 3 < input.Length && input[position + 3] == 'L')
+                {
+                    // -0IL
+                    position += 4;
+                    return new Token(TokenType.LONG, "-0IL", start);
+                }
+                else
+                {
+                    // -0I or -0i
+                    string special = input.Substring(position, 3);
+                    position += 3;
+                    if (input[position - 1] == 'i')
+                        return new Token(TokenType.FLOAT, special, start);
+                    else
+                        return new Token(TokenType.INTEGER, special, start);
+                }
+            }
             
             while (position < input.Length && (char.IsDigit(currentChar) || currentChar == '.' || currentChar == 'e' || currentChar == 'E'))
             {
