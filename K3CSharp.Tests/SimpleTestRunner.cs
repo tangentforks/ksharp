@@ -66,7 +66,11 @@ namespace K3CSharp.Tests
                 ("vector_index_first.k", "5"),
                 ("vector_index_multiple.k", "(8;9)"),
                 ("vector_index_duplicate.k", "(5;5)"),
-                ("vector_index_reverse.k", "(9;8)")
+                ("vector_index_reverse.k", "(9;8)"),
+                ("parentheses_basic.k", "9"),
+                ("parentheses_grouping.k", "(3;6)"),
+                ("parentheses_precedence.k", "7"),
+                ("parentheses_nested.k", "6")
             };
 
             int passed = 0;
