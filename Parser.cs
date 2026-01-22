@@ -160,7 +160,20 @@ namespace K3CSharp
                     }
                 }
                 
-                left = ASTNode.MakeFunctionCall(left, arguments);
+                // Check if this is a function call or vector indexing
+                // If left is a function or variable that could be a function, treat as function call
+                // If left is a vector literal, treat as binary operation for indexing
+                if (left.Type == ASTNodeType.Function || 
+                    (left.Type == ASTNodeType.Variable && !IsVectorLiteral(left)))
+                {
+                    left = ASTNode.MakeFunctionCall(left, arguments);
+                }
+                else
+                {
+                    // This is vector indexing, treat as binary operation
+                    var applyToken = new Token(TokenType.APPLY, "@", 0);
+                    return ASTNode.MakeBinaryOp(TokenType.APPLY, left, arguments[0]);
+                }
             }
 
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) || Match(TokenType.DIVIDE) ||
@@ -231,6 +244,20 @@ namespace K3CSharp
             }
 
             return elements[0];
+        }
+
+        private bool IsVectorLiteral(ASTNode node)
+        {
+            // A vector literal is a node that was parsed as a vector
+            // This is a simple heuristic - if it has multiple children and they're all literals/variables
+            if (node.Type == ASTNodeType.Vector && node.Children.Count > 0)
+            {
+                return true;
+            }
+            
+            // Also check if it's a variable that we know represents a vector from context
+            // For now, we'll be conservative and only treat explicit vectors as vector literals
+            return false;
         }
 
         private ASTNode ParsePrimary()

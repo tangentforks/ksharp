@@ -61,7 +61,12 @@ namespace K3CSharp.Tests
                 ("anonymous_functions.k", "13"),
                 ("function_application.k", "13"),
                 ("complex_function.k", "205"),
-                ("variable_scoping.k", "25")
+                ("variable_scoping.k", "25"),
+                ("vector_index_single.k", "4"),
+                ("vector_index_first.k", "5"),
+                ("vector_index_multiple.k", "(8;9)"),
+                ("vector_index_duplicate.k", "(5;5)"),
+                ("vector_index_reverse.k", "(9;8)")
             };
 
             int passed = 0;

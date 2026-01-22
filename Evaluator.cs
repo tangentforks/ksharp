@@ -130,6 +130,7 @@ namespace K3CSharp
                 "UNDERSCORE" => FloorBinary(left, right),
                 "QUESTION" => UniqueBinary(left, right),
                 "NEGATE" => NegateBinary(left, right),
+                "APPLY" => VectorIndex(left, right),
                 _ => throw new Exception($"Unknown binary operator: {op.Value}")
             };
         }
@@ -836,6 +837,54 @@ namespace K3CSharp
         private K3Value UniqueBinary(K3Value a, K3Value b)
         {
             return Unique(a);
+        }
+
+        private K3Value VectorIndex(K3Value vector, K3Value index)
+        {
+            // Handle vector indexing: vector @ index
+            if (vector is VectorValue vec)
+            {
+                if (index is IntegerValue intIndex)
+                {
+                    // Single index: return element at position
+                    int idx = intIndex.Value;
+                    if (idx < 0 || idx >= vec.Elements.Count)
+                    {
+                        throw new Exception($"Index {idx} out of bounds for vector of length {vec.Elements.Count}");
+                    }
+                    return vec.Elements[idx];
+                }
+                else if (index is VectorValue indexVec)
+                {
+                    // Multiple indices: return vector of elements at specified positions
+                    var result = new List<K3Value>();
+                    foreach (var idxValue in indexVec.Elements)
+                    {
+                        if (idxValue is IntegerValue intIdx)
+                        {
+                            int idx = intIdx.Value;
+                            if (idx < 0 || idx >= vec.Elements.Count)
+                            {
+                                throw new Exception($"Index {idx} out of bounds for vector of length {vec.Elements.Count}");
+                            }
+                            result.Add(vec.Elements[idx]);
+                        }
+                        else
+                        {
+                            throw new Exception($"Vector indices must be integers, got {idxValue.Type}");
+                        }
+                    }
+                    return new VectorValue(result);
+                }
+                else
+                {
+                    throw new Exception($"Index must be integer or vector of integers, got {index.Type}");
+                }
+            }
+            else
+            {
+                throw new Exception($"Cannot index into non-vector type: {vector.Type}");
+            }
         }
     }
 }
