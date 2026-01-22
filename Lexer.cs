@@ -128,6 +128,21 @@ namespace K3CSharp
                     tokens.Add(new Token(TokenType.JOIN, ",", position));
                     Advance();
                 }
+                else if (c == '#')
+                {
+                    tokens.Add(new Token(TokenType.HASH, "#", position));
+                    Advance();
+                }
+                else if (c == '_')
+                {
+                    tokens.Add(new Token(TokenType.UNDERSCORE, "_", position));
+                    Advance();
+                }
+                else if (c == '?')
+                {
+                    tokens.Add(new Token(TokenType.QUESTION, "?", position));
+                    Advance();
+                }
                 else if (c == ':')
                 {
                     tokens.Add(new Token(TokenType.ASSIGNMENT, ":", position));

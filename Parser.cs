@@ -159,7 +159,89 @@ namespace K3CSharp
 
         private ASTNode ParseExpression()
         {
-            var left = ParseTerm();
+            // Handle unary operators first
+            if (Match(TokenType.MINUS) || Match(TokenType.PLUS) || Match(TokenType.MULTIPLY) || 
+                Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || 
+                Match(TokenType.LESS) || Match(TokenType.GREATER) || Match(TokenType.POWER) || 
+                Match(TokenType.MODULUS) || Match(TokenType.JOIN) || Match(TokenType.HASH) || 
+                Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || Match(TokenType.NEGATE))
+            {
+                // This is a unary operator, go back and handle it in ParsePrimary
+                current--; // Back up one token
+                var left = ParsePrimary();
+                
+                // Check for function call first (higher precedence than binary ops)
+                if (Match(TokenType.LEFT_BRACKET))
+                {
+                    var arguments = new List<ASTNode>();
+                    
+                    if (!Match(TokenType.RIGHT_BRACKET))
+                    {
+                        arguments.Add(ParseExpression());
+                        
+                        while (Match(TokenType.SEMICOLON))
+                        {
+                            arguments.Add(ParseExpression());
+                        }
+                        
+                        if (!Match(TokenType.RIGHT_BRACKET))
+                        {
+                            throw new Exception("Expected ']' after function arguments");
+                        }
+                    }
+                    
+                    left = ASTNode.MakeFunctionCall(left, arguments);
+                }
+
+                while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) || Match(TokenType.DIVIDE) ||
+                       Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
+                       Match(TokenType.EQUAL) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN))
+                {
+                    var op = PreviousToken().Type;
+                    var right = ParseTerm();
+                    
+                    // Check for function call on right side
+                    if (Match(TokenType.LEFT_BRACKET))
+                    {
+                        var arguments = new List<ASTNode>();
+                        
+                        if (!Match(TokenType.RIGHT_BRACKET))
+                        {
+                            arguments.Add(ParseExpression());
+                            
+                            while (Match(TokenType.SEMICOLON))
+                            {
+                                arguments.Add(ParseExpression());
+                            }
+                            
+                            if (!Match(TokenType.RIGHT_BRACKET))
+                            {
+                                throw new Exception("Expected ']' after function arguments");
+                            }
+                        }
+                        
+                        right = ASTNode.MakeFunctionCall(right, arguments);
+                    }
+                    
+                    left = ASTNode.MakeBinaryOp(op, left, right);
+                }
+
+                // Check for assignment
+                if (Match(TokenType.ASSIGNMENT))
+                {
+                    if (left.Type != ASTNodeType.Variable)
+                    {
+                        throw new Exception("Assignment target must be a variable");
+                    }
+                    var value = ParseExpression();
+                    var variableName = left.Value is SymbolValue symbol ? symbol.Value : throw new Exception("Variable node must contain variable name");
+                    return ASTNode.MakeAssignment(variableName, value);
+                }
+
+                return left;
+            }
+
+            var leftTerm = ParseTerm();
 
             // Check for function call first (higher precedence than binary ops)
             if (Match(TokenType.LEFT_BRACKET))
@@ -181,7 +263,7 @@ namespace K3CSharp
                     }
                 }
                 
-                left = ASTNode.MakeFunctionCall(left, arguments);
+                leftTerm = ASTNode.MakeFunctionCall(leftTerm, arguments);
             }
 
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) || Match(TokenType.DIVIDE) ||
@@ -214,29 +296,29 @@ namespace K3CSharp
                     right = ASTNode.MakeFunctionCall(right, arguments);
                 }
                 
-                left = ASTNode.MakeBinaryOp(op, left, right);
+                leftTerm = ASTNode.MakeBinaryOp(op, leftTerm, right);
             }
 
             // Check for assignment
             if (Match(TokenType.ASSIGNMENT))
             {
-                if (left.Type != ASTNodeType.Variable)
+                if (leftTerm.Type != ASTNodeType.Variable)
                 {
                     throw new Exception("Assignment target must be a variable");
                 }
                 var value = ParseExpression();
-                var variableName = left.Value is SymbolValue symbol ? symbol.Value : throw new Exception("Variable node must contain variable name");
+                var variableName = leftTerm.Value is SymbolValue symbol ? symbol.Value : throw new Exception("Variable node must contain variable name");
                 return ASTNode.MakeAssignment(variableName, value);
             }
 
-            return left;
+            return leftTerm;
         }
 
         private ASTNode ParseTerm()
         {
-            // Check for space-separated vector first
+            // Check for space-separated vector
             var elements = new List<ASTNode>();
-            elements.Add(ParseFactor());
+            elements.Add(ParsePrimary());
 
             while (!IsAtEnd() &&
                    CurrentToken().Type != TokenType.PLUS &&
@@ -251,6 +333,10 @@ namespace K3CSharp
                    CurrentToken().Type != TokenType.POWER &&
                    CurrentToken().Type != TokenType.MODULUS &&
                    CurrentToken().Type != TokenType.JOIN &&
+                   CurrentToken().Type != TokenType.HASH &&
+                   CurrentToken().Type != TokenType.UNDERSCORE &&
+                   CurrentToken().Type != TokenType.QUESTION &&
+                   CurrentToken().Type != TokenType.NEGATE &&
                    CurrentToken().Type != TokenType.RIGHT_PAREN &&
                    CurrentToken().Type != TokenType.RIGHT_BRACE &&
                    CurrentToken().Type != TokenType.SEMICOLON &&
@@ -259,7 +345,7 @@ namespace K3CSharp
                    CurrentToken().Type != TokenType.IDENTIFIER &&
                    CurrentToken().Type != TokenType.EOF)
             {
-                elements.Add(ParseFactor());
+                elements.Add(ParsePrimary());
             }
 
             if (elements.Count > 1)
@@ -268,11 +354,6 @@ namespace K3CSharp
             }
 
             return elements[0];
-        }
-
-        private ASTNode ParseFactor()
-        {
-            return ParsePrimary();
         }
 
         private ASTNode ParsePrimary()
@@ -305,17 +386,165 @@ namespace K3CSharp
                 var identifier = PreviousToken().Lexeme;
                 result = ASTNode.MakeVariable(identifier);
             }
+            // Handle unary operators (when backed up from ParseExpression)
+            else if (Match(TokenType.NEGATE))
+            {
+                // Handle unary negation operator ~
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("NEGATE");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.MINUS))
+            {
+                // Handle unary minus operator -
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("UNARY_MINUS");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.PLUS))
+            {
+                // Handle unary plus operator + (transpose)
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("TRANSPOSE");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.MULTIPLY))
+            {
+                // Handle unary first operator *
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("FIRST");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.DIVIDE))
+            {
+                // Handle unary reciprocal operator %
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("RECIPROCAL");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.MIN))
+            {
+                // Handle unary generate operator &
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("GENERATE");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.MAX))
+            {
+                // Handle unary reverse operator |
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("REVERSE");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.LESS))
+            {
+                // Handle unary grade up operator <
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("GRADE_UP");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.GREATER))
+            {
+                // Handle unary grade down operator >
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("GRADE_DOWN");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.POWER))
+            {
+                // Handle unary shape operator ^
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("SHAPE");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.MODULUS))
+            {
+                // Handle unary enumerate operator !
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("ENUMERATE");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.JOIN))
+            {
+                // Handle unary enlist operator ,
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("ENLIST");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.HASH))
+            {
+                // Handle unary count operator #
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("COUNT");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.UNDERSCORE))
+            {
+                // Handle unary floor operator _
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("FLOOR");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.QUESTION))
+            {
+                // Handle unary unique operator ?
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("UNIQUE");
+                node.Children.Add(operand);
+                return node;
+            }
             else if (Match(TokenType.LEFT_PAREN))
             {
                 var elements = new List<ASTNode>();
                 
                 if (!Match(TokenType.RIGHT_PAREN))
                 {
-                    elements.Add(ParseExpression());
+                    // Parse first element
+                    elements.Add(ParsePrimary());
                     
                     while (Match(TokenType.SEMICOLON))
                     {
-                        elements.Add(ParseExpression());
+                        elements.Add(ParsePrimary());
+                    }
+                    
+                    // Check for additional space-separated elements (not semicolon-separated)
+                    while (!IsAtEnd() && 
+                           CurrentToken().Type != TokenType.RIGHT_PAREN &&
+                           CurrentToken().Type != TokenType.RIGHT_BRACE &&
+                           CurrentToken().Type != TokenType.SEMICOLON &&
+                           CurrentToken().Type != TokenType.NEWLINE &&
+                           CurrentToken().Type != TokenType.EOF)
+                    {
+                        elements.Add(ParsePrimary());
                     }
                     
                     if (!Match(TokenType.RIGHT_PAREN))
@@ -325,15 +554,6 @@ namespace K3CSharp
                 }
                 
                 result = ASTNode.MakeVector(elements);
-            }
-            else if (Match(TokenType.NEGATE))
-            {
-                // Handle unary negation operator ~
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("NEGATE");
-                node.Children.Add(operand);
-                return node;
             }
             else if (Match(TokenType.LEFT_BRACE))
             {
@@ -391,7 +611,9 @@ namespace K3CSharp
             }
             else
             {
-                throw new Exception($"Unexpected token: {CurrentToken()}");
+                // Debug: Let's see what token we're getting
+                var currentToken = CurrentToken();
+                throw new Exception($"Unexpected token: {currentToken.Type}({currentToken.Lexeme})");
             }
 
             // Check for function call after any primary expression

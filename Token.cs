@@ -35,6 +35,9 @@ namespace K3CSharp
         NEWLINE,
         QUOTE,
         BACKTICK,
+        HASH,           // # count operator
+        UNDERSCORE,     // _ floor operator
+        QUESTION,       // ? unique operator
         EOF,
         UNKNOWN
     }
