@@ -374,10 +374,12 @@ K3> \p 10                // Set precision to 10 decimal places
 *\ 1 2 3 4              // Returns (1;2;6;24)
 
 // Each (element-wise) operations
-+' 1 2 3 4              // Returns (1;2;3;4)
--' 10 2 3 1             // Returns (0;0;0;0)
-*' 1 2 3 4              // Returns (1;2;3;4)
-%' 2 4 8                // Returns (0.5;0.25;0.125)
++' 1 2 3 4              // Returns (1;2;3;4) - element-wise unary plus (identity)
+-' 10 20 30 40           // Returns (-10;-20;-30;-40) - element-wise unary minus (negation)
+*' 1 2 3 4              // Returns (1;2;3;4) - element-wise unary times (first)
+%' 2 4 8                 // Returns (0.5;0.25;0.125) - element-wise unary division (reciprocal)
+&' 5                    // Returns (0;0;0;0;0) - element-wise unary where (generate zeros)
+|' 1 2 3 4              // Returns (4;3;2;1) - element-wise unary reverse
 ```
 
 ## Next Development Priorities
