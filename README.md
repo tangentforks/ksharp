@@ -103,7 +103,7 @@ K3 is version 3 of the K programming language, similar to A+, J, and Q. It's des
 ### ❌ Not Yet Implemented
 
 #### **Complete Adverb Operations**
-- **Reduce (`/`)**: Fold operation on vectors with verbs
+- **Over (`/`)**: Fold operation on vectors with verbs
 - **Scan (`\`)**: Cumulative operation on vectors
 - **Each (`'`)**: Apply verb to each element
 - **Status**: Framework implemented, specific operations need completion
@@ -251,7 +251,7 @@ testFunc: {[x]
 ## Next Development Priorities
 
 1. **Complete Adverb Operations** (High Priority)
-   - Implement reduce (`/`) operation for vector folding
+   - Implement over (`/`) operation for vector folding
    - Implement scan (`\`) for cumulative operations
    - Implement each (`'`) for element-wise application
    - Complete adverb chaining functionality

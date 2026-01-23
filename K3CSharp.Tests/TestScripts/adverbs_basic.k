@@ -1,4 +1,4 @@
-// Test adverb reduce with different data types
+// Test adverb over with different data types
 2 +/ 1 2 3 4
 1 +/ 2 3 4 5
 +/ 1 2 3 4 5

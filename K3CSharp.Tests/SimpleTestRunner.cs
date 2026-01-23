@@ -58,7 +58,7 @@ namespace K3CSharp.Tests
                 ("grade_up_operator.k", "(0;4;1;2;3;1)"),
                 ("grade_down_operator.k", "(1;2;3;4;0)"),
                 ("shape_operator.k", "(3)"),
-                ("adverb_reduce_simple.k", "10")
+                ("adverb_over_simple.k", "10")
             };
 
             int passed = 0;

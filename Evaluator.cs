@@ -179,7 +179,7 @@ namespace K3CSharp
                     "QUESTION" => UniqueBinary(left, right),
                     "NEGATE" => NegateBinary(left, right),
                     "APPLY" => VectorIndex(left, right),
-                    "ADVERB_SLASH" => Reduce(left, right),
+                    "ADVERB_SLASH" => Over(left, right),
                     "ADVERB_BACKSLASH" => Scan(left, right),
                     "ADVERB_TICK" => Each(left, right),
                     "TYPE" => GetType(left, right),
@@ -1074,7 +1074,7 @@ namespace K3CSharp
             }
         }
 
-        private K3Value Reduce(K3Value verb, K3Value data)
+        private K3Value Over(K3Value verb, K3Value data)
         {
             // Handle vector case (reduce)
             if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
@@ -1104,7 +1104,7 @@ namespace K3CSharp
                 return data;
             }
             
-            throw new Exception($"Reduce not implemented for types: {verb.Type}, {data.Type}");
+            throw new Exception($"Over not implemented for types: {verb.Type}, {data.Type}");
         }
 
         private K3Value ApplyVerb(string verbName, K3Value left, K3Value right)
@@ -1127,7 +1127,7 @@ namespace K3CSharp
                 "&" => Min(left, right),  // Add fallback for literal &
                 "|" => Max(left, right),  // Add fallback for literal |
                 "^" => Power(left, right),  // Add fallback for literal ^
-                _ => throw new Exception($"Unknown verb for reduce: {verbName}")
+                _ => throw new Exception($"Unknown verb for over: {verbName}")
             };
         }
 
