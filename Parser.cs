@@ -200,13 +200,48 @@ namespace K3CSharp
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
                    Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
                    Match(TokenType.EQUAL) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
-                   Match(TokenType.ADVERB_SLASH) || Match(TokenType.ADVERB_BACKSLASH) || Match(TokenType.ADVERB_TICK) ||
                    Match(TokenType.TYPE))
             {
                 var op = PreviousToken().Type;
-                var right = ParseTerm();
                 
-                left = ASTNode.MakeBinaryOp(op, left, right);
+                // Check if this is followed by an adverb
+                if (Match(TokenType.ADVERB_SLASH) || Match(TokenType.ADVERB_BACKSLASH) || Match(TokenType.ADVERB_TICK))
+                {
+                    var adverbType = PreviousToken().Type.ToString().Replace("TokenType.", "");
+                    
+                // Convert the binary operator to a verb symbol
+                    var verbName = op.ToString() switch
+                    {
+                        "PLUS" => "PLUS",
+                        "MINUS" => "MINUS",
+                        "MULTIPLY" => "MULTIPLY",
+                        "DIVIDE" => "DIVIDE",
+                        "MIN" => "MIN",
+                        "MAX" => "MAX",
+                        "POWER" => "POWER",
+                        "MODULUS" => "MODULUS",
+                        "JOIN" => "JOIN",
+                        "TYPE" => "TYPE",
+                        _ => op.ToString()
+                    };
+                    var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
+                    
+                    // Parse the right side of the adverb
+                    var right = ParseExpression();
+                    
+                    // Create adverb node
+                    var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                    adverbNode.Value = new SymbolValue(adverbType);
+                    adverbNode.Children.Add(verbNode);
+                    adverbNode.Children.Add(right);
+                    
+                    left = adverbNode;
+                }
+                else
+                {
+                    var right = ParseTerm();
+                    left = ASTNode.MakeBinaryOp(op, left, right);
+                }
             }
 
             // Check for assignment
@@ -270,7 +305,92 @@ namespace K3CSharp
                    CurrentToken().Type != TokenType.IDENTIFIER &&
                    CurrentToken().Type != TokenType.EOF)
             {
-                elements.Add(ParsePrimary());
+                // Check for adverbs in ParseTerm
+                if (Match(TokenType.ADVERB_SLASH) || Match(TokenType.ADVERB_BACKSLASH) || Match(TokenType.ADVERB_TICK))
+                {
+                    var adverbType = PreviousToken().Type.ToString().Replace("TokenType.", "");
+                    var left = elements[elements.Count - 1]; // Get the last element
+                    
+                    // Convert the left operand to a verb symbol if needed
+                    if (left.Type == ASTNodeType.Literal && left.Value is SymbolValue leftSymbol)
+                    {
+                        var verbName = leftSymbol.Value switch
+                        {
+                            "+" => "PLUS",
+                            "-" => "MINUS", 
+                            "*" => "MULTIPLY",
+                            "%" => "DIVIDE",
+                            "&" => "MIN",
+                            "|" => "MAX",
+                            "^" => "POWER",
+                            "!" => "ENUMERATE",
+                            "," => "ENLIST",
+                            "#" => "COUNT",
+                            "_" => "FLOOR",
+                            "?" => "UNIQUE",
+                            "~" => "NEGATE",
+                            "PLUS" => "PLUS",  // Already converted
+                            "MINUS" => "MINUS",  // Already converted
+                            "MULTIPLY" => "MULTIPLY",  // Already converted
+                            "DIVIDE" => "DIVIDE",  // Already converted
+                            _ => leftSymbol.Value
+                        };
+                        left.Value = new SymbolValue(verbName);
+                    }
+                    else if (left.Type == ASTNodeType.Literal && left.Value != null && !(left.Value is SymbolValue))
+                    {
+                        // Handle case where the verb is a literal value (like 2 +/ 1 2 3)
+                        // Keep the literal as is - it will be used as the left operand
+                    }
+                    else if (left.Type == ASTNodeType.BinaryOp && left.Value is SymbolValue leftOpSymbol)
+                    {
+                        var verbName = leftOpSymbol.Value switch
+                        {
+                            "FIRST" => "MULTIPLY",
+                            "RECIPROCAL" => "DIVIDE",
+                            "TRANSPOSE" => "PLUS",
+                            "UNARY_MINUS" => "MINUS",
+                            "GENERATE" => "ENUMERATE",
+                            "REVERSE" => "MAX",
+                            "GRADE_UP" => "LESS",
+                            "GRADE_DOWN" => "GREATER",
+                            "SHAPE" => "POWER",
+                            "ENUMERATE" => "MODULUS",
+                            "ENLIST" => "JOIN",
+                            "COUNT" => "HASH",
+                            "FLOOR" => "UNDERSCORE",
+                            "UNIQUE" => "QUESTION",
+                            _ => leftOpSymbol.Value
+                        };
+                        left = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
+                    }
+                    
+                    // Replace the last element with the adverb operation
+                    elements[elements.Count - 1] = left;
+                    
+                    var right = ParseExpression();
+                    
+                    var node = new ASTNode(ASTNodeType.BinaryOp);
+                    node.Value = new SymbolValue(adverbType);
+                    node.Children.Add(left);
+                    node.Children.Add(right);
+                    
+                    // If we have more than one element, create a vector with the adverb as the last element
+                    if (elements.Count > 1)
+                    {
+                        var vectorElements = elements.Take(elements.Count - 1).ToList();
+                        vectorElements.Add(node);
+                        return ASTNode.MakeVector(vectorElements);
+                    }
+                    else
+                    {
+                        return node;
+                    }
+                }
+                else
+                {
+                    elements.Add(ParsePrimary());
+                }
             }
 
             if (elements.Count > 1)
@@ -355,41 +475,101 @@ namespace K3CSharp
             }
             else if (Match(TokenType.MINUS))
             {
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("UNARY_MINUS");
-                node.Children.Add(operand);
-                return node;
-            }
-            else if (Match(TokenType.PLUS))
-            {
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("TRANSPOSE");
-                node.Children.Add(operand);
-                return node;
+                // Check if this is unary minus (at start of expression or after another operator)
+                if (result == null)
+                {
+                    var operand = ParsePrimary();
+                    var node = new ASTNode(ASTNodeType.BinaryOp);
+                    node.Value = new SymbolValue("UNARY_MINUS");
+                    node.Children.Add(operand);
+                    return node;
+                }
+                else
+                {
+                    // Binary minus
+                    result = ASTNode.MakeLiteral(new SymbolValue("-"));
+                }
             }
             else if (Match(TokenType.MULTIPLY))
             {
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("FIRST");
-                node.Children.Add(operand);
-                return node;
+                // Check if this is unary first (at start of expression)
+                if (result == null)
+                {
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("*"));
+                    }
+                    else
+                    {
+                        // This is unary first
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("FIRST");
+                        node.Children.Add(operand);
+                        return node;
+                    }
+                }
+                else
+                {
+                    // Binary multiplication symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("*"));
+                }
+            }
+            else if (Match(TokenType.DIVIDE))
+            {
+                // Check if this is unary reciprocal (at start of expression)
+                if (result == null)
+                {
+                    var operand = ParsePrimary();
+                    var node = new ASTNode(ASTNodeType.BinaryOp);
+                    node.Value = new SymbolValue("RECIPROCAL");
+                    node.Children.Add(operand);
+                    return node;
+                }
+                else
+                {
+                    // Binary division symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("%"));
+                }
+            }
+            else if (Match(TokenType.PLUS))
+            {
+                // Check if this is unary transpose (at start of expression)
+                if (result == null)
+                {
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("+"));
+                    }
+                    else
+                    {
+                        // This is unary transpose
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("TRANSPOSE");
+                        node.Children.Add(operand);
+                        return node;
+                    }
+                }
+                else
+                {
+                    // Binary plus symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("+"));
+                }
             }
             else if (Match(TokenType.MIN))
             {
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("GENERATE");
-                node.Children.Add(operand);
-                return node;
-            }
-            else if (Match(TokenType.DIVIDE))
-            {
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("RECIPROCAL");
                 node.Children.Add(operand);
                 return node;
             }
@@ -595,67 +775,6 @@ namespace K3CSharp
                 result.StartPosition = leftBracePos;
                 result.EndPosition = rightBracePos;
                 result.Value = new FunctionValue(bodyText, parameters, preParsedTokens);
-            }
-            else if (Match(TokenType.ADVERB_SLASH) || Match(TokenType.ADVERB_BACKSLASH) || Match(TokenType.ADVERB_TICK))
-            {
-                // Adverbs are binary operators: verb +/ data
-                var adverbType = PreviousToken().Type.ToString().Replace("TokenType.", "");
-                
-                // If result is null, we need to parse the left operand first
-                var left = result ?? ParsePrimary();
-                
-                // Convert operator tokens to verb symbols
-                if (left.Type == ASTNodeType.Literal && left.Value is SymbolValue leftSymbol)
-                {
-                    var verbName = leftSymbol.Value switch
-                    {
-                        "+" => "PLUS",
-                        "-" => "MINUS", 
-                        "*" => "MULTIPLY",
-                        "%" => "DIVIDE",
-                        "&" => "MIN",
-                        "|" => "MAX",
-                        "^" => "POWER",
-                        "!" => "ENUMERATE",
-                        "," => "ENLIST",
-                        "#" => "COUNT",
-                        "_" => "FLOOR",
-                        "?" => "UNIQUE",
-                        "~" => "NEGATE",
-                        _ => leftSymbol.Value
-                    };
-                    left.Value = new SymbolValue(verbName);
-                }
-                else if (left.Type == ASTNodeType.Literal && left.Value != null)
-                {
-                    // Handle case where the verb is a literal value (like 2 +/ 1 2 3)
-                    // In this case, we want to use the literal as the left operand
-                }
-                else if (left.Type == ASTNodeType.BinaryOp && left.Value is SymbolValue leftOpSymbol)
-                {
-                    // Handle case where the verb is a binary operator token
-                    var verbName = leftOpSymbol.Value switch
-                    {
-                        "PLUS" => "PLUS",
-                        "MINUS" => "MINUS", 
-                        "MULTIPLY" => "MULTIPLY",
-                        "DIVIDE" => "DIVIDE",
-                        "MIN" => "MIN",
-                        "MAX" => "MAX",
-                        "POWER" => "POWER",
-                        _ => leftOpSymbol.Value
-                    };
-                    // Create a new literal node with the verb name
-                    left = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
-                }
-                
-                var right = ParseExpression();
-                
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue(adverbType);
-                node.Children.Add(left);
-                node.Children.Add(right);
-                return node;
             }
             else
             {

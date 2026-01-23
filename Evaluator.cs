@@ -9,6 +9,7 @@ namespace K3CSharp
         private Dictionary<string, K3Value> localVariables = new Dictionary<string, K3Value>();
         private Dictionary<string, int> symbolTable = new Dictionary<string, int>();
         public bool isInFunctionCall = false; // Track if we're evaluating a function call
+        public static int floatPrecision = 7; // Default precision for floating point display
         
         // Reference to parent evaluator for global scope access
         private Evaluator parentEvaluator = null;
@@ -1076,7 +1077,7 @@ namespace K3CSharp
 
         private K3Value Over(K3Value verb, K3Value data)
         {
-            // Handle vector case (reduce)
+            // Handle vector case (over)
             if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
             {
                 var result = dataVec.Elements[0];

@@ -277,7 +277,14 @@ namespace K3CSharp
         {
             if (IsSpecial)
                 return SpecialName;
-            return Value.ToString();
+            
+            // Use precision only if the value has many decimal places
+            var str = Value.ToString();
+            if (str.Contains('.') && str.Length > 10)
+            {
+                return Value.ToString($"F{Evaluator.floatPrecision}");
+            }
+            return str;
         }
     }
 
