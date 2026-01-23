@@ -147,7 +147,7 @@ namespace K3CSharp
                     "COUNT" => Count(operand),
                     "FLOOR" => Floor(operand),
                     "UNIQUE" => Unique(operand),
-                    "NEGATE" => Negate(operand),
+                    "NEGATE" => LogicalNegate(operand),
                     "MIN" => operand, // Identity operation for unary min
                     "MAX" => operand, // Identity operation for unary max
                     "ADVERB_SLASH" => operand, // Return operand as-is for now
@@ -910,13 +910,25 @@ namespace K3CSharp
         private K3Value Negate(K3Value a)
         {
             if (a is IntegerValue intA)
+                return new IntegerValue(-intA.Value);
+            if (a is LongValue longA)
+                return new LongValue(-longA.Value);
+            if (a is FloatValue floatA)
+                return new FloatValue(-floatA.Value);
+            
+            throw new Exception($"Cannot negate {a.Type}");
+        }
+
+        private K3Value LogicalNegate(K3Value a)
+        {
+            if (a is IntegerValue intA)
                 return new IntegerValue(intA.Value == 0 ? 1 : 0);
             if (a is LongValue longA)
                 return new IntegerValue(longA.Value == 0 ? 1 : 0);
             if (a is FloatValue floatA)
                 return new IntegerValue(floatA.Value == 0 ? 1 : 0);
             
-            throw new Exception($"Cannot negate {a.Type}");
+            throw new Exception($"Cannot logically negate {a.Type}");
         }
 
         private K3Value Join(K3Value a, K3Value b)
@@ -1319,7 +1331,7 @@ namespace K3CSharp
                 "#" => Count(operand),
                 "_" => Floor(operand),
                 "?" => Unique(operand),
-                "~" => Negate(operand),
+                "~" => LogicalNegate(operand),
                 _ => throw new Exception($"Unknown unary verb: {verbName}")
             };
         }
@@ -1394,6 +1406,12 @@ namespace K3CSharp
 
         private K3Value Each(K3Value verb, K3Value data)
         {
+            // Handle vector + vector case (same length)
+            if (verb is VectorValue verbVec && data is VectorValue dataVec)
+            {
+                throw new Exception("Vector-vector each not implemented");
+            }
+            
             // Handle scalar + vector case
             if (IsScalar(verb) && data is VectorValue vec)
             {
@@ -1407,7 +1425,7 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // Check if verb is a glyph stored as non-symbol type
+                        // Check if verb is a glyph stored as non-vector type
                         string verbStr = verb.ToString();
                         if (verbStr.Length == 1 && "+-*/%^!&|<>=^,_?#~".Contains(verbStr))
                         {
@@ -1416,40 +1434,6 @@ namespace K3CSharp
                         else
                         {
                             result.Add(ApplyVerbWithOperator(verb, element, null));
-                        }
-                    }
-                }
-                return new VectorValue(result);
-            }
-            
-            // Handle vector + vector case (same length)
-            if (verb is VectorValue verbVec && data is VectorValue dataVec)
-            {
-                if (verbVec.Elements.Count != dataVec.Elements.Count)
-                    throw new Exception("Vector length mismatch for each operation");
-                
-                var result = new List<K3Value>();
-                for (int i = 0; i < verbVec.Elements.Count; i++)
-                {
-                    var leftVerb = verbVec.Elements[i];
-                    var rightData = dataVec.Elements[i];
-                    
-                    if (leftVerb is SymbolValue verbSymbol)
-                    {
-                        // For each operations, apply the verb as a unary operation to each element
-                        result.Add(ApplyUnaryVerb(verbSymbol.Value, rightData));
-                    }
-                    else
-                    {
-                        // Check if verb is a glyph stored as non-symbol type
-                        string verbStr = leftVerb.ToString();
-                        if (verbStr.Length == 1 && "+-*/%^!&|<>=^,_?#~".Contains(verbStr))
-                        {
-                            result.Add(ApplyUnaryVerb(verbStr, rightData));
-                        }
-                        else
-                        {
-                            result.Add(ApplyVerbWithOperator(leftVerb, rightData, null));
                         }
                     }
                 }

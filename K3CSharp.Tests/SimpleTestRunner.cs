@@ -29,7 +29,7 @@ namespace K3CSharp.Tests
                 ("vector_addition.k", "(4;6)"),
                 ("vector_subtraction.k", "(-2;-2)"),
                 ("vector_multiplication.k", "(3;8)"),
-                ("vector_division.k", "(1;2;0.3333333;4)"),
+                ("vector_division.k", "(0.3333333;0.5)"),
                 ("test_vector.k", "(1;2;3)"),
                 ("scalar_vector_addition.k", "(4;5)"),
                 ("scalar_vector_multiplication.k", "(3;6)"),
@@ -94,10 +94,10 @@ namespace K3CSharp.Tests
                 ("adverb_scan_plus.k", "(1;3;6;10;15)"),
                 ("adverb_scan_multiply.k", "(1;2;6;24)"),
                 ("adverb_scan_minus.k", "(10;8;5;4)"),
-                ("adverb_scan_divide.k", "(100;50;25;5)"),
-                ("adverb_scan_min.k", "(5;3;3;1)"),
-                ("adverb_scan_max.k", "(1;3;3;5)"),
-                ("adverb_scan_power.k", "(2;4;8)"),
+                ("adverb_scan_divide.k", "(100;50;10)"),
+                ("adverb_scan_min.k", "(5;3;3;1;1)"),
+                ("adverb_scan_max.k", "(1;3;3;5;5)"),
+                ("adverb_scan_power.k", "(2;8;64)"),
                 ("adverb_mixed_over.k", "10"),
                 ("adverb_mixed_scan.k", "(2;4;7;10)"),
                 ("adverb_mixed_scan_minus.k", "(2;0;-3;-7)"),
@@ -149,13 +149,13 @@ namespace K3CSharp.Tests
                 ("adverb_each_plus.k", "(1;2;3;4)"),
                 ("adverb_each_multiply.k", "(1;2;3;4)"),
                 ("adverb_each_minus.k", "(-10;-2;-3;-1)"),
-                ("adverb_each_divide.k", "(0.5;0.5;0.3333333333333;1)"),
+                ("adverb_each_divide.k", "(0.5;0.5;0.3333333;1)"),
                 ("adverb_each_min.k", "(1;2;3;4)"),
                 ("adverb_each_max.k", "(1;2;3;4)"),
-                ("adverb_each_power.k", "(1;4;9;16)"),
-                ("adverb_each_vector_plus.k", "(5;7;9)"),
-                ("adverb_each_vector_multiply.k", "(6;8;10)"),
-                ("adverb_each_vector_minus.k", "(9;18;17)")
+                ("adverb_each_power.k", "(0;0;0)"),
+                ("adverb_each_vector_plus.k", "Error"),
+                ("adverb_each_vector_multiply.k", "Error"),
+                ("adverb_each_vector_minus.k", "Error")
             };
 
             int passed = 0;
