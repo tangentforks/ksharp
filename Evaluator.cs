@@ -148,6 +148,8 @@ namespace K3CSharp
                     "FLOOR" => Floor(operand),
                     "UNIQUE" => Unique(operand),
                     "NEGATE" => Negate(operand),
+                    "MIN" => operand, // Identity operation for unary min
+                    "MAX" => operand, // Identity operation for unary max
                     "ADVERB_SLASH" => operand, // Return operand as-is for now
                     "ADVERB_BACKSLASH" => operand, // Return operand as-is for now
                     "ADVERB_TICK" => operand, // Return operand as-is for now
@@ -1132,6 +1134,36 @@ namespace K3CSharp
             };
         }
 
+        private K3Value ApplyUnaryVerb(string verbName, K3Value operand)
+        {
+            return verbName switch
+            {
+                "PLUS" => operand,  // Identity operation
+                "MINUS" => Negate(operand),
+                "MULTIPLY" => operand,  // Identity operation  
+                "DIVIDE" => Reciprocal(operand),
+                "MIN" => operand,  // Identity operation
+                "MAX" => operand,  // Identity operation
+                "POWER" => operand,  // Identity operation
+                "MODULUS" => operand,  // Identity operation
+                "JOIN" => Enlist(operand),
+                "+" => operand,  // Identity operation
+                "-" => Negate(operand),
+                "*" => First(operand),
+                "%" => Reciprocal(operand),
+                "&" => operand,  // Identity operation
+                "|" => Reverse(operand),
+                "^" => Shape(operand),
+                "!" => Enumerate(operand),
+                "," => Enlist(operand),
+                "#" => Count(operand),
+                "_" => Floor(operand),
+                "?" => Unique(operand),
+                "~" => Negate(operand),
+                _ => throw new Exception($"Unknown unary verb: {verbName}")
+            };
+        }
+
         private K3Value ApplyVerbWithOperator(K3Value verb, K3Value left, K3Value right)
         {
             // Handle case where verb is a value (like 2 +/ 1 2 3)
@@ -1191,11 +1223,13 @@ namespace K3CSharp
                 {
                     if (verb is SymbolValue verbSymbol)
                     {
-                        result.Add(ApplyVerb(verbSymbol.Value, verb, element));
+                        // For each operations, apply the verb as a unary operation to each element
+                        result.Add(ApplyUnaryVerb(verbSymbol.Value, element));
                     }
                     else
                     {
-                        result.Add(ApplyVerbWithOperator(verb, verb, element));
+                        // If verb is not a symbol, treat it as a value to apply with the operator
+                        result.Add(ApplyVerbWithOperator(verb, element, null));
                     }
                 }
                 return new VectorValue(result);
@@ -1215,11 +1249,12 @@ namespace K3CSharp
                     
                     if (leftVerb is SymbolValue verbSymbol)
                     {
-                        result.Add(ApplyVerb(verbSymbol.Value, leftVerb, rightData));
+                        // For each operations, apply the verb as a unary operation to each element
+                        result.Add(ApplyUnaryVerb(verbSymbol.Value, rightData));
                     }
                     else
                     {
-                        result.Add(ApplyVerbWithOperator(leftVerb, leftVerb, rightData));
+                        result.Add(ApplyVerbWithOperator(leftVerb, rightData, null));
                     }
                 }
                 return new VectorValue(result);

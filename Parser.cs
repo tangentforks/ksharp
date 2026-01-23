@@ -244,6 +244,14 @@ namespace K3CSharp
                 }
             }
 
+            // Handle standalone adverbs (like +' 1 2 3)
+            if (Match(TokenType.ADVERB_SLASH) || Match(TokenType.ADVERB_BACKSLASH) || Match(TokenType.ADVERB_TICK))
+            {
+                var adverbToken = PreviousToken();
+                var right = ParseTerm();
+                return ASTNode.MakeBinaryOp(adverbToken.Type, left, right);
+            }
+
             // Check for assignment
             if (Match(TokenType.ASSIGNMENT))
             {
@@ -303,6 +311,9 @@ namespace K3CSharp
                    CurrentToken().Type != TokenType.DOT_APPLY &&
                    CurrentToken().Type != TokenType.TYPE &&
                    CurrentToken().Type != TokenType.IDENTIFIER &&
+                   CurrentToken().Type != TokenType.ADVERB_SLASH &&
+                   CurrentToken().Type != TokenType.ADVERB_BACKSLASH &&
+                   CurrentToken().Type != TokenType.ADVERB_TICK &&
                    CurrentToken().Type != TokenType.EOF)
             {
                 // Check for adverbs in ParseTerm
@@ -459,35 +470,91 @@ namespace K3CSharp
             {
                 result = ASTNode.MakeLiteral(new SymbolValue(PreviousToken().Lexeme));
             }
-            else if (Match(TokenType.IDENTIFIER))
+            else if (Match(TokenType.PLUS))
             {
-                var identifier = PreviousToken().Lexeme;
-                result = ASTNode.MakeVariable(identifier);
-            }
-            // Handle unary operators
-            else if (Match(TokenType.NEGATE))
-            {
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("NEGATE");
-                node.Children.Add(operand);
-                return node;
-            }
-            else if (Match(TokenType.MINUS))
-            {
-                // Check if this is unary minus (at start of expression or after another operator)
+                // Check if this is unary transpose (at start of expression)
                 if (result == null)
                 {
-                    var operand = ParsePrimary();
-                    var node = new ASTNode(ASTNodeType.BinaryOp);
-                    node.Value = new SymbolValue("UNARY_MINUS");
-                    node.Children.Add(operand);
-                    return node;
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("+"));
+                    }
+                    else
+                    {
+                        // This is unary transpose
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("TRANSPOSE");
+                        node.Children.Add(operand);
+                        return node;
+                    }
                 }
                 else
                 {
-                    // Binary minus
+                    // Binary plus symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("+"));
+                }
+            }
+            else if (Match(TokenType.MINUS))
+            {
+                // Check if this is unary minus (at start of expression)
+                if (result == null)
+                {
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("-"));
+                    }
+                    else
+                    {
+                        // This is unary minus
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("UNARY_MINUS");
+                        node.Children.Add(operand);
+                        return node;
+                    }
+                }
+                else
+                {
+                    // Binary minus symbol
                     result = ASTNode.MakeLiteral(new SymbolValue("-"));
+                }
+            }
+            else if (Match(TokenType.DIVIDE))
+            {
+                // Check if this is unary reciprocal (at start of expression)
+                if (result == null)
+                {
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("%"));
+                    }
+                    else
+                    {
+                        // This is unary reciprocal
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("RECIPROCAL");
+                        node.Children.Add(operand);
+                        return node;
+                    }
+                }
+                else
+                {
+                    // Binary division symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("%"));
                 }
             }
             else if (Match(TokenType.MULTIPLY))
@@ -519,26 +586,9 @@ namespace K3CSharp
                     result = ASTNode.MakeLiteral(new SymbolValue("*"));
                 }
             }
-            else if (Match(TokenType.DIVIDE))
+            else if (Match(TokenType.MIN))
             {
-                // Check if this is unary reciprocal (at start of expression)
-                if (result == null)
-                {
-                    var operand = ParsePrimary();
-                    var node = new ASTNode(ASTNodeType.BinaryOp);
-                    node.Value = new SymbolValue("RECIPROCAL");
-                    node.Children.Add(operand);
-                    return node;
-                }
-                else
-                {
-                    // Binary division symbol
-                    result = ASTNode.MakeLiteral(new SymbolValue("%"));
-                }
-            }
-            else if (Match(TokenType.PLUS))
-            {
-                // Check if this is unary transpose (at start of expression)
+                // Check if this is unary min (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -547,103 +597,318 @@ namespace K3CSharp
                                        CurrentToken().Type == TokenType.ADVERB_TICK))
                     {
                         // This is a verb symbol for an adverb operation
-                        result = ASTNode.MakeLiteral(new SymbolValue("+"));
+                        result = ASTNode.MakeLiteral(new SymbolValue("&"));
                     }
                     else
                     {
-                        // This is unary transpose
+                        // This is unary min
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("TRANSPOSE");
+                        node.Value = new SymbolValue("MIN");
                         node.Children.Add(operand);
                         return node;
                     }
                 }
                 else
                 {
-                    // Binary plus symbol
-                    result = ASTNode.MakeLiteral(new SymbolValue("+"));
+                    // Binary min symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("&"));
                 }
-            }
-            else if (Match(TokenType.MIN))
-            {
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("GENERATE");
-                node.Children.Add(operand);
-                return node;
             }
             else if (Match(TokenType.MAX))
             {
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("REVERSE");
-                node.Children.Add(operand);
-                return node;
+                // Check if this is unary max (at start of expression)
+                if (result == null)
+                {
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("|"));
+                    }
+                    else
+                    {
+                        // This is unary max
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("MAX");
+                        node.Children.Add(operand);
+                        return node;
+                    }
+                }
+                else
+                {
+                    // Binary max symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("|"));
+                }
             }
             else if (Match(TokenType.LESS))
             {
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("GRADE_UP");
-                node.Children.Add(operand);
-                return node;
+                // Check if this is unary grade up (at start of expression)
+                if (result == null)
+                {
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("<"));
+                    }
+                    else
+                    {
+                        // This is unary grade up
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("GRADE_UP");
+                        node.Children.Add(operand);
+                        return node;
+                    }
+                }
+                else
+                {
+                    // Binary less symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("<"));
+                }
             }
             else if (Match(TokenType.GREATER))
             {
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("GRADE_DOWN");
-                node.Children.Add(operand);
-                return node;
+                // Check if this is unary grade down (at start of expression)
+                if (result == null)
+                {
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue(">"));
+                    }
+                    else
+                    {
+                        // This is unary grade down
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("GRADE_DOWN");
+                        node.Children.Add(operand);
+                        return node;
+                    }
+                }
+                else
+                {
+                    // Binary greater symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue(">"));
+                }
             }
             else if (Match(TokenType.POWER))
             {
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("SHAPE");
-                node.Children.Add(operand);
-                return node;
+                // Check if this is unary shape (at start of expression)
+                if (result == null)
+                {
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("^"));
+                    }
+                    else
+                    {
+                        // This is unary shape
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("SHAPE");
+                        node.Children.Add(operand);
+                        return node;
+                    }
+                }
+                else
+                {
+                    // Binary power symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("^"));
+                }
             }
             else if (Match(TokenType.MODULUS))
             {
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("ENUMERATE");
-                node.Children.Add(operand);
-                return node;
+                // Check if this is unary enumerate (at start of expression)
+                if (result == null)
+                {
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("!"));
+                    }
+                    else
+                    {
+                        // This is unary enumerate
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("ENUMERATE");
+                        node.Children.Add(operand);
+                        return node;
+                    }
+                }
+                else
+                {
+                    // Binary modulus symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("!"));
+                }
             }
             else if (Match(TokenType.JOIN))
             {
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("ENLIST");
-                node.Children.Add(operand);
-                return node;
+                // Check if this is unary enlist (at start of expression)
+                if (result == null)
+                {
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue(","));
+                    }
+                    else
+                    {
+                        // This is unary enlist
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("ENLIST");
+                        node.Children.Add(operand);
+                        return node;
+                    }
+                }
+                else
+                {
+                    // Binary join symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue(","));
+                }
+            }
+            else if (Match(TokenType.IDENTIFIER))
+            {
+                var identifier = PreviousToken().Lexeme;
+                result = ASTNode.MakeVariable(identifier);
+            }
+            else if (Match(TokenType.NEGATE))
+            {
+                // Check if this is unary negate (at start of expression)
+                if (result == null)
+                {
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("~"));
+                    }
+                    else
+                    {
+                        // This is unary negate
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("NEGATE");
+                        node.Children.Add(operand);
+                        return node;
+                    }
+                }
+                else
+                {
+                    // Binary negate symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("~"));
+                }
             }
             else if (Match(TokenType.HASH))
             {
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("COUNT");
-                node.Children.Add(operand);
-                return node;
+                // Check if this is unary count (at start of expression)
+                if (result == null)
+                {
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("#"));
+                    }
+                    else
+                    {
+                        // This is unary count
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("COUNT");
+                        node.Children.Add(operand);
+                        return node;
+                    }
+                }
+                else
+                {
+                    // Binary hash symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("#"));
+                }
             }
             else if (Match(TokenType.UNDERSCORE))
             {
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("FLOOR");
-                node.Children.Add(operand);
-                return node;
+                // Check if this is unary floor (at start of expression)
+                if (result == null)
+                {
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("_"));
+                    }
+                    else
+                    {
+                        // This is unary floor
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("FLOOR");
+                        node.Children.Add(operand);
+                        return node;
+                    }
+                }
+                else
+                {
+                    // Binary underscore symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("_"));
+                }
             }
             else if (Match(TokenType.QUESTION))
             {
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("UNIQUE");
-                node.Children.Add(operand);
-                return node;
+                // Check if this is unary unique (at start of expression)
+                if (result == null)
+                {
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("?"));
+                    }
+                    else
+                    {
+                        // This is unary unique
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("UNIQUE");
+                        node.Children.Add(operand);
+                        return node;
+                    }
+                }
+                else
+                {
+                    // Binary question symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("?"));
+                }
             }
             else if (Match(TokenType.LEFT_PAREN))
             {

@@ -134,16 +134,16 @@ namespace K3CSharp.Tests
                 ("type_operator_comprehensive.k", "Error"),
                 
                 // Each adverb tests (to track verb symbol conversion issue)
-                ("adverb_each_plus.k", "Error: Cannot add Symbol and Integer"),
-                ("adverb_each_multiply.k", "Error: Cannot add Symbol and Integer"),
-                ("adverb_each_minus.k", "Error: Cannot add Symbol and Integer"),
-                ("adverb_each_divide.k", "Error: Cannot add Symbol and Integer"),
-                ("adverb_each_min.k", "Error: Cannot add Symbol and Integer"),
-                ("adverb_each_max.k", "Error: Cannot add Symbol and Integer"),
-                ("adverb_each_power.k", "Error: Cannot add Symbol and Integer"),
-                ("adverb_each_vector_plus.k", "Error: Cannot add Symbol and Integer"),
-                ("adverb_each_vector_multiply.k", "Error: Cannot add Symbol and Integer"),
-                ("adverb_each_vector_minus.k", "Error: Cannot add Symbol and Integer")
+                ("adverb_each_plus.k", "(1;2;3;4)"),
+                ("adverb_each_multiply.k", "(1;2;3;4)"),
+                ("adverb_each_minus.k", "(-10;-2;-3;-1)"),
+                ("adverb_each_divide.k", "(0.5;0.5;0.3333333333333;1)"),
+                ("adverb_each_min.k", "(1;2;3;4)"),
+                ("adverb_each_max.k", "(1;2;3;4)"),
+                ("adverb_each_power.k", "(1;4;9;16)"),
+                ("adverb_each_vector_plus.k", "(5;7;9)"),
+                ("adverb_each_vector_multiply.k", "(6;8;10)"),
+                ("adverb_each_vector_minus.k", "(9;18;17)")
             };
 
             int passed = 0;
