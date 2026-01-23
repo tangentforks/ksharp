@@ -35,16 +35,20 @@ namespace K3CSharp
                     return GetVariable(name);
 
                 case ASTNodeType.Assignment:
-                    var assignName = node.Value is SymbolValue assignmentSym ? assignmentSym.Value : node.Value.ToString();
-                    var value = Evaluate(node.Children[0]);
-                    SetVariable(assignName, value);
-                    return new IntegerValue(0); // Assignments don't return values
+                    {
+                        var assignName = node.Value is SymbolValue assignmentSym ? assignmentSym.Value : node.Value.ToString();
+                        var value = Evaluate(node.Children[0]);
+                        SetVariable(assignName, value);
+                        return value; // Return the assigned value
+                    }
 
                 case ASTNodeType.GlobalAssignment:
-                    var globalAssignName = node.Value is SymbolValue globalAssignmentSym ? globalAssignmentSym.Value : node.Value.ToString();
-                    var globalValue = Evaluate(node.Children[0]);
-                    SetGlobalVariable(globalAssignName, globalValue);
-                    return new IntegerValue(0); // Assignments don't return values
+                    {
+                        var globalAssignName = node.Value is SymbolValue globalAssignmentSym ? globalAssignmentSym.Value : node.Value.ToString();
+                        var globalValue = Evaluate(node.Children[0]);
+                        SetGlobalVariable(globalAssignName, globalValue);
+                        return globalValue; // Return the assigned value
+                    }
 
                 case ASTNodeType.BinaryOp:
                     return EvaluateBinaryOp(node);
@@ -1072,70 +1076,105 @@ namespace K3CSharp
 
         private K3Value Reduce(K3Value verb, K3Value data)
         {
-            // Handle scalar + vector case
-            if (IsScalar(verb) && data is VectorValue vec)
-            {
-                var result = verb;
-                foreach (var element in vec.Elements)
-                {
-                    result = Add(result, element);
-                }
-                return result;
-            }
-            
             // Handle vector case (reduce)
             if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
             {
                 var result = dataVec.Elements[0];
+                
                 for (int i = 1; i < dataVec.Elements.Count; i++)
                 {
-                    result = Add(result, dataVec.Elements[i]);
+                    // Apply the verb to result and next element
+                    if (verb is SymbolValue verbSymbol)
+                    {
+                        result = ApplyVerb(verbSymbol.Value, result, dataVec.Elements[i]);
+                    }
+                    else
+                    {
+                        // If verb is not a symbol, treat it as a value to apply with the operator
+                        result = ApplyVerbWithOperator(verb, result, dataVec.Elements[i]);
+                    }
                 }
+                
                 return result;
             }
             
-            // Handle scalar + scalar case
-            if (IsScalar(verb) && IsScalar(data))
+            // Handle scalar case
+            if (IsScalar(data))
             {
-                return Add(verb, data);
+                return data;
             }
             
             throw new Exception($"Reduce not implemented for types: {verb.Type}, {data.Type}");
         }
 
+        private K3Value ApplyVerb(string verbName, K3Value left, K3Value right)
+        {
+            return verbName switch
+            {
+                "PLUS" => Add(left, right),
+                "MINUS" => Subtract(left, right),
+                "MULTIPLY" => Multiply(left, right),
+                "DIVIDE" => Divide(left, right),
+                "MIN" => Min(left, right),
+                "MAX" => Max(left, right),
+                "POWER" => Power(left, right),
+                "MODULUS" => Modulus(left, right),
+                "JOIN" => Join(left, right),
+                "+" => Add(left, right),  // Add fallback for literal +
+                "-" => Subtract(left, right),  // Add fallback for literal -
+                "*" => Multiply(left, right),  // Add fallback for literal *
+                "%" => Divide(left, right),  // Add fallback for literal %
+                "&" => Min(left, right),  // Add fallback for literal &
+                "|" => Max(left, right),  // Add fallback for literal |
+                "^" => Power(left, right),  // Add fallback for literal ^
+                _ => throw new Exception($"Unknown verb for reduce: {verbName}")
+            };
+        }
+
+        private K3Value ApplyVerbWithOperator(K3Value verb, K3Value left, K3Value right)
+        {
+            // Handle case where verb is a value (like 2 +/ 1 2 3)
+            // This means we should use the verb as the left operand with the operator
+            if (verb is SymbolValue verbSymbol)
+            {
+                return ApplyVerb(verbSymbol.Value, verb, right);
+            }
+            else
+            {
+                // For numeric verbs, assume addition by default
+                return Add(verb, right);
+            }
+        }
+
         private K3Value Scan(K3Value verb, K3Value data)
         {
-            // Handle scalar + vector case
-            if (IsScalar(verb) && data is VectorValue vec)
-            {
-                var result = new List<K3Value>();
-                var current = verb;
-                foreach (var element in vec.Elements)
-                {
-                    current = Add(current, element);
-                    result.Add(current);
-                }
-                return new VectorValue(result);
-            }
-            
             // Handle vector case
             if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
             {
                 var result = new List<K3Value>();
                 var current = dataVec.Elements[0];
                 result.Add(current);
+                
                 for (int i = 1; i < dataVec.Elements.Count; i++)
                 {
-                    current = Add(current, dataVec.Elements[i]);
+                    if (verb is SymbolValue verbSymbol)
+                    {
+                        current = ApplyVerb(verbSymbol.Value, current, dataVec.Elements[i]);
+                    }
+                    else
+                    {
+                        current = ApplyVerbWithOperator(verb, current, dataVec.Elements[i]);
+                    }
                     result.Add(current);
                 }
+                
                 return new VectorValue(result);
             }
             
-            // Handle scalar + scalar case
-            if (IsScalar(verb) && IsScalar(data))
+            // Handle scalar case
+            if (IsScalar(data))
             {
-                return Add(verb, data);
+                return data;
             }
             
             throw new Exception($"Scan not implemented for types: {verb.Type}, {data.Type}");
@@ -1149,7 +1188,14 @@ namespace K3CSharp
                 var result = new List<K3Value>();
                 foreach (var element in vec.Elements)
                 {
-                    result.Add(Add(verb, element));
+                    if (verb is SymbolValue verbSymbol)
+                    {
+                        result.Add(ApplyVerb(verbSymbol.Value, verb, element));
+                    }
+                    else
+                    {
+                        result.Add(ApplyVerbWithOperator(verb, verb, element));
+                    }
                 }
                 return new VectorValue(result);
             }
@@ -1163,7 +1209,17 @@ namespace K3CSharp
                 var result = new List<K3Value>();
                 for (int i = 0; i < verbVec.Elements.Count; i++)
                 {
-                    result.Add(Add(verbVec.Elements[i], dataVec.Elements[i]));
+                    var leftVerb = verbVec.Elements[i];
+                    var rightData = dataVec.Elements[i];
+                    
+                    if (leftVerb is SymbolValue verbSymbol)
+                    {
+                        result.Add(ApplyVerb(verbSymbol.Value, leftVerb, rightData));
+                    }
+                    else
+                    {
+                        result.Add(ApplyVerbWithOperator(leftVerb, leftVerb, rightData));
+                    }
                 }
                 return new VectorValue(result);
             }
@@ -1171,7 +1227,14 @@ namespace K3CSharp
             // Handle scalar + scalar case
             if (IsScalar(verb) && IsScalar(data))
             {
-                return Add(verb, data);
+                if (verb is SymbolValue verbSymbol)
+                {
+                    return ApplyVerb(verbSymbol.Value, verb, data);
+                }
+                else
+                {
+                    return ApplyVerbWithOperator(verb, verb, data);
+                }
             }
             
             throw new Exception($"Each not implemented for types: {verb.Type}, {data.Type}");
