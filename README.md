@@ -58,6 +58,7 @@ K3 is version 3 of the K programming language, similar to A+, J, and Q. It's des
 - **`^`** (power): Returns first raised to power of second
 - **`@`** (apply/index): Vector indexing or function application
 - **`4:`** (type): Returns type code for values (1=integer, 2=long, 3=float, 4=char, 5=symbol, 6=function, 7=vector)
+- **`::`** (global assignment): Assign to global variable from within functions
 
 #### **Vector Indexing**
 - **Single Index**: `vector @ index` returns element at zero-based position
@@ -101,11 +102,6 @@ K3 is version 3 of the K programming language, similar to A+, J, and Q. It's des
 
 ### ❌ Not Yet Implemented
 
-#### **Global Assignment Operator**
-- **`::`** operator for global assignment from within functions
-- **Spec requirement**: Distinguish local vs global variable assignment
-- **Status**: Token and parsing infrastructure ready, evaluator needs implementation
-
 #### **Complete Adverb Operations**
 - **Reduce (`/`)**: Fold operation on vectors with verbs
 - **Scan (`\`)**: Cumulative operation on vectors
@@ -122,7 +118,7 @@ K3 is version 3 of the K programming language, similar to A+, J, and Q. It's des
 - **Needed**: More sophisticated error messages and recovery
 
 #### **REPL Features**
-- **Missing**: Exit commands (`\\`, `_exit`)
+- **Implemented**: Exit commands (`\\`, `_exit`)
 - **Missing**: Command history and editing features
 
 ## Test Coverage
@@ -242,6 +238,16 @@ vec @ 2        // Returns 30
 vec @ (0;3)    // Returns (10;40)
 ```
 
+### **Global Assignment**
+```k3
+// Within a function, use :: to assign to global scope
+testFunc: {[x]
+    localVar: x + 5      // Local assignment
+    globalVar :: x * 2   // Global assignment
+    localVar + globalVar
+}
+```
+
 ## Next Development Priorities
 
 1. **Complete Adverb Operations** (High Priority)
@@ -250,19 +256,18 @@ vec @ (0;3)    // Returns (10;40)
    - Implement each (`'`) for element-wise application
    - Complete adverb chaining functionality
 
-2. **Global Assignment Operator** (Medium Priority)
-   - Implement `::` operator in evaluator
-   - Add proper global/local variable distinction
-   - Update tests for global assignment scenarios
-
-3. **Minor Fixes** (Low Priority)
+2. **Minor Fixes** (Low Priority)
    - Fix floating point precision in vector division tests
    - Fix assignment return value behavior
    - Fix sort order in GRADE_UP operator
 
-4. **Symbol Table Optimization** (Low Priority)
+3. **Symbol Table Optimization** (Low Priority)
    - Implement global symbol table with reference equality
    - Improve memory efficiency
+
+4. **REPL Enhancements** (Low Priority)
+   - Add command history and editing features
+   - Improve user experience
 
 ## Recent Achievements
 
