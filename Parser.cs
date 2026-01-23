@@ -198,7 +198,7 @@ namespace K3CSharp
             }
 
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
-                   Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
+                   Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
                    Match(TokenType.EQUAL) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
                    Match(TokenType.TYPE))
             {
@@ -289,6 +289,7 @@ namespace K3CSharp
                    CurrentToken().Type != TokenType.PLUS &&
                    CurrentToken().Type != TokenType.MINUS &&
                    CurrentToken().Type != TokenType.MULTIPLY &&
+                   CurrentToken().Type != TokenType.DIVIDE &&
                    CurrentToken().Type != TokenType.MIN &&
                    CurrentToken().Type != TokenType.MAX &&
                    CurrentToken().Type != TokenType.LESS &&
@@ -910,6 +911,12 @@ namespace K3CSharp
                     result = ASTNode.MakeLiteral(new SymbolValue("?"));
                 }
             }
+            else if (Match(TokenType.ADVERB_SLASH))
+            {
+                // Standalone adverb slash - this should not happen in valid K3
+                // According to spec, slash must be preceded by a verb without spaces
+                throw new Exception("Unexpected token: ADVERB_SLASH(/) - adverb must follow a verb");
+            }
             else if (Match(TokenType.LEFT_PAREN))
             {
                 var elements = new List<ASTNode>();
@@ -1040,6 +1047,11 @@ namespace K3CSharp
                 result.StartPosition = leftBracePos;
                 result.EndPosition = rightBracePos;
                 result.Value = new FunctionValue(bodyText, parameters, preParsedTokens);
+            }
+            else if (Match(TokenType.EOF))
+            {
+                // End of input - return null result
+                return null;
             }
             else
             {

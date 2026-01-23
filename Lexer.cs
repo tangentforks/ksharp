@@ -85,8 +85,20 @@ namespace K3CSharp
                 }
                 else if (c == '/')
                 {
-                    tokens.Add(new Token(TokenType.ADVERB_SLASH, "/", position));
-                    Advance();
+                    // Check if this is a comment (at start of line or after space)
+                    if (position == 0 || (position > 0 && char.IsWhiteSpace(input[position - 1])))
+                    {
+                        // Skip to end of line
+                        while (position < input.Length && currentChar != '\n')
+                        {
+                            Advance();
+                        }
+                    }
+                    else
+                    {
+                        tokens.Add(new Token(TokenType.ADVERB_SLASH, "/", position));
+                        Advance();
+                    }
                 }
                 else if (c == '\\')
                 {

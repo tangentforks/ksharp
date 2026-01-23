@@ -449,21 +449,125 @@ namespace K3CSharp
                 if (Elements.Count != otherVec.Elements.Count)
                     throw new InvalidOperationException("Vector size mismatch for division");
                 
+                // Check if all elements are integers and all divisions are exact
+                bool allIntegerDivision = true;
+                bool allExactDivision = true;
+                
+                for (int i = 0; i < Elements.Count; i++)
+                {
+                    if (Elements[i] is IntegerValue intElem && otherVec.Elements[i] is IntegerValue intDiv)
+                    {
+                        if (intDiv.Value == 0)
+                            throw new InvalidOperationException("Division by zero");
+                        if (intElem.Value % intDiv.Value != 0)
+                            allExactDivision = false;
+                    }
+                    else if (Elements[i] is LongValue longElem && otherVec.Elements[i] is LongValue longDiv)
+                    {
+                        if (longDiv.Value == 0)
+                            throw new InvalidOperationException("Division by zero");
+                        if (longElem.Value % longDiv.Value != 0)
+                            allExactDivision = false;
+                    }
+                    else
+                    {
+                        allIntegerDivision = false;
+                        break;
+                    }
+                }
+                
                 var result = new List<K3Value>();
                 for (int i = 0; i < Elements.Count; i++)
                 {
-                    result.Add(Elements[i].Divide(otherVec.Elements[i]));
+                    if (allIntegerDivision && allExactDivision)
+                    {
+                        // All exact integer division - return integer vector
+                        if (Elements[i] is IntegerValue intElem && otherVec.Elements[i] is IntegerValue intDiv)
+                            result.Add(new IntegerValue(intElem.Value / intDiv.Value));
+                        else if (Elements[i] is LongValue longElem && otherVec.Elements[i] is LongValue longDiv)
+                            result.Add(new LongValue(longElem.Value / longDiv.Value));
+                    }
+                    else if (allIntegerDivision && !allExactDivision)
+                    {
+                        // Integer division but not all exact - return float vector
+                        if (Elements[i] is IntegerValue intElem && otherVec.Elements[i] is IntegerValue intDiv)
+                            result.Add(new FloatValue((double)intElem.Value / intDiv.Value));
+                        else if (Elements[i] is LongValue longElem && otherVec.Elements[i] is LongValue longDiv)
+                            result.Add(new FloatValue((double)longElem.Value / longDiv.Value));
+                    }
+                    else
+                    {
+                        // Mixed types - use element-wise division
+                        result.Add(Elements[i].Divide(otherVec.Elements[i]));
+                    }
                 }
                 return new VectorValue(result);
             }
             
-            // Scalar division
-            var scalarResult = new List<K3Value>();
+            // Scalar division with smart division rules
+            if (other is IntegerValue intScalar)
+            {
+                if (intScalar.Value == 0)
+                    throw new InvalidOperationException("Division by zero");
+                
+                // Check if all elements are integers
+                bool allIntegerElements = true;
+                bool allExactDivision = true;
+                
+                foreach (var element in Elements)
+                {
+                    if (element is IntegerValue intElem)
+                    {
+                        if (intElem.Value % intScalar.Value != 0)
+                            allExactDivision = false;
+                    }
+                    else if (element is LongValue longElem)
+                    {
+                        if (longElem.Value % intScalar.Value != 0)
+                            allExactDivision = false;
+                    }
+                    else
+                    {
+                        allIntegerElements = false;
+                        break;
+                    }
+                }
+                
+                var scalarResult = new List<K3Value>();
+                foreach (var element in Elements)
+                {
+                    if (allIntegerElements && allExactDivision)
+                    {
+                        // All exact integer division
+                        if (element is IntegerValue intElem)
+                            scalarResult.Add(new IntegerValue(intElem.Value / intScalar.Value));
+                        else if (element is LongValue longElem)
+                            scalarResult.Add(new LongValue(longElem.Value / intScalar.Value));
+                    }
+                    else if (allIntegerElements && !allExactDivision)
+                    {
+                        // Integer division but not all exact - convert to float
+                        if (element is IntegerValue intElem)
+                            scalarResult.Add(new FloatValue((double)intElem.Value / intScalar.Value));
+                        else if (element is LongValue longElem)
+                            scalarResult.Add(new FloatValue((double)longElem.Value / intScalar.Value));
+                    }
+                    else
+                    {
+                        // Mixed types - use element-wise division
+                        scalarResult.Add(element.Divide(other));
+                    }
+                }
+                return new VectorValue(scalarResult);
+            }
+            
+            // Default scalar division for other types
+            var defaultScalarResult = new List<K3Value>();
             foreach (var element in Elements)
             {
-                scalarResult.Add(element.Divide(other));
+                defaultScalarResult.Add(element.Divide(other));
             }
-            return new VectorValue(scalarResult);
+            return new VectorValue(defaultScalarResult);
         }
 
         public K3Value Minimum(VectorValue other)

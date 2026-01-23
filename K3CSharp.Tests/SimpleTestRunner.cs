@@ -46,6 +46,7 @@ namespace K3CSharp.Tests
                 ("parentheses_basic.k", "9"),
                 ("parentheses_grouping.k", "(3;6)"),
                 ("parentheses_nested.k", "(4;5)"),
+                ("parentheses_precedence.k", "9"),
                 
                 // Variables
                 ("variable_assignment.k", "7"),
@@ -107,6 +108,17 @@ namespace K3CSharp.Tests
                 ("adverb_over_mixed_1.k", "14"),
                 ("adverb_scan_mixed_2.k", "(1;3;6;10)"),
                 ("adverb_scan_mixed_1.k", "(2;5;9;14)"),
+                
+                // Type promotion and smart division tests
+                ("test_division_int.k", "(4;0.5)"),
+                ("test_division_float.k", "(4;0.5)"),
+                ("test_division_rules.k", "(1;0;1;0)"),
+                ("test_type_promotion.k", "2.5"),
+                ("test_smart_division1.k", "(2.5;5.0)"),
+                ("test_smart_division2.k", "(2;4)"),
+                ("test_smart_division3.k", "(2;4;6)"),
+                ("test_simple_scalar_div.k", "2.5"),
+                ("test_enumerate.k", "(0;1)"),
                 
                 // Special values tests
                 ("special_null.k", "_n"),

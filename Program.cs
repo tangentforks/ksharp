@@ -1,11 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace K3CSharp
 {
     class Program
     {
+        private static List<string> commandHistory = new List<string>();
+        private static int historyIndex = -1;
+        private static StringBuilder currentLine = new StringBuilder();
+        private static int cursorPosition = 0;
+        
         static void Main(string[] args)
         {
             var evaluator = new Evaluator();
@@ -29,12 +35,14 @@ namespace K3CSharp
             // REPL mode
             Console.WriteLine("K3 Interpreter - Version 1.0");
             Console.WriteLine("Type \\\\ to quit, or \\ for help");
+            Console.WriteLine("Use arrow keys for history, Ctrl+C to clear line");
             Console.WriteLine();
 
             while (true)
             {
                 Console.Write("K3> ");
-                var input = Console.ReadLine();
+                
+                var input = ReadLineWithHistory();
                 
                 if (input == null) break;
                 
@@ -46,6 +54,17 @@ namespace K3CSharp
 
                 if (string.IsNullOrWhiteSpace(input)) continue;
 
+                // Add to history if not empty and not duplicate of last
+                if (commandHistory.Count == 0 || commandHistory[commandHistory.Count - 1] != input)
+                {
+                    commandHistory.Add(input);
+                    if (commandHistory.Count > 100) // Keep last 100 commands
+                    {
+                        commandHistory.RemoveAt(0);
+                    }
+                }
+                historyIndex = -1;
+
                 try
                 {
                     var result = ExecuteLine(input, evaluator);
@@ -56,6 +75,145 @@ namespace K3CSharp
                     Console.WriteLine($"Error: {ex.Message}");
                 }
             }
+        }
+
+        static string ReadLineWithHistory()
+        {
+            currentLine.Clear();
+            cursorPosition = 0;
+            
+            while (true)
+            {
+                var key = Console.ReadKey(true);
+                
+                switch (key.Key)
+                {
+                    case ConsoleKey.Enter:
+                        Console.WriteLine();
+                        return currentLine.ToString();
+                        
+                    case ConsoleKey.Escape:
+                        // Clear line
+                        Console.Write(new string(' ', currentLine.Length));
+                        Console.Write("\rK3> ");
+                        currentLine.Clear();
+                        cursorPosition = 0;
+                        break;
+                        
+                    case ConsoleKey.UpArrow:
+                        if (commandHistory.Count > 0)
+                        {
+                            if (historyIndex == -1)
+                                historyIndex = commandHistory.Count - 1;
+                            else if (historyIndex > 0)
+                                historyIndex--;
+                            
+                            ReplaceCurrentLine(commandHistory[historyIndex]);
+                        }
+                        break;
+                        
+                    case ConsoleKey.DownArrow:
+                        if (historyIndex != -1)
+                        {
+                            if (historyIndex < commandHistory.Count - 1)
+                            {
+                                historyIndex++;
+                                ReplaceCurrentLine(commandHistory[historyIndex]);
+                            }
+                            else
+                            {
+                                historyIndex = -1;
+                                ReplaceCurrentLine("");
+                            }
+                        }
+                        break;
+                        
+                    case ConsoleKey.LeftArrow:
+                        if (cursorPosition > 0)
+                        {
+                            cursorPosition--;
+                            Console.Write("\b");
+                        }
+                        break;
+                        
+                    case ConsoleKey.RightArrow:
+                        if (cursorPosition < currentLine.Length)
+                        {
+                            cursorPosition++;
+                            Console.Write(currentLine[cursorPosition - 1]);
+                        }
+                        break;
+                        
+                    case ConsoleKey.Backspace:
+                        if (cursorPosition > 0)
+                        {
+                            cursorPosition--;
+                            currentLine.Remove(cursorPosition, 1);
+                            Console.Write("\b" + currentLine.ToString().Substring(cursorPosition) + " ");
+                            Console.Write($"\rK3> {currentLine}");
+                            for (int i = 0; i < cursorPosition; i++)
+                                Console.Write(new string('\b', 1));
+                        }
+                        break;
+                        
+                    case ConsoleKey.Delete:
+                        if (cursorPosition < currentLine.Length)
+                        {
+                            currentLine.Remove(cursorPosition, 1);
+                            Console.Write(currentLine.ToString().Substring(cursorPosition) + " ");
+                            Console.Write($"\rK3> {currentLine}");
+                            for (int i = 0; i < cursorPosition; i++)
+                                Console.Write(new string('\b', 1));
+                        }
+                        break;
+                        
+                    case ConsoleKey.Home:
+                        while (cursorPosition > 0)
+                        {
+                            cursorPosition--;
+                            Console.Write("\b");
+                        }
+                        break;
+                        
+                    case ConsoleKey.End:
+                        while (cursorPosition < currentLine.Length)
+                        {
+                            Console.Write(currentLine[cursorPosition]);
+                            cursorPosition++;
+                        }
+                        break;
+                        
+                    case ConsoleKey.C when key.Modifiers == ConsoleModifiers.Control:
+                        // Clear line
+                        Console.Write(new string(' ', currentLine.Length));
+                        Console.Write("\rK3> ");
+                        currentLine.Clear();
+                        cursorPosition = 0;
+                        break;
+                        
+                    default:
+                        if (!char.IsControl(key.KeyChar))
+                        {
+                            currentLine.Insert(cursorPosition, key.KeyChar);
+                            Console.Write(currentLine.ToString().Substring(cursorPosition));
+                            cursorPosition++;
+                            
+                            // Move cursor back to correct position
+                            for (int i = cursorPosition; i < currentLine.Length; i++)
+                                Console.Write("\b");
+                        }
+                        break;
+                }
+            }
+        }
+
+        static void ReplaceCurrentLine(string newText)
+        {
+            Console.Write(new string(' ', currentLine.Length));
+            Console.Write($"\rK3> {newText}");
+            currentLine.Clear();
+            currentLine.Append(newText);
+            cursorPosition = currentLine.Length;
         }
 
         static K3Value ExecuteLine(string input, Evaluator evaluator)

@@ -18,7 +18,7 @@ namespace K3CSharp
         {
             if (node == null)
             {
-                throw new Exception("Null AST node");
+                return new NullValue();
             }
 
             return EvaluateNode(node);
@@ -475,12 +475,27 @@ namespace K3CSharp
 
         private K3Value Add(K3Value a, K3Value b)
         {
-            if (a is IntegerValue intA && b is IntegerValue intB)
-                return new IntegerValue(intA.Value + intB.Value);
-            if (a is LongValue longA && b is LongValue longB)
-                return new LongValue(longA.Value + longB.Value);
-            if (a is FloatValue floatA && b is FloatValue floatB)
-                return new FloatValue(floatA.Value + floatB.Value);
+            // Handle mixed type promotion
+            if (a is IntegerValue && b is LongValue)
+                return new LongValue(((IntegerValue)a).Value + ((LongValue)b).Value);
+            if (a is LongValue && b is IntegerValue)
+                return new LongValue(((LongValue)a).Value + ((IntegerValue)b).Value);
+            if (a is IntegerValue && b is FloatValue)
+                return new FloatValue(((IntegerValue)a).Value + ((FloatValue)b).Value);
+            if (a is FloatValue && b is IntegerValue)
+                return new FloatValue(((FloatValue)a).Value + ((IntegerValue)b).Value);
+            if (a is LongValue && b is FloatValue)
+                return new FloatValue(((LongValue)a).Value + ((FloatValue)b).Value);
+            if (a is FloatValue && b is LongValue)
+                return new FloatValue(((FloatValue)a).Value + ((LongValue)b).Value);
+            
+            // Handle same type operations
+            if (a is IntegerValue && b is IntegerValue)
+                return new IntegerValue(((IntegerValue)a).Value + ((IntegerValue)b).Value);
+            if (a is LongValue && b is LongValue)
+                return new LongValue(((LongValue)a).Value + ((LongValue)b).Value);
+            if (a is FloatValue && b is FloatValue)
+                return new FloatValue(((FloatValue)a).Value + ((FloatValue)b).Value);
             
             // Handle vector operations
             if (a is VectorValue vecA)
@@ -491,17 +506,38 @@ namespace K3CSharp
                     return vecA.Add(b);
             }
             
+            // Handle scalar + vector operations
+            if (b is VectorValue vectorB)
+            {
+                return vectorB.Add(a);
+            }
+            
             throw new Exception($"Cannot add {a.Type} and {b.Type}");
         }
 
         private K3Value Subtract(K3Value a, K3Value b)
         {
-            if (a is IntegerValue intA && b is IntegerValue intB)
-                return new IntegerValue(intA.Value - intB.Value);
-            if (a is LongValue longA && b is LongValue longB)
-                return new LongValue(longA.Value - longB.Value);
-            if (a is FloatValue floatA && b is FloatValue floatB)
-                return new FloatValue(floatA.Value - floatB.Value);
+            // Handle mixed type promotion
+            if (a is IntegerValue && b is LongValue)
+                return new LongValue(((IntegerValue)a).Value - ((LongValue)b).Value);
+            if (a is LongValue && b is IntegerValue)
+                return new LongValue(((LongValue)a).Value - ((IntegerValue)b).Value);
+            if (a is IntegerValue && b is FloatValue)
+                return new FloatValue(((IntegerValue)a).Value - ((FloatValue)b).Value);
+            if (a is FloatValue && b is IntegerValue)
+                return new FloatValue(((FloatValue)a).Value - ((IntegerValue)b).Value);
+            if (a is LongValue && b is FloatValue)
+                return new FloatValue(((LongValue)a).Value - ((FloatValue)b).Value);
+            if (a is FloatValue && b is LongValue)
+                return new FloatValue(((FloatValue)a).Value - ((LongValue)b).Value);
+            
+            // Handle same type operations
+            if (a is IntegerValue && b is IntegerValue)
+                return new IntegerValue(((IntegerValue)a).Value - ((IntegerValue)b).Value);
+            if (a is LongValue && b is LongValue)
+                return new LongValue(((LongValue)a).Value - ((LongValue)b).Value);
+            if (a is FloatValue && b is FloatValue)
+                return new FloatValue(((FloatValue)a).Value - ((FloatValue)b).Value);
             
             // Handle vector operations
             if (a is VectorValue vecA)
@@ -512,17 +548,44 @@ namespace K3CSharp
                     return vecA.Subtract(b);
             }
             
+            // Handle scalar - vector operations
+            if (b is VectorValue vectorB)
+            {
+                // For scalar - vector, we need to subtract each element from the scalar
+                var result = new List<K3Value>();
+                foreach (var element in vectorB.Elements)
+                {
+                    result.Add(Subtract(a, element));
+                }
+                return new VectorValue(result);
+            }
+            
             throw new Exception($"Cannot subtract {a.Type} and {b.Type}");
         }
 
         private K3Value Multiply(K3Value a, K3Value b)
         {
-            if (a is IntegerValue intA && b is IntegerValue intB)
-                return new IntegerValue(intA.Value * intB.Value);
-            if (a is LongValue longA && b is LongValue longB)
-                return new LongValue(longA.Value * longB.Value);
-            if (a is FloatValue floatA && b is FloatValue floatB)
-                return new FloatValue(floatA.Value * floatB.Value);
+            // Handle mixed type promotion
+            if (a is IntegerValue && b is LongValue)
+                return new LongValue(((IntegerValue)a).Value * ((LongValue)b).Value);
+            if (a is LongValue && b is IntegerValue)
+                return new LongValue(((LongValue)a).Value * ((IntegerValue)b).Value);
+            if (a is IntegerValue && b is FloatValue)
+                return new FloatValue(((IntegerValue)a).Value * ((FloatValue)b).Value);
+            if (a is FloatValue && b is IntegerValue)
+                return new FloatValue(((FloatValue)a).Value * ((IntegerValue)b).Value);
+            if (a is LongValue && b is FloatValue)
+                return new FloatValue(((LongValue)a).Value * ((FloatValue)b).Value);
+            if (a is FloatValue && b is LongValue)
+                return new FloatValue(((FloatValue)a).Value * ((LongValue)b).Value);
+            
+            // Handle same type operations
+            if (a is IntegerValue && b is IntegerValue)
+                return new IntegerValue(((IntegerValue)a).Value * ((IntegerValue)b).Value);
+            if (a is LongValue && b is LongValue)
+                return new LongValue(((LongValue)a).Value * ((LongValue)b).Value);
+            if (a is FloatValue && b is FloatValue)
+                return new FloatValue(((FloatValue)a).Value * ((FloatValue)b).Value);
             
             // Handle vector operations
             if (a is VectorValue vecA)
@@ -533,17 +596,99 @@ namespace K3CSharp
                     return vecA.Multiply(b);
             }
             
+            // Handle scalar * vector operations
+            if (b is VectorValue vectorB)
+            {
+                return vectorB.Multiply(a);
+            }
+            
             throw new Exception($"Cannot multiply {a.Type} and {b.Type}");
         }
 
         private K3Value Divide(K3Value a, K3Value b)
         {
-            if (a is IntegerValue intA && b is IntegerValue intB)
-                return new IntegerValue(intA.Value / intB.Value);
-            if (a is LongValue longA && b is LongValue longB)
-                return new LongValue(longA.Value / longB.Value);
-            if (a is FloatValue floatA && b is FloatValue floatB)
-                return new FloatValue(floatA.Value / floatB.Value);
+            // Handle integer division with modulo check
+            if (a is IntegerValue && b is IntegerValue)
+            {
+                int divisor = ((IntegerValue)b).Value;
+                if (divisor == 0)
+                    throw new Exception("Division by zero");
+                
+                int dividend = ((IntegerValue)a).Value;
+                // Check modulo - if zero, do integer division
+                if (dividend % divisor == 0)
+                    return new IntegerValue(dividend / divisor);
+                else
+                    return new FloatValue((double)dividend / divisor);
+            }
+            
+            // Handle long division with modulo check
+            if (a is LongValue && b is LongValue)
+            {
+                long divisor = ((LongValue)b).Value;
+                if (divisor == 0)
+                    throw new Exception("Division by zero");
+                
+                long dividend = ((LongValue)a).Value;
+                // Check modulo - if zero, do integer division
+                if (dividend % divisor == 0)
+                    return new LongValue(dividend / divisor);
+                else
+                    return new FloatValue((double)dividend / divisor);
+            }
+            
+            // Handle mixed type promotion
+            if (a is IntegerValue && b is LongValue)
+            {
+                long divisor = ((LongValue)b).Value;
+                if (divisor == 0)
+                    throw new Exception("Division by zero");
+                return new FloatValue((double)((IntegerValue)a).Value / divisor);
+            }
+            if (a is LongValue && b is IntegerValue)
+            {
+                int divisor = ((IntegerValue)b).Value;
+                if (divisor == 0)
+                    throw new Exception("Division by zero");
+                return new FloatValue((double)((LongValue)a).Value / divisor);
+            }
+            if (a is IntegerValue && b is FloatValue)
+            {
+                double divisor = ((FloatValue)b).Value;
+                if (divisor == 0)
+                    throw new Exception("Division by zero");
+                return new FloatValue(((IntegerValue)a).Value / divisor);
+            }
+            if (a is FloatValue && b is IntegerValue)
+            {
+                int divisor = ((IntegerValue)b).Value;
+                if (divisor == 0)
+                    throw new Exception("Division by zero");
+                return new FloatValue(((FloatValue)a).Value / divisor);
+            }
+            if (a is LongValue && b is FloatValue)
+            {
+                double divisor = ((FloatValue)b).Value;
+                if (divisor == 0)
+                    throw new Exception("Division by zero");
+                return new FloatValue(((LongValue)a).Value / divisor);
+            }
+            if (a is FloatValue && b is LongValue)
+            {
+                long divisor = ((LongValue)b).Value;
+                if (divisor == 0)
+                    throw new Exception("Division by zero");
+                return new FloatValue(((FloatValue)a).Value / divisor);
+            }
+            
+            // Handle same type float operations
+            if (a is FloatValue && b is FloatValue)
+            {
+                double divisor = ((FloatValue)b).Value;
+                if (divisor == 0)
+                    throw new Exception("Division by zero");
+                return new FloatValue(((FloatValue)a).Value / divisor);
+            }
             
             // Handle vector operations
             if (a is VectorValue vecA)
@@ -552,6 +697,18 @@ namespace K3CSharp
                     return vecA.Divide(vecB);
                 else
                     return vecA.Divide(b);
+            }
+            
+            // Handle scalar / vector operations
+            if (b is VectorValue vectorB)
+            {
+                // For scalar / vector, we need to divide scalar by each element
+                var result = new List<K3Value>();
+                foreach (var element in vectorB.Elements)
+                {
+                    result.Add(Divide(a, element));
+                }
+                return new VectorValue(result);
             }
             
             throw new Exception($"Cannot divide {a.Type} and {b.Type}");
@@ -1120,6 +1277,9 @@ namespace K3CSharp
                 "DIVIDE" => Divide(left, right),
                 "MIN" => Min(left, right),
                 "MAX" => Max(left, right),
+                "LESS" => Less(left, right),
+                "GREATER" => Greater(left, right),
+                "EQUAL" => Equal(left, right),
                 "POWER" => Power(left, right),
                 "MODULUS" => Modulus(left, right),
                 "JOIN" => Join(left, right),
@@ -1130,7 +1290,7 @@ namespace K3CSharp
                 "&" => Min(left, right),  // Add fallback for literal &
                 "|" => Max(left, right),  // Add fallback for literal |
                 "^" => Power(left, right),  // Add fallback for literal ^
-                _ => throw new Exception($"Unknown verb for over: {verbName}")
+                _ => throw new Exception($"Unknown operator: {verbName}")
             };
         }
 
@@ -1175,7 +1335,16 @@ namespace K3CSharp
             else
             {
                 // For numeric verbs, assume addition by default
-                return Add(verb, right);
+                // But check if this is actually a glyph verb stored as a different type
+                if (verb.Type == ValueType.Symbol || 
+                    (verb.Type == ValueType.Integer && verb.ToString().Length == 1 && "+-*/%^!&|<>=^,_?#~".Contains(verb.ToString())))
+                {
+                    return ApplyVerb(verb.ToString(), verb, right);
+                }
+                else
+                {
+                    return Add(verb, right);
+                }
             }
         }
 
@@ -1196,7 +1365,17 @@ namespace K3CSharp
                     }
                     else
                     {
-                        current = ApplyVerbWithOperator(verb, current, dataVec.Elements[i]);
+                        // Check if verb is a glyph stored as non-symbol type
+                        string verbStr = verb.ToString();
+                        if (verbStr.Length == 1 && "+-*/%^!&|<>=^,_?#~".Contains(verbStr))
+                        {
+                            current = ApplyVerb(verbStr, current, dataVec.Elements[i]);
+                        }
+                        else
+                        {
+                            // For non-glyph verbs, skip this iteration
+                            continue;
+                        }
                     }
                     result.Add(current);
                 }
@@ -1228,8 +1407,16 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // If verb is not a symbol, treat it as a value to apply with the operator
-                        result.Add(ApplyVerbWithOperator(verb, element, null));
+                        // Check if verb is a glyph stored as non-symbol type
+                        string verbStr = verb.ToString();
+                        if (verbStr.Length == 1 && "+-*/%^!&|<>=^,_?#~".Contains(verbStr))
+                        {
+                            result.Add(ApplyUnaryVerb(verbStr, element));
+                        }
+                        else
+                        {
+                            result.Add(ApplyVerbWithOperator(verb, element, null));
+                        }
                     }
                 }
                 return new VectorValue(result);
@@ -1254,7 +1441,16 @@ namespace K3CSharp
                     }
                     else
                     {
-                        result.Add(ApplyVerbWithOperator(leftVerb, rightData, null));
+                        // Check if verb is a glyph stored as non-symbol type
+                        string verbStr = leftVerb.ToString();
+                        if (verbStr.Length == 1 && "+-*/%^!&|<>=^,_?#~".Contains(verbStr))
+                        {
+                            result.Add(ApplyUnaryVerb(verbStr, rightData));
+                        }
+                        else
+                        {
+                            result.Add(ApplyVerbWithOperator(leftVerb, rightData, null));
+                        }
                     }
                 }
                 return new VectorValue(result);
