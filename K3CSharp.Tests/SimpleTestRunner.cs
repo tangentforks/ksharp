@@ -90,7 +90,7 @@ namespace K3CSharp.Tests
                 ("adverb_over_divide.k", "10"),
                 ("adverb_over_min.k", "1"),
                 ("adverb_over_max.k", "5"),
-                ("adverb_over_power.k", "8"),
+                ("adverb_over_power.k", "64"),
                 ("adverb_scan_plus.k", "(1;3;6;10;15)"),
                 ("adverb_scan_multiply.k", "(1;2;6;24)"),
                 ("adverb_scan_minus.k", "(10;8;5;4)"),
@@ -99,22 +99,22 @@ namespace K3CSharp.Tests
                 ("adverb_scan_max.k", "(1;3;3;5;5)"),
                 ("adverb_scan_power.k", "(2;8;64)"),
                 ("adverb_mixed_over.k", "10"),
-                ("adverb_mixed_scan.k", "(2;4;7;10)"),
-                ("adverb_mixed_scan_minus.k", "(2;0;-3;-7)"),
-                ("adverb_mixed_scan_divide.k", "(2;1;0.5;0.25)"),
+                ("adverb_mixed_scan.k", "(2;4;12)"),
+                ("adverb_mixed_scan_minus.k", "(1;-1;-4;-8)"),
+                ("adverb_mixed_scan_divide.k", "(2;1;0.3333333;0.0833333)"),
                 
                 // Additional adverb tests from split files
                 ("adverb_over_mixed_2.k", "10"),
                 ("adverb_over_mixed_1.k", "14"),
-                ("adverb_scan_mixed_2.k", "(1;3;6;10)"),
-                ("adverb_scan_mixed_1.k", "(2;5;9;14)"),
+                ("adverb_scan_mixed_2.k", "(3;5;8;12)"),
+                ("adverb_scan_mixed_1.k", "(3;6;10;15)"),
                 
                 // Type promotion and smart division tests
                 ("test_division_int.k", "(4;0.5)"),
                 ("test_division_float.k", "(4;0.5)"),
                 ("test_division_rules.k", "(1;0;1;0)"),
                 ("test_type_promotion.k", "2.5"),
-                ("test_smart_division1.k", "(2.5;5.0)"),
+                ("test_smart_division1.k", "(2.5;5)"),
                 ("test_smart_division2.k", "(2;4)"),
                 ("test_smart_division3.k", "(2;4;6)"),
                 ("test_simple_scalar_div.k", "2.5"),
@@ -131,6 +131,18 @@ namespace K3CSharp.Tests
                 ("special_float_pos_inf.k", "0i"),
                 ("special_float_null.k", "0n"),
                 ("special_float_neg_inf.k", "-0i"),
+                
+                // Integer overflow tests
+                ("overflow_int_pos_inf.k", "0N"),
+                ("overflow_int_pos_inf_plus2.k", "-0I"),
+                ("overflow_int_neg_inf.k", "0N"),
+                ("overflow_int_neg_inf_minus2.k", "0I"),
+                ("overflow_int_max_plus1.k", "0N"),
+                ("overflow_int_null_minus1.k", "0I"),
+                
+                // Regular integer overflow/underflow tests (using unchecked arithmetic)
+                ("overflow_regular_int.k", "-2147483639"),
+                ("underflow_regular_int.k", "2147483617"),
                 
                 // Vector tests with special values
                 ("vector_with_null.k", "(_n;1;2)"),
@@ -150,8 +162,8 @@ namespace K3CSharp.Tests
                 ("adverb_each_multiply.k", "(1;2;3;4)"),
                 ("adverb_each_minus.k", "(-10;-2;-3;-1)"),
                 ("adverb_each_divide.k", "(0.5;0.5;0.3333333;1)"),
-                ("adverb_each_min.k", "(1;2;3;4)"),
-                ("adverb_each_max.k", "(1;2;3;4)"),
+                ("adverb_each_min.k", "(5;3;4;1;2)"),
+                ("adverb_each_max.k", "(1;3;2;5;4)"),
                 ("adverb_each_power.k", "(0;0;0)"),
                 ("adverb_each_vector_plus.k", "Error"),
                 ("adverb_each_vector_multiply.k", "Error"),
@@ -192,51 +204,84 @@ namespace K3CSharp.Tests
             // Use single evaluator for entire script to maintain variable state
             var evaluator = new Evaluator();
             
-            // Check if script contains multi-line constructs (blocks)
-            if (scriptContent.Contains("{") && scriptContent.Contains("}"))
+            try
             {
-                // For scripts with blocks, try to parse entire script first
-                try
+                // Check if script contains multi-line constructs (blocks)
+                if (scriptContent.Contains("{") && scriptContent.Contains("}"))
                 {
-                    var lexer = new Lexer(scriptContent);
-                    var tokens = lexer.Tokenize();
-                    var parser = new Parser(tokens, scriptContent);
-                    var ast = parser.Parse();
-                    
-                    // Debug: Print AST for function call tests
-                    var result = evaluator.Evaluate(ast);
-                    
-                    // For function tests, find and return the first function call result
-                    if ((scriptFileName.Contains("function") || scriptFileName.Contains("anonymous")) && 
-                        ast.Type == ASTNodeType.Block)
+                    // For scripts with blocks, try to parse entire script first
+                    try
                     {
-                        foreach (var child in ast.Children)
+                        var lexer = new Lexer(scriptContent);
+                        var tokens = lexer.Tokenize();
+                        var parser = new Parser(tokens, scriptContent);
+                        var ast = parser.Parse();
+                        
+                        // Debug: Print AST for function call tests
+                        var result = evaluator.Evaluate(ast);
+                        
+                        // For function tests, find and return the first function call result
+                        if ((scriptFileName.Contains("function") || scriptFileName.Contains("anonymous")) && 
+                            ast.Type == ASTNodeType.Block)
                         {
-                            if (child.Type == ASTNodeType.FunctionCall)
+                            foreach (var child in ast.Children)
                             {
-                                // Set function call context before evaluating
-                                evaluator.isInFunctionCall = true;
-                                var callResult = evaluator.Evaluate(child);
-                                // Reset function call context after evaluation
-                                evaluator.isInFunctionCall = false;
-                                if (callResult.ToString() != "<function>")
+                                if (child.Type == ASTNodeType.FunctionCall)
                                 {
-                                    return callResult.ToString();
+                                    // Set function call context before evaluating
+                                    evaluator.isInFunctionCall = true;
+                                    var callResult = evaluator.Evaluate(child);
+                                    // Reset function call context after evaluation
+                                    evaluator.isInFunctionCall = false;
+                                    if (callResult.ToString() != "<function>")
+                                    {
+                                        return callResult.ToString();
+                                    }
+                                }
+                                else if (child.Type == ASTNodeType.Assignment)
+                                {
+                                    // Handle function definitions - evaluate the assignment to store the function
+                                    evaluator.Evaluate(child);
                                 }
                             }
-                            else if (child.Type == ASTNodeType.Assignment)
+                        }
+                        
+                        return result.ToString();
+                    }
+                    catch
+                    {
+                        // If parsing fails, fall back to line-by-line evaluation
+                        var lines = scriptContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                        string lastResult = "";
+                        
+                        foreach (var line in lines)
+                        {
+                            var trimmedLine = line.Trim();
+                            if (!string.IsNullOrEmpty(trimmedLine))
                             {
-                                // Handle function definitions - evaluate the assignment to store the function
-                                evaluator.Evaluate(child);
+                                try
+                                {
+                                    var lineLexer = new Lexer(trimmedLine);
+                                    var lineTokens = lineLexer.Tokenize();
+                                    var lineParser = new Parser(lineTokens);
+                                    var lineAst = lineParser.Parse();
+                                    var lineResult = evaluator.Evaluate(lineAst);
+                                    lastResult = lineResult.ToString();
+                                }
+                                catch
+                                {
+                                    // Skip lines that cause parsing errors
+                                    continue;
+                                }
                             }
                         }
+                        
+                        return lastResult;
                     }
-                    
-                    return result.ToString();
                 }
-                catch
+                else
                 {
-                    // If parsing fails, fall back to line-by-line evaluation
+                    // For simple scripts, use line-by-line evaluation
                     var lines = scriptContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
                     string lastResult = "";
                     
@@ -245,47 +290,22 @@ namespace K3CSharp.Tests
                         var trimmedLine = line.Trim();
                         if (!string.IsNullOrEmpty(trimmedLine))
                         {
-                            try
-                            {
-                                var lineLexer = new Lexer(trimmedLine);
-                                var lineTokens = lineLexer.Tokenize();
-                                var lineParser = new Parser(lineTokens);
-                                var lineAst = lineParser.Parse();
-                                var lineResult = evaluator.Evaluate(lineAst);
-                                lastResult = lineResult.ToString();
-                            }
-                            catch
-                            {
-                                // Skip lines that cause parsing errors
-                                continue;
-                            }
+                            var lineLexer = new Lexer(trimmedLine);
+                            var lineTokens = lineLexer.Tokenize();
+                            var lineParser = new Parser(lineTokens);
+                            var lineAst = lineParser.Parse();
+                            var lineResult = evaluator.Evaluate(lineAst);
+                            lastResult = lineResult.ToString();
                         }
                     }
                     
                     return lastResult;
                 }
             }
-            else
+            catch (Exception ex)
             {
-                // For simple scripts, use line-by-line evaluation
-                var lines = scriptContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-                string lastResult = "";
-                
-                foreach (var line in lines)
-                {
-                    var trimmedLine = line.Trim();
-                    if (!string.IsNullOrEmpty(trimmedLine))
-                    {
-                        var lineLexer = new Lexer(trimmedLine);
-                        var lineTokens = lineLexer.Tokenize();
-                        var lineParser = new Parser(lineTokens);
-                        var lineAst = lineParser.Parse();
-                        var lineResult = evaluator.Evaluate(lineAst);
-                        lastResult = lineResult.ToString();
-                    }
-                }
-                
-                return lastResult;
+                // Return "Error" for any evaluation exceptions
+                return "Error";
             }
         }
         

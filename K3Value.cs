@@ -36,7 +36,28 @@ namespace K3CSharp
         {
             Value = value;
             Type = ValueType.Integer;
-            IsSpecial = false;
+            
+            // Check if this value matches any special integer patterns
+            if (value == int.MaxValue)
+            {
+                IsSpecial = true;
+                SpecialName = "0I";
+            }
+            else if (value == int.MinValue)
+            {
+                IsSpecial = true;
+                SpecialName = "0N";
+            }
+            else if (value == int.MinValue + 1)
+            {
+                IsSpecial = true;
+                SpecialName = "-0I";
+            }
+            else
+            {
+                IsSpecial = false;
+                SpecialName = "";
+            }
         }
 
         public IntegerValue(string specialName)
@@ -58,7 +79,13 @@ namespace K3CSharp
         public override K3Value Add(K3Value other)
         {
             if (other is IntegerValue intVal)
-                return new IntegerValue(Value + intVal.Value);
+            {
+                // Use unchecked arithmetic for all integers to allow natural overflow/underflow
+                unchecked
+                {
+                    return new IntegerValue(Value + intVal.Value);
+                }
+            }
             if (other is LongValue longVal)
                 return new LongValue(Value + longVal.Value);
             if (other is FloatValue floatVal)
@@ -70,7 +97,13 @@ namespace K3CSharp
         public override K3Value Subtract(K3Value other)
         {
             if (other is IntegerValue intVal)
-                return new IntegerValue(Value - intVal.Value);
+            {
+                // Use unchecked arithmetic for all integers to allow natural overflow/underflow
+                unchecked
+                {
+                    return new IntegerValue(Value - intVal.Value);
+                }
+            }
             if (other is LongValue longVal)
                 return new LongValue(Value - longVal.Value);
             if (other is FloatValue floatVal)

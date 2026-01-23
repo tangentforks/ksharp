@@ -209,6 +209,23 @@ namespace K3CSharp
                 {
                     var adverbType = PreviousToken().Type.ToString().Replace("TokenType.", "");
                     
+                    // Check if this is a vector-vector each operation
+                    if (left.Type == ASTNodeType.Vector && adverbType == "ADVERB_TICK")
+                    {
+                        // This is a vector-vector each operation, which should throw a length error
+                        // Parse the right side of the adverb
+                        var rightSide = ParseExpression();
+                        
+                        // Create adverb node with vector verb
+                        var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        adverbNode.Value = new SymbolValue(adverbType);
+                        adverbNode.Children.Add(left);
+                        adverbNode.Children.Add(rightSide);
+                        
+                        left = adverbNode;
+                        continue;
+                    }
+                    
                 // Convert the binary operator to a verb symbol
                     var verbName = op.ToString() switch
                     {
@@ -226,16 +243,40 @@ namespace K3CSharp
                     };
                     var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
                     
-                    // Parse the right side of the adverb
-                    var right = ParseExpression();
-                    
-                    // Create adverb node
-                    var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
-                    adverbNode.Value = new SymbolValue(adverbType);
-                    adverbNode.Children.Add(verbNode);
-                    adverbNode.Children.Add(right);
-                    
-                    left = adverbNode;
+                    // For mixed scan operations (scalar verb\ vector), create a vector containing the scalar and verb
+                    // that the Scan method can recognize as a mixed scan
+                    if (IsScalar(left) && adverbType == "ADVERB_BACKSLASH")
+                    {
+                        var mixedScanVector = new List<ASTNode>();
+                        mixedScanVector.Add(left);
+                        mixedScanVector.Add(verbNode);
+                        var mixedScanNode = ASTNode.MakeVector(mixedScanVector);
+                        
+                        // Parse the right side of the adverb
+                        var right = ParseExpression();
+                        
+                        // Create adverb node with the mixed scan vector
+                        var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        adverbNode.Value = new SymbolValue(adverbType);
+                        adverbNode.Children.Add(mixedScanNode);
+                        adverbNode.Children.Add(right);
+                        
+                        left = adverbNode;
+                    }
+                    else
+                    {
+                        // Regular adverb operation (including mixed over operations)
+                        // Parse the right side of the adverb
+                        var right = ParseExpression();
+                        
+                        // Create adverb node
+                        var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        adverbNode.Value = new SymbolValue(adverbType);
+                        adverbNode.Children.Add(verbNode);
+                        adverbNode.Children.Add(right);
+                        
+                        left = adverbNode;
+                    }
                 }
                 else
                 {
@@ -317,11 +358,39 @@ namespace K3CSharp
                    CurrentToken().Type != TokenType.ADVERB_TICK &&
                    CurrentToken().Type != TokenType.EOF)
             {
+                // Check if this is an operator that could form a mixed scan
+                if (CurrentToken().Type == TokenType.MULTIPLY || CurrentToken().Type == TokenType.DIVIDE || 
+                    CurrentToken().Type == TokenType.PLUS || CurrentToken().Type == TokenType.MINUS ||
+                    CurrentToken().Type == TokenType.MIN || CurrentToken().Type == TokenType.MAX ||
+                    CurrentToken().Type == TokenType.POWER)
+                {
+                    // This might be part of a mixed scan, but we'll handle it in ParseExpression
+                }
+                
                 // Check for adverbs in ParseTerm
                 if (Match(TokenType.ADVERB_SLASH) || Match(TokenType.ADVERB_BACKSLASH) || Match(TokenType.ADVERB_TICK))
                 {
                     var adverbType = PreviousToken().Type.ToString().Replace("TokenType.", "");
                     var left = elements[elements.Count - 1]; // Get the last element
+                    
+                    // Check for vector-vector each operations
+                    if (elements.Count > 1 && adverbType == "ADVERB_TICK")
+                    {
+                        // This is a vector-vector each operation, which should throw a length error
+                        // Create a structure that the evaluator can recognize and handle
+                        var vectorVerb = ASTNode.MakeVector(elements.Take(elements.Count - 1).ToList());
+                        
+                        // Parse the right side of the adverb
+                        var rightSide = ParseExpression();
+                        
+                        // Create adverb node with vector verb
+                        var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        adverbNode.Value = new SymbolValue(adverbType);
+                        adverbNode.Children.Add(vectorVerb);
+                        adverbNode.Children.Add(rightSide);
+                        
+                        return adverbNode;
+                    }
                     
                     // Convert the left operand to a verb symbol if needed
                     if (left.Type == ASTNodeType.Literal && left.Value is SymbolValue leftSymbol)
@@ -1099,6 +1168,14 @@ namespace K3CSharp
         private Token PreviousToken()
         {
             return current > 0 ? tokens[current - 1] : new Token(TokenType.EOF, "", -1);
+        }
+
+        private bool IsScalar(ASTNode node)
+        {
+            return node.Type == ASTNodeType.Literal && 
+                   (node.Value is IntegerValue || node.Value is LongValue || 
+                    node.Value is FloatValue || node.Value is CharacterValue || 
+                    node.Value is SymbolValue || node.Value is NullValue);
         }
 
         private bool IsAtEnd()

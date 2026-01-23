@@ -489,13 +489,13 @@ namespace K3CSharp
             if (a is FloatValue && b is LongValue)
                 return new FloatValue(((FloatValue)a).Value + ((LongValue)b).Value);
             
-            // Handle same type operations
+            // Handle same type operations - use the K3Value Add method for proper overflow handling
             if (a is IntegerValue && b is IntegerValue)
-                return new IntegerValue(((IntegerValue)a).Value + ((IntegerValue)b).Value);
+                return ((IntegerValue)a).Add((IntegerValue)b);
             if (a is LongValue && b is LongValue)
-                return new LongValue(((LongValue)a).Value + ((LongValue)b).Value);
+                return ((LongValue)a).Add((LongValue)b);
             if (a is FloatValue && b is FloatValue)
-                return new FloatValue(((FloatValue)a).Value + ((FloatValue)b).Value);
+                return ((FloatValue)a).Add((FloatValue)b);
             
             // Handle vector operations
             if (a is VectorValue vecA)
@@ -508,9 +508,7 @@ namespace K3CSharp
             
             // Handle scalar + vector operations
             if (b is VectorValue vectorB)
-            {
                 return vectorB.Add(a);
-            }
             
             throw new Exception($"Cannot add {a.Type} and {b.Type}");
         }
@@ -531,13 +529,13 @@ namespace K3CSharp
             if (a is FloatValue && b is LongValue)
                 return new FloatValue(((FloatValue)a).Value - ((LongValue)b).Value);
             
-            // Handle same type operations
+            // Handle same type operations - use the K3Value Subtract method for proper overflow handling
             if (a is IntegerValue && b is IntegerValue)
-                return new IntegerValue(((IntegerValue)a).Value - ((IntegerValue)b).Value);
+                return ((IntegerValue)a).Subtract((IntegerValue)b);
             if (a is LongValue && b is LongValue)
-                return new LongValue(((LongValue)a).Value - ((LongValue)b).Value);
+                return ((LongValue)a).Subtract((LongValue)b);
             if (a is FloatValue && b is FloatValue)
-                return new FloatValue(((FloatValue)a).Value - ((FloatValue)b).Value);
+                return ((FloatValue)a).Subtract((FloatValue)b);
             
             // Handle vector operations
             if (a is VectorValue vecA)
@@ -1360,20 +1358,80 @@ namespace K3CSharp
             }
         }
 
+        private K3Value ApplyVerbToScalarAndVector(K3Value scalar, K3Value verb, K3Value vectorElement)
+        {
+            if (verb is SymbolValue verbSymbol)
+            {
+                return ApplyVerb(verbSymbol.Value, scalar, vectorElement);
+            }
+            else
+            {
+                // Check if verb is a glyph stored as non-symbol type
+                string verbStr = verb.ToString();
+                if (verbStr.Length == 1 && "+-*/%^!&|<>=^,_?#~".Contains(verbStr))
+                {
+                    return ApplyVerb(verbStr, scalar, vectorElement);
+                }
+                else
+                {
+                    throw new Exception($"Cannot apply verb {verb} to scalar and vector element");
+                }
+            }
+        }
+
         private K3Value Scan(K3Value verb, K3Value data)
         {
-            // Handle vector case
-            if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
+            // Handle mixed scan case where verb is actually a vector (scalar, verb)
+            if (verb is VectorValue verbVec && verbVec.Elements.Count == 2)
+            {
+                var scalar = verbVec.Elements[0];
+                var actualVerb = verbVec.Elements[1];
+                
+                if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
+                {
+                    var result = new List<K3Value>();
+                    var current = ApplyVerbToScalarAndVector(scalar, actualVerb, dataVec.Elements[0]);
+                    result.Add(current);
+                    
+                    for (int i = 1; i < dataVec.Elements.Count; i++)
+                    {
+                        if (actualVerb is SymbolValue verbSymbol)
+                        {
+                            current = ApplyVerb(verbSymbol.Value, current, dataVec.Elements[i]);
+                        }
+                        else
+                        {
+                            // Check if verb is a glyph stored as non-symbol type
+                            string verbStr = actualVerb.ToString();
+                            if (verbStr.Length == 1 && "+-*/%^!&|<>=^,_?#~".Contains(verbStr))
+                            {
+                                current = ApplyVerb(verbStr, current, dataVec.Elements[i]);
+                            }
+                            else
+                            {
+                                // For non-glyph verbs, skip this iteration
+                                continue;
+                            }
+                        }
+                        result.Add(current);
+                    }
+                    
+                    return new VectorValue(result);
+                }
+            }
+            
+            // Handle vector case (regular scan)
+            if (data is VectorValue dataVec2 && dataVec2.Elements.Count > 0)
             {
                 var result = new List<K3Value>();
-                var current = dataVec.Elements[0];
+                var current = dataVec2.Elements[0];
                 result.Add(current);
                 
-                for (int i = 1; i < dataVec.Elements.Count; i++)
+                for (int i = 1; i < dataVec2.Elements.Count; i++)
                 {
                     if (verb is SymbolValue verbSymbol)
                     {
-                        current = ApplyVerb(verbSymbol.Value, current, dataVec.Elements[i]);
+                        current = ApplyVerb(verbSymbol.Value, current, dataVec2.Elements[i]);
                     }
                     else
                     {
@@ -1381,7 +1439,7 @@ namespace K3CSharp
                         string verbStr = verb.ToString();
                         if (verbStr.Length == 1 && "+-*/%^!&|<>=^,_?#~".Contains(verbStr))
                         {
-                            current = ApplyVerb(verbStr, current, dataVec.Elements[i]);
+                            current = ApplyVerb(verbStr, current, dataVec2.Elements[i]);
                         }
                         else
                         {
@@ -1409,6 +1467,13 @@ namespace K3CSharp
             // Handle vector + vector case (same length)
             if (verb is VectorValue verbVec && data is VectorValue dataVec)
             {
+                // Check if vectors have different lengths - should throw length error
+                if (verbVec.Elements.Count != dataVec.Elements.Count)
+                {
+                    throw new Exception($"length error: {verbVec.Elements.Count} != {dataVec.Elements.Count}");
+                }
+                
+                // For now, throw an error as vector-vector each is not fully implemented
                 throw new Exception("Vector-vector each not implemented");
             }
             

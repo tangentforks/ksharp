@@ -70,8 +70,33 @@ namespace K3CSharp
                 }
                 else if (c == '-')
                 {
-                    tokens.Add(new Token(TokenType.MINUS, "-", position));
-                    Advance();
+                    // Check if this is a negative special value
+                    if (position + 2 < input.Length && 
+                        input[position + 1] == '0' && 
+                        (input[position + 2] == 'I' || input[position + 2] == 'i'))
+                    {
+                        if (position + 3 < input.Length && input[position + 3] == 'L')
+                        {
+                            // -0IL
+                            tokens.Add(new Token(TokenType.LONG, "-0IL", position));
+                            position += 4;
+                        }
+                        else
+                        {
+                            // -0I or -0i
+                            string special = input.Substring(position, 3);
+                            if (input[position + 2] == 'i')
+                                tokens.Add(new Token(TokenType.FLOAT, special, position));
+                            else
+                                tokens.Add(new Token(TokenType.INTEGER, special, position));
+                            position += 3;
+                        }
+                    }
+                    else
+                    {
+                        tokens.Add(new Token(TokenType.MINUS, "-", position));
+                        Advance();
+                    }
                 }
                 else if (c == '*')
                 {
@@ -293,6 +318,36 @@ namespace K3CSharp
             bool hasDecimal = false;
             bool hasExponent = false;
             
+            // Handle negative special values FIRST (before regular number parsing)
+            if (currentChar == '-' && position + 2 < input.Length && 
+                input[position + 1] == '0' && 
+                (input[position + 2] == 'I' || input[position + 2] == 'i'))
+            {
+                if (position + 3 < input.Length && input[position + 3] == 'L')
+                {
+                    // -0IL
+                    position += 4;
+                    var token = new Token(TokenType.LONG, "-0IL", start);
+                    return token;
+                }
+                else
+                {
+                    // -0I or -0i
+                    string special = input.Substring(position, 3);
+                    position += 3;
+                    if (input[position - 1] == 'i')
+                    {
+                        var token = new Token(TokenType.FLOAT, special, start);
+                        return token;
+                    }
+                    else
+                    {
+                        var token = new Token(TokenType.INTEGER, special, start);
+                        return token;
+                    }
+                }
+            }
+            
             // Check for special values starting with 0
             if (currentChar == '0' && position + 1 < input.Length)
             {
@@ -317,29 +372,6 @@ namespace K3CSharp
                         else
                             return new Token(TokenType.INTEGER, special, start);
                     }
-                }
-            }
-            
-            // Handle negative special values
-            if (currentChar == '-' && position + 2 < input.Length && 
-                input[position + 1] == '0' && 
-                (input[position + 2] == 'I' || input[position + 2] == 'i'))
-            {
-                if (position + 3 < input.Length && input[position + 3] == 'L')
-                {
-                    // -0IL
-                    position += 4;
-                    return new Token(TokenType.LONG, "-0IL", start);
-                }
-                else
-                {
-                    // -0I or -0i
-                    string special = input.Substring(position, 3);
-                    position += 3;
-                    if (input[position - 1] == 'i')
-                        return new Token(TokenType.FLOAT, special, start);
-                    else
-                        return new Token(TokenType.INTEGER, special, start);
                 }
             }
             
