@@ -671,10 +671,10 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary min
+                        // This is unary where (&)
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("MIN");
+                        node.Value = new SymbolValue("WHERE");
                         node.Children.Add(operand);
                         return node;
                     }
@@ -700,10 +700,10 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary max
+                        // This is unary reverse (|)
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("MAX");
+                        node.Value = new SymbolValue("REVERSE");
                         node.Children.Add(operand);
                         return node;
                     }
@@ -1116,6 +1116,15 @@ namespace K3CSharp
                 result.StartPosition = leftBracePos;
                 result.EndPosition = rightBracePos;
                 result.Value = new FunctionValue(bodyText, parameters, preParsedTokens);
+            }
+            else if (Match(TokenType.TYPE))
+            {
+                // 4: operator is unary - parse the operand
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("TYPE");
+                node.Children.Add(operand);
+                return node;
             }
             else if (Match(TokenType.EOF))
             {

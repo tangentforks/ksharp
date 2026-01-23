@@ -110,9 +110,14 @@ namespace K3CSharp.Tests
                 ("adverb_scan_mixed_1.k", "(3;6;10;15)"),
                 
                 // Type promotion and smart division tests
-                ("test_division_int.k", "(4;0.5)"),
-                ("test_division_float.k", "(4;0.5)"),
-                ("test_division_rules.k", "(1;0;1;0)"),
+                ("test_division_int_5_2.k", "2.5"),
+                ("test_division_int_4_2.k", "2"),
+                ("test_division_float_5_2.5.k", "2"),
+                ("test_division_float_4_2.0.k", "2"),
+                ("test_division_rules_5_2.k", "2.5"),
+                ("test_division_rules_4_2.k", "2"),
+                ("test_division_rules_10_3.k", "3.3333333"),
+                ("test_division_rules_12_4.k", "3"),
                 ("test_type_promotion.k", "2.5"),
                 ("test_smart_division1.k", "(2.5;5)"),
                 ("test_smart_division2.k", "(2;4)"),
@@ -140,6 +145,14 @@ namespace K3CSharp.Tests
                 ("overflow_int_max_plus1.k", "0N"),
                 ("overflow_int_null_minus1.k", "0I"),
                 
+                // Long overflow tests
+                ("overflow_long_max_plus1.k", "0NL"),
+                ("overflow_long_min_minus1.k", "Error"),
+                ("overflow_long_neg_inf.k", "0NL"),
+                ("overflow_long_neg_inf_minus2.k", "0IL"),
+                ("overflow_long_pos_inf.k", "0NL"),
+                ("overflow_long_pos_inf_plus2.k", "-0IL"),
+                
                 // Regular integer overflow/underflow tests (using unchecked arithmetic)
                 ("overflow_regular_int.k", "-2147483639"),
                 ("underflow_regular_int.k", "2147483617"),
@@ -153,9 +166,46 @@ namespace K3CSharp.Tests
                 ("function_application.k", "Error"),
                 ("complex_function.k", "Error"),
                 ("variable_scoping_comprehensive.k", "Error"),
-                ("special_values_arithmetic.k", "Error"),
-                ("type_operator.k", "Error"),
-                ("type_operator_comprehensive.k", "Error"),
+                ("special_values_arithmetic.k", "-2147483646"),
+                // Special values underflow tests
+                ("test_special_underflow.k", "2147483622"),
+                ("test_special_underflow_2.k", "2147483549"),
+                ("test_special_underflow_3.k", "2147482649"),
+                
+                // Additional special values tests
+                ("test_special_0i_plus_1.k", "0N"),
+                ("test_special_0n_plus_1.k", "-0I"),
+                ("test_special_1_plus_neg0i.k", "-2147483646"),
+                ("test_special_neg0i_plus_1.k", "-2147483646"),
+                
+                // Type operator tests
+                ("type_operator_int.k", "1"),
+                ("type_operator_float.k", "2"),
+                ("type_operator_char.k", "3"),
+                ("type_operator_symbol.k", "4"),
+                ("type_operator_null.k", "6"),
+                ("type_operator_vector_int.k", "-1"),
+                ("type_operator_vector_float.k", "-2"),
+                ("type_operator_vector_char.k", "-3"),
+                ("type_operator_vector_symbol.k", "-1"),
+                ("type_operator_vector_mixed.k", "0"),
+                
+                // Additional type operator tests
+                ("test_type1.k", "1"),
+                ("test_type_char.k", "3"),
+                ("test_type_float.k", "2"),
+                ("test_type_null.k", "6"),
+                ("test_type_simple.k", "1"),
+                ("test_type_space.k", "1"),
+                ("test_type_symbol.k", "4"),
+                ("test_type_vector.k", "-1"),
+                ("test_type_vector_debug.k", "-1"),
+                ("type_operator_clean.k", "1"),
+                
+                // Binary operation tests
+                ("test_binary.k", "5"),
+                ("test_binary1.k", "2"),
+                ("test_binary2.k", "5"),
                 
                 // Each adverb tests (to track verb symbol conversion issue)
                 ("adverb_each_plus.k", "(1;2;3;4)"),

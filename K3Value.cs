@@ -154,7 +154,28 @@ namespace K3CSharp
         {
             Value = value;
             Type = ValueType.Long;
-            IsSpecial = false;
+            
+            // Check if this value matches any special long patterns
+            if (value == long.MaxValue)
+            {
+                IsSpecial = true;
+                SpecialName = "0IL";
+            }
+            else if (value == long.MinValue)
+            {
+                IsSpecial = true;
+                SpecialName = "0NL";
+            }
+            else if (value == long.MinValue + 1)
+            {
+                IsSpecial = true;
+                SpecialName = "-0IL";
+            }
+            else
+            {
+                IsSpecial = false;
+                SpecialName = "";
+            }
         }
 
         public LongValue(string specialName)
@@ -176,9 +197,21 @@ namespace K3CSharp
         public override K3Value Add(K3Value other)
         {
             if (other is IntegerValue intVal)
-                return new LongValue(Value + intVal.Value);
+            {
+                // Use unchecked arithmetic to allow natural overflow/underflow
+                unchecked
+                {
+                    return new LongValue(Value + intVal.Value);
+                }
+            }
             if (other is LongValue longVal)
-                return new LongValue(Value + longVal.Value);
+            {
+                // Use unchecked arithmetic to allow natural overflow/underflow
+                unchecked
+                {
+                    return new LongValue(Value + longVal.Value);
+                }
+            }
             if (other is FloatValue floatVal)
                 return new FloatValue(Value + floatVal.Value);
             
@@ -188,13 +221,25 @@ namespace K3CSharp
         public override K3Value Subtract(K3Value other)
         {
             if (other is IntegerValue intVal)
-                return new LongValue(Value - intVal.Value);
+            {
+                // Use unchecked arithmetic to allow natural overflow/underflow
+                unchecked
+                {
+                    return new LongValue(Value - intVal.Value);
+                }
+            }
             if (other is LongValue longVal)
-                return new LongValue(Value - longVal.Value);
+            {
+                // Use unchecked arithmetic to allow natural overflow/underflow
+                unchecked
+                {
+                    return new LongValue(Value - longVal.Value);
+                }
+            }
             if (other is FloatValue floatVal)
                 return new FloatValue(Value - floatVal.Value);
             
-            throw new InvalidOperationException($"Cannot subtract Long from {other.Type}");
+            throw new InvalidOperationException($"Cannot subtract from Long");
         }
 
         public override K3Value Multiply(K3Value other)

@@ -137,8 +137,9 @@ namespace K3CSharp
                     "TRANSPOSE" => Transpose(operand),
                     "FIRST" => First(operand),
                     "RECIPROCAL" => Reciprocal(operand),
-                    "GENERATE" => Generate(operand),
+                    "WHERE" => Where(operand),
                     "REVERSE" => Reverse(operand),
+                    "TYPE" => GetTypeCode(operand),
                     "GRADE_UP" => GradeUp(operand),
                     "GRADE_DOWN" => GradeDown(operand),
                     "SHAPE" => Shape(operand),
@@ -994,7 +995,7 @@ namespace K3CSharp
             throw new Exception($"Cannot find reciprocal of {a.Type}");
         }
 
-        private K3Value Generate(K3Value a)
+        private K3Value Where(K3Value a)
         {
             if (a is IntegerValue intA)
             {
