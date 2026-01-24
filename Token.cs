@@ -9,6 +9,7 @@ namespace K3CSharp
         LONG,
         FLOAT,
         CHARACTER,
+        CHARACTER_VECTOR,
         SYMBOL,
         IDENTIFIER,
         LEFT_PAREN,

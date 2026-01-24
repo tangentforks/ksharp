@@ -17,10 +17,8 @@ namespace K3CSharp
         public K3Value Evaluate(ASTNode node)
         {
             if (node == null)
-            {
                 return new NullValue();
-            }
-
+                
             return EvaluateNode(node);
         }
 
@@ -39,7 +37,7 @@ namespace K3CSharp
                     {
                         var assignName = node.Value is SymbolValue assignmentSym ? assignmentSym.Value : node.Value.ToString();
                         var value = Evaluate(node.Children[0]);
-                        SetVariable(assignName, value);
+                        SetGlobalVariable(assignName, value); // Use global variables for K-style assignments
                         return value; // Return the assigned value
                     }
 
@@ -219,9 +217,21 @@ namespace K3CSharp
                 throw new Exception("Function node must contain a FunctionValue");
             }
             
-            // For function definitions, return the function object
-            // For function calls, the execution happens in EvaluateFunctionCall
-            return functionValue;
+            // For anonymous functions with no parameters and non-empty body, evaluate immediately
+            // This is K behavior: {4+5} evaluates to 9, not a function object
+            // But {} should return a function object, and {[x] x+6} should return a function object
+            if (functionValue.Parameters.Count == 0 && !string.IsNullOrEmpty(functionValue.BodyText.Trim()))
+            {
+                // No parameters but has body - evaluate the body directly
+                var functionEvaluator = new Evaluator();
+                return ExecuteFunctionBody(functionValue.BodyText, functionEvaluator, functionValue.PreParsedTokens);
+            }
+            else
+            {
+                // Function with parameters, or empty function - return the function object
+                // For function calls, the execution happens in EvaluateFunctionCall
+                return functionValue;
+            }
         }
 
         private K3Value EvaluateFunctionCall(ASTNode node)
@@ -297,12 +307,20 @@ namespace K3CSharp
                 return originalFunction.BodyText;
             }
             
-            // Create a new function body that calls the original function with stored arguments
-            var remainingParams = string.Join(";", originalFunction.Parameters.Skip(providedArguments.Count));
+            // Create a new function body with argument substitution
+            var bodyText = originalFunction.BodyText;
             
-            // For now, we'll use a simple approach that references the original function
-            // In a full implementation, we'd want to store the provided arguments in the closure
-            return $"[{remainingParams}] {originalFunction.BodyText}";
+            // Substitute provided arguments in the body
+            for (int i = 0; i < providedArguments.Count && i < originalFunction.Parameters.Count; i++)
+            {
+                var paramName = originalFunction.Parameters[i];
+                var argValue = providedArguments[i].ToString();
+                
+                // Replace parameter name with its value in the body
+                bodyText = bodyText.Replace(paramName, argValue);
+            }
+            
+            return bodyText;
         }
 
         private K3Value EvaluateAdverbChain(ASTNode node)
@@ -380,6 +398,18 @@ namespace K3CSharp
             
             var parameters = functionValue.Parameters;
             var bodyText = functionValue.BodyText;
+            
+            // Vector argument unpacking: if we have 1 vector argument but need multiple parameters, unpack it
+            // Only unpack if the vector has multiple elements (for single-param functions, keep as is)
+            if (arguments.Count == 1 && parameters.Count > 1 && arguments[0] is VectorValue vectorArg && vectorArg.Elements.Count > 1)
+            {
+                var unpackedArgs = new List<K3Value>();
+                foreach (var element in vectorArg.Elements)
+                {
+                    unpackedArgs.Add(element);
+                }
+                arguments = unpackedArgs;
+            }
             
             // Check for projection: fewer arguments than expected valence
             if (arguments.Count < parameters.Count)
@@ -1250,19 +1280,54 @@ namespace K3CSharp
             // Handle vector case (over)
             if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
             {
-                var result = dataVec.Elements[0];
-                
-                for (int i = 1; i < dataVec.Elements.Count; i++)
+                // Check if this is a mixed adverb operation (verb is a vector with [scalar, verbSymbol])
+                if (verb is VectorValue mixedVerbVec && mixedVerbVec.Elements.Count == 2)
                 {
-                    // Apply the verb to result and next element
-                    if (verb is SymbolValue verbSymbol)
+                    var scalar = mixedVerbVec.Elements[0];
+                    var verbSymbol = mixedVerbVec.Elements[1] as SymbolValue;
+                    
+                    if (verbSymbol != null)
                     {
-                        result = ApplyVerb(verbSymbol.Value, result, dataVec.Elements[i]);
+                        // Mixed adverb: start with the scalar, then apply the verb to each vector element
+                        var mixedResult = scalar;
+                        for (int i = 0; i < dataVec.Elements.Count; i++)
+                        {
+                            mixedResult = ApplyVerb(verbSymbol.Value, mixedResult, dataVec.Elements[i]);
+                        }
+                        return mixedResult;
                     }
-                    else
+                }
+                
+                // For mixed adverb operations (scalar + over + vector), the scalar should be used only once
+                // Example: 1 +/ 2 3 4 5 should be 1 + 2 + 3 + 4 + 5, not (1+2) + (1+3) + (1+4) + (1+5)
+                K3Value result;
+                
+                // Check if this is a mixed adverb (scalar + over + vector)
+                if (IsScalar(verb) && verb.Type != ValueType.Symbol)
+                {
+                    // Mixed adverb: start with the scalar verb, then apply to each vector element
+                    result = verb;
+                    for (int i = 0; i < dataVec.Elements.Count; i++)
                     {
-                        // If verb is not a symbol, treat it as a value to apply with the operator
                         result = ApplyVerbWithOperator(verb, result, dataVec.Elements[i]);
+                    }
+                }
+                else
+                {
+                    // Regular over: start with first element and apply verb to accumulate
+                    result = dataVec.Elements[0];
+                    for (int i = 1; i < dataVec.Elements.Count; i++)
+                    {
+                        // Apply the verb to result and next element
+                        if (verb is SymbolValue verbSymbol)
+                        {
+                            result = ApplyVerb(verbSymbol.Value, result, dataVec.Elements[i]);
+                        }
+                        else
+                        {
+                            // If verb is not a symbol, treat it as a value to apply with the operator
+                            result = ApplyVerbWithOperator(verb, result, dataVec.Elements[i]);
+                        }
                     }
                 }
                 

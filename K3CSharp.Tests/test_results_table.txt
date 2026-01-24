@@ -1,0 +1,187 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║        K3 INTERPRETER TEST RESULTS TABLE║
+╠════════════════════════════════════════════════════════════════════════════════╣
+║ Test File                 │ Input                │ Actual Output        │ Expected             ║
+╠════════════════════════════════════════════════════════════════════════════════╣
+║ simple_addition.k         │ 1 + 2                │ 3                    │                      ║
+║ simple_subtraction.k      │ 5 - 3                │ 2                    │                      ║
+║ simple_multiplication.k   │ 4 * 3                │ 12                   │                      ║
+║ simple_division.k         │ 8 % 2                │ 4                    │                      ║
+║ vector_addition.k         │ 1 2 + 3 4            │ (4;6)                │                      ║
+║ vector_subtraction.k      │ 1 2 - 3 4            │ (-2;-2)              │                      ║
+║ vector_multiplication.k   │ 1 2 * 3 4            │ (3;8)                │                      ║
+║ vector_division.k         │ 1 2 % 3 4            │ (0.3333333;0.5)      │                      ║
+║ test_vector.k             │ 1 2 3                │ (1;2;3)              │                      ║
+║ scalar_vector_addition.k  │ 1 2 + 3              │ (4;5)                │                      ║
+║ scalar_vector_multiplication.k │ 1 2 * 3              │ (3;6)                │                      ║
+║ vector_index_first.k      │ 5 8 4 9 @ 0          │ 5                    │                      ║
+║ vector_index_single.k     │ 5 8 4 9 @ 2          │ 4                    │                      ║
+║ vector_index_multiple.k   │ 5 8 4 9 @ 1 3        │ (8;9)                │                      ║
+║ vector_index_duplicate.k  │ 5 8 4 9 @ 0 0        │ (5;5)                │                      ║
+║ vector_index_reverse.k    │ 5 8 4 9 @ 3 1        │ (9;8)                │                      ║
+║ parenthesized_vector.k    │ (1;2;3;4)            │                      │ (1;2;3;4)            ║
+║ parentheses_basic.k       │ 1 + 2 * 3            │ 9                    │                      ║
+║ parentheses_grouping.k    │ (1 + 2) * 3          │ 9                    │                      ║
+║ parentheses_nested.k      │ (1 + 2) + 3          │ 6                    │                      ║
+║ parentheses_precedence.k  │ 1 + (2 * 3)          │ 7                    │                      ║
+║ variable_assignment.k     │ foo:7                │ 7                    │                      ║
+║ variable_usage.k          │ x:10                 │ 30                   │                      ║
+║ variable_reassignment.k   │ foo:7                │ (7.2;4.5)            │                      ║
+║ integer_types.k           │ 42                   │ 123456789L           │                      ║
+║ float_types.k             │ 3.14                 │ 170                  │                      ║
+║ character_single.k        │ "f"                  │ "f"                  │                      ║
+║ character_vector.k        │ "hello"              │ ("h";"e";"l";"l...   │                      ║
+║ symbol_types.k            │ `foo                 │ `"a symbol"          │                      ║
+║ minimum_operator.k        │ 3 & 5                │ 3                    │                      ║
+║ maximum_operator.k        │ 3 | 5                │ 5                    │                      ║
+║ less_than_operator.k      │ 3 < 5                │ 1                    │                      ║
+║ greater_than_operator.k   │ 3 > 5                │ 0                    │                      ║
+║ equal_operator.k          │ 3 = 5                │ 0                    │                      ║
+║ power_operator.k          │ 2 ^ 3                │ 8                    │                      ║
+║ modulus_operator.k        │ 7 ! 3                │ 1                    │                      ║
+║ negate_operator.k         │ ~0                   │ 1                    │                      ║
+║ join_operator.k           │ 3 , 5                │ (3;5)                │                      ║
+║ unary_minus_operator.k    │ -5                   │ -5                   │                      ║
+║ first_operator.k          │ * (1 2 3)            │ 1                    │                      ║
+║ reciprocal_operator.k     │ %4                   │ 0.25                 │                      ║
+║ generate_operator.k       │ &4                   │ (0;0;0;0)            │                      ║
+║ reverse_operator.k        │ | (1 2 3)            │ (3;2;1)              │                      ║
+║ count_operator.k          │ # (1 2 3)            │ 3                    │                      ║
+║ enumerate_operator.k      │ !5                   │ (0;1;2;3;4)          │                      ║
+║ enlist_operator.k         │ ,5                   │ (5)                  │                      ║
+║ floor_operator.k          │ _3.7                 │ 3                    │                      ║
+║ unique_operator.k         │ ? (1 2 1 3)          │ (1;2;3)              │                      ║
+║ grade_up_operator.k       │ < (3 11 9 9 4)       │ (0;4;2;3;1)          │                      ║
+║ grade_down_operator.k     │ > (3 11 9 9 4)       │ (1;2;3;4;0)          │                      ║
+║ shape_operator.k          │ ^ (1 2 3)            │ (3)                  │                      ║
+║ adverb_over_plus.k        │ +/ 1 2 3 4 5         │ 15                   │                      ║
+║ adverb_over_multiply.k    │ */ 1 2 3 4           │ 24                   │                      ║
+║ adverb_over_minus.k       │ -/ 10 2 3 1          │ 4                    │                      ║
+║ adverb_over_divide.k      │ %/ 100 2 5           │ 10                   │                      ║
+║ adverb_over_min.k         │ &/ 5 3 4 1 2         │ 1                    │                      ║
+║ adverb_over_max.k         │ |/ 1 3 2 5 4         │ 5                    │                      ║
+║ adverb_over_power.k       │ ^/ 2 3 2             │ 64                   │                      ║
+║ adverb_scan_plus.k        │ +\ 1 2 3 4 5         │ (1;3;6;10;15)        │                      ║
+║ adverb_scan_multiply.k    │ *\ 1 2 3 4           │ (1;2;6;24)           │                      ║
+║ adverb_scan_minus.k       │ -\ 10 2 3 1          │ (10;8;5;4)           │                      ║
+║ adverb_scan_divide.k      │ %\ 100 2 5           │ (100;50;10)          │                      ║
+║ adverb_scan_min.k         │ &\ 5 3 4 1 2         │ (5;3;3;1;1)          │                      ║
+║ adverb_scan_max.k         │ |\ 1 3 2 5 4         │ (1;3;3;5;5)          │                      ║
+║ adverb_scan_power.k       │ ^\ 2 3 2             │ (2;8;64)             │                      ║
+║ adverb_mixed_scan.k       │ 2 *\ 1 2 3           │ (2;4;12)             │                      ║
+║ adverb_mixed_scan_minus.k │ 2 -\ 1 2 3 4         │ (1;-1;-4;-8)         │                      ║
+║ adverb_mixed_scan_divide.k │ 2 %\ 1 2 3 4         │ (2;1;0.3333333;...   │                      ║
+║ adverb_over_mixed_2.k     │ 2 +/ 1 2 3 4         │ 12                   │                      ║
+║ adverb_over_mixed_1.k     │ 1 +/ 2 3 4 5         │ 15                   │                      ║
+║ adverb_scan_mixed_2.k     │ 2 +\ 1 2 3 4         │ (3;5;8;12)           │                      ║
+║ adverb_scan_mixed_1.k     │ 1 +\ 2 3 4 5         │ (3;6;10;15)          │                      ║
+║ test_division_int_5_2.k   │ 5 % 2                │ 2.5                  │                      ║
+║ test_division_int_4_2.k   │ 4 % 2                │ 2                    │                      ║
+║ test_division_float_5_2.5.k │ 5 % 2.5              │ 2                    │                      ║
+║ test_division_float_4_2.0.k │ 4 % 2.0              │ 2                    │                      ║
+║ test_division_rules_5_2.k │ 5 % 2                │ 2.5                  │                      ║
+║ test_division_rules_4_2.k │ 4 % 2                │ 2                    │                      ║
+║ test_division_rules_10_3.k │ 10 % 3               │ 3.3333333            │                      ║
+║ test_division_rules_12_4.k │ 12 % 4               │ 3                    │                      ║
+║ test_type_promotion.k     │ 1.5 + 2              │ 2.5                  │                      ║
+║ test_smart_division1.k    │ 5 10 % 2             │ (2.5;5)              │                      ║
+║ test_smart_division2.k    │ 4 8 % 2              │ (2;4)                │                      ║
+║ test_smart_division3.k    │ 6 12 18 % 3          │ (2;4;6)              │                      ║
+║ test_simple_scalar_div.k  │ 5 % 2                │ 2.5                  │                      ║
+║ test_enumerate.k          │ ! 2                  │ (0;1)                │                      ║
+║ special_null.k            │ _n                   │ _n                   │                      ║
+║ special_int_pos_inf.k     │ 0I                   │ 0I                   │                      ║
+║ special_int_null.k        │ 0N                   │ 0N                   │                      ║
+║ special_int_neg_inf.k     │ -0I                  │ -0I                  │                      ║
+║ special_long_pos_inf.k    │ 0IL                  │ 0IL                  │                      ║
+║ special_long_null.k       │ 0NL                  │ 0NL                  │                      ║
+║ special_long_neg_inf.k    │ -0IL                 │ -0IL                 │                      ║
+║ special_float_pos_inf.k   │ 0i                   │ 0i                   │                      ║
+║ special_float_null.k      │ 0n                   │ 0n                   │                      ║
+║ special_float_neg_inf.k   │ -0i                  │ -0i                  │                      ║
+║ overflow_int_pos_inf.k    │ 0I + 1               │ 0N                   │                      ║
+║ overflow_int_pos_inf_plus2.k │ 0I + 2               │ -0I                  │                      ║
+║ overflow_int_neg_inf.k    │ -0I - 1              │ 0N                   │                      ║
+║ overflow_int_neg_inf_minus2.k │ -0I - 2              │ 0I                   │                      ║
+║ overflow_int_max_plus1.k  │ 2147483647 + 1       │ 0N                   │                      ║
+║ overflow_int_null_minus1.k │ 0N - 1               │ 0I                   │                      ║
+║ overflow_long_max_plus1.k │ 9223372036854775807L + 1 │ 0NL                  │                      ║
+║ overflow_long_min_minus1.k │ -9223372036854775808L - 1 │                      │                      ║
+║ overflow_long_neg_inf.k   │ -0IL - 1             │ 0NL                  │                      ║
+║ overflow_long_neg_inf_minus2.k │ -0IL - 2             │ 0IL                  │                      ║
+║ overflow_long_pos_inf.k   │ 0IL + 1              │ 0NL                  │                      ║
+║ overflow_long_pos_inf_plus2.k │ 0IL + 2              │ -0IL                 │                      ║
+║ overflow_regular_int.k    │ 2147483637 + 20      │ -2147483639          │                      ║
+║ underflow_regular_int.k   │ -2147483639 - 40     │ 2147483617           │                      ║
+║ vector_with_null.k        │ _n 1 2               │ (_n;1;2)             │                      ║
+║ vector_with_null_middle.k │ 1 _n 3               │ (1;_n;3)             │                      ║
+║ anonymous_function_empty.k │ {}                   │ {}                   │                      ║
+║ anonymous_function_simple.k │ {4+5}                │ 9                    │                      ║
+║ anonymous_function_single_param.k │ {[arg1] arg1+6}      │ {[arg1] arg1+6}      │                      ║
+║ anonymous_function_double_param.k │ {[op1;op2] op1 * op2} │ {[op1;op2] op1*...   │                      ║
+║ function_add7.k           │ add7:{[arg1] arg1+6} │ 12                   │                      ║
+║ function_mul.k            │ mul:{[op1;op2] op1 * op2} │ 32                   │                      ║
+║ function_foo_chain.k      │ mul:{[op1;op2] op1 * op2} │ 20                   │                      ║
+║ function_call_simple.k    │ add7:{[arg1] arg1+6} │ 12                   │                      ║
+║ function_call_double.k    │ mul:{[op1;op2] op1 * op2} │ 32                   │                      ║
+║ function_call_chain.k     │ mul:{[op1;op2] op1 * op2} │ 20                   │                      ║
+║ function_call_anonymous.k │ {[arg1] arg1+6} . 7  │ 13                   │                      ║
+║ complex_function.k        │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2} │ 205                  │                      ║
+║ test_multiline_function_single.k │ test: {[x] a:x*2; a+10} │ 20                   │                      ║
+║ test_scoping_single.k     │ globalVar: 100       │ 110                  │                      ║
+║ variable_scoping_global_access.k │ // Test function accessing global variable │ 150                  │                      ║
+║ variable_scoping_local_hiding.k │ // Test function with local variable hiding global │ Error                │                      ║
+║ variable_scoping_global_unchanged.k │ // Test verify global variable unchanged │ 100                  │                      ║
+║ variable_scoping_nested_functions.k │ // Test nested functions │ Error                │                      ║
+║ variable_scoping_global_assignment.k │ // Test global assignment from nested function │ 100                  │                      ║
+║ special_values_arithmetic.k │ 0I + 1               │ -2147483646          │                      ║
+║ test_special_underflow.k  │ -0I - 27             │ 2147483622           │                      ║
+║ test_special_underflow_2.k │ -0I - 100            │ 2147483549           │                      ║
+║ test_special_underflow_3.k │ -0I - 1000           │ 2147482649           │                      ║
+║ test_special_0i_plus_1.k  │ 0I + 1               │ 0N                   │                      ║
+║ test_special_0n_plus_1.k  │ 0N + 1               │ -0I                  │                      ║
+║ test_special_1_plus_neg0i.k │ 1 + -0I              │ -2147483646          │                      ║
+║ test_special_neg0i_plus_1.k │ -0I + 1              │ -2147483646          │                      ║
+║ type_operator_int.k       │ 4: 42                │ 1                    │                      ║
+║ type_operator_float.k     │ 4: 3.14              │ 2                    │                      ║
+║ type_operator_char.k      │ 4: "a"               │ 3                    │                      ║
+║ type_operator_symbol.k    │ 4: `symbol           │ 4                    │                      ║
+║ type_operator_null.k      │ 4: _n                │ 6                    │                      ║
+║ type_operator_vector_int.k │ 4: (1 2 3)           │ -1                   │                      ║
+║ type_operator_vector_float.k │ 4: (1.0 2.0 3.0)     │ -2                   │                      ║
+║ type_operator_vector_char.k │ 4: ("abc")           │ -3                   │                      ║
+║ type_operator_vector_symbol.k │ 4: "abc"             │ -3                   │                      ║
+║ type_operator_vector_mixed.k │ 4: (1 2.0 "a")       │ 0                    │                      ║
+║ test_type1.k              │ 4: 42                │ 1                    │                      ║
+║ test_type_char.k          │ 4: "a"               │ 3                    │                      ║
+║ test_type_float.k         │ 4: 3.14              │ 2                    │                      ║
+║ test_type_null.k          │ 4: _n                │ 6                    │                      ║
+║ test_type_simple.k        │ 4:42                 │ 1                    │                      ║
+║ test_type_space.k         │ 4: 42                │ 1                    │                      ║
+║ test_type_symbol.k        │ 4: `symbol           │ 4                    │                      ║
+║ test_type_vector.k        │ 4: (1 2 3)           │ -1                   │                      ║
+║ test_type_vector_debug.k  │ 4:(1 2 3)            │ -1                   │                      ║
+║ type_operator_clean.k     │ 4: 42                │ 1                    │                      ║
+║ test_binary1.k            │ 4 & 2                │ 2                    │                      ║
+║ test_binary2.k            │ 5 | 3                │ 5                    │                      ║
+║ adverb_each_plus.k        │ +' 1 2 3 4           │ (1;2;3;4)            │                      ║
+║ adverb_each_multiply.k    │ *' 1 2 3 4           │ (1;2;3;4)            │                      ║
+║ adverb_each_minus.k       │ -' 10 2 3 1          │ (-10;-2;-3;-1)       │                      ║
+║ adverb_each_divide.k      │ %' 2 2 3 1           │ (0.5;0.5;0.3333...   │                      ║
+║ adverb_each_min.k         │ &' 5 3 4 1 2         │ (5;3;4;1;2)          │                      ║
+║ adverb_each_max.k         │ |' 1 3 2 5 4         │ (1;3;2;5;4)          │                      ║
+║ adverb_each_power.k       │ ^' 2 3 2             │ (0;0;0)              │                      ║
+║ adverb_each_vector_plus.k │ 1 2 +' 4 5 6 7       │ Error                │                      ║
+║ adverb_each_vector_multiply.k │ 2 3 *' 3 4 5         │ Error                │                      ║
+║ adverb_each_vector_minus.k │ 10 20 -' 1 2 3       │ Error                │                      ║
+╠════════════════════════════════════════════════════════════════════════════════╣
+║ SUMMARY: 170/171 tests passed (99.4%)                                        ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+FAILING TESTS DETAILS:
+═════════════════════════════════════════════════════════════════════════════════════
+Test: parenthesized_vector.k
+Input: (1;2;3;4)
+Expected: (1;2;3;4)
+Actual: 
+──────────────────────────────────────────────────────────────────────────

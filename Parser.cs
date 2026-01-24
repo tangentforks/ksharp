@@ -269,10 +269,17 @@ namespace K3CSharp
                         // Parse the right side of the adverb
                         var right = ParseExpression();
                         
-                        // Create adverb node
+                        // Create adverb node with both scalar and verb information
                         var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
                         adverbNode.Value = new SymbolValue(adverbType);
-                        adverbNode.Children.Add(verbNode);
+                        
+                        // Create a vector containing the scalar and verb symbol for mixed adverbs
+                        var mixedAdverbVector = new List<ASTNode>();
+                        mixedAdverbVector.Add(left);  // Add the scalar value
+                        mixedAdverbVector.Add(verbNode);  // Add the verb symbol
+                        var mixedAdverbNode = ASTNode.MakeVector(mixedAdverbVector);
+                        
+                        adverbNode.Children.Add(mixedAdverbNode);
                         adverbNode.Children.Add(right);
                         
                         left = adverbNode;
@@ -535,6 +542,16 @@ namespace K3CSharp
             {
                 var value = PreviousToken().Lexeme;
                 result = ASTNode.MakeLiteral(new CharacterValue(value));
+            }
+            else if (Match(TokenType.CHARACTER_VECTOR))
+            {
+                var value = PreviousToken().Lexeme;
+                var elements = new List<K3Value>();
+                foreach (char c in value)
+                {
+                    elements.Add(new CharacterValue(c.ToString()));
+                }
+                result = ASTNode.MakeLiteral(new VectorValue(elements));
             }
             else if (Match(TokenType.SYMBOL))
             {
@@ -864,6 +881,27 @@ namespace K3CSharp
                 var identifier = PreviousToken().Lexeme;
                 result = ASTNode.MakeVariable(identifier);
             }
+            else if (Match(TokenType.LEFT_PAREN))
+            {
+                // Parentheses are for grouping - parse as complete expression
+                // Space-separated lists are inherently vectors in K3, parentheses don't change that
+                if (!Match(TokenType.RIGHT_PAREN))
+                {
+                    var expression = ParseExpression();
+                    
+                    if (!Match(TokenType.RIGHT_PAREN))
+                    {
+                        throw new Exception("Expected ')' after expression");
+                    }
+                    
+                    result = expression;
+                }
+                else
+                {
+                    // Empty parentheses - create empty vector
+                    result = ASTNode.MakeVector(new List<ASTNode>());
+                }
+            }
             else if (Match(TokenType.NEGATE))
             {
                 // Check if this is unary negate (at start of expression)
@@ -988,35 +1026,24 @@ namespace K3CSharp
             }
             else if (Match(TokenType.LEFT_PAREN))
             {
-                var elements = new List<ASTNode>();
-                
+                // Parentheses are for grouping - parse as complete expression
+                // Space-separated lists are inherently vectors in K3, parentheses don't change that
                 if (!Match(TokenType.RIGHT_PAREN))
                 {
-                    elements.Add(ParsePrimary());
-                    
-                    while (Match(TokenType.SEMICOLON))
-                    {
-                        elements.Add(ParsePrimary());
-                    }
-                    
-                    // Check for additional space-separated elements (not semicolon-separated)
-                    while (!IsAtEnd() && 
-                           CurrentToken().Type != TokenType.RIGHT_PAREN &&
-                           CurrentToken().Type != TokenType.RIGHT_BRACE &&
-                           CurrentToken().Type != TokenType.SEMICOLON &&
-                           CurrentToken().Type != TokenType.NEWLINE &&
-                           CurrentToken().Type != TokenType.EOF)
-                    {
-                        elements.Add(ParsePrimary());
-                    }
+                    var expression = ParseExpression();
                     
                     if (!Match(TokenType.RIGHT_PAREN))
                     {
-                        throw new Exception("Expected ')' after vector elements");
+                        throw new Exception("Expected ')' after expression");
                     }
+                    
+                    result = expression;
                 }
-                
-                result = ASTNode.MakeVector(elements);
+                else
+                {
+                    // Empty parentheses - create empty vector
+                    result = ASTNode.MakeVector(new List<ASTNode>());
+                }
             }
             else if (Match(TokenType.LEFT_BRACE))
             {
@@ -1063,8 +1090,47 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Parse the function body as a block or single expression
-                    body = ParseExpression();
+                    // Parse the function body - handle multiple statements separated by semicolons or newlines
+                    var statements = new List<ASTNode>();
+                    
+                    // Parse all statements, skipping empty ones
+                    while (!IsAtEnd() && CurrentToken().Type != TokenType.RIGHT_BRACE)
+                    {
+                        // Skip empty lines (multiple newlines)
+                        while (Match(TokenType.NEWLINE))
+                        {
+                            // Skip consecutive newlines
+                        }
+                        
+                        // Check if we have content before the next separator or closing brace
+                        if (!IsAtEnd() && CurrentToken().Type != TokenType.RIGHT_BRACE && CurrentToken().Type != TokenType.SEMICOLON)
+                        {
+                            statements.Add(ParseExpression());
+                        }
+                        
+                        // Skip the separator (semicolon or newline) if present
+                        Match(TokenType.SEMICOLON);
+                        while (Match(TokenType.NEWLINE))
+                        {
+                            // Skip consecutive newlines after separator
+                        }
+                    }
+                    
+                    // If we have multiple statements, create a block
+                    if (statements.Count > 1)
+                    {
+                        body = new ASTNode(ASTNodeType.Block);
+                        body.Children.AddRange(statements);
+                    }
+                    else if (statements.Count == 1)
+                    {
+                        body = statements[0];
+                    }
+                    else
+                    {
+                        // Empty function body - create a block with no statements
+                        body = new ASTNode(ASTNodeType.Block);
+                    }
                 }
                 
                 if (!Match(TokenType.RIGHT_BRACE))
@@ -1084,14 +1150,65 @@ namespace K3CSharp
                 // Work backwards to collect tokens from the function body (excluding braces)
                 while (tokenIndex >= bodyStartTokenIndex && tokens[tokenIndex].Type != TokenType.LEFT_BRACE)
                 {
-                    bodyTokens.Insert(0, tokens[tokenIndex]); // Insert at beginning to maintain order
+                    // Skip the closing brace - don't include it in the body
+                    if (tokens[tokenIndex].Type != TokenType.RIGHT_BRACE)
+                    {
+                        bodyTokens.Insert(0, tokens[tokenIndex]); // Insert at beginning to maintain order
+                    }
                     tokenIndex--;
                 }
                 
                 // Reconstruct the function body text from tokens
                 if (bodyTokens.Count > 0)
                 {
-                    bodyText = string.Join(" ", bodyTokens.Select(t => t.Lexeme));
+                    // Reconstruct body text preserving original spacing as much as possible
+                    var bodyParts = new List<string>();
+                    for (int i = 0; i < bodyTokens.Count; i++)
+                    {
+                        var token = bodyTokens[i];
+                        var lexeme = token.Lexeme;
+                        
+                        // Handle operators that should be attached to operands (no spaces)
+                        if ((lexeme == "+" || lexeme == "-" || lexeme == "*" || lexeme == "/" || 
+                             lexeme == "^" || lexeme == "!" || lexeme == "=" || lexeme == "<" || 
+                             lexeme == ">" || lexeme == "&" || lexeme == "|" || lexeme == ","))
+                        {
+                            // Check if this operator should be attached to previous token (no space before)
+                            if (i > 0)
+                            {
+                                var prevToken = bodyTokens[i - 1];
+                                if (prevToken.Type == TokenType.IDENTIFIER || prevToken.Type == TokenType.INTEGER ||
+                                    prevToken.Type == TokenType.FLOAT || prevToken.Type == TokenType.RIGHT_PAREN ||
+                                    prevToken.Type == TokenType.RIGHT_BRACKET)
+                                {
+                                    // Attach operator to previous token (no space before)
+                                    bodyParts[bodyParts.Count - 1] += lexeme;
+                                    
+                                    // Check if next token should also be attached (no space after)
+                                    if (i + 1 < bodyTokens.Count)
+                                    {
+                                        var nextToken = bodyTokens[i + 1];
+                                        if (nextToken.Type == TokenType.IDENTIFIER || nextToken.Type == TokenType.INTEGER ||
+                                            nextToken.Type == TokenType.FLOAT || nextToken.Type == TokenType.LEFT_PAREN ||
+                                            nextToken.Type == TokenType.LEFT_BRACKET)
+                                        {
+                                            // Attach next token to operator as well (no space after)
+                                            if (i + 1 < bodyTokens.Count)
+                                            {
+                                                bodyParts[bodyParts.Count - 1] += nextToken.Lexeme;
+                                                i++; // Skip the next token since we already processed it
+                                            }
+                                        }
+                                    }
+                                    continue;
+                                }
+                            }
+                        }
+                        
+                        bodyParts.Add(lexeme);
+                    }
+                    
+                    bodyText = string.Join(" ", bodyParts);
                     
                     // Pre-parse the function body for better performance
                     try

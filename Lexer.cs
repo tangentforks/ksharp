@@ -285,7 +285,16 @@ namespace K3CSharp
             if (currentChar == '"')
             {
                 Advance(); // Skip closing quote
-                return new Token(TokenType.CHARACTER, value, start);
+                
+                // Check string length to determine token type
+                if (value.Length == 1)
+                {
+                    return new Token(TokenType.CHARACTER, value, start);
+                }
+                else
+                {
+                    return new Token(TokenType.CHARACTER_VECTOR, value, start);
+                }
             }
             
             throw new Exception("Unterminated string literal");
