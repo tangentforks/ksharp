@@ -1144,18 +1144,9 @@ namespace K3CSharp
                 node.Children.Add(operand);
                 return node;
             }
-            else if (Match(TokenType.FLOOR_MATH))
-            {
-                // Mathematical floor operation
-                var operand = ParsePrimary();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("_floor");
-                node.Children.Add(operand);
-                return node;
-            }
             else if (Match(TokenType.DOT))
             {
-                // Mathematical dot product operation
+                // Linear algebra dot product operation
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_dot");
@@ -1164,7 +1155,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.MUL))
             {
-                // Mathematical matrix multiplication operation
+                // Linear algebra matrix multiplication operation
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_mul");
@@ -1173,7 +1164,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.INV))
             {
-                // Mathematical inverse operation
+                // Linear algebra matrix inverse operation
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_inv");

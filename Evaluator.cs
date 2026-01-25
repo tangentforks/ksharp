@@ -158,10 +158,6 @@ namespace K3CSharp
                     "_abs" => MathAbs(operand),
                     "_sqr" => MathSqr(operand),
                     "_sqrt" => MathSqrt(operand),
-                    "_floor" => MathFloor(operand),
-                    "_dot" => MathDot(operand),
-                    "_mul" => MathMul(operand),
-                    "_inv" => MathInv(operand),
                     "_sin" => MathSin(operand),
                     "_cos" => MathCos(operand),
                     "_tan" => MathTan(operand),
@@ -171,6 +167,9 @@ namespace K3CSharp
                     "_sinh" => MathSinh(operand),
                     "_cosh" => MathCosh(operand),
                     "_tanh" => MathTanh(operand),
+                    "_dot" => MathDot(operand),
+                    "_mul" => MathMul(operand),
+                    "_inv" => MathInv(operand),
                     "MIN" => operand, // Identity operation for unary min
                     "MAX" => operand, // Identity operation for unary max
                     "ADVERB_SLASH" => operand, // Return operand as-is for now
@@ -2068,14 +2067,26 @@ namespace K3CSharp
         {
             if (operand is IntegerValue intValue)
             {
+                if (intValue.Value == 0)
+                    return new FloatValue(double.NegativeInfinity); // -0i
+                if (intValue.Value < 0)
+                    return new FloatValue(double.NaN); // 0n
                 return new FloatValue(Math.Log(intValue.Value));
             }
             else if (operand is LongValue longValue)
             {
+                if (longValue.Value == 0)
+                    return new FloatValue(double.NegativeInfinity); // -0i
+                if (longValue.Value < 0)
+                    return new FloatValue(double.NaN); // 0n
                 return new FloatValue(Math.Log(longValue.Value));
             }
             else if (operand is FloatValue floatValue)
             {
+                if (floatValue.Value == 0)
+                    return new FloatValue(double.NegativeInfinity); // -0i
+                if (floatValue.Value < 0)
+                    return new FloatValue(double.NaN); // 0n
                 return new FloatValue(Math.Log(floatValue.Value));
             }
             else if (operand is VectorValue vec)
@@ -2185,19 +2196,19 @@ namespace K3CSharp
             if (operand is IntegerValue intValue)
             {
                 if (intValue.Value < 0)
-                    throw new Exception("_sqrt cannot be applied to negative numbers");
+                    return new FloatValue(double.NaN); // 0n
                 return new FloatValue(Math.Sqrt(intValue.Value));
             }
             else if (operand is LongValue longValue)
             {
                 if (longValue.Value < 0)
-                    throw new Exception("_sqrt cannot be applied to negative numbers");
+                    return new FloatValue(double.NaN); // 0n
                 return new FloatValue(Math.Sqrt(longValue.Value));
             }
             else if (operand is FloatValue floatValue)
             {
                 if (floatValue.Value < 0)
-                    throw new Exception("_sqrt cannot be applied to negative numbers");
+                    return new FloatValue(double.NaN); // 0n
                 return new FloatValue(Math.Sqrt(floatValue.Value));
             }
             else if (operand is VectorValue vec)
@@ -2215,38 +2226,9 @@ namespace K3CSharp
             }
         }
 
-        private K3Value MathFloor(K3Value operand)
-        {
-            if (operand is IntegerValue intValue)
-            {
-                return new FloatValue(Math.Floor((double)intValue.Value));
-            }
-            else if (operand is LongValue longValue)
-            {
-                return new FloatValue(Math.Floor((double)longValue.Value));
-            }
-            else if (operand is FloatValue floatValue)
-            {
-                return new FloatValue(Math.Floor(floatValue.Value));
-            }
-            else if (operand is VectorValue vec)
-            {
-                var result = new List<K3Value>();
-                foreach (var element in vec.Elements)
-                {
-                    result.Add(MathFloor(element));
-                }
-                return new VectorValue(result);
-            }
-            else
-            {
-                throw new Exception("_floor can only be applied to numeric values or vectors");
-            }
-        }
-
         private K3Value MathDot(K3Value operand)
         {
-            // For now, implement basic dot product for numeric vectors
+            // Linear algebra dot product operation
             if (operand is VectorValue vec)
             {
                 if (vec.Elements.Count == 0)
@@ -2286,28 +2268,30 @@ namespace K3CSharp
 
         private K3Value MathMul(K3Value operand)
         {
-            // For now, implement as identity (matrix multiplication would be complex)
+            // Linear algebra matrix multiplication - for now implement as identity
+            // Full matrix multiplication would require proper matrix representation
             return operand;
         }
 
         private K3Value MathInv(K3Value operand)
         {
+            // Linear algebra matrix inverse - for now implement as element-wise reciprocal
             if (operand is IntegerValue intValue)
             {
                 if (intValue.Value == 0)
-                    throw new Exception("_inv cannot be applied to zero");
+                    return new FloatValue(double.NaN); // 0n for singular matrix
                 return new FloatValue(1.0 / intValue.Value);
             }
             else if (operand is LongValue longValue)
             {
                 if (longValue.Value == 0)
-                    throw new Exception("_inv cannot be applied to zero");
+                    return new FloatValue(double.NaN); // 0n for singular matrix
                 return new FloatValue(1.0 / longValue.Value);
             }
             else if (operand is FloatValue floatValue)
             {
                 if (floatValue.Value == 0)
-                    throw new Exception("_inv cannot be applied to zero");
+                    return new FloatValue(double.NaN); // 0n for singular matrix
                 return new FloatValue(1.0 / floatValue.Value);
             }
             else if (operand is VectorValue vec)
@@ -2416,23 +2400,23 @@ namespace K3CSharp
         {
             if (operand is IntegerValue intValue)
             {
+                if (intValue.Value < -1 || intValue.Value > 1)
+                    return new FloatValue(double.NaN); // 0n
                 var result = Math.Asin(intValue.Value);
-                if (double.IsNaN(result))
-                    throw new Exception("_asin domain error: value must be between -1 and 1");
                 return new FloatValue(result);
             }
             else if (operand is LongValue longValue)
             {
+                if (longValue.Value < -1 || longValue.Value > 1)
+                    return new FloatValue(double.NaN); // 0n
                 var result = Math.Asin(longValue.Value);
-                if (double.IsNaN(result))
-                    throw new Exception("_asin domain error: value must be between -1 and 1");
                 return new FloatValue(result);
             }
             else if (operand is FloatValue floatValue)
             {
+                if (floatValue.Value < -1 || floatValue.Value > 1)
+                    return new FloatValue(double.NaN); // 0n
                 var result = Math.Asin(floatValue.Value);
-                if (double.IsNaN(result))
-                    throw new Exception("_asin domain error: value must be between -1 and 1");
                 return new FloatValue(result);
             }
             else if (operand is VectorValue vec)
@@ -2454,23 +2438,23 @@ namespace K3CSharp
         {
             if (operand is IntegerValue intValue)
             {
+                if (intValue.Value < -1 || intValue.Value > 1)
+                    return new FloatValue(double.NaN); // 0n
                 var result = Math.Acos(intValue.Value);
-                if (double.IsNaN(result))
-                    throw new Exception("_acos domain error: value must be between -1 and 1");
                 return new FloatValue(result);
             }
             else if (operand is LongValue longValue)
             {
+                if (longValue.Value < -1 || longValue.Value > 1)
+                    return new FloatValue(double.NaN); // 0n
                 var result = Math.Acos(longValue.Value);
-                if (double.IsNaN(result))
-                    throw new Exception("_acos domain error: value must be between -1 and 1");
                 return new FloatValue(result);
             }
             else if (operand is FloatValue floatValue)
             {
+                if (floatValue.Value < -1 || floatValue.Value > 1)
+                    return new FloatValue(double.NaN); // 0n
                 var result = Math.Acos(floatValue.Value);
-                if (double.IsNaN(result))
-                    throw new Exception("_acos domain error: value must be between -1 and 1");
                 return new FloatValue(result);
             }
             else if (operand is VectorValue vec)

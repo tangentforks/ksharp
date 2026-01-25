@@ -48,7 +48,7 @@ namespace K3CSharp
         ADVERB_TICK,    // ' adverb
         NULL,           // _n null value
         TYPE,           // 4: type operator
-        STRING_REPRESENTATION, // 5: string representation operator
+        STRING_REPRESENTATION, // :: string representation operator
         GLOBAL_ASSIGNMENT, // :: global assignment operator
         
         // Mathematical floating point operations
@@ -57,10 +57,6 @@ namespace K3CSharp
         ABS,            // _abs absolute value
         SQR,            // _sqr square
         SQRT,           // _sqrt square root
-        FLOOR_MATH,     // _floor mathematical floor
-        DOT,            // _dot dot product
-        MUL,            // _mul matrix multiplication
-        INV,            // _inv inverse
         SIN,            // _sin sine
         COS,            // _cos cosine
         TAN,            // _tan tangent
@@ -70,6 +66,11 @@ namespace K3CSharp
         SINH,           // _sinh hyperbolic sine
         COSH,           // _cosh hyperbolic cosine
         TANH,           // _tanh hyperbolic tangent
+        
+        // Linear algebra operations
+        DOT,            // _dot dot product
+        MUL,            // _mul matrix multiplication
+        INV,            // _inv matrix inverse
         EOF,
         UNKNOWN
     }

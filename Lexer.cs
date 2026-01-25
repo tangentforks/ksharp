@@ -488,15 +488,12 @@ namespace K3CSharp
             // Map operation names to tokens
             return opName switch
             {
+                // Mathematical floating point operations
                 "_log" => new Token(TokenType.LOG, opName, start),
                 "_exp" => new Token(TokenType.EXP, opName, start),
                 "_abs" => new Token(TokenType.ABS, opName, start),
                 "_sqr" => new Token(TokenType.SQR, opName, start),
                 "_sqrt" => new Token(TokenType.SQRT, opName, start),
-                "_floor" => new Token(TokenType.FLOOR_MATH, opName, start),
-                "_dot" => new Token(TokenType.DOT, opName, start),
-                "_mul" => new Token(TokenType.MUL, opName, start),
-                "_inv" => new Token(TokenType.INV, opName, start),
                 "_sin" => new Token(TokenType.SIN, opName, start),
                 "_cos" => new Token(TokenType.COS, opName, start),
                 "_tan" => new Token(TokenType.TAN, opName, start),
@@ -506,6 +503,12 @@ namespace K3CSharp
                 "_sinh" => new Token(TokenType.SINH, opName, start),
                 "_cosh" => new Token(TokenType.COSH, opName, start),
                 "_tanh" => new Token(TokenType.TANH, opName, start),
+                
+                // Linear algebra operations
+                "_dot" => new Token(TokenType.DOT, opName, start),
+                "_mul" => new Token(TokenType.MUL, opName, start),
+                "_inv" => new Token(TokenType.INV, opName, start),
+                
                 _ => null
             };
         }
