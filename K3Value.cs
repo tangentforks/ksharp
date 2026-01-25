@@ -12,7 +12,8 @@ namespace K3CSharp
         Symbol,
         Vector,
         Function,
-        Null
+        Null,
+        Dictionary
     }
 
     public abstract class K3Value
@@ -436,16 +437,36 @@ namespace K3CSharp
         {
             return $"`{Value}";
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is SymbolValue other)
+            {
+                return Value == other.Value;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return Value?.GetHashCode() ?? 0;
+        }
     }
 
     public class VectorValue : K3Value
     {
         public List<K3Value> Elements { get; }
+        public string CreationMethod { get; } // Track how the vector was created
 
-        public VectorValue(List<K3Value> elements)
+        public VectorValue(List<K3Value> elements) : this(elements, "standard")
+        {
+        }
+        
+        public VectorValue(List<K3Value> elements, string creationMethod)
         {
             Elements = elements;
             Type = ValueType.Vector;
+            CreationMethod = creationMethod;
         }
 
         public override K3Value Add(K3Value other)
@@ -724,10 +745,76 @@ namespace K3CSharp
 
         public override string ToString()
         {
+            return ToString(false);
+        }
+        
+        public string ToString(bool asElement)
+        {
             if (Elements.Count == 0)
-                return "()";
+            {
+                // Handle special empty vector display formats
+                if (CreationMethod == "enumerate_int")
+                    return "!0";
+                else if (CreationMethod == "enumerate_long")
+                    return "!0L";
+                else if (CreationMethod == "take_float")
+                    return "0#0.0";
+                else if (CreationMethod == "take_symbol")
+                    return "0#`";
+                else if (CreationMethod == "enumerate_char" || (Elements.Count > 0 && Elements.All(e => e is CharacterValue)))
+                    return "\"\"";
+                else if (asElement || CreationMethod == "mixed")
+                    return "()"; // Empty mixed vector
+                else
+                    return "()";
+            }
             
-            return "(" + string.Join(";", Elements.Select(e => e.ToString())) + ")";
+            // Check if this is a character vector - display as quoted string
+            if (Elements.All(e => e is CharacterValue))
+            {
+                var chars = Elements.Select(e => ((CharacterValue)e).Value);
+                return $"\"{string.Concat(chars)}\"";
+            }
+            
+            // Check if this is a symbol vector - display in compact format without spaces
+            if (Elements.All(e => e is SymbolValue))
+            {
+                var symbols = Elements.Select(e => ((SymbolValue)e).ToString());
+                return string.Concat(symbols);
+            }
+            
+            // Check if this is a mixed vector - keep parentheses and semicolons for clarity
+            var elementTypes = Elements.Select(e => e.GetType()).Distinct().ToList();
+            var hasNestedVectors = Elements.Any(e => e is VectorValue);
+            
+            if (elementTypes.Count > 1 || hasNestedVectors)
+            {
+                var elementsStr = string.Join(";", Elements.Select(e => 
+                {
+                    if (e is VectorValue vec)
+                        return vec.ToString(true); // Display nested vectors with parentheses
+                    return e.ToString();
+                }));
+                return "(" + elementsStr + ")";
+            }
+            
+            // For homogeneous vectors (except characters), use space-separated format
+            var vectorStr = string.Join(" ", Elements.Select(e => e.ToString()));
+            
+            // Add enlist comma for single-element vectors of integer, symbol, and character types
+            if (Elements.Count == 1 && 
+                (Elements[0] is IntegerValue || Elements[0] is SymbolValue || Elements[0] is CharacterValue))
+            {
+                return "," + vectorStr;
+            }
+            
+            // If this vector is an element of another vector, wrap it in parentheses
+            if (asElement)
+            {
+                return "(" + vectorStr + ")";
+            }
+            
+            return vectorStr;
         }
     }
 
@@ -805,6 +892,68 @@ namespace K3CSharp
         public override string ToString()
         {
             return "_n";
+        }
+    }
+
+    public class DictionaryValue : K3Value
+    {
+        public Dictionary<SymbolValue, (K3Value Value, DictionaryValue Attribute)> Entries { get; }
+
+        public DictionaryValue()
+        {
+            Type = ValueType.Dictionary;
+            Entries = new Dictionary<SymbolValue, (K3Value, DictionaryValue)>();
+        }
+
+        public DictionaryValue(Dictionary<SymbolValue, (K3Value, DictionaryValue)> entries)
+        {
+            Type = ValueType.Dictionary;
+            Entries = entries;
+        }
+
+        public override K3Value Add(K3Value other)
+        {
+            throw new InvalidOperationException("Cannot add Dictionary values");
+        }
+
+        public override K3Value Subtract(K3Value other)
+        {
+            throw new InvalidOperationException("Cannot subtract Dictionary values");
+        }
+
+        public override K3Value Multiply(K3Value other)
+        {
+            throw new InvalidOperationException("Cannot multiply Dictionary values");
+        }
+
+        public override K3Value Divide(K3Value other)
+        {
+            throw new InvalidOperationException("Cannot divide Dictionary values");
+        }
+
+        public override string ToString()
+        {
+            if (Entries.Count == 0)
+                return ".()";
+            
+            var entries = new List<string>();
+            foreach (var kvp in Entries)
+            {
+                var key = kvp.Key.ToString();
+                var value = kvp.Value.Value.ToString();
+                var attr = kvp.Value.Attribute;
+                
+                if (attr != null && attr.Entries.Count > 0)
+                {
+                    entries.Add($"({key};{value};{attr})");
+                }
+                else
+                {
+                    entries.Add($"({key};{value})");
+                }
+            }
+            
+            return "." + string.Join(";", entries);
         }
     }
 }

@@ -100,23 +100,23 @@ namespace K3CSharp.Tests
                 ("simple_division.k", "4"),
                 
                 // Vector operations
-                ("vector_addition.k", "(4;6)"),
-                ("vector_subtraction.k", "(-2;-2)"),
-                ("vector_multiplication.k", "(3;8)"),
-                ("vector_division.k", "(0.3333333;0.5)"),
-                ("test_vector.k", "(1;2;3)"),
-                ("scalar_vector_addition.k", "(4;5)"),
-                ("scalar_vector_multiplication.k", "(3;6)"),
+                ("vector_addition.k", "4 6"),
+                ("vector_subtraction.k", "-2 -2"),
+                ("vector_multiplication.k", "3 8"),
+                ("vector_division.k", "0.3333333 0.5"),
+                ("test_vector.k", "1 2 3"),
+                ("scalar_vector_addition.k", "4 5"),
+                ("scalar_vector_multiplication.k", "3 6"),
                 
                 // Vector indexing
                 ("vector_index_first.k", "5"),
                 ("vector_index_single.k", "4"),
-                ("vector_index_multiple.k", "(8;9)"),
-                ("vector_index_duplicate.k", "(5;5)"),
-                ("vector_index_reverse.k", "(9;8)"),
+                ("vector_index_multiple.k", "8 9"),
+                ("vector_index_duplicate.k", "5 5"),
+                ("vector_index_reverse.k", "9 8"),
                 
                 // Parentheses
-                ("parenthesized_vector.k", "(1;2;3;4)"),
+                ("parenthesized_vector.k", "1 2 3 4"),
                 ("parentheses_basic.k", "9"),
                 ("parentheses_grouping.k", "9"),
                 ("parentheses_nested.k", "6"),
@@ -125,13 +125,13 @@ namespace K3CSharp.Tests
                 // Variables
                 ("variable_assignment.k", "7"),
                 ("variable_usage.k", "30"),
-                ("variable_reassignment.k", "(7.2;4.5)"),
+                ("variable_reassignment.k", "7.2 4.5"),
                 
                 // Types
                 ("integer_types.k", "123456789L"),
                 ("float_types.k", "170"),
                 ("character_single.k", "\"f\""),
-                ("character_vector.k", "(\"h\";\"e\";\"l\";\"l\";\"o\")"),
+                ("character_vector.k", "\"hello\""),
                 ("symbol_types.k", "`\"a symbol\""),
                 
                 // Operators
@@ -143,20 +143,20 @@ namespace K3CSharp.Tests
                 ("power_operator.k", "8"),
                 ("modulus_operator.k", "1"),
                 ("negate_operator.k", "1"),
-                ("join_operator.k", "(3;5)"),
+                ("join_operator.k", "3 5"),
                 ("unary_minus_operator.k", "-5"),
                 ("first_operator.k", "1"),
                 ("reciprocal_operator.k", "0.25"),
-                ("generate_operator.k", "(0;0;0;0)"),
-                ("reverse_operator.k", "(3;2;1)"),
+                ("generate_operator.k", "0 0 0 0"),
+                ("reverse_operator.k", "3 2 1"),
                 ("count_operator.k", "3"),
-                ("enumerate_operator.k", "(0;1;2;3;4)"),
-                ("enlist_operator.k", "(5)"),
+                ("enumerate_operator.k", "0 1 2 3 4"),
+                ("enlist_operator.k", ",5"),
                 ("floor_operator.k", "3"),
-                ("unique_operator.k", "(1;2;3)"),
-                ("grade_up_operator.k", "(0;4;2;3;1)"),
-                ("grade_down_operator.k", "(1;2;3;4;0)"),
-                ("shape_operator.k", "(3)"),
+                ("unique_operator.k", "1 2 3"),
+                ("grade_up_operator.k", "0 4 2 3 1"),
+                ("grade_down_operator.k", "1 2 3 4 0"),
+                ("shape_operator.k", "3"),
                 
                 // Adverb operations (working ones)
                 ("adverb_over_plus.k", "15"),
@@ -166,22 +166,22 @@ namespace K3CSharp.Tests
                 ("adverb_over_min.k", "1"),
                 ("adverb_over_max.k", "5"),
                 ("adverb_over_power.k", "64"),
-                ("adverb_scan_plus.k", "(1;3;6;10;15)"),
-                ("adverb_scan_multiply.k", "(1;2;6;24)"),
-                ("adverb_scan_minus.k", "(10;8;5;4)"),
-                ("adverb_scan_divide.k", "(100;50;10)"),
-                ("adverb_scan_min.k", "(5;3;3;1;1)"),
-                ("adverb_scan_max.k", "(1;3;3;5;5)"),
-                ("adverb_scan_power.k", "(2;8;64)"),
-                ("adverb_mixed_scan.k", "(2;4;12)"),
-                ("adverb_mixed_scan_minus.k", "(1;-1;-4;-8)"),
+                ("adverb_scan_plus.k", "1 3 6 10 15"),
+                ("adverb_scan_multiply.k", "1 2 6 24"),
+                ("adverb_scan_minus.k", "10 8 5 4"),
+                ("adverb_scan_divide.k", "100 50 10"),
+                ("adverb_scan_min.k", "5 3 3 1 1"),
+                ("adverb_scan_max.k", "1 3 3 5 5"),
+                ("adverb_scan_power.k", "2 8 64"),
+                ("adverb_mixed_scan.k", "2 4 12"),
+                ("adverb_mixed_scan_minus.k", "1 -1 -4 -8"),
                 ("adverb_mixed_scan_divide.k", "(2;1;0.3333333;0.0833333)"),
                 
                 // Additional adverb tests from split files
                 ("adverb_over_mixed_2.k", "12"),
                 ("adverb_over_mixed_1.k", "15"),
-                ("adverb_scan_mixed_2.k", "(3;5;8;12)"),
-                ("adverb_scan_mixed_1.k", "(3;6;10;15)"),
+                ("adverb_scan_mixed_2.k", "3 5 8 12"),
+                ("adverb_scan_mixed_1.k", "3 6 10 15"),
                 
                 // Type promotion and smart division tests
                 ("test_division_int_5_2.k", "2.5"),
@@ -193,11 +193,11 @@ namespace K3CSharp.Tests
                 ("test_division_rules_10_3.k", "3.3333333"),
                 ("test_division_rules_12_4.k", "3"),
                 ("test_type_promotion.k", "2.5"),
-                ("test_smart_division1.k", "(2.5;5)"),
-                ("test_smart_division2.k", "(2;4)"),
-                ("test_smart_division3.k", "(2;4;6)"),
+                ("test_smart_division1.k", "2.5 5"),
+                ("test_smart_division2.k", "2 4"),
+                ("test_smart_division3.k", "2 4 6"),
                 ("test_simple_scalar_div.k", "2.5"),
-                ("test_enumerate.k", "(0;1)"),
+                ("test_enumerate.k", "0 1"),
                 
                 // Special values tests
                 ("special_null.k", "_n"),
@@ -234,8 +234,14 @@ namespace K3CSharp.Tests
                 // Vector tests with special values
                 ("vector_with_null.k", "(_n;1;2)"),
                 ("vector_with_null_middle.k", "(1;_n;3)"),
+                ("nested_vector_test.k", "((1 2 3);(4 5 6))"),
                 
-                // Multi-line tests with dependencies (to track pending issues)
+                // TAKE operator tests
+                ("take_operator_basic.k", "1 2 3"),
+                ("take_operator_empty_float.k", "0#0.0"),
+                ("take_operator_empty_symbol.k", "0#`"),
+                ("take_operator_scalar.k", "42 42 42"),
+                ("take_operator_overflow.k", "1 2 3 0 0 0 0 0 0 0"),
                 // Split anonymous function tests for better debugging
                 ("anonymous_function_empty.k", "{}"),
                 ("anonymous_function_simple.k", "9"),
@@ -269,9 +275,50 @@ namespace K3CSharp.Tests
                 ("test_special_1_plus_neg0i.k", "-2147483646"),
                 ("test_special_neg0i_plus_1.k", "-2147483646"),
                 
+                // Empty vector enumeration tests
+                ("enumerate_empty_int.k", "!0"),
+                ("enumerate_empty_long.k", "!0L"),
+                
+                // Symbol vector display tests
+                ("symbol_vector_compact.k", "`a"),
+                ("symbol_vector_spaces.k", "`a`b`c"),
+                
+                // Empty mixed vector test
+                ("empty_mixed_vector.k", "()"),
+                
+                // String representation tests
+                ("string_representation_int.k", "\"42\""),
+                ("string_representation_vector.k", "\"1 2 3\""),
+                ("string_representation_symbol.k", "\"`symbol\""),
+                ("string_representation_mixed.k", "\"(1;2.5;\"a\")\""),
+                
+                // Dictionary tests
+                ("dictionary_empty.k", ".()"),
+                ("dictionary_single.k", ".(`a;`b)"),
+                ("dictionary_multiple.k", ".(`a;1);(`b;2)"),
+                ("debug_dict.k", ".(`a;1);(`b;2)"),
+                ("debug_simple.k", ".(`a;1)"),
+                ("debug_working.k", "1"),
+                ("debug_simple_index.k", "1"),
+                ("dictionary_index_value.k", "1"),
+                ("dictionary_index_value2.k", "2"),
+                ("dictionary_index_attr.k", ".(`c;3);(`d;4)"),
+                ("dictionary_type.k", "5"),
+                
+                // New operator tests
+                ("atom_scalar.k", "1"),
+                ("atom_vector.k", "0"),
+                ("attribute_handle_symbol.k", "`a."),
+                ("attribute_handle_vector.k", "`a.`b.`c."),
+                ("debug_symbol_vector.k", "`a`b`c"),
+                ("mod_integer.k", "1"),
+                ("mod_vector.k", "1 0 1 0"),
+                ("mod_rotate.k", "3 4 1 2"),
+                ("drop_positive.k", "4 5 6 7"),
+                ("drop_negative.k", "0 1 2 3"),
+                ("cut_vector.k", "(0 1;2 3;4 5 6 7)"),
+                
                 // Type operator tests
-                ("type_operator_int.k", "1"),
-                ("type_operator_float.k", "2"),
                 ("type_operator_char.k", "3"),
                 ("type_operator_symbol.k", "4"),
                 ("type_operator_null.k", "6"),
@@ -298,13 +345,13 @@ namespace K3CSharp.Tests
                 ("test_binary2.k", "5"),
                 
                 // Each adverb tests (to track verb symbol conversion issue)
-                ("adverb_each_plus.k", "(1;2;3;4)"),
-                ("adverb_each_multiply.k", "(1;2;3;4)"),
-                ("adverb_each_minus.k", "(-10;-2;-3;-1)"),
-                ("adverb_each_divide.k", "(0.5;0.5;0.3333333;1)"),
-                ("adverb_each_min.k", "(5;3;4;1;2)"),
-                ("adverb_each_max.k", "(1;3;2;5;4)"),
-                ("adverb_each_power.k", "(0;0;0)"),
+                ("adverb_each_plus.k", "1 2 3 4"),
+                ("adverb_each_multiply.k", "1 2 3 4"),
+                ("adverb_each_minus.k", "-10 -2 -3 -1"),
+                ("adverb_each_divide.k", "0.5 0.5 0.3333333 1"),
+                ("adverb_each_min.k", "5 3 4 1 2"),
+                ("adverb_each_max.k", "1 3 2 5 4"),
+                ("adverb_each_power.k", "0 0 0"),
                 ("adverb_each_vector_plus.k", "Error"),
                 ("adverb_each_vector_multiply.k", "Error"),
                 ("adverb_each_vector_minus.k", "Error")

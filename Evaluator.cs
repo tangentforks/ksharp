@@ -138,6 +138,8 @@ namespace K3CSharp
                     "WHERE" => Where(operand),
                     "REVERSE" => Reverse(operand),
                     "TYPE" => GetTypeCode(operand),
+                    "STRING_REPRESENTATION" => StringRepresentation(operand),
+                    "MAKE" => Make(operand),
                     "GRADE_UP" => GradeUp(operand),
                     "GRADE_DOWN" => GradeDown(operand),
                     "SHAPE" => Shape(operand),
@@ -146,7 +148,11 @@ namespace K3CSharp
                     "COUNT" => Count(operand),
                     "FLOOR" => Floor(operand),
                     "UNIQUE" => Unique(operand),
-                    "NEGATE" => LogicalNegate(operand),
+                    "NEGATE" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue))
+                    ? AttributeHandle(operand)
+                    : LogicalNegate(operand),
+                    "ATOM" => Atom(operand),
+                    "ATTRIBUTE_HANDLE" => AttributeHandle(operand),
                     "MIN" => operand, // Identity operation for unary min
                     "MAX" => operand, // Identity operation for unary max
                     "ADVERB_SLASH" => operand, // Return operand as-is for now
@@ -176,7 +182,7 @@ namespace K3CSharp
                     "POWER" => Power(left, right),
                     "MODULUS" => Modulus(left, right),
                     "JOIN" => Join(left, right),
-                    "HASH" => CountBinary(left, right),
+                    "HASH" => Take(left, right),
                     "UNDERSCORE" => FloorBinary(left, right),
                     "QUESTION" => UniqueBinary(left, right),
                     "NEGATE" => NegateBinary(left, right),
@@ -205,7 +211,8 @@ namespace K3CSharp
             {
                 elements.Add(Evaluate(child));
             }
-            return new VectorValue(elements);
+            // Use "mixed" creation method for empty vectors created from parentheses
+            return new VectorValue(elements, elements.Count == 0 ? "mixed" : "standard");
         }
 
         private K3Value EvaluateFunction(ASTNode node)
@@ -924,16 +931,54 @@ namespace K3CSharp
             throw new Exception($"Cannot raise {a.Type} to power of {b.Type}");
         }
 
-        private K3Value Modulus(K3Value a, K3Value b)
+        private K3Value Modulus(K3Value left, K3Value right)
         {
-            if (a is IntegerValue intA && b is IntegerValue intB)
-                return new IntegerValue(intA.Value % intB.Value);
-            if (a is LongValue longA && b is LongValue longB)
-                return new LongValue(longA.Value % longB.Value);
-            if (a is FloatValue floatA && b is FloatValue floatB)
-                return new FloatValue(floatA.Value % floatB.Value);
-            
-            throw new Exception($"Cannot find remainder of {a.Type} and {b.Type}");
+            // Enhanced ! operator with multiple behaviors
+            if (left is IntegerValue leftInt && right is IntegerValue rightInt)
+            {
+                // Integer mod: remainder of division
+                return new IntegerValue(leftInt.Value % rightInt.Value);
+            }
+            else if (left is VectorValue leftVec && right is IntegerValue rightIntVal)
+            {
+                // Vector mod: remainder for each element
+                var result = new List<K3Value>();
+                foreach (var element in leftVec.Elements)
+                {
+                    if (element is IntegerValue intVal)
+                    {
+                        result.Add(new IntegerValue(intVal.Value % rightIntVal.Value));
+                    }
+                    else
+                    {
+                        throw new Exception("Vector mod requires all elements to be integers");
+                    }
+                }
+                return new VectorValue(result);
+            }
+            else if (left is IntegerValue leftIntVal && right is VectorValue rightVec)
+            {
+                // Vector rotation: rotate vector by integer
+                int rotation = leftIntVal.Value;
+                int size = rightVec.Elements.Count;
+                
+                if (size == 0)
+                    return new VectorValue(new List<K3Value>());
+                
+                // Normalize rotation to be within vector bounds
+                rotation = ((rotation % size) + size) % size;
+                
+                var result = new List<K3Value>();
+                for (int i = 0; i < size; i++)
+                {
+                    result.Add(rightVec.Elements[(i + rotation) % size]);
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("Modulus operator requires integer arguments or vector+integer combinations");
+            }
         }
 
         private K3Value Negate(K3Value a)
@@ -1143,7 +1188,7 @@ namespace K3CSharp
         private K3Value Shape(K3Value a)
         {
             if (a is VectorValue vecA)
-                return new VectorValue(new List<K3Value> { new IntegerValue(vecA.Elements.Count) });
+                return new IntegerValue(vecA.Elements.Count);
             
             return new IntegerValue(0); // For scalars
         }
@@ -1157,7 +1202,16 @@ namespace K3CSharp
                 {
                     elements.Add(new IntegerValue(i));
                 }
-                return new VectorValue(elements);
+                return new VectorValue(elements, intA.Value == 0 ? "enumerate_int" : "standard");
+            }
+            else if (a is LongValue longA)
+            {
+                var elements = new List<K3Value>();
+                for (int i = 0; i < longA.Value; i++)
+                {
+                    elements.Add(new LongValue(i));
+                }
+                return new VectorValue(elements, longA.Value == 0 ? "enumerate_long" : "standard");
             }
             
             throw new Exception($"Cannot enumerate {a.Type}");
@@ -1217,9 +1271,90 @@ namespace K3CSharp
             return Count(a);
         }
 
-        private K3Value FloorBinary(K3Value a, K3Value b)
+        private K3Value FloorBinary(K3Value left, K3Value right)
         {
-            return Floor(a);
+            // Enhanced _ operator with multiple behaviors
+            if (left is VectorValue leftVec && right is VectorValue rightVec)
+            {
+                // Cut operation: cut vector at specified indices
+                var result = new List<K3Value>();
+                int prevIndex = 0;
+                
+                foreach (var element in leftVec.Elements)
+                {
+                    if (element is IntegerValue cutPoint)
+                    {
+                        if (cutPoint.Value < 0)
+                            throw new Exception("Cut operation cannot contain negative indices");
+                        
+                        if (cutPoint.Value > prevIndex && cutPoint.Value <= rightVec.Elements.Count)
+                        {
+                            var subVector = new List<K3Value>();
+                            for (int i = prevIndex; i < cutPoint.Value && i < rightVec.Elements.Count; i++)
+                            {
+                                subVector.Add(rightVec.Elements[i]);
+                            }
+                            result.Add(new VectorValue(subVector));
+                        }
+                        prevIndex = cutPoint.Value;
+                    }
+                    else
+                    {
+                        throw new Exception("Cut operation requires integer indices");
+                    }
+                }
+                
+                // Add remaining elements
+                if (prevIndex < rightVec.Elements.Count)
+                {
+                    var subVector = new List<K3Value>();
+                    for (int i = prevIndex; i < rightVec.Elements.Count; i++)
+                    {
+                        subVector.Add(rightVec.Elements[i]);
+                    }
+                    result.Add(new VectorValue(subVector));
+                }
+                
+                return new VectorValue(result);
+            }
+            else if (left is IntegerValue leftInt && right is VectorValue dropVec)
+            {
+                // Drop operation: drop N elements from start or end
+                int dropCount = leftInt.Value;
+                int size = dropVec.Elements.Count;
+                
+                if (dropCount >= 0)
+                {
+                    // Drop from start
+                    if (dropCount >= size)
+                        return new VectorValue(new List<K3Value>());
+                    
+                    var result = new List<K3Value>();
+                    for (int i = dropCount; i < size; i++)
+                    {
+                        result.Add(dropVec.Elements[i]);
+                    }
+                    return new VectorValue(result);
+                }
+                else
+                {
+                    // Drop from end (negative count)
+                    int dropFromEnd = -dropCount;
+                    if (dropFromEnd >= size)
+                        return new VectorValue(new List<K3Value>());
+                    
+                    var result = new List<K3Value>();
+                    for (int i = 0; i < size - dropFromEnd; i++)
+                    {
+                        result.Add(dropVec.Elements[i]);
+                    }
+                    return new VectorValue(result);
+                }
+            }
+            else
+            {
+                throw new Exception("Drop/Cut operation requires vector arguments or integer+vector");
+            }
         }
 
         private K3Value UniqueBinary(K3Value a, K3Value b)
@@ -1269,9 +1404,81 @@ namespace K3CSharp
                     throw new Exception($"Index must be integer or vector of integers, got {index.Type}");
                 }
             }
+            else if (vector is DictionaryValue dict)
+            {
+                // Handle dictionary indexing: dictionary @ key
+                if (index is SymbolValue key)
+                {
+                    // Check if key ends with period for attribute retrieval
+                    bool getAttribute = key.Value.EndsWith(".");
+                    string lookupKey = getAttribute ? key.Value.Substring(0, key.Value.Length - 1) : key.Value;
+                    var lookupSymbol = new SymbolValue(lookupKey);
+                    
+                    // Single key lookup
+                    if (dict.Entries.TryGetValue(lookupSymbol, out var entry))
+                    {
+                        if (getAttribute)
+                        {
+                            // Return attributes (null if no attributes)
+                            return entry.Attribute ?? new DictionaryValue();
+                        }
+                        else
+                        {
+                            // Return value
+                            return entry.Value;
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception($"Key '{lookupKey}' not found in dictionary");
+                    }
+                }
+                else if (index is VectorValue keyVec)
+                {
+                    // Multiple keys lookup: return vector of values or attributes
+                    var result = new List<K3Value>();
+                    foreach (var keyElement in keyVec.Elements)
+                    {
+                        if (keyElement is SymbolValue symbolKey)
+                        {
+                            // Check if key ends with period for attribute retrieval
+                            bool getAttribute = symbolKey.Value.EndsWith(".");
+                            string lookupKey = getAttribute ? symbolKey.Value.Substring(0, symbolKey.Value.Length - 1) : symbolKey.Value;
+                            var lookupSymbol = new SymbolValue(lookupKey);
+                            
+                            if (dict.Entries.TryGetValue(lookupSymbol, out var entry))
+                            {
+                                if (getAttribute)
+                                {
+                                    // Return attributes (null if no attributes)
+                                    result.Add(entry.Attribute ?? new DictionaryValue());
+                                }
+                                else
+                                {
+                                    // Return value
+                                    result.Add(entry.Value);
+                                }
+                            }
+                            else
+                            {
+                                throw new Exception($"Key '{lookupKey}' not found in dictionary");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception($"Dictionary keys must be symbols, got {keyElement.Type}");
+                        }
+                    }
+                    return new VectorValue(result);
+                }
+                else
+                {
+                    throw new Exception($"Dictionary index must be symbol or vector of symbols, got {index.Type}");
+                }
+            }
             else
             {
-                throw new Exception($"Cannot index into non-vector type: {vector.Type}");
+                throw new Exception($"Cannot index into type: {vector.Type}");
             }
         }
 
@@ -1395,7 +1602,9 @@ namespace K3CSharp
                 "#" => Count(operand),
                 "_" => Floor(operand),
                 "?" => Unique(operand),
-                "~" => LogicalNegate(operand),
+                "~" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue)) 
+                    ? AttributeHandle(operand) 
+                    : LogicalNegate(operand),
                 _ => throw new Exception($"Unknown unary verb: {verbName}")
             };
         }
@@ -1611,6 +1820,8 @@ namespace K3CSharp
                 return new IntegerValue(3);
             if (value is SymbolValue)
                 return new IntegerValue(4);
+            if (value is DictionaryValue)
+                return new IntegerValue(5);
             if (value is NullValue)
                 return new IntegerValue(6);
             if (value is FunctionValue)
@@ -1659,6 +1870,195 @@ namespace K3CSharp
             }
             
             return new IntegerValue(0); // Default to generic list
+        }
+        
+        private K3Value StringRepresentation(K3Value value)
+        {
+            // 5: verb - produce string representation of the argument
+            string representation = value.ToString();
+            return new VectorValue(new List<K3Value> { new CharacterValue(representation) });
+        }
+        
+        private K3Value Make(K3Value value)
+        {
+            // . (make) operator - create dictionary from mixed vector
+            if (value is VectorValue vec)
+            {
+                var dict = new Dictionary<SymbolValue, (K3Value, DictionaryValue)>();
+                
+                foreach (var element in vec.Elements)
+                {
+                    if (element is VectorValue entryVec)
+                    {
+                        if (entryVec.Elements.Count == 2)
+                        {
+                            // Tuple (key; value) - attribute is null
+                            if (entryVec.Elements[0] is SymbolValue key)
+                            {
+                                dict[key] = (entryVec.Elements[1], null);
+                            }
+                            else
+                            {
+                                throw new Exception("Dictionary key must be a symbol");
+                            }
+                        }
+                        else if (entryVec.Elements.Count == 3)
+                        {
+                            // Triplet (key; value; attribute)
+                            if (entryVec.Elements[0] is SymbolValue key)
+                            {
+                                var attribute = entryVec.Elements[2] as DictionaryValue;
+                                dict[key] = (entryVec.Elements[1], attribute);
+                            }
+                            else
+                            {
+                                throw new Exception("Dictionary key must be a symbol");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("Dictionary entry must be a tuple (2 elements) or triplet (3 elements)");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Dictionary entries must be vectors");
+                    }
+                }
+                
+                return new DictionaryValue(dict);
+            }
+            else
+            {
+                throw new Exception("Make operator requires a vector");
+            }
+        }
+        
+        private K3Value Take(K3Value count, K3Value data)
+        {
+            if (count is IntegerValue intCount)
+            {
+                if (data is VectorValue dataVec)
+                {
+                    // Take from vector
+                    var actualCount = Math.Max(0, intCount.Value);
+                    var result = new List<K3Value>();
+                    
+                    for (int i = 0; i < Math.Min(actualCount, dataVec.Elements.Count); i++)
+                    {
+                        result.Add(dataVec.Elements[i]);
+                    }
+                    
+                    // If we need more elements than available, pad with the appropriate type
+                    while (result.Count < actualCount)
+                    {
+                        if (dataVec.Elements.Count > 0)
+                        {
+                            // Pad with the same type as the first element
+                            var firstElement = dataVec.Elements[0];
+                            if (firstElement is IntegerValue)
+                                result.Add(new IntegerValue(0));
+                            else if (firstElement is LongValue)
+                                result.Add(new LongValue(0L));
+                            else if (firstElement is FloatValue)
+                                result.Add(new FloatValue(0.0));
+                            else if (firstElement is CharacterValue)
+                                result.Add(new CharacterValue(" "));
+                            else if (firstElement is SymbolValue)
+                                result.Add(new SymbolValue(""));
+                            else
+                                result.Add(new NullValue());
+                        }
+                        else
+                        {
+                            // Empty vector - can't determine type, use null
+                            result.Add(new NullValue());
+                        }
+                    }
+                    
+                    // Determine creation method for empty vectors
+                    string creationMethod = "standard";
+                    if (result.Count == 0)
+                    {
+                        if (dataVec.Elements.Count > 0 && dataVec.Elements[0] is FloatValue)
+                            creationMethod = "take_float";
+                        else if (dataVec.Elements.Count > 0 && dataVec.Elements[0] is SymbolValue)
+                            creationMethod = "take_symbol";
+                    }
+                    
+                    return new VectorValue(result, creationMethod);
+                }
+                else
+                {
+                    // Take from scalar - create vector with the scalar repeated
+                    var actualCount = Math.Max(0, intCount.Value);
+                    var result = new List<K3Value>();
+                    
+                    for (int i = 0; i < actualCount; i++)
+                    {
+                        result.Add(data);
+                    }
+                    
+                    // Determine creation method for empty vectors from scalar
+                    string creationMethod = "standard";
+                    if (result.Count == 0)
+                    {
+                        if (data is FloatValue)
+                            creationMethod = "take_float";
+                        else if (data is SymbolValue)
+                            creationMethod = "take_symbol";
+                    }
+                    
+                    return new VectorValue(result, creationMethod);
+                }
+            }
+            else if (count is LongValue longCount)
+            {
+                // Handle long count by converting to integer
+                return Take(new IntegerValue((int)longCount.Value), data);
+            }
+            else
+            {
+                throw new Exception("Take count must be an integer");
+            }
+        }
+
+        private K3Value Atom(K3Value operand)
+        {
+            // @ operator: returns 1 if scalar, 0 if vector
+            if (operand is VectorValue)
+                return new IntegerValue(0);
+            else
+                return new IntegerValue(1);
+        }
+
+        private K3Value AttributeHandle(K3Value operand)
+        {
+            // ~ operator for symbols: adds period suffix
+            if (operand is SymbolValue symbol)
+            {
+                return new SymbolValue(symbol.Value + ".");
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    if (element is SymbolValue sym)
+                    {
+                        result.Add(new SymbolValue(sym.Value + "."));
+                    }
+                    else
+                    {
+                        throw new Exception("Attribute handle can only be applied to symbols or vectors of symbols");
+                    }
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("Attribute handle can only be applied to symbols or vectors of symbols");
+            }
         }
     }
 }

@@ -207,6 +207,7 @@ namespace K3CSharp
                 }
                 else if (c == '@')
                 {
+                    // Let parser disambiguate between unary ATOM and binary APPLY
                     tokens.Add(new Token(TokenType.APPLY, "@", position));
                     Advance();
                 }
@@ -223,6 +224,14 @@ namespace K3CSharp
                         // Replace the previous token with TYPE operator
                         tokens.RemoveAt(tokens.Count - 1);
                         tokens.Add(new Token(TokenType.TYPE, "4:", position - 1));
+                        Advance();
+                    }
+                    // Check for 5: string representation operator
+                    else if (position > 0 && input[position - 1] == '5')
+                    {
+                        // Replace the previous token with STRING_REPRESENTATION operator
+                        tokens.RemoveAt(tokens.Count - 1);
+                        tokens.Add(new Token(TokenType.STRING_REPRESENTATION, "5:", position - 1));
                         Advance();
                     }
                     // Check for :: global assignment operator
@@ -306,18 +315,19 @@ namespace K3CSharp
             Advance(); // Skip backtick
             
             string value = "";
-            while (currentChar != '`' && currentChar != '\0')
+            while (currentChar != '\0' && (char.IsLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '.'))
             {
                 value += currentChar;
                 Advance();
             }
             
-            if (value.Length > 0)
+            // If we found a closing backtick, skip it
+            if (currentChar == '`')
             {
-                return new Token(TokenType.SYMBOL, value, start);
+                Advance();
             }
             
-            throw new Exception("Invalid symbol");
+            return new Token(TokenType.SYMBOL, value, start);
         }
 
         private Token ReadNumber()

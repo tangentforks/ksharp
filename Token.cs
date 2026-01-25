@@ -40,12 +40,15 @@ namespace K3CSharp
         UNDERSCORE,     // _ floor operator
         QUESTION,       // ? unique operator
         APPLY,          // @ apply operator
-        DOT_APPLY,      // . dot-apply operator
+        ATOM,           // @ atom operator (unary)
+        DOT_APPLY,      // . dot-apply operator (binary)
+        MAKE,           // . make operator (unary)
         ADVERB_SLASH,   // / adverb
         ADVERB_BACKSLASH, // \ adverb  
         ADVERB_TICK,    // ' adverb
         NULL,           // _n null value
         TYPE,           // 4: type operator
+        STRING_REPRESENTATION, // 5: string representation operator
         GLOBAL_ASSIGNMENT, // :: global assignment operator
         EOF,
         UNKNOWN
