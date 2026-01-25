@@ -1097,7 +1097,169 @@ namespace K3CSharp
             {
                 // Standalone adverb slash - this should not happen in valid K3
                 // According to spec, slash must be preceded by a verb without spaces
-                throw new Exception("Unexpected token: ADVERB_SLASH(/) - adverb must follow a verb");
+                throw new Exception("Adverb slash must follow a verb without spaces");
+            }
+            else if (Match(TokenType.LOG))
+            {
+                // Mathematical logarithm operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_log");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.EXP))
+            {
+                // Mathematical exponential operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_exp");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.ABS))
+            {
+                // Mathematical absolute value operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_abs");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.SQR))
+            {
+                // Mathematical square operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_sqr");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.SQRT))
+            {
+                // Mathematical square root operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_sqrt");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.FLOOR_MATH))
+            {
+                // Mathematical floor operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_floor");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.DOT))
+            {
+                // Mathematical dot product operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_dot");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.MUL))
+            {
+                // Mathematical matrix multiplication operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_mul");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.INV))
+            {
+                // Mathematical inverse operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_inv");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.SIN))
+            {
+                // Mathematical sine operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_sin");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.COS))
+            {
+                // Mathematical cosine operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_cos");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.TAN))
+            {
+                // Mathematical tangent operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_tan");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.ASIN))
+            {
+                // Mathematical arcsine operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_asin");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.ACOS))
+            {
+                // Mathematical arccosine operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_acos");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.ATAN))
+            {
+                // Mathematical arctangent operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_atan");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.SINH))
+            {
+                // Mathematical hyperbolic sine operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_sinh");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.COSH))
+            {
+                // Mathematical hyperbolic cosine operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_cosh");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.TANH))
+            {
+                // Mathematical hyperbolic tangent operation
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_tanh");
+                node.Children.Add(operand);
+                return node;
             }
             else if (Match(TokenType.LEFT_PAREN))
             {

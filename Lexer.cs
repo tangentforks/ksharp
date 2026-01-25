@@ -187,7 +187,7 @@ namespace K3CSharp
                 }
                 else if (c == '_')
                 {
-                    // Check for _n null value
+                    // Check for _n null value first
                     if (position + 1 < input.Length && input[position + 1] == 'n')
                     {
                         tokens.Add(new Token(TokenType.NULL, "_n", position));
@@ -196,8 +196,17 @@ namespace K3CSharp
                     }
                     else
                     {
-                        tokens.Add(new Token(TokenType.UNDERSCORE, "_", position));
-                        Advance();
+                        // Check for mathematical operations
+                        var mathOp = ReadMathOperation();
+                        if (mathOp != null)
+                        {
+                            tokens.Add(mathOp);
+                        }
+                        else
+                        {
+                            tokens.Add(new Token(TokenType.UNDERSCORE, "_", position));
+                            Advance();
+                        }
                     }
                 }
                 else if (c == '?')
@@ -447,6 +456,58 @@ namespace K3CSharp
             }
             
             return new Token(TokenType.IDENTIFIER, identifier, start);
+        }
+
+        private Token ReadMathOperation()
+        {
+            int start = position;
+            
+            if (currentChar != '_')
+                return null;
+                
+            Advance(); // Skip _
+            
+            if (position >= input.Length)
+                return null;
+            
+            string opName = "_" + currentChar;
+            int charCount = 1;
+            Advance();
+            
+            // Check for multi-character operations
+            if (position < input.Length && char.IsLetter(currentChar))
+            {
+                while (position < input.Length && char.IsLetter(currentChar))
+                {
+                    opName += currentChar;
+                    charCount++;
+                    Advance();
+                }
+            }
+            
+            // Map operation names to tokens
+            return opName switch
+            {
+                "_log" => new Token(TokenType.LOG, opName, start),
+                "_exp" => new Token(TokenType.EXP, opName, start),
+                "_abs" => new Token(TokenType.ABS, opName, start),
+                "_sqr" => new Token(TokenType.SQR, opName, start),
+                "_sqrt" => new Token(TokenType.SQRT, opName, start),
+                "_floor" => new Token(TokenType.FLOOR_MATH, opName, start),
+                "_dot" => new Token(TokenType.DOT, opName, start),
+                "_mul" => new Token(TokenType.MUL, opName, start),
+                "_inv" => new Token(TokenType.INV, opName, start),
+                "_sin" => new Token(TokenType.SIN, opName, start),
+                "_cos" => new Token(TokenType.COS, opName, start),
+                "_tan" => new Token(TokenType.TAN, opName, start),
+                "_asin" => new Token(TokenType.ASIN, opName, start),
+                "_acos" => new Token(TokenType.ACOS, opName, start),
+                "_atan" => new Token(TokenType.ATAN, opName, start),
+                "_sinh" => new Token(TokenType.SINH, opName, start),
+                "_cosh" => new Token(TokenType.COSH, opName, start),
+                "_tanh" => new Token(TokenType.TANH, opName, start),
+                _ => null
+            };
         }
 
         private void SkipWhitespace()

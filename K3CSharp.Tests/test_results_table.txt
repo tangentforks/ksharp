@@ -49,7 +49,7 @@
 ║ count_operator.k          │ # (1 2 3)            │ 3                    │                      ║
 ║ enumerate_operator.k      │ !5                   │ 0 1 2 3 4            │                      ║
 ║ enlist_operator.k         │ ,5                   │ ,5                   │                      ║
-║ floor_operator.k          │ _3.7                 │ 3                    │                      ║
+║ floor_operator.k          │ _3.7                 │ 7                    │ 3                    ║
 ║ unique_operator.k         │ ? (1 2 1 3)          │ 1 2 3                │                      ║
 ║ grade_up_operator.k       │ < (3 11 9 9 4)       │ 0 4 2 3 1            │                      ║
 ║ grade_down_operator.k     │ > (3 11 9 9 4)       │ 1 2 3 4 0            │                      ║
@@ -210,7 +210,7 @@
 ║ adverb_each_vector_multiply.k │ 2 3 *' 3 4 5         │ Error                │                      ║
 ║ adverb_each_vector_minus.k │ 10 20 -' 1 2 3       │ Error                │                      ║
 ╠════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 197/206 tests passed (95.6%)                                        ║
+║ SUMMARY: 196/206 tests passed (95.1%)                                        ║
 ╚════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -219,6 +219,11 @@ Test: symbol_types.k
 Input: `foo
 Expected: `"a symbol"
 Actual: (`;"a symbol")
+──────────────────────────────────────────────────────────────────────────
+Test: floor_operator.k
+Input: _3.7
+Expected: 3
+Actual: 7
 ──────────────────────────────────────────────────────────────────────────
 Test: dictionary_single.k
 Input: .(`a;`b)

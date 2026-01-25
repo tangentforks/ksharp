@@ -50,6 +50,26 @@ namespace K3CSharp
         TYPE,           // 4: type operator
         STRING_REPRESENTATION, // 5: string representation operator
         GLOBAL_ASSIGNMENT, // :: global assignment operator
+        
+        // Mathematical floating point operations
+        LOG,            // _log logarithm
+        EXP,            // _exp exponential
+        ABS,            // _abs absolute value
+        SQR,            // _sqr square
+        SQRT,           // _sqrt square root
+        FLOOR_MATH,     // _floor mathematical floor
+        DOT,            // _dot dot product
+        MUL,            // _mul matrix multiplication
+        INV,            // _inv inverse
+        SIN,            // _sin sine
+        COS,            // _cos cosine
+        TAN,            // _tan tangent
+        ASIN,           // _asin arcsine
+        ACOS,           // _acos arccosine
+        ATAN,           // _atan arctangent
+        SINH,           // _sinh hyperbolic sine
+        COSH,           // _cosh hyperbolic cosine
+        TANH,           // _tanh hyperbolic tangent
         EOF,
         UNKNOWN
     }

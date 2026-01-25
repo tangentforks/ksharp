@@ -153,6 +153,24 @@ namespace K3CSharp
                     : LogicalNegate(operand),
                     "@" => Atom(operand),
                     "~" => AttributeHandle(operand),
+                    "_log" => MathLog(operand),
+                    "_exp" => MathExp(operand),
+                    "_abs" => MathAbs(operand),
+                    "_sqr" => MathSqr(operand),
+                    "_sqrt" => MathSqrt(operand),
+                    "_floor" => MathFloor(operand),
+                    "_dot" => MathDot(operand),
+                    "_mul" => MathMul(operand),
+                    "_inv" => MathInv(operand),
+                    "_sin" => MathSin(operand),
+                    "_cos" => MathCos(operand),
+                    "_tan" => MathTan(operand),
+                    "_asin" => MathAsin(operand),
+                    "_acos" => MathAcos(operand),
+                    "_atan" => MathAtan(operand),
+                    "_sinh" => MathSinh(operand),
+                    "_cosh" => MathCosh(operand),
+                    "_tanh" => MathTanh(operand),
                     "MIN" => operand, // Identity operation for unary min
                     "MAX" => operand, // Identity operation for unary max
                     "ADVERB_SLASH" => operand, // Return operand as-is for now
@@ -2042,6 +2060,547 @@ namespace K3CSharp
             else
             {
                 throw new Exception("Attribute handle can only be applied to symbols or vectors of symbols");
+            }
+        }
+
+        // Mathematical floating point operations
+        private K3Value MathLog(K3Value operand)
+        {
+            if (operand is IntegerValue intValue)
+            {
+                return new FloatValue(Math.Log(intValue.Value));
+            }
+            else if (operand is LongValue longValue)
+            {
+                return new FloatValue(Math.Log(longValue.Value));
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                return new FloatValue(Math.Log(floatValue.Value));
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathLog(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_log can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathExp(K3Value operand)
+        {
+            if (operand is IntegerValue intValue)
+            {
+                return new FloatValue(Math.Exp(intValue.Value));
+            }
+            else if (operand is LongValue longValue)
+            {
+                return new FloatValue(Math.Exp(longValue.Value));
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                return new FloatValue(Math.Exp(floatValue.Value));
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathExp(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_exp can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathAbs(K3Value operand)
+        {
+            if (operand is IntegerValue intValue)
+            {
+                return new FloatValue(Math.Abs(intValue.Value));
+            }
+            else if (operand is LongValue longValue)
+            {
+                return new FloatValue(Math.Abs(longValue.Value));
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                return new FloatValue(Math.Abs(floatValue.Value));
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathAbs(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_abs can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathSqr(K3Value operand)
+        {
+            if (operand is IntegerValue intValue)
+            {
+                return new FloatValue(intValue.Value * intValue.Value);
+            }
+            else if (operand is LongValue longValue)
+            {
+                return new FloatValue(longValue.Value * longValue.Value);
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                return new FloatValue(floatValue.Value * floatValue.Value);
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathSqr(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_sqr can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathSqrt(K3Value operand)
+        {
+            if (operand is IntegerValue intValue)
+            {
+                if (intValue.Value < 0)
+                    throw new Exception("_sqrt cannot be applied to negative numbers");
+                return new FloatValue(Math.Sqrt(intValue.Value));
+            }
+            else if (operand is LongValue longValue)
+            {
+                if (longValue.Value < 0)
+                    throw new Exception("_sqrt cannot be applied to negative numbers");
+                return new FloatValue(Math.Sqrt(longValue.Value));
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                if (floatValue.Value < 0)
+                    throw new Exception("_sqrt cannot be applied to negative numbers");
+                return new FloatValue(Math.Sqrt(floatValue.Value));
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathSqrt(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_sqrt can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathFloor(K3Value operand)
+        {
+            if (operand is IntegerValue intValue)
+            {
+                return new FloatValue(Math.Floor((double)intValue.Value));
+            }
+            else if (operand is LongValue longValue)
+            {
+                return new FloatValue(Math.Floor((double)longValue.Value));
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                return new FloatValue(Math.Floor(floatValue.Value));
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathFloor(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_floor can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathDot(K3Value operand)
+        {
+            // For now, implement basic dot product for numeric vectors
+            if (operand is VectorValue vec)
+            {
+                if (vec.Elements.Count == 0)
+                    return new FloatValue(0.0);
+                
+                double sum = 0.0;
+                foreach (var element in vec.Elements)
+                {
+                    if (element is IntegerValue intVal)
+                        sum += intVal.Value * intVal.Value;
+                    else if (element is LongValue longVal)
+                        sum += longVal.Value * longVal.Value;
+                    else if (element is FloatValue floatVal)
+                        sum += floatVal.Value * floatVal.Value;
+                    else
+                        throw new Exception("_dot requires numeric vector elements");
+                }
+                return new FloatValue(sum);
+            }
+            else if (operand is IntegerValue intValue)
+            {
+                return new FloatValue(intValue.Value * intValue.Value);
+            }
+            else if (operand is LongValue longValue)
+            {
+                return new FloatValue(longValue.Value * longValue.Value);
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                return new FloatValue(floatValue.Value * floatValue.Value);
+            }
+            else
+            {
+                throw new Exception("_dot can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathMul(K3Value operand)
+        {
+            // For now, implement as identity (matrix multiplication would be complex)
+            return operand;
+        }
+
+        private K3Value MathInv(K3Value operand)
+        {
+            if (operand is IntegerValue intValue)
+            {
+                if (intValue.Value == 0)
+                    throw new Exception("_inv cannot be applied to zero");
+                return new FloatValue(1.0 / intValue.Value);
+            }
+            else if (operand is LongValue longValue)
+            {
+                if (longValue.Value == 0)
+                    throw new Exception("_inv cannot be applied to zero");
+                return new FloatValue(1.0 / longValue.Value);
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                if (floatValue.Value == 0)
+                    throw new Exception("_inv cannot be applied to zero");
+                return new FloatValue(1.0 / floatValue.Value);
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathInv(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_inv can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathSin(K3Value operand)
+        {
+            if (operand is IntegerValue intValue)
+            {
+                return new FloatValue(Math.Sin(intValue.Value));
+            }
+            else if (operand is LongValue longValue)
+            {
+                return new FloatValue(Math.Sin(longValue.Value));
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                return new FloatValue(Math.Sin(floatValue.Value));
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathSin(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_sin can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathCos(K3Value operand)
+        {
+            if (operand is IntegerValue intValue)
+            {
+                return new FloatValue(Math.Cos(intValue.Value));
+            }
+            else if (operand is LongValue longValue)
+            {
+                return new FloatValue(Math.Cos(longValue.Value));
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                return new FloatValue(Math.Cos(floatValue.Value));
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathCos(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_cos can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathTan(K3Value operand)
+        {
+            if (operand is IntegerValue intValue)
+            {
+                return new FloatValue(Math.Tan(intValue.Value));
+            }
+            else if (operand is LongValue longValue)
+            {
+                return new FloatValue(Math.Tan(longValue.Value));
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                return new FloatValue(Math.Tan(floatValue.Value));
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathTan(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_tan can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathAsin(K3Value operand)
+        {
+            if (operand is IntegerValue intValue)
+            {
+                var result = Math.Asin(intValue.Value);
+                if (double.IsNaN(result))
+                    throw new Exception("_asin domain error: value must be between -1 and 1");
+                return new FloatValue(result);
+            }
+            else if (operand is LongValue longValue)
+            {
+                var result = Math.Asin(longValue.Value);
+                if (double.IsNaN(result))
+                    throw new Exception("_asin domain error: value must be between -1 and 1");
+                return new FloatValue(result);
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                var result = Math.Asin(floatValue.Value);
+                if (double.IsNaN(result))
+                    throw new Exception("_asin domain error: value must be between -1 and 1");
+                return new FloatValue(result);
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathAsin(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_asin can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathAcos(K3Value operand)
+        {
+            if (operand is IntegerValue intValue)
+            {
+                var result = Math.Acos(intValue.Value);
+                if (double.IsNaN(result))
+                    throw new Exception("_acos domain error: value must be between -1 and 1");
+                return new FloatValue(result);
+            }
+            else if (operand is LongValue longValue)
+            {
+                var result = Math.Acos(longValue.Value);
+                if (double.IsNaN(result))
+                    throw new Exception("_acos domain error: value must be between -1 and 1");
+                return new FloatValue(result);
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                var result = Math.Acos(floatValue.Value);
+                if (double.IsNaN(result))
+                    throw new Exception("_acos domain error: value must be between -1 and 1");
+                return new FloatValue(result);
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathAcos(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_acos can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathAtan(K3Value operand)
+        {
+            if (operand is IntegerValue intValue)
+            {
+                return new FloatValue(Math.Atan(intValue.Value));
+            }
+            else if (operand is LongValue longValue)
+            {
+                return new FloatValue(Math.Atan(longValue.Value));
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                return new FloatValue(Math.Atan(floatValue.Value));
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathAtan(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_atan can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathSinh(K3Value operand)
+        {
+            if (operand is IntegerValue intValue)
+            {
+                return new FloatValue(Math.Sinh(intValue.Value));
+            }
+            else if (operand is LongValue longValue)
+            {
+                return new FloatValue(Math.Sinh(longValue.Value));
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                return new FloatValue(Math.Sinh(floatValue.Value));
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathSinh(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_sinh can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathCosh(K3Value operand)
+        {
+            if (operand is IntegerValue intValue)
+            {
+                return new FloatValue(Math.Cosh(intValue.Value));
+            }
+            else if (operand is LongValue longValue)
+            {
+                return new FloatValue(Math.Cosh(longValue.Value));
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                return new FloatValue(Math.Cosh(floatValue.Value));
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathCosh(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_cosh can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathTanh(K3Value operand)
+        {
+            if (operand is IntegerValue intValue)
+            {
+                return new FloatValue(Math.Tanh(intValue.Value));
+            }
+            else if (operand is LongValue longValue)
+            {
+                return new FloatValue(Math.Tanh(longValue.Value));
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                return new FloatValue(Math.Tanh(floatValue.Value));
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathTanh(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_tanh can only be applied to numeric values or vectors");
             }
         }
     }
