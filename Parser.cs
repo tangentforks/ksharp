@@ -163,7 +163,7 @@ namespace K3CSharp
                 // This is unary ATOM (@) operator
                 var operand = ParseExpressionWithoutUnary();
                 var atomNode = new ASTNode(ASTNodeType.BinaryOp);
-                atomNode.Value = new SymbolValue("ATOM");
+                atomNode.Value = new SymbolValue("@");
                 atomNode.Children.Add(operand);
                 return atomNode;
             }
@@ -1323,18 +1323,9 @@ namespace K3CSharp
                 // This is unary MAKE (.) operator
                 var operand = ParsePrimary();
                 var makeNode = new ASTNode(ASTNodeType.BinaryOp);
-                makeNode.Value = new SymbolValue("MAKE");
+                makeNode.Value = new SymbolValue(".");
                 makeNode.Children.Add(operand);
                 return makeNode;
-            }
-            else if (Match(TokenType.APPLY))
-            {
-                // This is unary ATOM (@) operator
-                var operand = ParsePrimary();
-                var atomNode = new ASTNode(ASTNodeType.BinaryOp);
-                atomNode.Value = new SymbolValue("ATOM");
-                atomNode.Children.Add(operand);
-                return atomNode;
             }
             else if (Match(TokenType.EOF))
             {

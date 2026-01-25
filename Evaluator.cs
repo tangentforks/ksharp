@@ -139,7 +139,7 @@ namespace K3CSharp
                     "REVERSE" => Reverse(operand),
                     "TYPE" => GetTypeCode(operand),
                     "STRING_REPRESENTATION" => StringRepresentation(operand),
-                    "MAKE" => Make(operand),
+                    "." => Make(operand),
                     "GRADE_UP" => GradeUp(operand),
                     "GRADE_DOWN" => GradeDown(operand),
                     "SHAPE" => Shape(operand),
@@ -151,8 +151,8 @@ namespace K3CSharp
                     "NEGATE" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue))
                     ? AttributeHandle(operand)
                     : LogicalNegate(operand),
-                    "ATOM" => Atom(operand),
-                    "ATTRIBUTE_HANDLE" => AttributeHandle(operand),
+                    "@" => Atom(operand),
+                    "~" => AttributeHandle(operand),
                     "MIN" => operand, // Identity operation for unary min
                     "MAX" => operand, // Identity operation for unary max
                     "ADVERB_SLASH" => operand, // Return operand as-is for now
