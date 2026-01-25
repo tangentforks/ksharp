@@ -494,6 +494,7 @@ namespace K3CSharp
                 "_abs" => new Token(TokenType.ABS, opName, start),
                 "_sqr" => new Token(TokenType.SQR, opName, start),
                 "_sqrt" => new Token(TokenType.SQRT, opName, start),
+                "_floor" => new Token(TokenType.FLOOR_MATH, opName, start),
                 "_sin" => new Token(TokenType.SIN, opName, start),
                 "_cos" => new Token(TokenType.COS, opName, start),
                 "_tan" => new Token(TokenType.TAN, opName, start),

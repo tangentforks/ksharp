@@ -158,6 +158,7 @@ namespace K3CSharp
                     "_abs" => MathAbs(operand),
                     "_sqr" => MathSqr(operand),
                     "_sqrt" => MathSqrt(operand),
+                    "_floor" => MathFloor(operand),
                     "_sin" => MathSin(operand),
                     "_cos" => MathCos(operand),
                     "_tan" => MathTan(operand),
@@ -2223,6 +2224,36 @@ namespace K3CSharp
             else
             {
                 throw new Exception("_sqrt can only be applied to numeric values or vectors");
+            }
+        }
+
+        private K3Value MathFloor(K3Value operand)
+        {
+            // Mathematical floor operation that always returns floating point values
+            if (operand is IntegerValue intValue)
+            {
+                return new FloatValue(Math.Floor((double)intValue.Value));
+            }
+            else if (operand is LongValue longValue)
+            {
+                return new FloatValue(Math.Floor((double)longValue.Value));
+            }
+            else if (operand is FloatValue floatValue)
+            {
+                return new FloatValue(Math.Floor(floatValue.Value));
+            }
+            else if (operand is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(MathFloor(element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception("_floor can only be applied to numeric values or vectors");
             }
         }
 

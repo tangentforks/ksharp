@@ -1144,6 +1144,15 @@ namespace K3CSharp
                 node.Children.Add(operand);
                 return node;
             }
+            else if (Match(TokenType.FLOOR_MATH))
+            {
+                // Mathematical floor operation (always returns float)
+                var operand = ParsePrimary();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_floor");
+                node.Children.Add(operand);
+                return node;
+            }
             else if (Match(TokenType.DOT))
             {
                 // Linear algebra dot product operation

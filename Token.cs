@@ -57,6 +57,7 @@ namespace K3CSharp
         ABS,            // _abs absolute value
         SQR,            // _sqr square
         SQRT,           // _sqrt square root
+        FLOOR_MATH,     // _floor mathematical floor (always returns float)
         SIN,            // _sin sine
         COS,            // _cos cosine
         TAN,            // _tan tangent
