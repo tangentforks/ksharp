@@ -131,23 +131,23 @@ namespace K3CSharp
                 var operand = Evaluate(node.Children[0]);
                 return op.Value switch
                 {
-                    "UNARY_MINUS" => UnaryMinus(operand),
-                    "TRANSPOSE" => Transpose(operand),
-                    "FIRST" => First(operand),
-                    "RECIPROCAL" => Reciprocal(operand),
-                    "WHERE" => Where(operand),
-                    "REVERSE" => Reverse(operand),
+                    "-" => UnaryMinus(operand),
+                    "+" => Transpose(operand),
+                    "*" => First(operand),
+                    "%" => Reciprocal(operand),
+                    "&" => Where(operand),
+                    "|" => Reverse(operand),
                     "TYPE" => GetTypeCode(operand),
                     "STRING_REPRESENTATION" => StringRepresentation(operand),
                     "." => Make(operand),
-                    "GRADE_UP" => GradeUp(operand),
-                    "GRADE_DOWN" => GradeDown(operand),
-                    "SHAPE" => Shape(operand),
-                    "ENUMERATE" => Enumerate(operand),
-                    "ENLIST" => Enlist(operand),
-                    "COUNT" => Count(operand),
-                    "FLOOR" => Floor(operand),
-                    "UNIQUE" => Unique(operand),
+                    "<" => GradeUp(operand),
+                    ">" => GradeDown(operand),
+                    "^" => Shape(operand),
+                    "!" => Enumerate(operand),
+                    "," => Enlist(operand),
+                    "#" => Count(operand),
+                    "_" => Floor(operand),
+                    "?" => Unique(operand),
                     "NEGATE" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue))
                     ? AttributeHandle(operand)
                     : LogicalNegate(operand),
@@ -170,23 +170,23 @@ namespace K3CSharp
 
                 return op.Value switch
                 {
-                    "PLUS" => Add(left, right),
-                    "MINUS" => Subtract(left, right),
-                    "MULTIPLY" => Multiply(left, right),
-                    "DIVIDE" => Divide(left, right),
-                    "MIN" => Min(left, right),
-                    "MAX" => Max(left, right),
-                    "LESS" => Less(left, right),
-                    "GREATER" => Greater(left, right),
-                    "EQUAL" => Equal(left, right),
-                    "POWER" => Power(left, right),
-                    "MODULUS" => Modulus(left, right),
-                    "JOIN" => Join(left, right),
-                    "HASH" => Take(left, right),
-                    "UNDERSCORE" => FloorBinary(left, right),
-                    "QUESTION" => UniqueBinary(left, right),
-                    "NEGATE" => NegateBinary(left, right),
-                    "APPLY" => VectorIndex(left, right),
+                    "+" => Add(left, right),
+                    "-" => Subtract(left, right),
+                    "*" => Multiply(left, right),
+                    "%" => Divide(left, right),
+                    "&" => Min(left, right),
+                    "|" => Max(left, right),
+                    "<" => Less(left, right),
+                    ">" => Greater(left, right),
+                    "=" => Equal(left, right),
+                    "^" => Power(left, right),
+                    "!" => Modulus(left, right),
+                    "," => Join(left, right),
+                    "#" => Take(left, right),
+                    "_" => FloorBinary(left, right),
+                    "?" => UniqueBinary(left, right),
+                    "~" => NegateBinary(left, right),
+                    "@" => VectorIndex(left, right),
                     "ADVERB_SLASH" => Over(left, right),
                     "ADVERB_BACKSLASH" => Scan(left, right),
                     "ADVERB_TICK" => Each(left, right),
@@ -1554,25 +1554,18 @@ namespace K3CSharp
         {
             return verbName switch
             {
-                "PLUS" => Add(left, right),
-                "MINUS" => Subtract(left, right),
-                "MULTIPLY" => Multiply(left, right),
-                "DIVIDE" => Divide(left, right),
-                "MIN" => Min(left, right),
-                "MAX" => Max(left, right),
-                "LESS" => Less(left, right),
-                "GREATER" => Greater(left, right),
-                "EQUAL" => Equal(left, right),
-                "POWER" => Power(left, right),
-                "MODULUS" => Modulus(left, right),
-                "JOIN" => Join(left, right),
-                "+" => Add(left, right),  // Add fallback for literal +
-                "-" => Subtract(left, right),  // Add fallback for literal -
-                "*" => Multiply(left, right),  // Add fallback for literal *
-                "%" => Divide(left, right),  // Add fallback for literal %
-                "&" => Min(left, right),  // Add fallback for literal &
-                "|" => Max(left, right),  // Add fallback for literal |
-                "^" => Power(left, right),  // Add fallback for literal ^
+                "+" => Add(left, right),
+                "-" => Subtract(left, right),
+                "*" => Multiply(left, right),
+                "%" => Divide(left, right),
+                "&" => Min(left, right),
+                "|" => Max(left, right),
+                "<" => Less(left, right),
+                ">" => Greater(left, right),
+                "=" => Equal(left, right),
+                "^" => Power(left, right),
+                "!" => Modulus(left, right),
+                "," => Join(left, right),
                 _ => throw new Exception($"Unknown operator: {verbName}")
             };
         }
@@ -1581,15 +1574,6 @@ namespace K3CSharp
         {
             return verbName switch
             {
-                "PLUS" => operand,  // Identity operation
-                "MINUS" => Negate(operand),
-                "MULTIPLY" => operand,  // Identity operation  
-                "DIVIDE" => Reciprocal(operand),
-                "MIN" => operand,  // Identity operation
-                "MAX" => operand,  // Identity operation
-                "POWER" => operand,  // Identity operation
-                "MODULUS" => operand,  // Identity operation
-                "JOIN" => Enlist(operand),
                 "+" => operand,  // Identity operation
                 "-" => Negate(operand),
                 "*" => First(operand),

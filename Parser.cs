@@ -49,9 +49,27 @@ namespace K3CSharp
             node.Children.Add(left);
             node.Children.Add(right);
             
-            // Handle special case for TYPE operator
+            // Convert token type to traditional operator symbol
             string symbolValue = op switch
             {
+                TokenType.PLUS => "+",
+                TokenType.MINUS => "-",
+                TokenType.MULTIPLY => "*",
+                TokenType.DIVIDE => "%",
+                TokenType.MIN => "&",
+                TokenType.MAX => "|",
+                TokenType.LESS => "<",
+                TokenType.GREATER => ">",
+                TokenType.EQUAL => "=",
+                TokenType.POWER => "^",
+                TokenType.MODULUS => "!",
+                TokenType.JOIN => ",",
+                TokenType.HASH => "#",
+                TokenType.UNDERSCORE => "_",
+                TokenType.QUESTION => "?",
+                TokenType.NEGATE => "~",
+                TokenType.APPLY => "@",
+                TokenType.DOT_APPLY => ".",
                 TokenType.TYPE => "TYPE",
                 TokenType.STRING_REPRESENTATION => "STRING_REPRESENTATION",
                 _ => op.ToString()
@@ -241,16 +259,16 @@ namespace K3CSharp
                 // Convert the binary operator to a verb symbol
                     var verbName = op.ToString() switch
                     {
-                        "PLUS" => "PLUS",
-                        "MINUS" => "MINUS",
-                        "MULTIPLY" => "MULTIPLY",
-                        "DIVIDE" => "DIVIDE",
-                        "MIN" => "MIN",
-                        "MAX" => "MAX",
-                        "POWER" => "POWER",
-                        "MODULUS" => "MODULUS",
-                        "JOIN" => "JOIN",
-                        "HASH" => "TAKE",
+                        "PLUS" => "+",
+                        "MINUS" => "-",
+                        "MULTIPLY" => "*",
+                        "DIVIDE" => "%",
+                        "MIN" => "&",
+                        "MAX" => "|",
+                        "POWER" => "^",
+                        "MODULUS" => "!",
+                        "JOIN" => ",",
+                        "HASH" => "#",
                         "TYPE" => "TYPE",
                         _ => op.ToString()
                     };
@@ -418,23 +436,19 @@ namespace K3CSharp
                     {
                         var verbName = leftSymbol.Value switch
                         {
-                            "+" => "PLUS",
-                            "-" => "MINUS", 
-                            "*" => "MULTIPLY",
-                            "%" => "DIVIDE",
-                            "&" => "MIN",
-                            "|" => "MAX",
-                            "^" => "POWER",
-                            "!" => "ENUMERATE",
-                            "," => "ENLIST",
-                            "#" => "COUNT",
-                            "_" => "FLOOR",
-                            "?" => "UNIQUE",
-                            "~" => "NEGATE",
-                            "PLUS" => "PLUS",  // Already converted
-                            "MINUS" => "MINUS",  // Already converted
-                            "MULTIPLY" => "MULTIPLY",  // Already converted
-                            "DIVIDE" => "DIVIDE",  // Already converted
+                            "+" => "+",
+                            "-" => "-", 
+                            "*" => "*",
+                            "%" => "%",
+                            "&" => "&",
+                            "|" => "|",
+                            "^" => "^",
+                            "!" => "!",
+                            "," => ",",
+                            "#" => "#",
+                            "_" => "_",
+                            "?" => "?",
+                            "~" => "~",
                             _ => leftSymbol.Value
                         };
                         left.Value = new SymbolValue(verbName);
@@ -448,20 +462,15 @@ namespace K3CSharp
                     {
                         var verbName = leftOpSymbol.Value switch
                         {
-                            "FIRST" => "MULTIPLY",
-                            "RECIPROCAL" => "DIVIDE",
-                            "TRANSPOSE" => "PLUS",
-                            "UNARY_MINUS" => "MINUS",
-                            "GENERATE" => "ENUMERATE",
-                            "REVERSE" => "MAX",
-                            "GRADE_UP" => "LESS",
-                            "GRADE_DOWN" => "GREATER",
-                            "SHAPE" => "POWER",
-                            "ENUMERATE" => "MODULUS",
-                            "ENLIST" => "JOIN",
-                            "COUNT" => "HASH",
-                            "FLOOR" => "UNDERSCORE",
-                            "UNIQUE" => "QUESTION",
+                            "*" => "*",
+                            "%" => "%",
+                            "+" => "+",
+                            "-" => "-",
+                            "!" => "!",
+                            "," => ",",
+                            "#" => "#",
+                            "_" => "_",
+                            "?" => "?",
                             _ => leftOpSymbol.Value
                         };
                         left = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
@@ -589,7 +598,7 @@ namespace K3CSharp
                         // This is unary transpose
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("TRANSPOSE");
+                        node.Value = new SymbolValue("+");
                         node.Children.Add(operand);
                         return node;
                     }
@@ -618,7 +627,7 @@ namespace K3CSharp
                         // This is unary minus
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("UNARY_MINUS");
+                        node.Value = new SymbolValue("-");
                         node.Children.Add(operand);
                         return node;
                     }
@@ -647,7 +656,7 @@ namespace K3CSharp
                         // This is unary reciprocal
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("RECIPROCAL");
+                        node.Value = new SymbolValue("%");
                         node.Children.Add(operand);
                         return node;
                     }
@@ -676,7 +685,7 @@ namespace K3CSharp
                         // This is unary first
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("FIRST");
+                        node.Value = new SymbolValue("*");
                         node.Children.Add(operand);
                         return node;
                     }
@@ -705,7 +714,7 @@ namespace K3CSharp
                         // This is unary where (&)
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("WHERE");
+                        node.Value = new SymbolValue("&");
                         node.Children.Add(operand);
                         return node;
                     }
@@ -734,7 +743,7 @@ namespace K3CSharp
                         // This is unary reverse (|)
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("REVERSE");
+                        node.Value = new SymbolValue("|");
                         node.Children.Add(operand);
                         return node;
                     }
@@ -763,7 +772,7 @@ namespace K3CSharp
                         // This is unary grade up
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("GRADE_UP");
+                        node.Value = new SymbolValue("<");
                         node.Children.Add(operand);
                         return node;
                     }
@@ -792,7 +801,7 @@ namespace K3CSharp
                         // This is unary grade down
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("GRADE_DOWN");
+                        node.Value = new SymbolValue(">");
                         node.Children.Add(operand);
                         return node;
                     }
@@ -821,7 +830,7 @@ namespace K3CSharp
                         // This is unary shape
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("SHAPE");
+                        node.Value = new SymbolValue("^");
                         node.Children.Add(operand);
                         return node;
                     }
@@ -850,7 +859,7 @@ namespace K3CSharp
                         // This is unary enumerate
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("ENUMERATE");
+                        node.Value = new SymbolValue("!");
                         node.Children.Add(operand);
                         return node;
                     }
@@ -879,7 +888,7 @@ namespace K3CSharp
                         // This is unary enlist
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("ENLIST");
+                        node.Value = new SymbolValue(",");
                         node.Children.Add(operand);
                         return node;
                     }
@@ -1015,7 +1024,7 @@ namespace K3CSharp
                         // This is unary count
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("COUNT");
+                        node.Value = new SymbolValue("#");
                         node.Children.Add(operand);
                         return node;
                     }
@@ -1044,7 +1053,7 @@ namespace K3CSharp
                         // This is unary floor
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("FLOOR");
+                        node.Value = new SymbolValue("_");
                         node.Children.Add(operand);
                         return node;
                     }
@@ -1073,7 +1082,7 @@ namespace K3CSharp
                         // This is unary unique
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("UNIQUE");
+                        node.Value = new SymbolValue("?");
                         node.Children.Add(operand);
                         return node;
                     }
@@ -1497,16 +1506,16 @@ namespace K3CSharp
                 // Convert the binary operator to a verb symbol
                     var verbName = op.ToString() switch
                     {
-                        "PLUS" => "PLUS",
-                        "MINUS" => "MINUS",
-                        "MULTIPLY" => "MULTIPLY",
-                        "DIVIDE" => "DIVIDE",
-                        "MIN" => "MIN",
-                        "MAX" => "MAX",
-                        "POWER" => "POWER",
-                        "MODULUS" => "MODULUS",
-                        "JOIN" => "JOIN",
-                        "HASH" => "TAKE",
+                        "PLUS" => "+",
+                        "MINUS" => "-",
+                        "MULTIPLY" => "*",
+                        "DIVIDE" => "%",
+                        "MIN" => "&",
+                        "MAX" => "|",
+                        "POWER" => "^",
+                        "MODULUS" => "!",
+                        "JOIN" => ",",
+                        "HASH" => "#",
                         "TYPE" => "TYPE",
                         _ => op.ToString()
                     };
