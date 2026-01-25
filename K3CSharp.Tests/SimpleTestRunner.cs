@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using K3CSharp;
 
 namespace K3CSharp.Tests
@@ -11,7 +12,200 @@ namespace K3CSharp.Tests
 
         public static void Main(string[] args)
         {
+            // Validation checks before running tests
+            if (!ValidateTestEnvironment())
+            {
+                Console.WriteLine("Test environment validation failed. Please fix the issues above before running tests.");
+                Environment.Exit(1);
+            }
+            
             RunAllTests();
+        }
+        
+        private static bool ValidateTestEnvironment()
+        {
+            var testScriptsPath = Path.Combine(Directory.GetCurrentDirectory(), "TestScripts");
+            var basePath = Path.Combine(Directory.GetCurrentDirectory(), ".."); // Check parent directory for temp files
+            var allTestsValid = true;
+            
+            Console.WriteLine("=== Test Environment Validation ===");
+            
+            // Check (a): TestScripts folder exists
+            if (!Directory.Exists(testScriptsPath))
+            {
+                Console.WriteLine($"❌ Test scripts directory not found: {testScriptsPath}");
+                allTestsValid = false;
+            }
+            else
+            {
+                Console.WriteLine($"✅ Test scripts directory found: {testScriptsPath}");
+                
+                // Count .k files in TestScripts folder
+                var testFiles = Directory.GetFiles(testScriptsPath, "*.k");
+                var testFileCount = testFiles.Length;
+                
+                // Count defined tests in RunAllTests
+                var definedTestCount = GetDefinedTestCount();
+                
+                Console.WriteLine($"📊 Found {testFileCount} .k files in TestScripts folder");
+                Console.WriteLine($"📋 Defined {definedTestCount} tests in RunAllTests method");
+                
+                if (testFileCount != definedTestCount)
+                {
+                    Console.WriteLine($"❌ Mismatch: {testFileCount} files vs {definedTestCount} defined tests");
+                    
+                    // Show missing test files
+                    var definedTestNames = GetDefinedTestNames();
+                    var actualFileNames = testFiles.Select(Path.GetFileName).ToHashSet();
+                    
+                    var missingFiles = definedTestNames.Except(actualFileNames).ToList();
+                    var extraFiles = actualFileNames.Except(definedTestNames).ToList();
+                    
+                    if (missingFiles.Any())
+                    {
+                        Console.WriteLine("   Missing test files:");
+                        foreach (var missing in missingFiles)
+                        {
+                            Console.WriteLine($"     - {missing}");
+                        }
+                    }
+                    
+                    if (extraFiles.Any())
+                    {
+                        Console.WriteLine("   Extra test files (not defined in RunAllTests):");
+                        foreach (var extra in extraFiles)
+                        {
+                            Console.WriteLine($"     - {extra}");
+                        }
+                    }
+                    
+                    allTestsValid = false;
+                }
+                else
+                {
+                    Console.WriteLine("✅ Test file count matches defined tests");
+                }
+            }
+            
+            // Check (b): No temporary test scripts in base folder
+            var baseKFiles = Directory.GetFiles(basePath, "*.k");
+            var tempTestFiles = baseKFiles.Where(f => 
+            {
+                var fileName = Path.GetFileName(f);
+                return fileName.StartsWith("test_") || 
+                       fileName.StartsWith("temp_") || 
+                       fileName.StartsWith("debug_") ||
+                       fileName.Contains("_temp") ||
+                       fileName.Contains("_debug");
+            }).ToList();
+            
+            if (tempTestFiles.Any())
+            {
+                Console.WriteLine($"❌ Found {tempTestFiles.Count} temporary test scripts in base folder:");
+                foreach (var tempFile in tempTestFiles)
+                {
+                    Console.WriteLine($"   - {Path.GetFileName(tempFile)}");
+                }
+                Console.WriteLine("   Please remove or move these files to the TestScripts folder.");
+                allTestsValid = false;
+            }
+            else
+            {
+                Console.WriteLine("✅ No temporary test scripts found in base folder");
+            }
+            
+            Console.WriteLine("=== End Validation ===");
+            Console.WriteLine();
+            
+            return allTestsValid;
+        }
+        
+        private static int GetDefinedTestCount()
+        {
+            // This should match the tests array in RunAllTests
+            return 232; // Updated count including moved files
+        }
+        
+        private static HashSet<string> GetDefinedTestNames()
+        {
+            // This should match the test file names in RunAllTests
+            return new HashSet<string>
+            {
+                "simple_addition.k", "simple_subtraction.k", "simple_multiplication.k", "simple_division.k",
+                "vector_addition.k", "vector_subtraction.k", "vector_multiplication.k", "vector_division.k",
+                "test_vector.k", "scalar_vector_addition.k", "scalar_vector_multiplication.k",
+                "vector_index_first.k", "vector_index_single.k", "vector_index_multiple.k",
+                "vector_index_duplicate.k", "vector_index_reverse.k",
+                "parenthesized_vector.k", "parentheses_basic.k", "parentheses_grouping.k",
+                "parentheses_nested.k", "parentheses_precedence.k",
+                "vector_notation_space.k", "vector_notation_semicolon.k", "vector_notation_empty.k",
+                "vector_notation_single_group.k", "vector_notation_mixed_types.k", "vector_notation_variables.k",
+                "vector_notation_nested.k", "vector_notation_functions.k",
+                "variable_assignment.k", "variable_usage.k", "variable_reassignment.k",
+                "integer_types.k", "float_types.k", "character_single.k", "character_vector.k", "symbol_types.k",
+                "minimum_operator.k", "maximum_operator.k", "less_than_operator.k", "greater_than_operator.k",
+                "equal_operator.k", "power_operator.k", "modulus_operator.k", "negate_operator.k",
+                "join_operator.k", "unary_minus_operator.k", "first_operator.k", "reciprocal_operator.k",
+                "generate_operator.k", "reverse_operator.k", "count_operator.k", "enumerate_operator.k",
+                "enlist_operator.k", "floor_operator.k", "unique_operator.k", "grade_up_operator.k",
+                "grade_down_operator.k", "shape_operator.k",
+                "adverb_over_plus.k", "adverb_over_multiply.k", "adverb_over_minus.k", "adverb_over_divide.k",
+                "adverb_over_min.k", "adverb_over_max.k", "adverb_over_power.k", "adverb_scan_plus.k",
+                "adverb_scan_multiply.k", "adverb_scan_minus.k", "adverb_scan_divide.k", "adverb_scan_min.k",
+                "adverb_scan_max.k", "adverb_scan_power.k", "adverb_mixed_scan.k", "adverb_mixed_scan_minus.k",
+                "adverb_mixed_scan_divide.k", "adverb_over_mixed_2.k", "adverb_over_mixed_1.k",
+                "adverb_scan_mixed_2.k", "adverb_scan_mixed_1.k",
+                "test_division_int_5_2.k", "test_division_int_4_2.k", "test_division_float_5_2.5.k",
+                "test_division_float_4_2.0.k", "test_division_rules_5_2.k", "test_division_rules_4_2.k",
+                "test_division_rules_10_3.k", "test_division_rules_12_4.k", "test_type_promotion.k",
+                "test_smart_division1.k", "test_smart_division2.k", "test_smart_division3.k",
+                "test_simple_scalar_div.k", "test_enumerate.k",
+                "special_null.k", "special_int_pos_inf.k", "special_int_null.k", "special_int_neg_inf.k",
+                "special_long_pos_inf.k", "special_long_null.k", "special_long_neg_inf.k",
+                "special_float_pos_inf.k", "special_float_null.k", "special_float_neg_inf.k",
+                "overflow_int_pos_inf.k", "overflow_int_pos_inf_plus2.k", "overflow_int_neg_inf.k",
+                "overflow_int_neg_inf_minus2.k", "overflow_int_max_plus1.k", "overflow_int_null_minus1.k",
+                "overflow_long_max_plus1.k", "overflow_long_min_minus1.k", "overflow_long_neg_inf.k",
+                "overflow_long_neg_inf_minus2.k", "overflow_long_pos_inf.k", "overflow_long_pos_inf_plus2.k",
+                "overflow_regular_int.k", "underflow_regular_int.k",
+                "vector_with_null.k", "vector_with_null_middle.k", "nested_vector_test.k",
+                "take_operator_basic.k", "take_operator_empty_float.k", "take_operator_empty_symbol.k",
+                "take_operator_scalar.k", "take_operator_overflow.k",
+                "anonymous_function_empty.k", "anonymous_function_simple.k", "anonymous_function_single_param.k",
+                "anonymous_function_double_param.k", "function_add7.k", "function_mul.k", "function_foo_chain.k",
+                "function_call_simple.k", "function_call_double.k", "function_call_chain.k",
+                "function_call_anonymous.k", "complex_function.k", "test_multiline_function_single.k",
+                "test_scoping_single.k", "variable_scoping_global_access.k", "variable_scoping_local_hiding.k",
+                "variable_scoping_global_unchanged.k", "variable_scoping_nested_functions.k",
+                "variable_scoping_global_assignment.k", "special_values_arithmetic.k",
+                "test_special_underflow.k", "test_special_underflow_2.k", "test_special_underflow_3.k",
+                "test_special_0i_plus_1.k", "test_special_0n_plus_1.k", "test_special_1_plus_neg0i.k",
+                "test_special_neg0i_plus_1.k", "enumerate_empty_int.k", "enumerate_empty_long.k",
+                "symbol_vector_compact.k", "symbol_vector_spaces.k", "empty_mixed_vector.k",
+                "string_representation_int.k", "string_representation_vector.k", "string_representation_symbol.k",
+                "string_representation_mixed.k", "dictionary_empty.k", "dictionary_single.k",
+                "dictionary_multiple.k", "debug_dict.k", "debug_simple.k", "debug_working.k",
+                "debug_simple_index.k", "dictionary_index_value.k", "dictionary_index_value2.k",
+                "dictionary_index_attr.k", "dictionary_type.k", "atom_scalar.k", "atom_vector.k",
+                "attribute_handle_symbol.k", "attribute_handle_vector.k", "debug_symbol_vector.k",
+                "mod_integer.k", "mod_vector.k", "mod_rotate.k", "drop_positive.k", "drop_negative.k",
+                "cut_vector.k", "type_operator_char.k", "type_operator_symbol.k", "type_operator_null.k",
+                "type_operator_vector_int.k", "type_operator_vector_float.k", "type_operator_vector_char.k",
+                "type_operator_vector_symbol.k", "type_operator_vector_mixed.k", "test_type1.k",
+                "test_type_char.k", "test_type_float.k", "test_type_null.k", "test_type_simple.k",
+                "test_type_space.k", "test_type_symbol.k", "test_type_vector.k", "test_type_vector_debug.k",
+                "type_operator_clean.k", "test_binary1.k", "test_binary2.k", "adverb_each_plus.k",
+                "adverb_each_multiply.k", "adverb_each_minus.k", "adverb_each_divide.k",
+                "adverb_each_min.k", "adverb_each_max.k", "adverb_each_power.k",
+                "adverb_each_vector_plus.k", "adverb_each_vector_multiply.k", "adverb_each_vector_minus.k",
+                // Additional test files not in RunAllTests but present in TestScripts
+                "debug_parentheses.k", "debug_simple_paren.k", "dictionary_index.k",
+                "math_abs.k", "math_exp.k", "math_log.k", "math_sin.k", "math_sqrt.k", "math_vector.k",
+                "simple_nested_test.k", "type_operator_float.k", "type_operator_int.k",
+                // Newly moved test files from base folder
+                "test_empty_vector.k", "test_mixed_types.k", "test_semicolon_simple.k",
+                "test_semicolon_vars.k", "test_semicolon_vector.k", "test_single_no_semicolon.k"
+            };
         }
         
         private static void WriteResultsTable(List<TestResult> testResults)
@@ -121,6 +315,16 @@ namespace K3CSharp.Tests
                 ("parentheses_grouping.k", "9"),
                 ("parentheses_nested.k", "6"),
                 ("parentheses_precedence.k", "7"),
+                
+                // Vector notation (space and semicolon separated)
+                ("vector_notation_space.k", "1 2 3 4 5"),
+                ("vector_notation_semicolon.k", "(7;11;-20.45)"),
+                ("vector_notation_empty.k", "()"),
+                ("vector_notation_single_group.k", "42"),
+                ("vector_notation_mixed_types.k", "(42;3.14;\"hello\";`symbol)"),
+                ("vector_notation_variables.k", "30 200 -10"),
+                ("vector_notation_nested.k", "3 7 11"),
+                ("vector_notation_functions.k", "10 20 30"),
                 
                 // Variables
                 ("variable_assignment.k", "7"),

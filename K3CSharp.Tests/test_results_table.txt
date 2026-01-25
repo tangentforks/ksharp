@@ -24,6 +24,14 @@
 ║ parentheses_grouping.k    │ (1 + 2) * 3          │ 9                    │                      ║
 ║ parentheses_nested.k      │ (1 + 2) + 3          │ 6                    │                      ║
 ║ parentheses_precedence.k  │ 1 + (2 * 3)          │ 7                    │                      ║
+║ vector_notation_space.k   │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
+║ vector_notation_semicolon.k │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
+║ vector_notation_empty.k   │ ()                   │ ()                   │                      ║
+║ vector_notation_single_group.k │ (42)                 │ 42                   │                      ║
+║ vector_notation_mixed_types.k │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
+║ vector_notation_variables.k │ a: 10                │ 30 200 -10           │                      ║
+║ vector_notation_nested.k  │ ((1 + 2); (3 + 4); (5 + 6)) │ 3 7 11               │                      ║
+║ vector_notation_functions.k │ double: {[x] x * 2}  │ (({[x] x*2};5);...   │ 10 20 30             ║
 ║ variable_assignment.k     │ foo:7                │ 7                    │                      ║
 ║ variable_usage.k          │ x:10                 │ 30                   │                      ║
 ║ variable_reassignment.k   │ foo:7                │ 7.2 4.5              │                      ║
@@ -49,7 +57,7 @@
 ║ count_operator.k          │ # (1 2 3)            │ 3                    │                      ║
 ║ enumerate_operator.k      │ !5                   │ 0 1 2 3 4            │                      ║
 ║ enlist_operator.k         │ ,5                   │ ,5                   │                      ║
-║ floor_operator.k          │ _3.7                 │ 7                    │ 3                    ║
+║ floor_operator.k          │ _3.7                 │ 3                    │                      ║
 ║ unique_operator.k         │ ? (1 2 1 3)          │ 1 2 3                │                      ║
 ║ grade_up_operator.k       │ < (3 11 9 9 4)       │ 0 4 2 3 1            │                      ║
 ║ grade_down_operator.k     │ > (3 11 9 9 4)       │ 1 2 3 4 0            │                      ║
@@ -158,12 +166,12 @@
 ║ string_representation_symbol.k │ 5:`symbol            │ "`symbol"            │                      ║
 ║ string_representation_mixed.k │ 5:(1;2.5;"a")        │ "(1;2.5;"a")"        │                      ║
 ║ dictionary_empty.k        │ .()                  │ .()                  │                      ║
-║ dictionary_single.k       │ .(`a;`b)             │ Error                │ .(`a;`b)             ║
+║ dictionary_single.k       │ .,(`a;`b)            │ .(`a;`b)             │                      ║
 ║ dictionary_multiple.k     │ .((`a;1);(`b;2))     │ .(`a;1);(`b;2)       │                      ║
 ║ debug_dict.k              │ .((`a;1);(`b;2))     │ .(`a;1);(`b;2)       │                      ║
-║ debug_simple.k            │ .((`a;1))            │ Error                │ .(`a;1)              ║
+║ debug_simple.k            │ .,((`a;1))           │ .(`a;1)              │                      ║
 ║ debug_working.k           │ .((`a;1);(`b;2)) @ `a │ 1                    │                      ║
-║ debug_simple_index.k      │ .((`a;1)) @ `a       │ Error                │ 1                    ║
+║ debug_simple_index.k      │ .,((`a;1)) @ `a      │ 1                    │                      ║
 ║ dictionary_index_value.k  │ .((`a;1);(`b;2)) @ `a │ 1                    │                      ║
 ║ dictionary_index_value2.k │ .((`a;1);(`b;2)) @ `b │ 2                    │                      ║
 ║ dictionary_index_attr.k   │ .((`a;1);(`b;2;.((`c;3);(`d;4)))) @ `b. │ .(`c;3);(`d;4)       │                      ║
@@ -176,9 +184,9 @@
 ║ mod_integer.k             │ 7!3                  │ 1                    │                      ║
 ║ mod_vector.k              │ 1 2 3 4 ! 2          │ 1 0 1 0              │                      ║
 ║ mod_rotate.k              │ 2 ! 1 2 3 4          │ 3 4 1 2              │                      ║
-║ drop_positive.k           │ 4 _ 0 1 2 3 4 5 6 7  │ 4                    │ 4 5 6 7              ║
-║ drop_negative.k           │ -4 _ 0 1 2 3 4 5 6 7 │ -4                   │ 0 1 2 3              ║
-║ cut_vector.k              │ 0 2 4 _ 0 1 2 3 4 5 6 7 │ 0 2 4                │ (0 1;2 3;4 5 6 7)    ║
+║ drop_positive.k           │ 4 _ 0 1 2 3 4 5 6 7  │ 4 5 6 7              │                      ║
+║ drop_negative.k           │ -4 _ 0 1 2 3 4 5 6 7 │ 0 1 2 3              │                      ║
+║ cut_vector.k              │ 0 2 4 _ 0 1 2 3 4 5 6 7 │ ((0 1);(2 3);(4...   │ (0 1;2 3;4 5 6 7)    ║
 ║ type_operator_char.k      │ 4: "a"               │ 3                    │                      ║
 ║ type_operator_symbol.k    │ 4: `symbol           │ 4                    │                      ║
 ║ type_operator_null.k      │ 4: _n                │ 6                    │                      ║
@@ -210,35 +218,20 @@
 ║ adverb_each_vector_multiply.k │ 2 3 *' 3 4 5         │ Error                │                      ║
 ║ adverb_each_vector_minus.k │ 10 20 -' 1 2 3       │ Error                │                      ║
 ╠════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 196/206 tests passed (95.1%)                                        ║
+║ SUMMARY: 209/214 tests passed (97.7%)                                        ║
 ╚════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
+Test: vector_notation_functions.k
+Input: double: {[x] x * 2}
+Expected: 10 20 30
+Actual: (({[x] x*2};5);({[x] x*2};10);({[x] x*2};15))
+──────────────────────────────────────────────────────────────────────────
 Test: symbol_types.k
 Input: `foo
 Expected: `"a symbol"
 Actual: (`;"a symbol")
-──────────────────────────────────────────────────────────────────────────
-Test: floor_operator.k
-Input: _3.7
-Expected: 3
-Actual: 7
-──────────────────────────────────────────────────────────────────────────
-Test: dictionary_single.k
-Input: .(`a;`b)
-Expected: .(`a;`b)
-Actual: Error
-──────────────────────────────────────────────────────────────────────────
-Test: debug_simple.k
-Input: .((`a;1))
-Expected: .(`a;1)
-Actual: Error
-──────────────────────────────────────────────────────────────────────────
-Test: debug_simple_index.k
-Input: .((`a;1)) @ `a
-Expected: 1
-Actual: Error
 ──────────────────────────────────────────────────────────────────────────
 Test: attribute_handle_vector.k
 Input: ~(`a`b`c)
@@ -250,18 +243,8 @@ Input: (`a`b`c)
 Expected: `a`b`c
 Actual: 
 ──────────────────────────────────────────────────────────────────────────
-Test: drop_positive.k
-Input: 4 _ 0 1 2 3 4 5 6 7
-Expected: 4 5 6 7
-Actual: 4
-──────────────────────────────────────────────────────────────────────────
-Test: drop_negative.k
-Input: -4 _ 0 1 2 3 4 5 6 7
-Expected: 0 1 2 3
-Actual: -4
-──────────────────────────────────────────────────────────────────────────
 Test: cut_vector.k
 Input: 0 2 4 _ 0 1 2 3 4 5 6 7
 Expected: (0 1;2 3;4 5 6 7)
-Actual: 0 2 4
+Actual: ((0 1);(2 3);(4 5 6 7))
 ──────────────────────────────────────────────────────────────────────────

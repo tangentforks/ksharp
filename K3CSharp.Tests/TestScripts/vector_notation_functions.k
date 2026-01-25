@@ -1,0 +1,2 @@
+double: {[x] x * 2}
+(double 5; double 10; double 15)

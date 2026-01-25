@@ -230,7 +230,8 @@ namespace K3CSharp
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
                    Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
                    Match(TokenType.EQUAL) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
-                   Match(TokenType.HASH) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION))
+                   Match(TokenType.HASH) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
+                   Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || Match(TokenType.NEGATE))
             {
                 var op = PreviousToken().Type;
                 
@@ -1060,7 +1061,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Binary underscore symbol
+                    // Binary underscore will be handled in ParseExpression, so treat as symbol here
                     result = ASTNode.MakeLiteral(new SymbolValue("_"));
                 }
             }

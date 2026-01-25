@@ -468,7 +468,17 @@ namespace K3CSharp
             Advance(); // Skip _
             
             if (position >= input.Length)
+            {
+                position = start; // Reset position
                 return null;
+            }
+            
+            // Only proceed if next character is a letter (for valid math operations)
+            if (!char.IsLetter(currentChar))
+            {
+                position = start; // Reset position
+                return null;
+            }
             
             string opName = "_" + currentChar;
             int charCount = 1;
@@ -486,7 +496,7 @@ namespace K3CSharp
             }
             
             // Map operation names to tokens
-            return opName switch
+            Token result = opName switch
             {
                 // Mathematical floating point operations
                 "_log" => new Token(TokenType.LOG, opName, start),
@@ -512,6 +522,14 @@ namespace K3CSharp
                 
                 _ => null
             };
+            
+            // If no valid operation found, reset position
+            if (result == null)
+            {
+                position = start;
+            }
+            
+            return result;
         }
 
         private void SkipWhitespace()
