@@ -323,6 +323,15 @@ namespace K3CSharp
             int start = position;
             Advance(); // Skip backtick
             
+            // Check if next character is a quote - this should have precedence per spec
+            if (currentChar == '"')
+            {
+                // Read the quoted string as part of the symbol
+                var stringValue = ReadString();
+                // The ReadString method already includes the quotes, so use that as the symbol value
+                return new Token(TokenType.SYMBOL, stringValue.Lexeme, start);
+            }
+            
             string value = "";
             while (currentChar != '\0' && (char.IsLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '.'))
             {

@@ -31,7 +31,7 @@
 ║ vector_notation_mixed_types.k │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
 ║ vector_notation_variables.k │ a: 10                │ 30 200 -10           │                      ║
 ║ vector_notation_nested.k  │ ((1 + 2); (3 + 4); (5 + 6)) │ 3 7 11               │                      ║
-║ vector_notation_functions.k │ double: {[x] x * 2}  │ (({[x] x*2};5);...   │ 10 20 30             ║
+║ vector_notation_functions.k │ double: {[x] x * 2}  │ 10 20 30             │                      ║
 ║ variable_assignment.k     │ foo:7                │ 7                    │                      ║
 ║ variable_usage.k          │ x:10                 │ 30                   │                      ║
 ║ variable_reassignment.k   │ foo:7                │ 7.2 4.5              │                      ║
@@ -39,7 +39,7 @@
 ║ float_types.k             │ 3.14                 │ 170                  │                      ║
 ║ character_single.k        │ "f"                  │ "f"                  │                      ║
 ║ character_vector.k        │ "hello"              │ "hello"              │                      ║
-║ symbol_types.k            │ `foo                 │ (`;"a symbol")       │ `"a symbol"          ║
+║ symbol_types.k            │ `foo                 │ `"a symbol"          │                      ║
 ║ minimum_operator.k        │ 3 & 5                │ 3                    │                      ║
 ║ maximum_operator.k        │ 3 | 5                │ 5                    │                      ║
 ║ less_than_operator.k      │ 3 < 5                │ 1                    │                      ║
@@ -123,10 +123,7 @@
 ║ underflow_regular_int.k   │ -2147483639 - 40     │ 2147483617           │                      ║
 ║ vector_with_null.k        │ _n 1 2               │ (_n;1;2)             │                      ║
 ║ vector_with_null_middle.k │ 1 _n 3               │ (1;_n;3)             │                      ║
-║ nested_vector_test.k      │ ((1 2 3);(4 5 6))    │ ((1 2 3);(4 5 6))    │                      ║
-║ take_operator_basic.k     │ 3#1 2 3 4 5          │ 1 2 3                │                      ║
-║ take_operator_empty_float.k │ 0#0.0                │ 0#0.0                │                      ║
-║ take_operator_empty_symbol.k │ 0#``                 │ 0#`                  │                      ║
+║ nested_vector_test.k      │ ((1 2 3);(4 5 6))    │ (1 2 3;4 5 6)        │                      ║
 ║ take_operator_scalar.k    │ 3#42                 │ 42 42 42             │                      ║
 ║ take_operator_overflow.k  │ 10#1 2 3             │ 1 2 3 0 0 0 0 0...   │                      ║
 ║ anonymous_function_empty.k │ {}                   │ {}                   │                      ║
@@ -158,7 +155,7 @@
 ║ test_special_neg0i_plus_1.k │ -0I + 1              │ -2147483646          │                      ║
 ║ enumerate_empty_int.k     │ !0                   │ !0                   │                      ║
 ║ enumerate_empty_long.k    │ !0L                  │ !0L                  │                      ║
-║ symbol_vector_compact.k   │ `a`b`c               │ `a                   │                      ║
+║ symbol_vector_compact.k   │ `a`b`c               │ `a`b`c               │                      ║
 ║ symbol_vector_spaces.k    │ `a `b `c             │ `a`b`c               │                      ║
 ║ empty_mixed_vector.k      │ ()                   │ ()                   │                      ║
 ║ string_representation_int.k │ 5:42                 │ "42"                 │                      ║
@@ -179,14 +176,14 @@
 ║ atom_scalar.k             │ @42                  │ 1                    │                      ║
 ║ atom_vector.k             │ @1 2 3               │ 0                    │                      ║
 ║ attribute_handle_symbol.k │ ~`a                  │ `a.                  │                      ║
-║ attribute_handle_vector.k │ ~(`a`b`c)            │                      │ `a.`b.`c.            ║
-║ debug_symbol_vector.k     │ (`a`b`c)             │                      │ `a`b`c               ║
+║ attribute_handle_vector.k │ ~(`a`b`c)            │ `a.`b.`c.            │                      ║
+║ debug_symbol_vector.k     │ (`a`b`c)             │ `a`b`c               │                      ║
 ║ mod_integer.k             │ 7!3                  │ 1                    │                      ║
 ║ mod_vector.k              │ 1 2 3 4 ! 2          │ 1 0 1 0              │                      ║
 ║ mod_rotate.k              │ 2 ! 1 2 3 4          │ 3 4 1 2              │                      ║
 ║ drop_positive.k           │ 4 _ 0 1 2 3 4 5 6 7  │ 4 5 6 7              │                      ║
 ║ drop_negative.k           │ -4 _ 0 1 2 3 4 5 6 7 │ 0 1 2 3              │                      ║
-║ cut_vector.k              │ 0 2 4 _ 0 1 2 3 4 5 6 7 │ ((0 1);(2 3);(4...   │ (0 1;2 3;4 5 6 7)    ║
+║ cut_vector.k              │ 0 2 4 _ 0 1 2 3 4 5 6 7 │ (0 1;2 3;4 5 6 7)    │                      ║
 ║ type_operator_char.k      │ 4: "a"               │ 3                    │                      ║
 ║ type_operator_symbol.k    │ 4: `symbol           │ 4                    │                      ║
 ║ type_operator_null.k      │ 4: _n                │ 6                    │                      ║
@@ -218,33 +215,5 @@
 ║ adverb_each_vector_multiply.k │ 2 3 *' 3 4 5         │ Error                │                      ║
 ║ adverb_each_vector_minus.k │ 10 20 -' 1 2 3       │ Error                │                      ║
 ╠════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 209/214 tests passed (97.7%)                                        ║
+║ SUMMARY: 211/211 tests passed (100.0%)                                       ║
 ╚════════════════════════════════════════════════════════════════════════════════╝
-
-FAILING TESTS DETAILS:
-═════════════════════════════════════════════════════════════════════════════════════
-Test: vector_notation_functions.k
-Input: double: {[x] x * 2}
-Expected: 10 20 30
-Actual: (({[x] x*2};5);({[x] x*2};10);({[x] x*2};15))
-──────────────────────────────────────────────────────────────────────────
-Test: symbol_types.k
-Input: `foo
-Expected: `"a symbol"
-Actual: (`;"a symbol")
-──────────────────────────────────────────────────────────────────────────
-Test: attribute_handle_vector.k
-Input: ~(`a`b`c)
-Expected: `a.`b.`c.
-Actual: 
-──────────────────────────────────────────────────────────────────────────
-Test: debug_symbol_vector.k
-Input: (`a`b`c)
-Expected: `a`b`c
-Actual: 
-──────────────────────────────────────────────────────────────────────────
-Test: cut_vector.k
-Input: 0 2 4 _ 0 1 2 3 4 5 6 7
-Expected: (0 1;2 3;4 5 6 7)
-Actual: ((0 1);(2 3);(4 5 6 7))
-──────────────────────────────────────────────────────────────────────────

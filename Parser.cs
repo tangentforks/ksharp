@@ -392,12 +392,25 @@ namespace K3CSharp
                    CurrentToken().Type != TokenType.DOT_APPLY &&
                    CurrentToken().Type != TokenType.TYPE &&
                    CurrentToken().Type != TokenType.STRING_REPRESENTATION &&
-                   CurrentToken().Type != TokenType.IDENTIFIER &&
                    CurrentToken().Type != TokenType.ADVERB_SLASH &&
                    CurrentToken().Type != TokenType.ADVERB_BACKSLASH &&
                    CurrentToken().Type != TokenType.ADVERB_TICK &&
                    CurrentToken().Type != TokenType.EOF)
             {
+                // Special handling for consecutive symbols to support K3 symbol vectors
+                // Allow IDENTIFIER tokens if they're part of a consecutive symbol sequence
+                if (CurrentToken().Type == TokenType.IDENTIFIER && 
+                    elements.Count > 0 && 
+                    elements[elements.Count - 1].Type == ASTNodeType.Literal &&
+                    elements[elements.Count - 1].Value is SymbolValue)
+                {
+                    // This might be a consecutive symbol that was tokenized as IDENTIFIER
+                    // Convert it to a symbol and add to the vector
+                    var symbolValue = new SymbolValue(CurrentToken().Lexeme);
+                    elements.Add(ASTNode.MakeLiteral(symbolValue));
+                    Advance(); // Consume the IDENTIFIER token
+                    continue;
+                }
                 // Check if this is an operator that could form a mixed scan
                 if (CurrentToken().Type == TokenType.MULTIPLY || CurrentToken().Type == TokenType.DIVIDE || 
                     CurrentToken().Type == TokenType.PLUS || CurrentToken().Type == TokenType.MINUS ||
@@ -507,6 +520,15 @@ namespace K3CSharp
 
             if (elements.Count > 1)
             {
+                // Check if this might be a function call (variable followed by arguments)
+                if (elements[0].Type == ASTNodeType.Variable)
+                {
+                    // Treat as function call: variable is the function, rest are arguments
+                    var functionNode = elements[0];
+                    var arguments = elements.Skip(1).ToList();
+                    return ASTNode.MakeFunctionCall(functionNode, arguments);
+                }
+                
                 return ASTNode.MakeVector(elements);
             }
 

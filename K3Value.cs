@@ -435,7 +435,31 @@ namespace K3CSharp
 
         public override string ToString()
         {
-            return $"`{Value}";
+            // Check if the symbol contains spaces or special characters
+            if (ContainsSpecialCharacters(Value))
+            {
+                return $"`\"{Value}\"";
+            }
+            else
+            {
+                return $"`{Value}";
+            }
+        }
+        
+        private bool ContainsSpecialCharacters(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return false;
+                
+            foreach (char c in value)
+            {
+                // If character is not alphanumeric, underscore, or period, it's a special character
+                if (!char.IsLetterOrDigit(c) && c != '_' && c != '.')
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public override bool Equals(object obj)
@@ -792,7 +816,16 @@ namespace K3CSharp
                 var elementsStr = string.Join(";", Elements.Select(e => 
                 {
                     if (e is VectorValue vec)
-                        return vec.ToString(true); // Display nested vectors with parentheses
+                    {
+                        // For simple homogeneous vectors (like integer vectors), don't add inner parentheses
+                        if (vec.Elements.All(x => x is IntegerValue) || 
+                            vec.Elements.All(x => x is FloatValue) ||
+                            vec.Elements.All(x => x is LongValue))
+                        {
+                            return vec.ToString(false); // Don't add parentheses for simple vectors
+                        }
+                        return vec.ToString(true); // Add parentheses for complex vectors
+                    }
                     return e.ToString();
                 }));
                 return "(" + elementsStr + ")";

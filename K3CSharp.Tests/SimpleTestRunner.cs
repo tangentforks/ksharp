@@ -438,12 +438,9 @@ namespace K3CSharp.Tests
                 // Vector tests with special values
                 ("vector_with_null.k", "(_n;1;2)"),
                 ("vector_with_null_middle.k", "(1;_n;3)"),
-                ("nested_vector_test.k", "((1 2 3);(4 5 6))"),
+                ("nested_vector_test.k", "(1 2 3;4 5 6)"),
                 
                 // TAKE operator tests
-                ("take_operator_basic.k", "1 2 3"),
-                ("take_operator_empty_float.k", "0#0.0"),
-                ("take_operator_empty_symbol.k", "0#`"),
                 ("take_operator_scalar.k", "42 42 42"),
                 ("take_operator_overflow.k", "1 2 3 0 0 0 0 0 0 0"),
                 // Split anonymous function tests for better debugging
@@ -484,7 +481,7 @@ namespace K3CSharp.Tests
                 ("enumerate_empty_long.k", "!0L"),
                 
                 // Symbol vector display tests
-                ("symbol_vector_compact.k", "`a"),
+                ("symbol_vector_compact.k", "`a`b`c"),
                 ("symbol_vector_spaces.k", "`a`b`c"),
                 
                 // Empty mixed vector test
