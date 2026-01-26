@@ -2096,36 +2096,17 @@ namespace K3CSharp
                     var actualCount = Math.Max(0, intCount.Value);
                     var result = new List<K3Value>();
                     
-                    for (int i = 0; i < Math.Min(actualCount, dataVec.Elements.Count); i++)
+                    if (dataVec.Elements.Count == 0)
                     {
-                        result.Add(dataVec.Elements[i]);
+                        // Empty source vector - return empty result
+                        return new VectorValue(result, "standard");
                     }
                     
-                    // If we need more elements than available, pad with the appropriate type
-                    while (result.Count < actualCount)
+                    // Repeat the source vector periodically to fill the requested count
+                    for (int i = 0; i < actualCount; i++)
                     {
-                        if (dataVec.Elements.Count > 0)
-                        {
-                            // Pad with the same type as the first element
-                            var firstElement = dataVec.Elements[0];
-                            if (firstElement is IntegerValue)
-                                result.Add(new IntegerValue(0));
-                            else if (firstElement is LongValue)
-                                result.Add(new LongValue(0L));
-                            else if (firstElement is FloatValue)
-                                result.Add(new FloatValue(0.0));
-                            else if (firstElement is CharacterValue)
-                                result.Add(new CharacterValue(" "));
-                            else if (firstElement is SymbolValue)
-                                result.Add(new SymbolValue(""));
-                            else
-                                result.Add(new NullValue());
-                        }
-                        else
-                        {
-                            // Empty vector - can't determine type, use null
-                            result.Add(new NullValue());
-                        }
+                        var sourceIndex = i % dataVec.Elements.Count;
+                        result.Add(dataVec.Elements[sourceIndex]);
                     }
                     
                     // Determine creation method for empty vectors
@@ -2151,7 +2132,7 @@ namespace K3CSharp
                         result.Add(data);
                     }
                     
-                    // Determine creation method for empty vectors from scalar
+                    // Determine creation method
                     string creationMethod = "standard";
                     if (result.Count == 0)
                     {

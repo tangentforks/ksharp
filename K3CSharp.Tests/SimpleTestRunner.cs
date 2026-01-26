@@ -491,7 +491,7 @@ namespace K3CSharp.Tests
                 
                 // TAKE operator tests
                 ("take_operator_scalar.k", "42 42 42"),
-                ("take_operator_overflow.k", "1 2 3 0 0 0 0 0 0 0"),
+                ("take_operator_overflow.k", "1 2 3 1 2 3 1 2 3 1"),
                 // Split anonymous function tests for better debugging
                 ("anonymous_function_empty.k", "{}"),
                 ("anonymous_function_simple.k", "{4+5}"),
