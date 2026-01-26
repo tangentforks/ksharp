@@ -129,7 +129,12 @@
 ║ test_division_rules_4_2.k                │ 4 % 2                │ 2                    │                      ║
 ║ test_division_rules_10_3.k               │ 10 % 3               │ 3.3333333            │                      ║
 ║ test_division_rules_12_4.k               │ 12 % 4               │ 3                    │                      ║
-║ test_type_promotion.k                    │ 1.5 + 2              │ 2.5                  │                      ║
+║ type_promotion_float_int.k               │ 1.5 + 2              │ 3.5                  │                      ║
+║ type_promotion_int_float.k               │ 2 + 1.5              │ 3.5                  │                      ║
+║ type_promotion_long_int.k                │ 1L + 2               │ 3L                   │                      ║
+║ type_promotion_int_long.k                │ 2 + 1L               │ 3L                   │                      ║
+║ type_promotion_float_long.k              │ 1.5 + 1L             │ 2.5                  │                      ║
+║ type_promotion_long_float.k              │ 1L + 1.5             │ 2.5                  │                      ║
 ║ test_smart_division1.k                   │ 5 10 % 2             │ 2.5 5.0              │                      ║
 ║ test_smart_division2.k                   │ 4 8 % 2              │ 2 4                  │                      ║
 ║ test_smart_division3.k                   │ 6 12 18 % 3          │ 2 4 6                │                      ║
@@ -214,7 +219,7 @@
 ║ test_grade_up_no_parens.k                │ < 3 11 9 9 4         │ 0 4 2 3 1            │                      ║
 ║ test_grade_down_no_parens.k              │ > 3 11 9 9 4         │ 1 2 3 4 0            │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 205/210 tests passed (97.6%)                                                                     ║
+║ SUMMARY: 210/215 tests passed (97.7%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:

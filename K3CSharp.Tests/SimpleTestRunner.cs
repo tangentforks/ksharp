@@ -123,7 +123,7 @@ namespace K3CSharp.Tests
         private static int GetDefinedTestCount()
         {
             // This should match the tests array in RunAllTests
-            return 256; // Updated count to match actual test files
+            return 261; // Updated count to match actual test files
         }
         
         private static HashSet<string> GetDefinedTestNames()
@@ -161,7 +161,7 @@ namespace K3CSharp.Tests
                 "adverb_scan_with_initialization_2.k", "adverb_scan_with_initialization_1.k",
                 "test_division_int_5_2.k", "test_division_int_4_2.k", "test_division_float_5_2.5.k",
                 "test_division_float_4_2.0.k", "test_division_rules_5_2.k", "test_division_rules_4_2.k",
-                "test_division_rules_10_3.k", "test_division_rules_12_4.k", "test_type_promotion.k",
+                "test_division_rules_10_3.k", "test_division_rules_12_4.k", "type_promotion_float_int.k", "type_promotion_int_float.k", "type_promotion_long_int.k", "type_promotion_int_long.k", "type_promotion_float_long.k", "type_promotion_long_float.k",
                 "test_smart_division1.k", "test_smart_division2.k", "test_smart_division3.k",
                 "test_simple_scalar_div.k", "test_enumerate.k",
                 "special_null.k", "special_int_pos_inf.k", "special_int_null.k", "special_int_neg_inf.k",
@@ -440,7 +440,12 @@ namespace K3CSharp.Tests
                 ("test_division_rules_4_2.k", "2"),
                 ("test_division_rules_10_3.k", "3.3333333"),
                 ("test_division_rules_12_4.k", "3"),
-                ("test_type_promotion.k", "2.5"),
+                ("type_promotion_float_int.k", "3.5"),
+                ("type_promotion_int_float.k", "3.5"),
+                ("type_promotion_long_int.k", "3L"),
+                ("type_promotion_int_long.k", "3L"),
+                ("type_promotion_float_long.k", "2.5"),
+                ("type_promotion_long_float.k", "2.5"),
                 ("test_smart_division1.k", "2.5 5.0"),
                 ("test_smart_division2.k", "2 4"),
                 ("test_smart_division3.k", "2 4 6"),
