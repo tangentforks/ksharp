@@ -20,7 +20,7 @@
 ║ vector_index_duplicate.k             │ 5 8 4 9 @ 0 0        │ 5 5                  │                      ║
 ║ vector_index_reverse.k               │ 5 8 4 9 @ 3 1        │ 9 8                  │                      ║
 ║ parenthesized_vector.k               │ (1;2;3;4)            │ 1 2 3 4              │                      ║
-║ parentheses_basic.k                  │ 1 + 2 * 3            │ 3 4                  │ 7                    ║
+║ parentheses_basic.k                  │ 1 + 2 * 3            │ 7                    │                      ║
 ║ parentheses_grouping.k               │ (1 + 2) * 3          │ 9                    │                      ║
 ║ parentheses_nested.k                 │ (1 + (2 * 3))        │ 7                    │                      ║
 ║ parentheses_nested1.k                │ ((1 + 2) * (3 + 4))  │ 21                   │                      ║
@@ -29,17 +29,17 @@
 ║ parentheses_nested4.k                │ (1 + (2 + (3 + (4 + 5)))) │ 15                   │                      ║
 ║ parentheses_nested5.k                │ ((1 * 2) + (3 * (4 + 5))) │ 29                   │                      ║
 ║ parentheses_precedence.k             │ 1 + (2 * 3)          │ 7                    │                      ║
-║ precedence_spec1.k                   │ 81 % 1 + 2 * 3       │ (81;40.5;27)         │ 11.5714286           ║
-║ precedence_spec2.k                   │ 120 % 4 * 2 + 3      │ 30 60 40             │ 6                    ║
-║ precedence_chain1.k                  │ 10 + 20 * 30 + 40    │ 30 40 50             │ 1410                 ║
-║ precedence_chain2.k                  │ 100 % 10 + 20 * 30 + 40 │ (10;5;3.3333333...   │ 0.0709220            ║
-║ precedence_mixed1.k                  │ 5 - 2 + 3            │ 3 2                  │ 0                    ║
-║ precedence_mixed2.k                  │ 5 * 2 + 3            │ 10 15                │ 25                   ║
-║ precedence_mixed3.k                  │ 5 + 2 * 3            │ 7 8                  │ 11                   ║
+║ precedence_spec1.k                   │ 81 % 1 + 2 * 3       │ 249                  │ 11.5714286           ║
+║ precedence_spec2.k                   │ 120 % 4 * 2 + 3      │ 63                   │ 6                    ║
+║ precedence_chain1.k                  │ 10 + 20 * 30 + 40    │ 650                  │ 1410                 ║
+║ precedence_chain2.k                  │ 100 % 10 + 20 * 30 + 40 │ 940                  │ 0.0709220            ║
+║ precedence_mixed1.k                  │ 5 - 2 + 3            │ 6                    │ 0                    ║
+║ precedence_mixed2.k                  │ 5 * 2 + 3            │ 13                   │ 25                   ║
+║ precedence_mixed3.k                  │ 5 + 2 * 3            │ 11                   │                      ║
 ║ precedence_power1.k                  │ 2 ^ 3 + 4            │ Error                │ 128                  ║
-║ precedence_power2.k                  │ 2 + 3 ^ 4            │ 5 2                  │ 83                   ║
-║ precedence_complex1.k                │ 10 % 2 + 3 * 4       │ (5;3.3333333;2.5)    │ 0.7142857            ║
-║ precedence_complex2.k                │ 10 + 20 % 30 * 40    │ (30;10.0333333;50)   │ 10.0166667           ║
+║ precedence_power2.k                  │ 2 + 3 ^ 4            │ 625                  │ 83                   ║
+║ precedence_complex1.k                │ 10 % 2 + 3 * 4       │ 32                   │ 0.7142857            ║
+║ precedence_complex2.k                │ 10 + 20 % 30 * 40    │ 426.6666667          │ 10.0166667           ║
 ║ vector_notation_space.k              │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
 ║ vector_notation_semicolon.k          │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
 ║ vector_notation_empty.k              │ ()                   │ ()                   │                      ║
@@ -111,13 +111,13 @@
 ║ adverb_scan_min.k                    │ &\ 5 3 4 1 2         │ 5 3 3 1 1            │                      ║
 ║ adverb_scan_max.k                    │ |\ 1 3 2 5 4         │ 1 3 3 5 5            │                      ║
 ║ adverb_scan_power.k                  │ ^\ 2 3 2             │ 2 8 64               │                      ║
-║ adverb_mixed_scan.k                  │ 2 *\ 1 2 3           │ 2 4 12               │                      ║
-║ adverb_mixed_scan_minus.k            │ 2 -\ 1 2 3 4         │ 1 -1 -4 -8           │                      ║
-║ adverb_mixed_scan_divide.k           │ 2 %\ 1 2 3 4         │ (2;1;0.3333333;...   │                      ║
-║ adverb_over_mixed_2.k                │ 2 +/ 1 2 3 4         │ 12                   │                      ║
-║ adverb_over_mixed_1.k                │ 1 +/ 2 3 4 5         │ 15                   │                      ║
-║ adverb_scan_mixed_2.k                │ 2 +\ 1 2 3 4         │ 3 5 8 12             │                      ║
-║ adverb_scan_mixed_1.k                │ 1 +\ 2 3 4 5         │ 3 6 10 15            │                      ║
+║ adverb_mixed_scan.k                  │ 2 *\ 1 2 3           │ Error                │ 2 4 12               ║
+║ adverb_mixed_scan_minus.k            │ 2 -\ 1 2 3 4         │ Error                │ 1 -1 -4 -8           ║
+║ adverb_mixed_scan_divide.k           │ 2 %\ 1 2 3 4         │ Error                │ (2;1;0.3333333;...   ║
+║ adverb_over_mixed_2.k                │ 2 +/ 1 2 3 4         │ Error                │ 12                   ║
+║ adverb_over_mixed_1.k                │ 1 +/ 2 3 4 5         │ Error                │ 15                   ║
+║ adverb_scan_mixed_2.k                │ 2 +\ 1 2 3 4         │ Error                │ 3 5 8 12             ║
+║ adverb_scan_mixed_1.k                │ 1 +\ 2 3 4 5         │ Error                │ 3 6 10 15            ║
 ║ test_division_int_5_2.k              │ 5 % 2                │ 2.5                  │                      ║
 ║ test_division_int_4_2.k              │ 4 % 2                │ 2                    │                      ║
 ║ test_division_float_5_2.5.k          │ 5 % 2.5              │ 2.0                  │                      ║
@@ -172,7 +172,7 @@
 ║ function_call_double.k               │ mul:{[op1;op2] op1 * op2} │ 32                   │                      ║
 ║ function_call_chain.k                │ mul:{[op1;op2] op1 * op2} │ 20                   │                      ║
 ║ function_call_anonymous.k            │ {[arg1] arg1+6} . 7  │ 13                   │                      ║
-║ complex_function.k                   │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2} │ Error                │ 205                  ║
+║ complex_function.k                   │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2} │ 205                  │                      ║
 ║ test_multiline_function_single.k     │ test: {[x] a:x*2; a+10} │ 20                   │                      ║
 ║ test_scoping_single.k                │ globalVar: 100       │ 110                  │                      ║
 ║ variable_scoping_global_access.k     │ // Test function accessing global variable │ 150                  │                      ║
@@ -206,55 +206,45 @@
 ║ attribute_handle_vector.k            │ ~(`a`b`c)            │ `a.`b.`c.            │                      ║
 ║ mod_integer.k                        │ 7!3                  │ 1                    │                      ║
 ║ mod_vector.k                         │ 1 2 3 4 ! 2          │ 1 0 1 0              │                      ║
-║ adverb_each_vector_plus.k            │ // Test each adverb with equal length vectors (now implemented) │ (6 7 8 9;7 8 9 ...   │                      ║
-║ adverb_each_vector_multiply.k        │ // Test each adverb with equal length vectors (now implemented) │ (5 6 7;6 7 8;7 ...   │                      ║
+║ adverb_each_vector_plus.k            │ // Test each adverb with equal length vectors (now implemented) │ Error                │ (6 7 8 9;7 8 9 ...   ║
+║ adverb_each_vector_multiply.k        │ // Test each adverb with equal length vectors (now implemented) │ Error                │ (5 6 7;6 7 8;7 ...   ║
 ║ test_grade_up_no_parens.k            │ < 3 11 9 9 4         │ 0 4 2 3 1            │                      ║
 ║ test_grade_down_no_parens.k          │ > 3 11 9 9 4         │ 1 2 3 4 0            │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 191/207 tests passed (92.3%)                                                                 ║
+║ SUMMARY: 185/207 tests passed (89.4%)                                                                 ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
-Test: parentheses_basic.k
-Input: 1 + 2 * 3
-Expected: 7
-Actual: 3 4
-──────────────────────────────────────────────────────────────────────────
 Test: precedence_spec1.k
 Input: 81 % 1 + 2 * 3
 Expected: 11.5714286
-Actual: (81;40.5;27)
+Actual: 249
 ──────────────────────────────────────────────────────────────────────────
 Test: precedence_spec2.k
 Input: 120 % 4 * 2 + 3
 Expected: 6
-Actual: 30 60 40
+Actual: 63
 ──────────────────────────────────────────────────────────────────────────
 Test: precedence_chain1.k
 Input: 10 + 20 * 30 + 40
 Expected: 1410
-Actual: 30 40 50
+Actual: 650
 ──────────────────────────────────────────────────────────────────────────
 Test: precedence_chain2.k
 Input: 100 % 10 + 20 * 30 + 40
 Expected: 0.0709220
-Actual: (10;5;3.3333333;2.5)
+Actual: 940
 ──────────────────────────────────────────────────────────────────────────
 Test: precedence_mixed1.k
 Input: 5 - 2 + 3
 Expected: 0
-Actual: 3 2
+Actual: 6
 ──────────────────────────────────────────────────────────────────────────
 Test: precedence_mixed2.k
 Input: 5 * 2 + 3
 Expected: 25
-Actual: 10 15
-──────────────────────────────────────────────────────────────────────────
-Test: precedence_mixed3.k
-Input: 5 + 2 * 3
-Expected: 11
-Actual: 7 8
+Actual: 13
 ──────────────────────────────────────────────────────────────────────────
 Test: precedence_power1.k
 Input: 2 ^ 3 + 4
@@ -264,26 +254,56 @@ Actual: Error
 Test: precedence_power2.k
 Input: 2 + 3 ^ 4
 Expected: 83
-Actual: 5 2
+Actual: 625
 ──────────────────────────────────────────────────────────────────────────
 Test: precedence_complex1.k
 Input: 10 % 2 + 3 * 4
 Expected: 0.7142857
-Actual: (5;3.3333333;2.5)
+Actual: 32
 ──────────────────────────────────────────────────────────────────────────
 Test: precedence_complex2.k
 Input: 10 + 20 % 30 * 40
 Expected: 10.0166667
-Actual: (30;10.0333333;50)
+Actual: 426.6666667
+──────────────────────────────────────────────────────────────────────────
+Test: adverb_mixed_scan.k
+Input: 2 *\ 1 2 3
+Expected: 2 4 12
+Actual: Error
+──────────────────────────────────────────────────────────────────────────
+Test: adverb_mixed_scan_minus.k
+Input: 2 -\ 1 2 3 4
+Expected: 1 -1 -4 -8
+Actual: Error
+──────────────────────────────────────────────────────────────────────────
+Test: adverb_mixed_scan_divide.k
+Input: 2 %\ 1 2 3 4
+Expected: (2;1;0.3333333;0.0833333)
+Actual: Error
+──────────────────────────────────────────────────────────────────────────
+Test: adverb_over_mixed_2.k
+Input: 2 +/ 1 2 3 4
+Expected: 12
+Actual: Error
+──────────────────────────────────────────────────────────────────────────
+Test: adverb_over_mixed_1.k
+Input: 1 +/ 2 3 4 5
+Expected: 15
+Actual: Error
+──────────────────────────────────────────────────────────────────────────
+Test: adverb_scan_mixed_2.k
+Input: 2 +\ 1 2 3 4
+Expected: 3 5 8 12
+Actual: Error
+──────────────────────────────────────────────────────────────────────────
+Test: adverb_scan_mixed_1.k
+Input: 1 +\ 2 3 4 5
+Expected: 3 6 10 15
+Actual: Error
 ──────────────────────────────────────────────────────────────────────────
 Test: overflow_long_min_minus1.k
 Input: -9223372036854775808L - 1
 Expected: 0IL
-Actual: Error
-──────────────────────────────────────────────────────────────────────────
-Test: complex_function.k
-Input: distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2}
-Expected: 205
 Actual: Error
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_nested_functions.k
@@ -294,5 +314,15 @@ Actual: Error
 Test: variable_scoping_global_assignment.k
 Input: // Test global assignment from nested function
 Expected: 130
+Actual: Error
+──────────────────────────────────────────────────────────────────────────
+Test: adverb_each_vector_plus.k
+Input: // Test each adverb with equal length vectors (now implemented)
+Expected: (6 7 8 9;7 8 9 10;8 9 10 11;9 10 11 12)
+Actual: Error
+──────────────────────────────────────────────────────────────────────────
+Test: adverb_each_vector_multiply.k
+Input: // Test each adverb with equal length vectors (now implemented)
+Expected: (5 6 7;6 7 8;7 8 9)
 Actual: Error
 ──────────────────────────────────────────────────────────────────────────
