@@ -210,7 +210,7 @@ namespace K3CSharp.Tests
         
         private static void WriteResultsTable(List<TestResult> testResults)
         {
-            var outputPath = Path.Combine(Directory.GetCurrentDirectory(), "test_results_table.txt");
+            var outputPath = Path.Combine(Directory.GetCurrentDirectory(), "results_table.txt");
             
             // Calculate the maximum filename length for auto-sizing
             var maxFileNameLength = Math.Max(25, testResults.Max(t => t.FileName.Length) + 2); // +2 for padding
