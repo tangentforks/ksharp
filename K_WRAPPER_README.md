@@ -31,7 +31,7 @@ var wrapper = new KInterpreterWrapper(@"d:\kdb\k.exe");
 
 ## Key Requirements Handled
 
-1. **Exit Handling**: When k.exe is invoked with a script, it normally doesn't exit the REPL. The wrapper automatically adds `\\` to the end of scripts to force exit.
+1. **Exit Handling**: When k.exe is invoked with a script, it normally doesn't exit the REPL. The wrapper automatically adds `_exit 0` to the end of scripts to force exit.
 
 2. **Licensing Information**: Lines like `WIN32 32CPU 4095MB rufeu01-hx.rufian.zilbermann.com 0 EVAL` are automatically filtered from output.
 

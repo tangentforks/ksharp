@@ -56,8 +56,9 @@ namespace K3CSharp
         {
             var tempScriptPath = Path.Combine(tempDirectory, $"k_script_{Guid.NewGuid():N}.k");
             
-            // Add double backslash to force k.exe to exit
-            var modifiedContent = scriptContent.TrimEnd() + "\n\\\\\n";
+            // Add _exit 0 to force k.exe to exit with status code 0
+            // This is more explicit than double backslash and provides a clean exit
+            var modifiedContent = scriptContent.TrimEnd() + "\n_exit 0\n";
             
             File.WriteAllText(tempScriptPath, modifiedContent, Encoding.UTF8);
             return tempScriptPath;

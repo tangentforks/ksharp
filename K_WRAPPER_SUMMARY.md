@@ -54,7 +54,7 @@ The wrapper was tested on the first 10 test scripts from our test suite:
 
 | Requirement | Status | Implementation |
 |-------------|--------|----------------|
-| (1) Exit Handling | ✅ Complete | Adds `\\` to script end |
+| (1) Exit Handling | ✅ Complete | Adds `_exit 0` to script end |
 | (2) Licensing Filter | ✅ Complete | Filters WIN32...EVAL lines |
 | (3) Temporary Cleanup | ✅ Complete | Auto-cleanup on completion |
 | (4) Acceptable Discrepancies | ✅ Complete | Framework for differences |
