@@ -51,7 +51,8 @@
 ║ variable_assignment.k                │ foo:7                │ 7                    │                      ║
 ║ variable_usage.k                     │ x:10                 │ 30                   │                      ║
 ║ variable_reassignment.k              │ foo:7                │ 7.2 4.5              │                      ║
-║ integer_types.k                      │ 42                   │ 123456789L           │                      ║
+║ integer_types_int.k                  │ 42                   │ 42                   │                      ║
+║ integer_types_long.k                 │ 123456789L           │ 123456789L           │                      ║
 ║ float_types.k                        │ 3.14                 │ 3.14                 │                      ║
 ║ float_exponential.k                  │ 0.17e03              │ 170.0                │                      ║
 ║ float_decimal_point.k                │ 10.                  │ 10.0                 │                      ║
@@ -211,7 +212,7 @@
 ║ test_grade_up_no_parens.k            │ < 3 11 9 9 4         │ 0 4 2 3 1            │                      ║
 ║ test_grade_down_no_parens.k          │ > 3 11 9 9 4         │ 1 2 3 4 0            │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 204/207 tests passed (98.6%)                                                                 ║
+║ SUMMARY: 205/208 tests passed (98.6%)                                                                 ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
