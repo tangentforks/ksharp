@@ -350,21 +350,7 @@ namespace K3CSharp
                     {
                         // Display current precision
                         Console.WriteLine($"Current precision: {Evaluator.floatPrecision} significant digits");
-                        Console.WriteLine("");
-                        Console.WriteLine("Floating Point Display Rules:");
-                        Console.WriteLine("  - Precision applies to total number of significant digits");
-                        Console.WriteLine("  - Trailing zeroes in decimal portion are not printed");
-                        Console.WriteLine("  - Exponential notation uses lowercase 'e'");
-                        Console.WriteLine("  - Decimal point omitted if decimal portion is zero in exponential notation");
-                        Console.WriteLine("  - In decimal notation, trailing zeroes are omitted unless all");
-                        Console.WriteLine("    displayed digits in decimal portion are zeroes (first zero preserved)");
-                        Console.WriteLine("");
-                        Console.WriteLine("Examples:");
-                        Console.WriteLine($"  0.1234567890123456789 → 0.1234568 ({Evaluator.floatPrecision} significant digits)");
-                        Console.WriteLine("  1e15 → 1e+015 (exponential notation)");
-                        Console.WriteLine("  1.0e-12 → 1e-012 (decimal point omitted)");
-                        Console.WriteLine("  10.000 → 10.0 (first zero preserved)");
-                        Console.WriteLine("  10.123400000 → 10.1234 (trailing zeroes removed)");
+                        Console.WriteLine("Usage: \\p <number> to set precision");
                     }
                     else if (parts.Length == 2)
                     {
@@ -389,67 +375,56 @@ namespace K3CSharp
                     // Display top level help message
                     Console.WriteLine("K3 REPL Help Commands:");
                     Console.WriteLine("  \\       - Display this help message");
-                    Console.WriteLine("  \\p [n]  - Set or display float precision (default: 7 significant digits)");
-                    Console.WriteLine("  \\0      - Display information about constants, literals and data types");
-                    Console.WriteLine("  \\+      - Display information about verbs");
+                    Console.WriteLine("  \\p [n]  - Set or display float precision (default: 7)");
+                    Console.WriteLine("  \\0      - Display information about data types");
+                    Console.WriteLine("  \\+      - Display information about verbs/operators");
                     Console.WriteLine("  \\'      - Display information about adverbs");
                     Console.WriteLine("  \\.      - Display information about assignment");
                     Console.WriteLine("  \\\\      - Exit the REPL");
                     Console.WriteLine("");
-                    Console.WriteLine("Note: This is a partial implementation. The K3 specification");
-                    Console.WriteLine("is still being developed and additional commands may be added.");
+                    Console.WriteLine("Note: Partial implementation of K3 specification.");
                     break;
                     
                 case "\\0":
                     // Display constants, literals and data types information
-                    Console.WriteLine("Constants, Literals and Data Types:");
-                    Console.WriteLine("  Integer literals: 42, 123L (64-bit)");
-                    Console.WriteLine("  Float literals: 3.14, 2.5e10");
-                    Console.WriteLine("  Character literals: \"a\", \"hello\"");
-                    Console.WriteLine("  Symbol literals: `symbol, `\"symbol with spaces\"");
-                    Console.WriteLine("  Null value: _n");
+                    Console.WriteLine("Data Types:");
+                    Console.WriteLine("  Integer: 42, 123L (64-bit)");
+                    Console.WriteLine("  Float: 3.14, 2.5e10");
+                    Console.WriteLine("  Character: \"a\", \"hello\"");
+                    Console.WriteLine("  Symbol: `symbol, `\"symbol with spaces\"");
+                    Console.WriteLine("  Vector: (1;2;3), 1 2 3");
+                    Console.WriteLine("  Dictionary: .(`a;1);(`b;2)");
+                    Console.WriteLine("  Null: _n");
                     Console.WriteLine("  Special floats: 0i (inf), 0n (NaN), -0i (-inf)");
-                    Console.WriteLine("  Vector literals: (1;2;3), (\"a\";\"b\";\"c\")");
-                    Console.WriteLine("  Type operator 4: returns type code of value");
+                    Console.WriteLine("  Type operator: 4: returns type code");
                     Console.WriteLine("");
-                    Console.WriteLine("Note: This is a partial implementation of K3 data types.");
+                    Console.WriteLine("Note: Partial implementation of K3 data types.");
                     break;
                     
                 case "\\+":
                     // Display verbs information
                     Console.WriteLine("Verbs (Operators):");
-                    Console.WriteLine("  Arithmetic: + - * % (add, subtract, multiply, divide)");
-                    Console.WriteLine("  Comparison: < > = (less, greater, equal)");
-                    Console.WriteLine("  Min/Max: & | (minimum, maximum)");
-                    Console.WriteLine("  Power: ^ (exponentiation)");
-                    Console.WriteLine("  Modulus: ! (remainder)");
-                    Console.WriteLine("  Join: , (concatenate)");
-                    Console.WriteLine("  Unary: - ~ (negate, not)");
-                    Console.WriteLine("  First: * (first of list/vector)");
-                    Console.WriteLine("  Reciprocal: % (1/x)");
-                    Console.WriteLine("  Generate: ! (zeros)");
-                    Console.WriteLine("  Reverse: | (reverse list)");
-                    Console.WriteLine("  Count: # (length of list)");
-                    Console.WriteLine("  Enumerate: ! (range 0..n-1)");
-                    Console.WriteLine("  Enlist: , (single-item list)");
-                    Console.WriteLine("  Floor: _ (floor function)");
-                    Console.WriteLine("  Unique: ? (unique values)");
-                    Console.WriteLine("  Grade: < > (grade up/down)");
-                    Console.WriteLine("  Shape: ^ (shape of array)");
+                    Console.WriteLine("  Arithmetic: + - * %");
+                    Console.WriteLine("  Comparison: < > =");
+                    Console.WriteLine("  Min/Max: & |");
+                    Console.WriteLine("  Power: ^");
+                    Console.WriteLine("  Unary: - + * % & | < > ^ ! , # _ ? ~ @ .");
+                    Console.WriteLine("  Binary: ! _ @ . 4: ::");
+                    Console.WriteLine("  Math: _log _exp _abs _sqrt _sin _cos _tan");
+                    Console.WriteLine("  Linear: _dot _mul _inv");
                     Console.WriteLine("");
-                    Console.WriteLine("Note: This is a partial implementation of K3 verbs.");
+                    Console.WriteLine("Note: Partial implementation of K3 verbs.");
                     break;
                     
                 case "\\'":
                     // Display adverbs information
                     Console.WriteLine("Adverbs (Higher-order functions):");
-                    Console.WriteLine("  / (over/reduce):  +/ 1 2 3 4  -> 10");
-                    Console.WriteLine("  \\ (scan):        +\\ 1 2 3 4  -> (1;3;6;10)");
-                    Console.WriteLine("  ' (each):         +' 1 2 3 4  -> (1;2;3;4)");
-                    Console.WriteLine("Adverbs can be chained: /:\\ (each-then-reduce)");
+                    Console.WriteLine("  / (over/reduce):  +/ 1 2 3 4 -> 10");
+                    Console.WriteLine("  \\ (scan):        +\\ 1 2 3 4 -> (1;3;6;10)");
+                    Console.WriteLine("  ' (each):         +' 1 2 3 4 -> (1;2;3;4)");
                     Console.WriteLine("Adverbs have higher precedence than unary operators");
                     Console.WriteLine("");
-                    Console.WriteLine("Note: This is a partial implementation of K3 adverbs.");
+                    Console.WriteLine("Note: Partial implementation of K3 adverbs.");
                     break;
                     
                 case "\\.":
@@ -458,10 +433,10 @@ namespace K3CSharp
                     Console.WriteLine("  Global:    name: value");
                     Console.WriteLine("  Local:     [name] value (in functions)");
                     Console.WriteLine("  Functions: name: {[params]} body");
-                    Console.WriteLine("  Verb names: number:verb (e.g., 2:+ is a valid verb name)");
+                    Console.WriteLine("  Global from function: name :: value");
                     Console.WriteLine("Assignment has lower precedence than adverbs");
                     Console.WriteLine("");
-                    Console.WriteLine("Note: This is a partial implementation of K3 assignment.");
+                    Console.WriteLine("Note: Partial implementation of K3 assignment.");
                     break;
                     
                 default:
