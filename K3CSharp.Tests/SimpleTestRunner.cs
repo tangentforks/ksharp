@@ -123,7 +123,7 @@ namespace K3CSharp.Tests
         private static int GetDefinedTestCount()
         {
             // This should match the tests array in RunAllTests
-            return 254; // Updated count to match actual test files
+            return 256; // Updated count to match actual test files
         }
         
         private static HashSet<string> GetDefinedTestNames()
@@ -146,7 +146,7 @@ namespace K3CSharp.Tests
                 "vector_notation_single_group.k", "vector_notation_mixed_types.k", "vector_notation_variables.k",
                 "vector_notation_nested.k", "vector_notation_functions.k",
                 "variable_assignment.k", "variable_usage.k", "variable_reassignment.k",
-                "integer_types_int.k", "integer_types_long.k", "float_types.k", "float_exponential.k", "float_decimal_point.k", "character_single.k", "character_vector.k", "symbol_simple.k", "symbol_quoted.k",
+                "integer_types_int.k", "integer_types_long.k", "float_types.k", "float_exponential.k", "float_exponential_large.k", "float_exponential_small.k", "float_decimal_point.k", "character_single.k", "character_vector.k", "symbol_simple.k", "symbol_quoted.k",
                 "minimum_operator.k", "maximum_operator.k", "less_than_operator.k", "greater_than_operator.k",
                 "equal_operator.k", "power_operator.k", "modulus_operator.k", "negate_operator.k",
                 "join_operator.k", "unary_minus_operator.k", "first_operator.k", "reciprocal_operator.k",
@@ -358,6 +358,8 @@ namespace K3CSharp.Tests
                 ("integer_types_long.k", "123456789L"),
                 ("float_types.k", "3.14"),        // Decimal notation (already has decimal digit)
                 ("float_exponential.k", "170.0"),  // Exponential notation displays as decimal with .0
+                ("float_exponential_large.k", "100000000000000000000.0"),  // Large number displays in decimal notation
+                ("float_exponential_small.k", "1E-20"),  // Small number displays in exponential notation
                 ("float_decimal_point.k", "10.0"), // Decimal point notation shows .0
                 ("character_single.k", "\"f\""),
                 ("character_vector.k", "\"hello\""),
