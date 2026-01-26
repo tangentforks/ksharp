@@ -55,8 +55,8 @@
 ║ integer_types_long.k                     │ 123456789L           │ 123456789L           │                      ║
 ║ float_types.k                            │ 3.14                 │ 3.14                 │                      ║
 ║ float_exponential.k                      │ 0.17e03              │ 170.0                │                      ║
-║ float_exponential_large.k                │ 1e15                 │ 1.0000000E+015       │                      ║
-║ float_exponential_small.k                │ 1e-20                │ 1.0000000E-020       │                      ║
+║ float_exponential_large.k                │ 1e15                 │ 1e+015               │                      ║
+║ float_exponential_small.k                │ 1e-20                │ 1e-020               │                      ║
 ║ float_decimal_point.k                    │ 10.                  │ 10.0                 │                      ║
 ║ character_single.k                       │ "f"                  │ "f"                  │                      ║
 ║ character_vector.k                       │ "hello"              │ "hello"              │                      ║

@@ -373,7 +373,11 @@ namespace K3CSharp
             var absValue = Math.Abs(Value);
             if (absValue >= 1e15 || (absValue > 0 && absValue < 1e-10))
             {
-                return Value.ToString($"E{Evaluator.floatPrecision}"); // Use exponential notation with configured precision
+                var expFormat = $"E{Evaluator.floatPrecision}";
+                var formatted = Value.ToString(expFormat);
+                // Convert to lowercase 'e' and remove trailing zeroes
+                formatted = formatted.Replace('E', 'e').Replace(".0000000", "").Replace(".000000", "").Replace(".00000", "").Replace(".0000", "").Replace(".000", "").Replace(".00", "");
+                return formatted;
             }
             
             // Use significant digits precision for regular floating point numbers
@@ -386,7 +390,11 @@ namespace K3CSharp
                 // Convert to scientific notation if it's too long or has too many decimal places
                 if (formatted.Contains('E') || formatted.Length > 15)
                 {
-                    return Value.ToString($"E{precision}");
+                    var expFormat = $"E{precision}";
+                    formatted = Value.ToString(expFormat);
+                    // Convert to lowercase 'e' and remove trailing zeroes
+                    formatted = formatted.Replace('E', 'e').Replace(".0000000", "").Replace(".000000", "").Replace(".00000", "").Replace(".0000", "").Replace(".000", "").Replace(".00", "");
+                    return formatted;
                 }
                 
                 // Ensure we have the right number of significant digits
@@ -399,8 +407,14 @@ namespace K3CSharp
                     formatted = rounded.ToString("G15");
                 }
                 
+                // Remove trailing zeroes from decimal portion
+                if (formatted.Contains('.'))
+                {
+                    formatted = formatted.TrimEnd('0').TrimEnd('.');
+                }
+                
                 // Ensure decimal notation for display consistency
-                if (formatted.Contains('.') || formatted.Contains('E'))
+                if (formatted.Contains('.') || formatted.Contains('e'))
                 {
                     return formatted;
                 }

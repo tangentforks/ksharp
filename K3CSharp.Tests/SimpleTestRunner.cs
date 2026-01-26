@@ -358,8 +358,8 @@ namespace K3CSharp.Tests
                 ("integer_types_long.k", "123456789L"),
                 ("float_types.k", "3.14"),        // Decimal notation (already has decimal digit)
                 ("float_exponential.k", "170.0"),  // Exponential notation displays as decimal with .0
-                ("float_exponential_large.k", "1.0000000E+015"),  // Large number displays in exponential notation with 7 significant digits
-                ("float_exponential_small.k", "1.0000000E-020"),  // Small number displays in exponential notation with 7 significant digits
+                ("float_exponential_large.k", "1e+015"),  // Large number displays in exponential notation with 7 significant digits, no trailing zeroes, lowercase 'e'
+                ("float_exponential_small.k", "1e-020"),  // Small number displays in exponential notation with 7 significant digits, no trailing zeroes, lowercase 'e'
                 ("float_decimal_point.k", "10.0"), // Decimal point notation shows .0
                 ("character_single.k", "\"f\""),
                 ("character_vector.k", "\"hello\""),
