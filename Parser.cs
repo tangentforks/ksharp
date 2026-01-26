@@ -305,9 +305,49 @@ namespace K3CSharp
                 }
             }
 
+            // Handle basic arithmetic operators with standard precedence
+            if (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) || Match(TokenType.DIVIDE))
+            {
+                var op = PreviousToken().Type;
+                var right = ParseTerm();
+                
+                // For multiplication/division, they have higher precedence than addition/subtraction
+                if (op == TokenType.MULTIPLY || op == TokenType.DIVIDE)
+                {
+                    left = ASTNode.MakeBinaryOp(op, left, right);
+                }
+                else // PLUS/MINUS
+                {
+                    // Check if the next operator is multiplication/division (higher precedence)
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.MULTIPLY || CurrentToken().Type == TokenType.DIVIDE))
+                    {
+                        // Parse the higher precedence operation first
+                        var nextOp = CurrentToken().Type;
+                        Advance();
+                        var rightOperand = ParseTerm();
+                        var highPrecedenceResult = ASTNode.MakeBinaryOp(nextOp, right, rightOperand);
+                        left = ASTNode.MakeBinaryOp(op, left, highPrecedenceResult);
+                    }
+                    else
+                    {
+                        left = ASTNode.MakeBinaryOp(op, left, right);
+                    }
+                }
+                
+                // Continue with K-style precedence for any remaining operators
+                while (!IsAtEnd() && IsBinaryOperator(CurrentToken().Type))
+                {
+                    var remainingOp = CurrentToken().Type;
+                    Advance();
+                    var remainingRight = ParseTerm();
+                    left = ASTNode.MakeBinaryOp(remainingOp, left, remainingRight);
+                }
+                
+                return left;
+            }
+
             // K-style precedence: first operator takes entire remainder as right operand
-            if (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
-                   Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
+            if (Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
                    Match(TokenType.EQUAL) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
                    Match(TokenType.HASH) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
                    Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || Match(TokenType.NEGATE))
@@ -438,6 +478,16 @@ namespace K3CSharp
             }
 
             return left;
+        }
+
+        private bool IsBinaryOperator(TokenType type)
+        {
+            return type == TokenType.PLUS || type == TokenType.MINUS || type == TokenType.MULTIPLY ||
+                   type == TokenType.DIVIDE || type == TokenType.MIN || type == TokenType.MAX || 
+                   type == TokenType.LESS || type == TokenType.GREATER || type == TokenType.EQUAL || 
+                   type == TokenType.POWER || type == TokenType.MODULUS || type == TokenType.JOIN ||
+                   type == TokenType.HASH || type == TokenType.UNDERSCORE || type == TokenType.QUESTION || 
+                   type == TokenType.NEGATE;
         }
 
         private ASTNode ParseTerm(bool parseUntilEnd = false)
