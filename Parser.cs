@@ -398,7 +398,8 @@ namespace K3CSharp
                 else
                 {
                     // K-style precedence: first operator takes entire remainder as right operand
-                    var right = ParseExpression();
+                    // For monadic operators, we need to parse the entire vector as the right operand
+                    var right = ParseTerm(parseUntilEnd: true);
                     left = ASTNode.MakeBinaryOp(op, left, right);
                     return left;  // Return immediately since first operator consumes entire remainder
                 }
@@ -439,13 +440,20 @@ namespace K3CSharp
             return left;
         }
 
-        private ASTNode ParseTerm()
+        private ASTNode ParseTerm(bool parseUntilEnd = false)
         {
             // Check for space-separated vector
             var elements = new List<ASTNode>();
             elements.Add(ParsePrimary());
 
             while (!IsAtEnd() &&
+                   (parseUntilEnd ? (
+                       CurrentToken().Type != TokenType.RIGHT_PAREN &&
+                       CurrentToken().Type != TokenType.RIGHT_BRACE &&
+                       CurrentToken().Type != TokenType.SEMICOLON &&
+                       CurrentToken().Type != TokenType.NEWLINE &&
+                       CurrentToken().Type != TokenType.EOF
+                   ) : (
                    CurrentToken().Type != TokenType.PLUS &&
                    CurrentToken().Type != TokenType.MINUS &&
                    CurrentToken().Type != TokenType.MULTIPLY &&
@@ -476,7 +484,7 @@ namespace K3CSharp
                    CurrentToken().Type != TokenType.ADVERB_SLASH &&
                    CurrentToken().Type != TokenType.ADVERB_BACKSLASH &&
                    CurrentToken().Type != TokenType.ADVERB_TICK &&
-                   CurrentToken().Type != TokenType.EOF)
+                   CurrentToken().Type != TokenType.EOF)))
             {
                 // Special handling for consecutive symbols to support K3 symbol vectors
                 // Allow IDENTIFIER tokens if they're part of a consecutive symbol sequence
@@ -874,7 +882,7 @@ namespace K3CSharp
                     else
                     {
                         // This is unary grade up
-                        var operand = ParsePrimary();
+                        var operand = ParseTerm(parseUntilEnd: true);
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue("<");
                         node.Children.Add(operand);
@@ -903,7 +911,7 @@ namespace K3CSharp
                     else
                     {
                         // This is unary grade down
-                        var operand = ParsePrimary();
+                        var operand = ParseTerm(parseUntilEnd: true);
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue(">");
                         node.Children.Add(operand);

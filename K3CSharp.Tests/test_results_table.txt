@@ -20,7 +20,7 @@
 ║ vector_index_duplicate.k             │ 5 8 4 9 @ 0 0        │ 5 5                  │                      ║
 ║ vector_index_reverse.k               │ 5 8 4 9 @ 3 1        │ 9 8                  │                      ║
 ║ parenthesized_vector.k               │ (1;2;3;4)            │ 1 2 3 4              │                      ║
-║ parentheses_basic.k                  │ 1 + 2 * 3            │ 7                    │                      ║
+║ parentheses_basic.k                  │ 1 + 2 * 3            │ 3 4                  │ 7                    ║
 ║ parentheses_grouping.k               │ (1 + 2) * 3          │ 9                    │                      ║
 ║ parentheses_nested.k                 │ (1 + (2 * 3))        │ 7                    │                      ║
 ║ parentheses_nested1.k                │ ((1 + 2) * (3 + 4))  │ 21                   │                      ║
@@ -29,17 +29,17 @@
 ║ parentheses_nested4.k                │ (1 + (2 + (3 + (4 + 5)))) │ 15                   │                      ║
 ║ parentheses_nested5.k                │ ((1 * 2) + (3 * (4 + 5))) │ 29                   │                      ║
 ║ parentheses_precedence.k             │ 1 + (2 * 3)          │ 7                    │                      ║
-║ precedence_spec1.k                   │ 81 % 1 + 2 * 3       │ 11.5714286           │                      ║
-║ precedence_spec2.k                   │ 120 % 4 * 2 + 3      │ 6                    │                      ║
-║ precedence_chain1.k                  │ 10 + 20 * 30 + 40    │ 1410                 │                      ║
-║ precedence_chain2.k                  │ 100 % 10 + 20 * 30 + 40 │ 0.0709220            │                      ║
-║ precedence_mixed1.k                  │ 5 - 2 + 3            │ 0                    │                      ║
-║ precedence_mixed2.k                  │ 5 * 2 + 3            │ 25                   │                      ║
-║ precedence_mixed3.k                  │ 5 + 2 * 3            │ 11                   │                      ║
-║ precedence_power1.k                  │ 2 ^ 3 + 4            │ 128                  │                      ║
-║ precedence_power2.k                  │ 2 + 3 ^ 4            │ 83                   │                      ║
-║ precedence_complex1.k                │ 10 % 2 + 3 * 4       │ 0.7142857            │                      ║
-║ precedence_complex2.k                │ 10 + 20 % 30 * 40    │ 10.0166667           │                      ║
+║ precedence_spec1.k                   │ 81 % 1 + 2 * 3       │ (81;40.5;27)         │ 11.5714286           ║
+║ precedence_spec2.k                   │ 120 % 4 * 2 + 3      │ 30 60 40             │ 6                    ║
+║ precedence_chain1.k                  │ 10 + 20 * 30 + 40    │ 30 40 50             │ 1410                 ║
+║ precedence_chain2.k                  │ 100 % 10 + 20 * 30 + 40 │ (10;5;3.3333333...   │ 0.0709220            ║
+║ precedence_mixed1.k                  │ 5 - 2 + 3            │ 3 2                  │ 0                    ║
+║ precedence_mixed2.k                  │ 5 * 2 + 3            │ 10 15                │ 25                   ║
+║ precedence_mixed3.k                  │ 5 + 2 * 3            │ 7 8                  │ 11                   ║
+║ precedence_power1.k                  │ 2 ^ 3 + 4            │ Error                │ 128                  ║
+║ precedence_power2.k                  │ 2 + 3 ^ 4            │ 5 2                  │ 83                   ║
+║ precedence_complex1.k                │ 10 % 2 + 3 * 4       │ (5;3.3333333;2.5)    │ 0.7142857            ║
+║ precedence_complex2.k                │ 10 + 20 % 30 * 40    │ (30;10.0333333;50)   │ 10.0166667           ║
 ║ vector_notation_space.k              │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
 ║ vector_notation_semicolon.k          │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
 ║ vector_notation_empty.k              │ ()                   │ ()                   │                      ║
@@ -172,7 +172,7 @@
 ║ function_call_double.k               │ mul:{[op1;op2] op1 * op2} │ 32                   │                      ║
 ║ function_call_chain.k                │ mul:{[op1;op2] op1 * op2} │ 20                   │                      ║
 ║ function_call_anonymous.k            │ {[arg1] arg1+6} . 7  │ 13                   │                      ║
-║ complex_function.k                   │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2} │ 205                  │                      ║
+║ complex_function.k                   │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2} │ Error                │ 205                  ║
 ║ test_multiline_function_single.k     │ test: {[x] a:x*2; a+10} │ 20                   │                      ║
 ║ test_scoping_single.k                │ globalVar: 100       │ 110                  │                      ║
 ║ variable_scoping_global_access.k     │ // Test function accessing global variable │ 150                  │                      ║
@@ -208,15 +208,82 @@
 ║ mod_vector.k                         │ 1 2 3 4 ! 2          │ 1 0 1 0              │                      ║
 ║ adverb_each_vector_plus.k            │ // Test each adverb with equal length vectors (now implemented) │ (6 7 8 9;7 8 9 ...   │                      ║
 ║ adverb_each_vector_multiply.k        │ // Test each adverb with equal length vectors (now implemented) │ (5 6 7;6 7 8;7 ...   │                      ║
+║ test_grade_up_no_parens.k            │ < 3 11 9 9 4         │ 0 4 2 3 1            │                      ║
+║ test_grade_down_no_parens.k          │ > 3 11 9 9 4         │ 1 2 3 4 0            │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 202/205 tests passed (98.5%)                                                                 ║
+║ SUMMARY: 191/207 tests passed (92.3%)                                                                 ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
+Test: parentheses_basic.k
+Input: 1 + 2 * 3
+Expected: 7
+Actual: 3 4
+──────────────────────────────────────────────────────────────────────────
+Test: precedence_spec1.k
+Input: 81 % 1 + 2 * 3
+Expected: 11.5714286
+Actual: (81;40.5;27)
+──────────────────────────────────────────────────────────────────────────
+Test: precedence_spec2.k
+Input: 120 % 4 * 2 + 3
+Expected: 6
+Actual: 30 60 40
+──────────────────────────────────────────────────────────────────────────
+Test: precedence_chain1.k
+Input: 10 + 20 * 30 + 40
+Expected: 1410
+Actual: 30 40 50
+──────────────────────────────────────────────────────────────────────────
+Test: precedence_chain2.k
+Input: 100 % 10 + 20 * 30 + 40
+Expected: 0.0709220
+Actual: (10;5;3.3333333;2.5)
+──────────────────────────────────────────────────────────────────────────
+Test: precedence_mixed1.k
+Input: 5 - 2 + 3
+Expected: 0
+Actual: 3 2
+──────────────────────────────────────────────────────────────────────────
+Test: precedence_mixed2.k
+Input: 5 * 2 + 3
+Expected: 25
+Actual: 10 15
+──────────────────────────────────────────────────────────────────────────
+Test: precedence_mixed3.k
+Input: 5 + 2 * 3
+Expected: 11
+Actual: 7 8
+──────────────────────────────────────────────────────────────────────────
+Test: precedence_power1.k
+Input: 2 ^ 3 + 4
+Expected: 128
+Actual: Error
+──────────────────────────────────────────────────────────────────────────
+Test: precedence_power2.k
+Input: 2 + 3 ^ 4
+Expected: 83
+Actual: 5 2
+──────────────────────────────────────────────────────────────────────────
+Test: precedence_complex1.k
+Input: 10 % 2 + 3 * 4
+Expected: 0.7142857
+Actual: (5;3.3333333;2.5)
+──────────────────────────────────────────────────────────────────────────
+Test: precedence_complex2.k
+Input: 10 + 20 % 30 * 40
+Expected: 10.0166667
+Actual: (30;10.0333333;50)
+──────────────────────────────────────────────────────────────────────────
 Test: overflow_long_min_minus1.k
 Input: -9223372036854775808L - 1
 Expected: 0IL
+Actual: Error
+──────────────────────────────────────────────────────────────────────────
+Test: complex_function.k
+Input: distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2}
+Expected: 205
 Actual: Error
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_nested_functions.k

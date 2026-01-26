@@ -123,7 +123,7 @@ namespace K3CSharp.Tests
         private static int GetDefinedTestCount()
         {
             // This should match the tests array in RunAllTests
-            return 251; // Updated count to match actual test files
+            return 253; // Updated count to match actual test files
         }
         
         private static HashSet<string> GetDefinedTestNames()
@@ -199,6 +199,7 @@ namespace K3CSharp.Tests
                 "shape_operator_scalar.k", "shape_operator_vector.k", "shape_operator_matrix_2x3.k", "shape_operator_matrix_3x3.k", "shape_operator_jagged_matrix.k", "shape_operator_tensor_3d.k", "shape_operator_tensor_2x2x3.k", "shape_operator_jagged_3d.k", "shape_operator_empty_vector.k", "mixed_vector_empty_position.k", "mixed_vector_whitespace_position.k", "mixed_vector_multiple_empty.k",
                 // Additional test files not in RunAllTests but present in TestScripts
                 "dictionary_index.k", "dictionary_index_attr.k", "dictionary_index_value.k", "dictionary_index_value2.k",
+                "test_grade_up_no_parens.k", "test_grade_down_no_parens.k",
                 "math_abs.k", "math_exp.k", "math_log.k", "math_sin.k", "math_sqrt.k", "math_vector.k",
                 "simple_nested_test.k", "type_operator_float.k", "type_operator_int.k", "test_null_vector.k",
                 // Newly moved test files from base folder
@@ -549,6 +550,8 @@ namespace K3CSharp.Tests
 // Each adverb tests (vector-vector operations now implemented)
 ("adverb_each_vector_plus.k", "(6 7 8 9;7 8 9 10;8 9 10 11;9 10 11 12)"), // (1 2 3 4) +' (5 6 7 8) = matrix of element-wise additions
 ("adverb_each_vector_multiply.k", "(5 6 7;6 7 8;7 8 9)"), // (1 2 3) *' (4 5 6) = matrix of element-wise multiplications
+                ("test_grade_up_no_parens.k", "0 4 2 3 1"), // Test < 3 11 9 9 4 without parentheses
+                ("test_grade_down_no_parens.k", "1 2 3 4 0"), // Test > 3 11 9 9 4
             };
 
             int passed = 0;
