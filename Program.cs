@@ -349,7 +349,22 @@ namespace K3CSharp
                     if (parts.Length == 1)
                     {
                         // Display current precision
-                        Console.WriteLine($"Current precision: {Evaluator.floatPrecision}");
+                        Console.WriteLine($"Current precision: {Evaluator.floatPrecision} significant digits");
+                        Console.WriteLine("");
+                        Console.WriteLine("Floating Point Display Rules:");
+                        Console.WriteLine("  - Precision applies to total number of significant digits");
+                        Console.WriteLine("  - Trailing zeroes in decimal portion are not printed");
+                        Console.WriteLine("  - Exponential notation uses lowercase 'e'");
+                        Console.WriteLine("  - Decimal point omitted if decimal portion is zero in exponential notation");
+                        Console.WriteLine("  - In decimal notation, trailing zeroes are omitted unless all");
+                        Console.WriteLine("    displayed digits in decimal portion are zeroes (first zero preserved)");
+                        Console.WriteLine("");
+                        Console.WriteLine("Examples:");
+                        Console.WriteLine($"  0.1234567890123456789 → 0.1234568 ({Evaluator.floatPrecision} significant digits)");
+                        Console.WriteLine("  1e15 → 1e+015 (exponential notation)");
+                        Console.WriteLine("  1.0e-12 → 1e-012 (decimal point omitted)");
+                        Console.WriteLine("  10.000 → 10.0 (first zero preserved)");
+                        Console.WriteLine("  10.123400000 → 10.1234 (trailing zeroes removed)");
                     }
                     else if (parts.Length == 2)
                     {
@@ -357,7 +372,7 @@ namespace K3CSharp
                         if (int.TryParse(parts[1], out int newPrecision))
                         {
                             Evaluator.floatPrecision = newPrecision;
-                            Console.WriteLine($"Precision set to: {newPrecision}");
+                            Console.WriteLine($"Precision set to: {newPrecision} significant digits");
                         }
                         else
                         {
@@ -374,7 +389,7 @@ namespace K3CSharp
                     // Display top level help message
                     Console.WriteLine("K3 REPL Help Commands:");
                     Console.WriteLine("  \\       - Display this help message");
-                    Console.WriteLine("  \\p [n]  - Set or display float precision (default: 7)");
+                    Console.WriteLine("  \\p [n]  - Set or display float precision (default: 7 significant digits)");
                     Console.WriteLine("  \\0      - Display information about constants, literals and data types");
                     Console.WriteLine("  \\+      - Display information about verbs");
                     Console.WriteLine("  \\'      - Display information about adverbs");
