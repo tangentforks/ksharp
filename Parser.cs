@@ -285,8 +285,20 @@ namespace K3CSharp
         
         private ASTNode ParseTerm(bool parseUntilEnd = false)
         {
+            // Check if we're at a statement separator before trying to parse
+            if (ShouldStopParsing(parseUntilEnd ? ParseUntilEndStopTokens : DefaultStopTokens))
+            {
+                return null;
+            }
+            
             var elements = new List<ASTNode>();
             elements.Add(ParsePrimary());
+
+            // Handle case where ParsePrimary returned null
+            if (elements[0] == null)
+            {
+                return null;
+            }
 
             var firstElementType = elements[0].Type;
             var firstValueType = elements[0].Value?.GetType();
@@ -1531,6 +1543,10 @@ namespace K3CSharp
             }
 
             var left = ParseTerm();
+            if (left == null)
+            {
+                return null;
+            }
 
             // Check for function call using @ or . operators (higher precedence than binary ops)
             if (Match(TokenType.APPLY) || Match(TokenType.DOT_APPLY))
