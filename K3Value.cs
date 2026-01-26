@@ -376,23 +376,65 @@ namespace K3CSharp
                 return Value.ToString("E15"); // Use exponential notation with 15 digits precision
             }
             
-            // Use precision only if the value has many decimal places
-            var str = Value.ToString();
-            if (str.Contains('.') && str.Length > 10)
+            // Use significant digits precision for regular floating point numbers
+            if (Value != 0)
             {
-                return Value.ToString($"F{Evaluator.floatPrecision}");
+                // Use G format with significant digits, then ensure consistent decimal notation
+                var precision = Evaluator.floatPrecision;
+                var formatted = Math.Round(Value, precision, MidpointRounding.AwayFromZero).ToString("G15");
+                
+                // Convert to scientific notation if it's too long or has too many decimal places
+                if (formatted.Contains('E') || formatted.Length > 15)
+                {
+                    return Value.ToString($"E{precision}");
+                }
+                
+                // Ensure we have the right number of significant digits
+                var significantDigits = CountSignificantDigits(Value);
+                if (significantDigits > precision)
+                {
+                    // Round to the correct number of significant digits
+                    var scale = Math.Pow(10, Math.Floor(Math.Log10(Math.Abs(Value))) - precision + 1);
+                    var rounded = Math.Round(Value / scale) * scale;
+                    formatted = rounded.ToString("G15");
+                }
+                
+                // Ensure decimal notation for display consistency
+                if (formatted.Contains('.') || formatted.Contains('E'))
+                {
+                    return formatted;
+                }
+                else
+                {
+                    // Add .0 for whole numbers that were originally floats
+                    return formatted + ".0";
+                }
             }
             
-            // For decimal notation, ensure at least one decimal digit is shown
-            // Check if the original value was entered with a decimal point or if we need decimal precision
-            if (Value == Math.Floor(Value))
+            return "0.0";
+        }
+        
+        private static int CountSignificantDigits(double value)
+        {
+            if (value == 0) return 1;
+            
+            var absValue = Math.Abs(value);
+            var log10 = Math.Log10(absValue);
+            var integerDigits = (int)Math.Floor(log10) + 1;
+            
+            // Count digits in string representation, excluding decimal point and leading zeros
+            var str = absValue.ToString("G15");
+            var count = 0;
+            var seenNonZero = false;
+            
+            foreach (char c in str)
             {
-                // It's a whole number, but if it was originally float, show .0
-                // Use a format that ensures decimal point display
-                return Value.ToString("0.0");
+                if (c == '.' || c == 'E' || c == '-') continue;
+                if (c != '0') seenNonZero = true;
+                if (seenNonZero) count++;
             }
             
-            return str;
+            return count;
         }
     }
 

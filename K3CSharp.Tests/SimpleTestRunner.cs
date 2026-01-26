@@ -438,7 +438,7 @@ namespace K3CSharp.Tests
                 ("test_division_float_4_2.0.k", "2.0"),
                 ("test_division_rules_5_2.k", "2.5"),
                 ("test_division_rules_4_2.k", "2"),
-                ("test_division_rules_10_3.k", "3.3333333"),
+                ("test_division_rules_10_3.k", "3.333333"),
                 ("test_division_rules_12_4.k", "3"),
                 ("type_promotion_float_int.k", "3.5"),
                 ("type_promotion_int_float.k", "3.5"),
