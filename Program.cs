@@ -5,14 +5,19 @@ using System.Text;
 
 namespace K3CSharp
 {
-    class Program
+    public class Program
     {
+        public static void Main(string[] args)
+        {
+            REPLMain(args);
+        }
+
         private static List<string> commandHistory = new List<string>();
         private static int historyIndex = -1;
         private static StringBuilder currentLine = new StringBuilder();
         private static int cursorPosition = 0;
         
-        static void Main(string[] args)
+        static void REPLMain(string[] args)
         {
             var evaluator = new Evaluator();
             

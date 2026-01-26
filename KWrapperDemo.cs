@@ -5,7 +5,7 @@ namespace K3CSharp
 {
     public class KWrapperDemo
     {
-        public static void Main(string[] args)
+        public static void DemoMain(string[] args)
         {
             Console.WriteLine("K Interpreter Wrapper Demo");
             Console.WriteLine("===========================");

@@ -6,7 +6,7 @@ namespace K3CSharp.Tests
 {
     public class KWrapperTest
     {
-        public static void Main(string[] args)
+        public static void TestMain(string[] args)
         {
             var wrapper = new KInterpreterWrapper();
             
