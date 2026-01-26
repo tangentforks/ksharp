@@ -26,7 +26,7 @@ namespace K3CSharp
 
                 if (char.IsWhiteSpace(c))
                 {
-                    if (c == '\n')
+                    if (c == '\n' && tokens.Count > 0)  // Only add NEWLINE if we have previous tokens
                     {
                         tokens.Add(new Token(TokenType.NEWLINE, "\n", position));
                     }

@@ -285,8 +285,9 @@ namespace K3CSharp
         
         private ASTNode ParseTerm(bool parseUntilEnd = false)
         {
-            // Check if we're at a statement separator before trying to parse
-            if (ShouldStopParsing(parseUntilEnd ? ParseUntilEndStopTokens : DefaultStopTokens))
+            // Only return null for EOF, not for NEWLINE when parsing expressions
+            // NEWLINE should be handled at higher levels as statement separators
+            if (IsAtEnd() || CurrentToken().Type == TokenType.EOF)
             {
                 return null;
             }
