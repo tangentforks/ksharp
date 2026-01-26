@@ -394,7 +394,7 @@ namespace K3CSharp.Tests
                 ("dictionary_index_attr.k", ".((`c;3;);(`d;4;))"), // Dictionary attribute access - returns nested dictionary
                 ("dictionary_index_value.k", "1"), // Dictionary value access by key
                 ("dictionary_index_value2.k", "2"), // Dictionary value access by key
-                ("shape_operator_scalar.k", "0"), // Scalar returns 0
+                ("shape_operator_scalar.k", "!0"), // Scalar returns !0 (empty integer list)
                 ("shape_operator_vector.k", "5"), // Simple vector returns length
                 ("shape_operator_matrix_2x3.k", "2 3"), // 2x3 matrix returns (2 3)
                 ("shape_operator_matrix_3x3.k", "3 3"), // 3x3 matrix returns (3 3)

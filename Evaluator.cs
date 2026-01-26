@@ -1341,7 +1341,7 @@ namespace K3CSharp
                 }
             }
             
-            return new IntegerValue(0); // For scalars
+            return new VectorValue(new List<K3Value>(), "enumerate_int"); // For scalars - return !0 (empty integer list)
         }
 
         private K3Value Enumerate(K3Value a)
