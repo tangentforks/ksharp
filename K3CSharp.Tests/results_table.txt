@@ -55,8 +55,8 @@
 ║ integer_types_long.k                     │ 123456789L           │ 123456789L           │                      ║
 ║ float_types.k                            │ 3.14                 │ 3.14                 │                      ║
 ║ float_exponential.k                      │ 0.17e03              │ 170.0                │                      ║
-║ float_exponential_large.k                │ 1e15                 │ 1.0000000000000...   │                      ║
-║ float_exponential_small.k                │ 1e-20                │ 9.9999999999999...   │ 1E-20                ║
+║ float_exponential_large.k                │ 1e15                 │ 1.0000000E+015       │                      ║
+║ float_exponential_small.k                │ 1e-20                │ 1.0000000E-020       │                      ║
 ║ float_decimal_point.k                    │ 10.                  │ 10.0                 │                      ║
 ║ character_single.k                       │ "f"                  │ "f"                  │                      ║
 ║ character_vector.k                       │ "hello"              │ "hello"              │                      ║
@@ -219,7 +219,7 @@
 ║ test_grade_up_no_parens.k                │ < 3 11 9 9 4         │ 0 4 2 3 1            │                      ║
 ║ test_grade_down_no_parens.k              │ > 3 11 9 9 4         │ 1 2 3 4 0            │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 211/215 tests passed (98.1%)                                                                     ║
+║ SUMMARY: 212/215 tests passed (98.6%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -228,11 +228,6 @@ Test: vector_notation_functions.k
 Input: double: {[x] x * 2}
 Expected: 10 20 30
 Actual: {[x] x*2} {[x] x*2} {[x] x*2}
-──────────────────────────────────────────────────────────────────────────
-Test: float_exponential_small.k
-Input: 1e-20
-Expected: 1E-20
-Actual: 9.999999999999999E-021
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_nested_functions.k
 Input: // Test nested functions

@@ -373,7 +373,7 @@ namespace K3CSharp
             var absValue = Math.Abs(Value);
             if (absValue >= 1e15 || (absValue > 0 && absValue < 1e-10))
             {
-                return Value.ToString("E15"); // Use exponential notation with 15 digits precision
+                return Value.ToString($"E{Evaluator.floatPrecision}"); // Use exponential notation with configured precision
             }
             
             // Use significant digits precision for regular floating point numbers
