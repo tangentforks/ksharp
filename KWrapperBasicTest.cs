@@ -6,7 +6,7 @@ namespace K3CSharp.Tests
 {
     public class KWrapperBasicTest
     {
-        public static void Main(string[] args)
+        public static void TestMain(string[] args)
         {
             Console.WriteLine("K Wrapper Basic Test");
             Console.WriteLine("=====================");

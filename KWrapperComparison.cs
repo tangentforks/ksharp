@@ -8,7 +8,7 @@ namespace K3CSharp.Tests
 {
     public class KWrapperComparison
     {
-        public static void Main(string[] args)
+        public static void ComparisonMain(string[] args)
         {
             Console.WriteLine("K Wrapper Comparison - First 10 Test Scripts");
             Console.WriteLine("==============================================");

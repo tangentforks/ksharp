@@ -11,10 +11,12 @@ namespace K3CSharp
     {
         private readonly string kExePath;
         private readonly string tempDirectory;
+        private readonly int timeoutMs;
 
-        public KInterpreterWrapper(string kExePath = @"c:\k\k.exe")
+        public KInterpreterWrapper(string kExePath = @"c:\k\k.exe", int timeoutMs = 10000)
         {
             this.kExePath = kExePath;
+            this.timeoutMs = timeoutMs;
             this.tempDirectory = Path.Combine(Path.GetTempPath(), "ksharp_wrapper");
             
             // Ensure temp directory exists
@@ -60,66 +62,94 @@ namespace K3CSharp
             // This is more explicit than double backslash and provides a clean exit
             var modifiedContent = scriptContent.TrimEnd() + "\n_exit 0\n";
             
-            File.WriteAllText(tempScriptPath, modifiedContent, Encoding.UTF8);
+            // Use ASCII encoding to avoid UTF-8 BOM issues with k.exe
+            File.WriteAllText(tempScriptPath, modifiedContent, Encoding.ASCII);
             return tempScriptPath;
         }
 
         private string ExecuteKProcess(string scriptPath, string outputPath)
         {
+            // Use shell execution to properly redirect stdout
             var startInfo = new ProcessStartInfo
             {
-                FileName = kExePath,
-                Arguments = $"\"{scriptPath}\"",
+                FileName = "cmd.exe",
+                Arguments = $"/c \"{kExePath}\" \"{scriptPath}\" > \"{outputPath}\" 2>&1",
                 UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true,
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8
+                RedirectStandardOutput = false, // Don't redirect - using shell redirection
+                RedirectStandardError = false,  // Don't redirect - using shell redirection
+                CreateNoWindow = true
             };
 
             using var process = new Process { StartInfo = startInfo };
             
-            // Also redirect output to file for complete capture
-            using var outputWriter = new StreamWriter(outputPath, false, Encoding.UTF8);
-            
-            process.OutputDataReceived += (sender, e) => {
-                if (e.Data != null)
-                {
-                    outputWriter.WriteLine(e.Data);
-                }
-            };
-            
-            process.ErrorDataReceived += (sender, e) => {
-                if (e.Data != null)
-                {
-                    outputWriter.WriteLine($"STDERR: {e.Data}");
-                }
-            };
-
             try
             {
                 process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
                 
-                // Wait for process to complete with timeout
-                if (!process.WaitForExit(10000)) // 10 second timeout
+                // Monitor output file with timeout
+                var checkIntervalMs = 500; // Check every 500ms
+                var elapsedMs = 0;
+                var lastFileSize = 0L;
+                var lastModified = DateTime.MinValue;
+                
+                while (!process.HasExited && elapsedMs < timeoutMs)
+                {
+                    System.Threading.Thread.Sleep(checkIntervalMs);
+                    elapsedMs += checkIntervalMs;
+                    
+                    // Check if output file exists and is being written to
+                    if (File.Exists(outputPath))
+                    {
+                        var fileInfo = new FileInfo(outputPath);
+                        var currentSize = fileInfo.Length;
+                        var currentModified = fileInfo.LastWriteTime;
+                        
+                        // If file hasn't changed in the last check interval, consider it hung
+                        if (currentSize == lastFileSize && currentModified == lastModified)
+                        {
+                            // File hasn't changed - might be hung
+                            if (elapsedMs >= 2000) // Give at least 2 seconds before considering hung
+                            {
+                                Console.WriteLine($"k.exe appears to be hung (no output for {checkIntervalMs}ms)");
+                                process.Kill();
+                                throw new TimeoutException($"k.exe execution timed out - no output for {elapsedMs}ms");
+                            }
+                        }
+                        else
+                        {
+                            // File is being written to, reset timeout
+                            lastFileSize = currentSize;
+                            lastModified = currentModified;
+                        }
+                    }
+                }
+                
+                // Final check for process completion
+                if (!process.HasExited)
                 {
                     process.Kill();
-                    throw new TimeoutException("k.exe execution timed out");
+                    throw new TimeoutException($"k.exe execution timed out after {timeoutMs}ms");
                 }
 
                 if (process.ExitCode != 0)
                 {
+                    // Read error from output file if it exists
+                    if (File.Exists(outputPath))
+                    {
+                        var errorOutput = File.ReadAllText(outputPath, Encoding.UTF8);
+                        throw new Exception($"k.exe exited with code {process.ExitCode}. Output: {errorOutput}");
+                    }
                     throw new Exception($"k.exe exited with code {process.ExitCode}");
                 }
-
-                outputWriter.Flush();
+                
                 return outputPath;
             }
             catch (Exception ex)
             {
+                if (!process.HasExited)
+                {
+                    process.Kill();
+                }
                 throw new Exception($"Failed to execute k.exe: {ex.Message}", ex);
             }
         }

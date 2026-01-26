@@ -7,9 +7,9 @@ namespace K3CSharp
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static void REPLMain(string[] args)
         {
-            REPLMain(args);
+            StartREPL(args);
         }
 
         private static List<string> commandHistory = new List<string>();
@@ -17,7 +17,7 @@ namespace K3CSharp
         private static StringBuilder currentLine = new StringBuilder();
         private static int cursorPosition = 0;
         
-        static void REPLMain(string[] args)
+        static void StartREPL(string[] args)
         {
             var evaluator = new Evaluator();
             
