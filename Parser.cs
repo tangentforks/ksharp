@@ -356,6 +356,14 @@ namespace K3CSharp
         {
             ASTNode result = null;
 
+            // Handle NEWLINE tokens as statement separators (per NSL parser insight)
+            if (Match(TokenType.NEWLINE))
+            {
+                // NEWLINE should be handled at higher levels as statement separator
+                // Return null to indicate no primary expression found
+                return null;
+            }
+
             if (Match(TokenType.INTEGER))
             {
                 var lexeme = PreviousToken().Lexeme;
@@ -1186,7 +1194,7 @@ namespace K3CSharp
                     // Parse all statements, skipping empty ones
                     while (!IsAtEnd() && CurrentToken().Type != TokenType.RIGHT_BRACE)
                     {
-                        // Skip empty lines (multiple newlines)
+                        // Skip empty lines (multiple newlines) and whitespace
                         while (Match(TokenType.NEWLINE))
                         {
                             // Skip consecutive newlines
@@ -1196,14 +1204,22 @@ namespace K3CSharp
                         if (!IsAtEnd() && CurrentToken().Type != TokenType.RIGHT_BRACE && 
                             CurrentToken().Type != TokenType.SEMICOLON && CurrentToken().Type != TokenType.NEWLINE)
                         {
-                            statements.Add(ParseExpression());
+                            var expr = ParseExpression();
+                            if (expr != null)  // Only add non-null expressions
+                            {
+                                statements.Add(expr);
+                            }
                         }
                         
                         // Skip the separator (semicolon or newline) if present
-                        Match(TokenType.SEMICOLON);
-                        while (Match(TokenType.NEWLINE))
+                        // Treat newlines and semicolons as equivalent per NSL parser insight
+                        if (Match(TokenType.SEMICOLON) || Match(TokenType.NEWLINE))
                         {
-                            // Skip consecutive newlines after separator
+                            // Skip additional consecutive newlines after the separator
+                            while (Match(TokenType.NEWLINE))
+                            {
+                                // Skip consecutive newlines
+                            }
                         }
                     }
                     
@@ -1366,11 +1382,6 @@ namespace K3CSharp
                 // End of input - return null result
                 return null;
             }
-            else if (Match(TokenType.NEWLINE))
-            {
-                // Skip newlines but don't return a result - let higher levels handle them
-                return null;
-            }
             else
             {
                 // Debug: Let's see what token we're getting
@@ -1378,6 +1389,16 @@ namespace K3CSharp
                 throw new Exception($"Unexpected token: {currentToken.Type}({currentToken.Lexeme})");
             }
 
+            return result;
+        }
+
+        private ASTNode SafeParsePrimary()
+        {
+            var result = ParsePrimary();
+            if (result == null)
+            {
+                throw new Exception("Expected primary expression but found statement separator");
+            }
             return result;
         }
 
