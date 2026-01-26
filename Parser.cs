@@ -1193,7 +1193,8 @@ namespace K3CSharp
                         }
                         
                         // Check if we have content before the next separator or closing brace
-                        if (!IsAtEnd() && CurrentToken().Type != TokenType.RIGHT_BRACE && CurrentToken().Type != TokenType.SEMICOLON)
+                        if (!IsAtEnd() && CurrentToken().Type != TokenType.RIGHT_BRACE && 
+                            CurrentToken().Type != TokenType.SEMICOLON && CurrentToken().Type != TokenType.NEWLINE)
                         {
                             statements.Add(ParseExpression());
                         }
@@ -1363,6 +1364,11 @@ namespace K3CSharp
             else if (Match(TokenType.EOF))
             {
                 // End of input - return null result
+                return null;
+            }
+            else if (Match(TokenType.NEWLINE))
+            {
+                // Skip newlines but don't return a result - let higher levels handle them
                 return null;
             }
             else
