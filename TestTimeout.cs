@@ -3,7 +3,7 @@ using System.IO;
 
 class TestTimeout
 {
-    static void Main()
+    public static void TimeoutMain(string[] args)
     {
         Console.WriteLine("Testing K Wrapper Timeout Handling");
         Console.WriteLine("===================================");

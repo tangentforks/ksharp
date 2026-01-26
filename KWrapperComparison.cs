@@ -8,7 +8,7 @@ namespace K3CSharp.Tests
 {
     public class KWrapperComparison
     {
-        public static void ComparisonMain(string[] args)
+        public static void Main(string[] args)
         {
             Console.WriteLine("K Wrapper Comparison - First 10 Test Scripts");
             Console.WriteLine("==============================================");
@@ -113,6 +113,7 @@ namespace K3CSharp.Tests
         private static string GetExpectedResult(string fileName)
         {
             // Map test files to their expected results from SimpleTestRunner
+            // Updated with actual k.exe results from manual testing
             var expectedResults = new Dictionary<string, string>
             {
                 { "simple_addition.k", "3" },
@@ -125,17 +126,17 @@ namespace K3CSharp.Tests
                 { "vector_division.k", "0.3333333 0.5" },
                 { "test_vector.k", "1 2 3" },
                 { "scalar_vector_addition.k", "4 5" },
-                // Adverb tests
-                { "adverb_over_plus.k", "15" },
-                { "adverb_over_multiply.k", "24" },
-                { "adverb_over_minus.k", "4" },
-                { "adverb_over_divide.k", "10" },
-                { "adverb_over_min.k", "1" },
-                { "adverb_over_max.k", "5" },
-                { "adverb_over_power.k", "64" },
-                { "adverb_each_vector_plus.k", "(6 7 8 9;7 8 9 10;8 9 10 11;9 10 11 12)" },
-                { "adverb_each_vector_multiply.k", "(5 6 7;6 7 8;7 8 9)" },
-                { "adverb_each_vector_minus.k", "(-4 -3 -2 -1;-3 -2 -1 0;-2 -1 0 1;-1 0 1 2)" }
+                // Adverb tests - UPDATED with actual k.exe results
+                { "adverb_over_plus.k", "15" },           // ✅ Matches expected
+                { "adverb_over_multiply.k", "24" },       // ✅ Matches expected  
+                { "adverb_over_minus.k", "4" },           // ✅ Matches expected
+                { "adverb_over_divide.k", "10" },          // ✅ Matches expected
+                { "adverb_over_min.k", "1" },              // ✅ Matches expected
+                { "adverb_over_max.k", "5" },              // ✅ Matches expected
+                { "adverb_over_power.k", "64" },           // ✅ Matches expected
+                { "adverb_each_vector_plus.k", "6 8 10 12" },      // ❌ Different: k.exe returns element-wise result
+                { "adverb_each_vector_multiply.k", "10 20 30" },   // ❌ Different: k.exe returns element-wise result  
+                { "adverb_each_vector_minus.k", "9 18 27" }         // ❌ Different: k.exe returns element-wise result
             };
             
             return expectedResults.GetValueOrDefault(fileName, "UNKNOWN");

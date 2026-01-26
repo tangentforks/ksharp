@@ -3,7 +3,7 @@ using System.IO;
 
 class TestWrapper
 {
-    static void Main()
+    public static void TestMain(string[] args)
     {
         Console.WriteLine("Testing K Interpreter Wrapper");
         Console.WriteLine("==============================");
