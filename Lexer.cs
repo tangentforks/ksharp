@@ -53,6 +53,11 @@ namespace K3CSharp
                     tokens.Add(new Token(TokenType.RIGHT_BRACE, "}", position));
                     Advance();
                 }
+                else if (c == '`')
+                {
+                    var symbolToken = ReadSymbol();
+                    tokens.Add(symbolToken);
+                }
                 else if (c == '[')
                 {
                     tokens.Add(new Token(TokenType.LEFT_BRACKET, "[", position));
@@ -278,18 +283,17 @@ namespace K3CSharp
                 {
                     tokens.Add(ReadSymbol());
                 }
-                else if (char.IsDigit(c))
-                {
-                    tokens.Add(ReadNumber());
-                }
                 else if (char.IsLetter(c))
                 {
                     tokens.Add(ReadIdentifier());
                 }
+                else if (char.IsDigit(c))
+                {
+                    tokens.Add(ReadNumber());
+                }
                 else
                 {
-                    tokens.Add(new Token(TokenType.UNKNOWN, c.ToString(), position));
-                    Advance();
+                    throw new Exception($"Unexpected character: {c} at position {position}");
                 }
             }
 
@@ -312,32 +316,20 @@ namespace K3CSharp
             if (currentChar == '"')
             {
                 Advance(); // Skip closing quote
-                
-                // Check string length to determine token type
-                if (value.Length == 1)
-                {
-                    return new Token(TokenType.CHARACTER, value, start);
-                }
-                else
-                {
-                    return new Token(TokenType.CHARACTER_VECTOR, value, start);
-                }
             }
             
-            throw new Exception("Unterminated string literal");
+            return new Token(TokenType.QUOTE, value, start);
         }
-
+        
         private Token ReadSymbol()
         {
             int start = position;
             Advance(); // Skip backtick
             
-            // Check if next character is a quote - this should have precedence per spec
+            // Handle quoted symbols
             if (currentChar == '"')
             {
-                // Read the quoted string as part of the symbol
                 var stringValue = ReadString();
-                // The ReadString method already includes the quotes, so use that as the symbol value
                 return new Token(TokenType.SYMBOL, stringValue.Lexeme, start);
             }
             
@@ -348,13 +340,21 @@ namespace K3CSharp
                 Advance();
             }
             
-            // If we found a closing backtick, skip it
-            if (currentChar == '`')
+            return new Token(TokenType.SYMBOL, value, start);
+        }
+        
+        private Token ReadIdentifier()
+        {
+            int start = position;
+            string value = "";
+            
+            while (currentChar != '\0' && (char.IsLetterOrDigit(currentChar) || currentChar == '_'))
             {
+                value += currentChar;
                 Advance();
             }
             
-            return new Token(TokenType.SYMBOL, value, start);
+            return new Token(TokenType.IDENTIFIER, value, start);
         }
 
         private Token ReadNumber()
@@ -460,20 +460,6 @@ namespace K3CSharp
             }
             
             return new Token(TokenType.INTEGER, number, start);
-        }
-
-        private Token ReadIdentifier()
-        {
-            int start = position;
-            string identifier = "";
-            
-            while (char.IsLetterOrDigit(currentChar) || currentChar == '_')
-            {
-                identifier += currentChar;
-                Advance();
-            }
-            
-            return new Token(TokenType.IDENTIFIER, identifier, start);
         }
 
         private Token ReadMathOperation()

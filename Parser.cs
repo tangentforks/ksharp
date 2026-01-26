@@ -255,55 +255,34 @@ namespace K3CSharp
                    type == TokenType.NEGATE;
         }
 
+        private static readonly TokenType[] ParseUntilEndStopTokens = {
+            TokenType.RIGHT_PAREN, TokenType.RIGHT_BRACE, TokenType.SEMICOLON, TokenType.NEWLINE, TokenType.EOF
+        };
+        
+        private static readonly TokenType[] DefaultStopTokens = {
+            TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.MIN, TokenType.MAX,
+            TokenType.LESS, TokenType.GREATER, TokenType.EQUAL, TokenType.POWER, TokenType.MODULUS, TokenType.JOIN,
+            TokenType.HASH, TokenType.UNDERSCORE, TokenType.QUESTION, TokenType.NEGATE, TokenType.RIGHT_PAREN,
+            TokenType.RIGHT_BRACE, TokenType.SEMICOLON, TokenType.NEWLINE, TokenType.ASSIGNMENT, TokenType.GLOBAL_ASSIGNMENT,
+            TokenType.LEFT_BRACKET, TokenType.APPLY, TokenType.DOT_APPLY, TokenType.TYPE, TokenType.STRING_REPRESENTATION,
+            TokenType.ADVERB_SLASH, TokenType.ADVERB_BACKSLASH, TokenType.ADVERB_TICK, TokenType.EOF
+        };
+        
+        private bool ShouldStopParsing(TokenType[] stopTokens)
+        {
+            return IsAtEnd() || stopTokens.Contains(CurrentToken().Type);
+        }
+        
         private ASTNode ParseTerm(bool parseUntilEnd = false)
         {
-            // Check for space-separated vector
             var elements = new List<ASTNode>();
             elements.Add(ParsePrimary());
 
-            // Track the type of the first element to enforce uniform type requirement
             var firstElementType = elements[0].Type;
             var firstValueType = elements[0].Value?.GetType();
+            var stopTokens = parseUntilEnd ? ParseUntilEndStopTokens : DefaultStopTokens;
 
-            while (!IsAtEnd() &&
-                   (parseUntilEnd ? (
-                       CurrentToken().Type != TokenType.RIGHT_PAREN &&
-                       CurrentToken().Type != TokenType.RIGHT_BRACE &&
-                       CurrentToken().Type != TokenType.SEMICOLON &&
-                       CurrentToken().Type != TokenType.NEWLINE &&
-                       CurrentToken().Type != TokenType.EOF
-                   ) : (
-                   CurrentToken().Type != TokenType.PLUS &&
-                   CurrentToken().Type != TokenType.MINUS &&
-                   CurrentToken().Type != TokenType.MULTIPLY &&
-                   CurrentToken().Type != TokenType.DIVIDE &&
-                   CurrentToken().Type != TokenType.MIN &&
-                   CurrentToken().Type != TokenType.MAX &&
-                   CurrentToken().Type != TokenType.LESS &&
-                   CurrentToken().Type != TokenType.GREATER &&
-                   CurrentToken().Type != TokenType.EQUAL &&
-                   CurrentToken().Type != TokenType.POWER &&
-                   CurrentToken().Type != TokenType.MODULUS &&
-                   CurrentToken().Type != TokenType.JOIN &&
-                   CurrentToken().Type != TokenType.HASH &&
-                   CurrentToken().Type != TokenType.UNDERSCORE &&
-                   CurrentToken().Type != TokenType.QUESTION &&
-                   CurrentToken().Type != TokenType.NEGATE &&
-                   CurrentToken().Type != TokenType.RIGHT_PAREN &&
-                   CurrentToken().Type != TokenType.RIGHT_BRACE &&
-                   CurrentToken().Type != TokenType.SEMICOLON &&
-                   CurrentToken().Type != TokenType.NEWLINE &&
-                   CurrentToken().Type != TokenType.ASSIGNMENT &&
-                   CurrentToken().Type != TokenType.GLOBAL_ASSIGNMENT &&
-                   CurrentToken().Type != TokenType.LEFT_BRACKET &&
-                   CurrentToken().Type != TokenType.APPLY &&
-                   CurrentToken().Type != TokenType.DOT_APPLY &&
-                   CurrentToken().Type != TokenType.TYPE &&
-                   CurrentToken().Type != TokenType.STRING_REPRESENTATION &&
-                   CurrentToken().Type != TokenType.ADVERB_SLASH &&
-                   CurrentToken().Type != TokenType.ADVERB_BACKSLASH &&
-                   CurrentToken().Type != TokenType.ADVERB_TICK &&
-                   CurrentToken().Type != TokenType.EOF)))
+            while (!ShouldStopParsing(stopTokens))
             {
                 // Check if this would create a mixed-type vector
                 // If the current token is an operator, it would create a mixed-type vector
