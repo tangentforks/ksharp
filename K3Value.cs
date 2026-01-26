@@ -375,8 +375,30 @@ namespace K3CSharp
             {
                 var expFormat = $"E{Evaluator.floatPrecision}";
                 var formatted = Value.ToString(expFormat);
-                // Convert to lowercase 'e' and remove trailing zeroes
-                formatted = formatted.Replace('E', 'e').Replace(".0000000", "").Replace(".000000", "").Replace(".00000", "").Replace(".0000", "").Replace(".000", "").Replace(".00", "");
+                // Convert to lowercase 'e'
+                formatted = formatted.Replace('E', 'e');
+                
+                // Handle trailing zeroes in exponential notation
+                var eIndex = formatted.IndexOf('e');
+                if (eIndex > 0)
+                {
+                    var mantissa = formatted.Substring(0, eIndex);
+                    var exponent = formatted.Substring(eIndex);
+                    
+                    // Remove trailing zeroes from mantissa
+                    if (mantissa.Contains('.'))
+                    {
+                        mantissa = mantissa.TrimEnd('0');
+                        // If decimal portion is zero, remove decimal point
+                        if (mantissa.EndsWith('.'))
+                        {
+                            mantissa = mantissa.TrimEnd('.');
+                        }
+                    }
+                    
+                    formatted = mantissa + exponent;
+                }
+                
                 return formatted;
             }
             
@@ -392,8 +414,30 @@ namespace K3CSharp
                 {
                     var expFormat = $"E{precision}";
                     formatted = Value.ToString(expFormat);
-                    // Convert to lowercase 'e' and remove trailing zeroes
-                    formatted = formatted.Replace('E', 'e').Replace(".0000000", "").Replace(".000000", "").Replace(".00000", "").Replace(".0000", "").Replace(".000", "").Replace(".00", "");
+                    // Convert to lowercase 'e'
+                    formatted = formatted.Replace('E', 'e');
+                    
+                    // Handle trailing zeroes in exponential notation
+                    var eIndex = formatted.IndexOf('e');
+                    if (eIndex > 0)
+                    {
+                        var mantissa = formatted.Substring(0, eIndex);
+                        var exponent = formatted.Substring(eIndex);
+                        
+                        // Remove trailing zeroes from mantissa
+                        if (mantissa.Contains('.'))
+                        {
+                            mantissa = mantissa.TrimEnd('0');
+                            // If decimal portion is zero, remove decimal point
+                            if (mantissa.EndsWith('.'))
+                            {
+                                mantissa = mantissa.TrimEnd('.');
+                            }
+                        }
+                        
+                        formatted = mantissa + exponent;
+                    }
+                    
                     return formatted;
                 }
                 
@@ -407,10 +451,27 @@ namespace K3CSharp
                     formatted = rounded.ToString("G15");
                 }
                 
-                // Remove trailing zeroes from decimal portion
+                // Handle decimal notation trailing zeroes
                 if (formatted.Contains('.'))
                 {
-                    formatted = formatted.TrimEnd('0').TrimEnd('.');
+                    var decimalIndex = formatted.IndexOf('.');
+                    var integerPart = formatted.Substring(0, decimalIndex);
+                    var decimalPart = formatted.Substring(decimalIndex + 1);
+                    
+                    // Remove trailing zeroes from decimal part
+                    decimalPart = decimalPart.TrimEnd('0');
+                    
+                    // If all decimal digits were zeroes, preserve one zero
+                    if (decimalPart.Length == 0)
+                    {
+                        decimalPart = "0";
+                    }
+                    
+                    // Reconstruct
+                    formatted = integerPart + "." + decimalPart;
+                    
+                    // If decimal part is just "0", we might want to keep it for float numbers
+                    // But if the original number was a whole number that was converted to float, keep .0
                 }
                 
                 // Ensure decimal notation for display consistency
