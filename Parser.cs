@@ -211,6 +211,12 @@ namespace K3CSharp
 
             var result = ParseExpression();
 
+            // Handle case where ParseExpression returns null (e.g., due to NEWLINE at start)
+            if (result == null)
+            {
+                return null;
+            }
+
             // Only look for additional statements if we haven't consumed all tokens
             // and the next token is a semicolon or newline (indicating multiple statements)
             if (!IsAtEnd() && (CurrentToken().Type == TokenType.SEMICOLON || CurrentToken().Type == TokenType.NEWLINE))
@@ -229,7 +235,11 @@ namespace K3CSharp
                     
                     if (!IsAtEnd())
                     {
-                        statements.Add(ParseExpression());
+                        var stmt = ParseExpression();
+                        if (stmt != null)  // Only add non-null statements
+                        {
+                            statements.Add(stmt);
+                        }
                     }
                 }
 
@@ -797,13 +807,21 @@ namespace K3CSharp
                         // Parse first element if not at end
                         if (CurrentToken().Type != TokenType.RIGHT_PAREN)
                         {
-                            elements.Add(ParseExpression());
+                            var expr = ParseExpression();
+                            if (expr != null)
+                            {
+                                elements.Add(expr);
+                            }
                         }
                         
                         // Parse semicolon-separated elements
                         while (Match(TokenType.SEMICOLON) && !IsAtEnd() && CurrentToken().Type != TokenType.RIGHT_PAREN)
                         {
-                            elements.Add(ParseExpression());
+                            var expr = ParseExpression();
+                            if (expr != null)
+                            {
+                                elements.Add(expr);
+                            }
                         }
                         
                         if (!Match(TokenType.RIGHT_PAREN))
@@ -820,6 +838,10 @@ namespace K3CSharp
                         // Parse space-separated vector
                         Console.WriteLine($"DEBUG: Parsing space-separated vector in parentheses, current token: {CurrentToken().Type} = {CurrentToken().Lexeme}");
                         var expression = ParseExpression();
+                        if (expression == null)
+                        {
+                            throw new Exception("Expected expression inside parentheses but found statement separator");
+                        }
                         Console.WriteLine($"DEBUG: Parsed expression result: {expression.Type} = {expression.Value}");
                         
                         if (!Match(TokenType.RIGHT_PAREN))
@@ -1129,6 +1151,10 @@ namespace K3CSharp
                 if (!Match(TokenType.RIGHT_PAREN))
                 {
                     var expression = ParseExpression();
+                    if (expression == null)
+                    {
+                        throw new Exception("Expected expression inside parentheses but found statement separator");
+                    }
                     
                     if (!Match(TokenType.RIGHT_PAREN))
                     {
@@ -1402,6 +1428,16 @@ namespace K3CSharp
             return result;
         }
 
+        private ASTNode SafeParseExpression()
+        {
+            var result = ParseExpression();
+            if (result == null)
+            {
+                throw new Exception("Expected expression but found statement separator");
+            }
+            return result;
+        }
+
         private ASTNode ParseAdverbChain(string firstAdverb)
         {
             var adverbs = new List<string> { firstAdverb };
@@ -1648,6 +1684,10 @@ namespace K3CSharp
                     throw new Exception("Assignment target must be a variable");
                 }
                 var value = ParseExpression();
+                if (value == null)
+                {
+                    throw new Exception("Expected expression after assignment operator but found statement separator");
+                }
                 var variableName = left.Value is SymbolValue symbol ? symbol.Value : throw new Exception("Variable node must contain variable name");
                 return ASTNode.MakeAssignment(variableName, value);
             }
@@ -1660,6 +1700,10 @@ namespace K3CSharp
                     throw new Exception("Global assignment target must be a variable");
                 }
                 var value = ParseExpression();
+                if (value == null)
+                {
+                    throw new Exception("Expected expression after global assignment operator but found statement separator");
+                }
                 var variableName = left.Value is SymbolValue symbol ? symbol.Value : throw new Exception("Variable node must contain variable name");
                 return ASTNode.MakeGlobalAssignment(variableName, value);
             }
