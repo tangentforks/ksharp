@@ -110,10 +110,19 @@ namespace K3CSharp
                 }
                 else if (c == '/')
                 {
-                    // Check if this is a comment (at start of line or after space)
-                    if (position == 0 || (position > 0 && char.IsWhiteSpace(input[position - 1])))
+                    // Check if this is a comment (// or / at start of line or after space)
+                    if (position + 1 < input.Length && input[position + 1] == '/')
                     {
-                        // Skip to end of line
+                        // // comment - skip to end of line
+                        position += 2; // Skip both slashes
+                        while (position < input.Length && currentChar != '\n')
+                        {
+                            Advance();
+                        }
+                    }
+                    else if (position == 0 || (position > 0 && char.IsWhiteSpace(input[position - 1])))
+                    {
+                        // / comment at start of line or after space - skip to end of line
                         while (position < input.Length && currentChar != '\n')
                         {
                             Advance();

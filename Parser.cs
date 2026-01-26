@@ -130,6 +130,78 @@ namespace K3CSharp
             this.sourceText = sourceText;
         }
 
+        public bool IsExpressionComplete()
+        {
+            // Skip any trailing whitespace and newlines
+            while (!IsAtEnd() && CurrentToken().Type == TokenType.NEWLINE)
+            {
+                Advance();
+            }
+            
+            // Expression is complete if we're at EOF or have a statement separator
+            return IsAtEnd() || CurrentToken().Type == TokenType.SEMICOLON || 
+                   CurrentToken().Type == TokenType.NEWLINE;
+        }
+
+        public bool IsIncompleteExpression()
+        {
+            // Check for unmatched brackets, parentheses, or braces
+            int parentheses = 0;
+            int brackets = 0;
+            int braces = 0;
+            bool inString = false;
+            bool inSymbol = false;
+            
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                var token = tokens[i];
+                
+                if (token.Type == TokenType.QUOTE && !inString)
+                {
+                    inString = true;
+                }
+                else if (token.Type == TokenType.QUOTE && inString)
+                {
+                    inString = false;
+                }
+                else if (token.Type == TokenType.BACKTICK && !inSymbol)
+                {
+                    inSymbol = true;
+                }
+                else if ((token.Type == TokenType.SYMBOL || token.Type == TokenType.BACKTICK) && inSymbol)
+                {
+                    inSymbol = false;
+                }
+                else if (!inString && !inSymbol)
+                {
+                    switch (token.Type)
+                    {
+                        case TokenType.LEFT_PAREN:
+                            parentheses++;
+                            break;
+                        case TokenType.RIGHT_PAREN:
+                            parentheses--;
+                            break;
+                        case TokenType.LEFT_BRACKET:
+                            brackets++;
+                            break;
+                        case TokenType.RIGHT_BRACKET:
+                            brackets--;
+                            break;
+                        case TokenType.LEFT_BRACE:
+                            braces++;
+                            break;
+                        case TokenType.RIGHT_BRACE:
+                            braces--;
+                            break;
+                    }
+                }
+            }
+            
+            // Expression is incomplete if any brackets are unmatched
+            return parentheses != 0 || brackets != 0 || braces != 0 || inString || inSymbol;
+        }
+
         public ASTNode Parse()
         {
             if (tokens.Count == 0)
@@ -175,6 +247,12 @@ namespace K3CSharp
 
         private ASTNode ParseExpression()
         {
+            // Skip any leading newlines (for multi-line support)
+            while (Match(TokenType.NEWLINE))
+            {
+                // Skip consecutive newlines
+            }
+            
             // Check for unary operators that should be handled before ParseTerm
             if (Match(TokenType.APPLY))
             {
@@ -227,7 +305,8 @@ namespace K3CSharp
                 }
             }
 
-            while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
+            // K-style precedence: first operator takes entire remainder as right operand
+            if (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
                    Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
                    Match(TokenType.EQUAL) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
                    Match(TokenType.HASH) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
@@ -253,11 +332,10 @@ namespace K3CSharp
                         adverbNode.Children.Add(left);
                         adverbNode.Children.Add(rightSide);
                         
-                        left = adverbNode;
-                        continue;
+                        return adverbNode;
                     }
                     
-                // Convert the binary operator to a verb symbol
+                    // Convert the binary operator to a verb symbol
                     var verbName = op.ToString() switch
                     {
                         "PLUS" => "+",
@@ -293,7 +371,7 @@ namespace K3CSharp
                         adverbNode.Children.Add(mixedScanNode);
                         adverbNode.Children.Add(right);
                         
-                        left = adverbNode;
+                        return adverbNode;
                     }
                     else
                     {
@@ -314,13 +392,15 @@ namespace K3CSharp
                         adverbNode.Children.Add(mixedAdverbNode);
                         adverbNode.Children.Add(right);
                         
-                        left = adverbNode;
+                        return adverbNode;
                     }
                 }
                 else
                 {
-                    var right = ParseTerm();
+                    // K-style precedence: first operator takes entire remainder as right operand
+                    var right = ParseExpression();
                     left = ASTNode.MakeBinaryOp(op, left, right);
+                    return left;  // Return immediately since first operator consumes entire remainder
                 }
             }
 
@@ -387,6 +467,7 @@ namespace K3CSharp
                    CurrentToken().Type != TokenType.SEMICOLON &&
                    CurrentToken().Type != TokenType.NEWLINE &&
                    CurrentToken().Type != TokenType.ASSIGNMENT &&
+                   CurrentToken().Type != TokenType.GLOBAL_ASSIGNMENT &&
                    CurrentToken().Type != TokenType.LEFT_BRACKET &&
                    CurrentToken().Type != TokenType.APPLY &&
                    CurrentToken().Type != TokenType.DOT_APPLY &&
@@ -965,11 +1046,40 @@ namespace K3CSharp
                     {
                         // Parse semicolon-separated vector
                         var elements = new List<ASTNode>();
-                        elements.Add(ParseExpression());
+                        
+                        // Check if vector starts with empty position
+                        if (CurrentToken().Type == TokenType.SEMICOLON)
+                        {
+                            elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                            Match(TokenType.SEMICOLON);
+                            
+                            // Handle multiple consecutive semicolons at start
+                            while (CurrentToken().Type == TokenType.SEMICOLON)
+                            {
+                                elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                                Match(TokenType.SEMICOLON);
+                            }
+                        }
+                        
+                        // Parse first element if not at end
+                        if (CurrentToken().Type != TokenType.RIGHT_PAREN)
+                        {
+                            elements.Add(ParseExpression());
+                        }
                         
                         while (Match(TokenType.SEMICOLON))
                         {
-                            elements.Add(ParseExpression());
+                            // Check if we have an empty position (next token is semicolon or right paren)
+                            if (CurrentToken().Type == TokenType.SEMICOLON || CurrentToken().Type == TokenType.RIGHT_PAREN)
+                            {
+                                // Empty position - add null
+                                elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                            }
+                            else
+                            {
+                                // Regular expression
+                                elements.Add(ParseExpression());
+                            }
                         }
                         
                         if (!Match(TokenType.RIGHT_PAREN))

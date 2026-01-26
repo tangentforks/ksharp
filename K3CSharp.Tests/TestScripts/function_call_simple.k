@@ -1,2 +1,2 @@
-add7:{[arg1] arg1+6}
-add7 . 6
+add7:{[arg1] arg1+7}
+add7 . 5

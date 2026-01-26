@@ -246,9 +246,21 @@ namespace K3CSharp
         public override K3Value Multiply(K3Value other)
         {
             if (other is IntegerValue intVal)
-                return new LongValue(Value * intVal.Value);
+            {
+                // Use unchecked arithmetic to allow natural overflow/underflow
+                unchecked
+                {
+                    return new LongValue(Value * intVal.Value);
+                }
+            }
             if (other is LongValue longVal)
-                return new LongValue(Value * longVal.Value);
+            {
+                // Use unchecked arithmetic to allow natural overflow/underflow
+                unchecked
+                {
+                    return new LongValue(Value * longVal.Value);
+                }
+            }
             if (other is FloatValue floatVal)
                 return new FloatValue(Value * floatVal.Value);
             
@@ -363,6 +375,16 @@ namespace K3CSharp
             {
                 return Value.ToString($"F{Evaluator.floatPrecision}");
             }
+            
+            // For decimal notation, ensure at least one decimal digit is shown
+            // Check if the original value was entered with a decimal point or if we need decimal precision
+            if (Value == Math.Floor(Value))
+            {
+                // It's a whole number, but if it was originally float, show .0
+                // Use a format that ensures decimal point display
+                return Value.ToString("0.0");
+            }
+            
             return str;
         }
     }
@@ -810,12 +832,21 @@ namespace K3CSharp
             // Check if this is a mixed vector - keep parentheses and semicolons for clarity
             var elementTypes = Elements.Select(e => e.GetType()).Distinct().ToList();
             var hasNestedVectors = Elements.Any(e => e is VectorValue);
+            var hasNullValues = Elements.Any(e => e is NullValue);
             
-            if (elementTypes.Count > 1 || hasNestedVectors)
+            // Check if this is truly mixed (different types) OR has nested vectors OR has null values
+            // For homogeneous vectors with nulls, we should display as mixed with semicolons
+            var isTrulyMixed = elementTypes.Count > 1 || hasNestedVectors || hasNullValues;
+            
+            if (isTrulyMixed)
             {
                 var elementsStr = string.Join(";", Elements.Select(e => 
                 {
-                    if (e is VectorValue vec)
+                    if (e is NullValue)
+                    {
+                        return ""; // Display null as empty position
+                    }
+                    else if (e is VectorValue vec)
                     {
                         // For simple homogeneous vectors (like integer vectors), don't add inner parentheses
                         if (vec.Elements.All(x => x is IntegerValue) || 
@@ -973,20 +1004,27 @@ namespace K3CSharp
             foreach (var kvp in Entries)
             {
                 var key = kvp.Key.ToString();
-                var value = kvp.Value.Value.ToString();
+                var value = kvp.Value.Value;
                 var attr = kvp.Value.Attribute;
+                
+                // Skip null values in the dictionary
+                if (value is NullValue)
+                    continue;
+                
+                var valueStr = value.ToString();
                 
                 if (attr != null && attr.Entries.Count > 0)
                 {
-                    entries.Add($"({key};{value};{attr})");
+                    entries.Add($"({key};{valueStr};{attr})");
                 }
                 else
                 {
-                    entries.Add($"({key};{value})");
+                    // Always show the semicolon for attributes, even when null
+                    entries.Add($"({key};{valueStr};)");
                 }
             }
             
-            return "." + string.Join(";", entries);
+            return ".(" + string.Join(";", entries) + ")";
         }
     }
 }

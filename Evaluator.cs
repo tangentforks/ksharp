@@ -205,6 +205,8 @@ namespace K3CSharp
                     "?" => UniqueBinary(left, right),
                     "~" => NegateBinary(left, right),
                     "@" => VectorIndex(left, right),
+                    "." => DotApply(left, right),
+                    "::" => GlobalAssignment(left, right),
                     "ADVERB_SLASH" => Over(left, right),
                     "ADVERB_BACKSLASH" => Scan(left, right),
                     "ADVERB_TICK" => Each(left, right),
@@ -242,21 +244,10 @@ namespace K3CSharp
                 throw new Exception("Function node must contain a FunctionValue");
             }
             
-            // For anonymous functions with no parameters and non-empty body, evaluate immediately
-            // This is K behavior: {4+5} evaluates to 9, not a function object
-            // But {} should return a function object, and {[x] x+6} should return a function object
-            if (functionValue.Parameters.Count == 0 && !string.IsNullOrEmpty(functionValue.BodyText.Trim()))
-            {
-                // No parameters but has body - evaluate the body directly
-                var functionEvaluator = new Evaluator();
-                return ExecuteFunctionBody(functionValue.BodyText, functionEvaluator, functionValue.PreParsedTokens);
-            }
-            else
-            {
-                // Function with parameters, or empty function - return the function object
-                // For function calls, the execution happens in EvaluateFunctionCall
-                return functionValue;
-            }
+            // According to updated spec: niladic functions should remain as functions and not be
+            // automatically evaluated. They should only be evaluated when explicitly applied.
+            // All functions (including niladic) should return the function object.
+            return functionValue;
         }
 
         private K3Value EvaluateFunctionCall(ASTNode node)
@@ -533,9 +524,19 @@ namespace K3CSharp
         {
             // Handle mixed type promotion
             if (a is IntegerValue && b is LongValue)
-                return new LongValue(((IntegerValue)a).Value + ((LongValue)b).Value);
+            {
+                unchecked
+                {
+                    return new LongValue(((IntegerValue)a).Value + ((LongValue)b).Value);
+                }
+            }
             if (a is LongValue && b is IntegerValue)
-                return new LongValue(((LongValue)a).Value + ((IntegerValue)b).Value);
+            {
+                unchecked
+                {
+                    return new LongValue(((LongValue)a).Value + ((IntegerValue)b).Value);
+                }
+            }
             if (a is IntegerValue && b is FloatValue)
                 return new FloatValue(((IntegerValue)a).Value + ((FloatValue)b).Value);
             if (a is FloatValue && b is IntegerValue)
@@ -573,9 +574,19 @@ namespace K3CSharp
         {
             // Handle mixed type promotion
             if (a is IntegerValue && b is LongValue)
-                return new LongValue(((IntegerValue)a).Value - ((LongValue)b).Value);
+            {
+                unchecked
+                {
+                    return new LongValue(((IntegerValue)a).Value - ((LongValue)b).Value);
+                }
+            }
             if (a is LongValue && b is IntegerValue)
-                return new LongValue(((LongValue)a).Value - ((IntegerValue)b).Value);
+            {
+                unchecked
+                {
+                    return new LongValue(((LongValue)a).Value - ((IntegerValue)b).Value);
+                }
+            }
             if (a is IntegerValue && b is FloatValue)
                 return new FloatValue(((IntegerValue)a).Value - ((FloatValue)b).Value);
             if (a is FloatValue && b is IntegerValue)
@@ -621,9 +632,19 @@ namespace K3CSharp
         {
             // Handle mixed type promotion
             if (a is IntegerValue && b is LongValue)
-                return new LongValue(((IntegerValue)a).Value * ((LongValue)b).Value);
+            {
+                unchecked
+                {
+                    return new LongValue(((IntegerValue)a).Value * ((LongValue)b).Value);
+                }
+            }
             if (a is LongValue && b is IntegerValue)
-                return new LongValue(((LongValue)a).Value * ((IntegerValue)b).Value);
+            {
+                unchecked
+                {
+                    return new LongValue(((LongValue)a).Value * ((IntegerValue)b).Value);
+                }
+            }
             if (a is IntegerValue && b is FloatValue)
                 return new FloatValue(((IntegerValue)a).Value * ((FloatValue)b).Value);
             if (a is FloatValue && b is IntegerValue)
@@ -633,13 +654,13 @@ namespace K3CSharp
             if (a is FloatValue && b is LongValue)
                 return new FloatValue(((FloatValue)a).Value * ((LongValue)b).Value);
             
-            // Handle same type operations
+            // Handle same type operations - use the K3Value Multiply method for proper overflow handling
             if (a is IntegerValue && b is IntegerValue)
-                return new IntegerValue(((IntegerValue)a).Value * ((IntegerValue)b).Value);
+                return ((IntegerValue)a).Multiply((IntegerValue)b);
             if (a is LongValue && b is LongValue)
-                return new LongValue(((LongValue)a).Value * ((LongValue)b).Value);
+                return ((LongValue)a).Multiply((LongValue)b);
             if (a is FloatValue && b is FloatValue)
-                return new FloatValue(((FloatValue)a).Value * ((FloatValue)b).Value);
+                return ((FloatValue)a).Multiply((FloatValue)b);
             
             // Handle vector operations
             if (a is VectorValue vecA)
@@ -1090,33 +1111,45 @@ namespace K3CSharp
 
         private K3Value Where(K3Value a)
         {
+            // Convert scalar to single-element vector for consistent processing
+            VectorValue vecA;
             if (a is IntegerValue intA)
             {
-                var elements = new List<K3Value>();
-                for (int i = 0; i < intA.Value; i++)
-                {
-                    elements.Add(new IntegerValue(0));
-                }
-                return new VectorValue(elements);
+                vecA = new VectorValue(new List<K3Value> { intA });
             }
-            else if (a is VectorValue vecA)
+            else if (a is VectorValue vectorA)
             {
-                var elements = new List<K3Value>();
-                int value = 0;
-                foreach (var element in vecA.Elements)
-                {
-                    if (element is IntegerValue length)
-                    {
-                        for (int i = 0; i < length.Value; i++)
-                        {
-                            elements.Add(new IntegerValue(value++));
-                        }
-                    }
-                }
-                return new VectorValue(elements);
+                vecA = vectorA;
+            }
+            else
+            {
+                throw new Exception($"Cannot apply where to {a.Type}");
             }
             
-            throw new Exception($"Cannot generate from {a.Type}");
+            // Generate indices repeated according to count values
+            var elements = new List<K3Value>();
+            for (int i = 0; i < vecA.Elements.Count; i++)
+            {
+                var element = vecA.Elements[i];
+                int count = 0;
+                
+                // Get the count value from the element
+                if (element is IntegerValue intVal)
+                {
+                    count = intVal.Value;
+                }
+                else if (element is FloatValue floatVal)
+                {
+                    count = (int)floatVal.Value;
+                }
+                
+                // Add the index repeated 'count' times
+                for (int j = 0; j < count; j++)
+                {
+                    elements.Add(new IntegerValue(i));
+                }
+            }
+            return new VectorValue(elements);
         }
 
         private K3Value Reverse(K3Value a)
@@ -1152,7 +1185,7 @@ namespace K3CSharp
                 return new VectorValue(result);
             }
             
-            return new VectorValue(new List<K3Value> { new IntegerValue(0) }); // For scalars
+            throw new Exception("Rank error: grade-up operator '<' requires a vector argument");
         }
 
         private K3Value GradeDown(K3Value a)
@@ -1176,7 +1209,7 @@ namespace K3CSharp
                 return new VectorValue(result);
             }
             
-            return new VectorValue(new List<K3Value> { new IntegerValue(0) }); // For scalars
+            throw new Exception("Rank error: grade-down operator '>' requires a vector argument");
         }
 
         private int CompareValues(K3Value a, K3Value b)
@@ -1206,7 +1239,107 @@ namespace K3CSharp
         private K3Value Shape(K3Value a)
         {
             if (a is VectorValue vecA)
-                return new IntegerValue(vecA.Elements.Count);
+            {
+                // Check if this is a simple vector (no nested vectors)
+                var hasNestedVectors = vecA.Elements.Any(e => e is VectorValue);
+                
+                if (!hasNestedVectors)
+                {
+                    // Simple vector - return its length
+                    return new IntegerValue(vecA.Elements.Count);
+                }
+                else
+                {
+                    // Matrix or tensor - compute dimensions
+                    var dimensions = new List<int>();
+                    var current = vecA;
+                    
+                    // First dimension is the number of top-level elements
+                    dimensions.Add(current.Elements.Count);
+                    
+                    // Check if we have a regular matrix/tensor
+                    if (current.Elements.Count > 0 && current.Elements[0] is VectorValue)
+                    {
+                        var firstElement = (VectorValue)current.Elements[0];
+                        var isUniform = true;
+                        var uniformLength = firstElement.Elements.Count;
+                        
+                        // Check if all elements have the same structure
+                        foreach (var element in current.Elements)
+                        {
+                            if (element is VectorValue vec)
+                            {
+                                if (vec.Elements.Count != uniformLength)
+                                {
+                                    isUniform = false;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                isUniform = false;
+                                break;
+                            }
+                        }
+                        
+                        if (isUniform && uniformLength > 0)
+                        {
+                            // Check if we have nested vectors (3D tensor)
+                            if (firstElement.Elements[0] is VectorValue)
+                            {
+                                // 3D tensor - check uniformity of third dimension
+                                var thirdDimUniform = true;
+                                var thirdDimLength = ((VectorValue)firstElement.Elements[0]).Elements.Count;
+                                
+                                foreach (var element in current.Elements)
+                                {
+                                    var vec = (VectorValue)element;
+                                    foreach (var subElement in vec.Elements)
+                                    {
+                                        if (subElement is VectorValue subVec)
+                                        {
+                                            if (subVec.Elements.Count != thirdDimLength)
+                                            {
+                                                thirdDimUniform = false;
+                                                break;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            thirdDimUniform = false;
+                                            break;
+                                        }
+                                    }
+                                    if (!thirdDimUniform) break;
+                                }
+                                
+                                if (thirdDimUniform)
+                                {
+                                    dimensions.Add(uniformLength);
+                                    dimensions.Add(thirdDimLength);
+                                }
+                                else
+                                {
+                                    // Jagged in third dimension - only add dimensions that are uniform
+                                    dimensions.Add(uniformLength);
+                                }
+                            }
+                            else
+                            {
+                                // 2D matrix - add second dimension
+                                dimensions.Add(uniformLength);
+                            }
+                        }
+                        else
+                        {
+                            // Jagged matrix - only add first dimension (rows)
+                            // According to spec: "shape will be a vector of the lengths of the dimensions that do have uniform length"
+                        }
+                    }
+                    
+                    return new VectorValue(dimensions.Select(d => (K3Value)new IntegerValue(d)).ToList());
+                }
+            }
             
             return new IntegerValue(0); // For scalars
         }
@@ -1750,8 +1883,25 @@ namespace K3CSharp
                     throw new Exception($"length error: {verbVec.Elements.Count} != {dataVec.Elements.Count}");
                 }
                 
-                // For now, throw an error as vector-vector each is not fully implemented
-                throw new Exception("Vector-vector each not implemented");
+                // Apply binary operation element-wise
+                var result = new List<K3Value>();
+                for (int i = 0; i < verbVec.Elements.Count; i++)
+                {
+                    var left = verbVec.Elements[i];
+                    var right = dataVec.Elements[i];
+                    
+                    // Determine the operation based on the verb type
+                    if (verb is SymbolValue verbSymbol)
+                    {
+                        result.Add(ApplyVerb(verbSymbol.Value, left, right));
+                    }
+                    else
+                    {
+                        // Handle case where verb is a scalar value (for mixed operations)
+                        result.Add(ApplyVerbWithOperator(verb, left, right));
+                    }
+                }
+                return new VectorValue(result);
             }
             
             // Handle scalar + vector case
@@ -2617,6 +2767,69 @@ namespace K3CSharp
             {
                 throw new Exception("_tanh can only be applied to numeric values or vectors");
             }
+        }
+        
+        private K3Value DotApply(K3Value left, K3Value right)
+        {
+            // Dot-apply operator: function . argument
+            // Similar to function application but with different precedence
+            if (left is FunctionValue function)
+            {
+                // Create a temporary AST node for the function to reuse existing logic
+                var tempFunctionNode = new ASTNode(ASTNodeType.Function);
+                tempFunctionNode.Value = function;
+                
+                // Create arguments list
+                var arguments = new List<K3Value> { right };
+                
+                return CallDirectFunction(tempFunctionNode, arguments);
+            }
+            else if (left.Type == ValueType.Symbol)
+            {
+                var functionName = (left as SymbolValue)?.Value;
+                if (functionName == null)
+                {
+                    throw new Exception("Invalid function name for dot-apply");
+                }
+                
+                var arguments = new List<K3Value> { right };
+                return CallVariableFunction(functionName, arguments);
+            }
+            else
+            {
+                throw new Exception("Dot-apply operator requires a function on the left side");
+            }
+        }
+        
+        private K3Value GlobalAssignment(K3Value left, K3Value right)
+        {
+            // Global assignment operator: variable :: value
+            // Assigns to global variable regardless of current scope
+            if (left.Type != ValueType.Symbol)
+            {
+                throw new Exception("Global assignment requires a variable name on the left side");
+            }
+            
+            var variableName = (left as SymbolValue)?.Value;
+            if (variableName == null)
+            {
+                throw new Exception("Invalid variable name for global assignment");
+            }
+            
+            // Evaluate the right side
+            var value = right;
+            
+            // Store in global variables (access parent evaluator if available)
+            if (parentEvaluator != null)
+            {
+                parentEvaluator.globalVariables[variableName] = value;
+            }
+            else
+            {
+                globalVariables[variableName] = value;
+            }
+            
+            return value;
         }
     }
 }

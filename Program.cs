@@ -34,15 +34,15 @@ namespace K3CSharp
 
             // REPL mode
             Console.WriteLine("K3 Interpreter - Version 1.0");
-            Console.WriteLine("Type \\\\ to quit, or \\ for help");
+            Console.WriteLine("Type \\\\ to quit, \\ to cancel input, or \\help for help");
             Console.WriteLine("Use arrow keys for history, Ctrl+C to clear line");
             Console.WriteLine();
 
             while (true)
             {
-                Console.Write("K3> ");
+                Console.Write("  "); // Default prompt: two spaces per spec
                 
-                var input = ReadLineWithHistory();
+                var input = ReadMultiLineInput();
                 
                 if (input == null) break;
                 
@@ -75,6 +75,113 @@ namespace K3CSharp
                     Console.WriteLine($"Error: {ex.Message}");
                 }
             }
+        }
+
+        static string ReadMultiLineInput()
+        {
+            var lines = new List<string>();
+            int nestingLevel = 0;
+            
+            while (true)
+            {
+                // Build prompt based on nesting level
+                string prompt = "  " + new string('>', nestingLevel);
+                Console.Write(prompt);
+                
+                var line = ReadLineWithHistory();
+                
+                if (line == null) return null;
+                
+                // Handle cancellation
+                if (line == "\\")
+                {
+                    Console.WriteLine("(cancelled)");
+                    return "";
+                }
+                
+                // Handle quit commands
+                if (line == "\\\\" || line == "_exit")
+                {
+                    return line;
+                }
+                
+                if (string.IsNullOrWhiteSpace(line)) 
+                {
+                    // Empty line - add newline if in multi-line mode
+                    if (nestingLevel > 0)
+                    {
+                        lines.Add("");
+                    }
+                    continue;
+                }
+                
+                lines.Add(line);
+                
+                // Check if the current input forms a complete expression
+                var combinedInput = string.Join("\n", lines);
+                var lexer = new Lexer(combinedInput);
+                var tokens = lexer.Tokenize();
+                var parser = new Parser(tokens, combinedInput);
+                
+                if (parser.IsIncompleteExpression())
+                {
+                    // Calculate nesting level for prompt
+                    nestingLevel = CalculateNestingLevel(combinedInput);
+                }
+                else
+                {
+                    // Expression is complete
+                    break;
+                }
+            }
+            
+            return string.Join("\n", lines);
+        }
+        
+        static int CalculateNestingLevel(string input)
+        {
+            int parentheses = 0;
+            int brackets = 0;
+            int braces = 0;
+            bool inString = false;
+            
+            foreach (char c in input)
+            {
+                if (c == '"' && !inString)
+                {
+                    inString = true;
+                }
+                else if (c == '"' && inString)
+                {
+                    inString = false;
+                }
+                else if (!inString)
+                {
+                    switch (c)
+                    {
+                        case '(':
+                            parentheses++;
+                            break;
+                        case ')':
+                            parentheses--;
+                            break;
+                        case '[':
+                            brackets++;
+                            break;
+                        case ']':
+                            brackets--;
+                            break;
+                        case '{':
+                            braces++;
+                            break;
+                        case '}':
+                            braces--;
+                            break;
+                    }
+                }
+            }
+            
+            return Math.Max(0, Math.Max(parentheses, Math.Max(brackets, braces)));
         }
 
         static string ReadLineWithHistory()
