@@ -318,7 +318,15 @@ namespace K3CSharp
                 Advance(); // Skip closing quote
             }
             
-            return new Token(TokenType.QUOTE, value, start);
+            // Determine if this is a single character or character vector
+            if (value.Length == 1)
+            {
+                return new Token(TokenType.CHARACTER, value, start);
+            }
+            else
+            {
+                return new Token(TokenType.CHARACTER_VECTOR, value, start);
+            }
         }
         
         private Token ReadSymbol()
@@ -329,8 +337,18 @@ namespace K3CSharp
             // Handle quoted symbols
             if (currentChar == '"')
             {
-                var stringValue = ReadString();
-                return new Token(TokenType.SYMBOL, stringValue.Lexeme, start);
+                Advance(); // Skip opening quote
+                string quotedValue = "";
+                while (currentChar != '"' && currentChar != '\0')
+                {
+                    quotedValue += currentChar;
+                    Advance();
+                }
+                if (currentChar == '"')
+                {
+                    Advance(); // Skip closing quote
+                }
+                return new Token(TokenType.SYMBOL, quotedValue, start);
             }
             
             string value = "";

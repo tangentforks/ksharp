@@ -44,7 +44,7 @@
 ║ vector_notation_semicolon.k          │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
 ║ vector_notation_empty.k              │ ()                   │ ()                   │                      ║
 ║ vector_notation_single_group.k       │ (42)                 │ 42                   │                      ║
-║ vector_notation_mixed_types.k        │ (42; 3.14; "hello"; `symbol) │ Error                │ (42;3.14;"hello...   ║
+║ vector_notation_mixed_types.k        │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
 ║ vector_notation_variables.k          │ a: 10                │ 30 200 -10           │                      ║
 ║ vector_notation_nested.k             │ ((1 + 2); (3 + 4); (5 + 6)) │ 3 7 11               │                      ║
 ║ vector_notation_functions.k          │ double: {[x] x * 2}  │ {[x] x*2} {[x] ...   │ 10 20 30             ║
@@ -55,8 +55,8 @@
 ║ float_types.k                        │ 3.14                 │ 3.14                 │                      ║
 ║ float_exponential.k                  │ 0.17e03              │ 170.0                │                      ║
 ║ float_decimal_point.k                │ 10.                  │ 10.0                 │                      ║
-║ character_single.k                   │ "f"                  │ Error                │ "f"                  ║
-║ character_vector.k                   │ "hello"              │ Error                │ "hello"              ║
+║ character_single.k                   │ "f"                  │ "f"                  │                      ║
+║ character_vector.k                   │ "hello"              │ "hello"              │                      ║
 ║ symbol_simple.k                      │ `foo                 │ `foo                 │                      ║
 ║ symbol_quoted.k                      │ `"a symbol"          │ `"a symbol"          │                      ║
 ║ minimum_operator.k                   │ 3 & 5                │ 3                    │                      ║
@@ -211,30 +211,15 @@
 ║ test_grade_up_no_parens.k            │ < 3 11 9 9 4         │ 0 4 2 3 1            │                      ║
 ║ test_grade_down_no_parens.k          │ > 3 11 9 9 4         │ 1 2 3 4 0            │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 194/207 tests passed (93.7%)                                                                 ║
+║ SUMMARY: 197/207 tests passed (95.2%)                                                                 ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
-Test: vector_notation_mixed_types.k
-Input: (42; 3.14; "hello"; `symbol)
-Expected: (42;3.14;"hello";`symbol)
-Actual: Error
-──────────────────────────────────────────────────────────────────────────
 Test: vector_notation_functions.k
 Input: double: {[x] x * 2}
 Expected: 10 20 30
 Actual: {[x] x*2} {[x] x*2} {[x] x*2}
-──────────────────────────────────────────────────────────────────────────
-Test: character_single.k
-Input: "f"
-Expected: "f"
-Actual: Error
-──────────────────────────────────────────────────────────────────────────
-Test: character_vector.k
-Input: "hello"
-Expected: "hello"
-Actual: Error
 ──────────────────────────────────────────────────────────────────────────
 Test: shape_operator_matrix.k
 Input: // Test shape operator on rectangular matrix (3x3)
