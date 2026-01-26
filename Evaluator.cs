@@ -505,6 +505,11 @@ namespace K3CSharp
                 tempFunctionNode.Value = userFunction;
                 return CallDirectFunction(tempFunctionNode, arguments);
             }
+            else if (functionValue is VectorValue vectorValue && arguments.Count == 1)
+            {
+                // This is vector indexing using square bracket syntax: vector[index]
+                return VectorIndex(vectorValue, arguments[0]);
+            }
             throw new Exception($"Variable '{functionName}' is not a function");
         }
 

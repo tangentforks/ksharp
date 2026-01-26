@@ -1588,6 +1588,65 @@ namespace K3CSharp
                 }
             }
 
+            // Check for square bracket syntax (alternative to @ and . operators)
+            if (Match(TokenType.LEFT_BRACKET))
+            {
+                var arguments = new List<ASTNode>();
+                
+                // Parse arguments inside brackets (handle both semicolon and space separated)
+                if (!Match(TokenType.RIGHT_BRACKET))
+                {
+                    // Parse first argument
+                    arguments.Add(ParsePrimary()); // Use ParsePrimary to avoid semicolon issues
+                    
+                    // Look for semicolon separators first (function call style)
+                    while (Match(TokenType.SEMICOLON))
+                    {
+                        arguments.Add(ParsePrimary());
+                    }
+                    
+                    // Then look for space-separated arguments
+                    while (!IsAtEnd() && CurrentToken().Type != TokenType.RIGHT_BRACKET &&
+                           CurrentToken().Type != TokenType.SEMICOLON)
+                    {
+                        arguments.Add(ParsePrimary());
+                    }
+                    
+                    // Handle any remaining semicolons
+                    while (Match(TokenType.SEMICOLON))
+                    {
+                        arguments.Add(ParsePrimary());
+                    }
+                    
+                    if (!Match(TokenType.RIGHT_BRACKET))
+                    {
+                        throw new Exception("Expected ']' after bracket expression");
+                    }
+                }
+                
+                // If we have multiple space-separated arguments (no semicolons), 
+                // this might be vector indexing - wrap them in a vector
+                if (arguments.Count > 1 && !arguments.Any(arg => 
+                    arg.Children.Any(child => child.Type == ASTNodeType.Variable && child.Value?.ToString() == ";")))
+                {
+                    // Check if this looks like vector indexing (multiple simple arguments)
+                    var allSimple = arguments.All(arg => 
+                        arg.Type == ASTNodeType.Literal || 
+                        arg.Type == ASTNodeType.Variable);
+                    
+                    if (allSimple)
+                    {
+                        // Wrap in a vector for indexing
+                        var vectorNode = ASTNode.MakeVector(arguments);
+                        arguments = new List<ASTNode> { vectorNode };
+                    }
+                }
+                
+                // Always treat as function application first
+                // The evaluator will distinguish between function calls and vector indexing
+                left = ASTNode.MakeFunctionCall(left, arguments);
+            }
+
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
                    Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
                    Match(TokenType.EQUAL) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
