@@ -218,8 +218,11 @@
 ║ adverb_each_vector_multiply.k            │ // Test each adverb with equal length vectors (now implemented) │ (5 6 7;6 7 8;7 ...   │                      ║
 ║ test_grade_up_no_parens.k                │ < 3 11 9 9 4         │ 0 4 2 3 1            │                      ║
 ║ test_grade_down_no_parens.k              │ > 3 11 9 9 4         │ 1 2 3 4 0            │                      ║
+║ square_bracket_function.k                │ div:{[op1;op2] op1%op2} │ 2                    │                      ║
+║ square_bracket_vector_single.k           │ v:10 11 12 13 14 15 16 │ 14                   │                      ║
+║ square_bracket_vector_multiple.k         │ v:10 11 12 13 14 15 16 │ 14 16                │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 212/215 tests passed (98.6%)                                                                     ║
+║ SUMMARY: 215/218 tests passed (98.6%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:

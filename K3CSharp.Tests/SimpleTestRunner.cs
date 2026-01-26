@@ -123,7 +123,7 @@ namespace K3CSharp.Tests
         private static int GetDefinedTestCount()
         {
             // This should match the tests array in RunAllTests
-            return 261; // Updated count to match actual test files
+            return 264; // Updated count to match actual test files
         }
         
         private static HashSet<string> GetDefinedTestNames()
@@ -204,7 +204,9 @@ namespace K3CSharp.Tests
                 "simple_nested_test.k", "type_operator_float.k", "type_operator_int.k", "test_null_vector.k",
                 // Newly moved test files from base folder
                 "test_empty_vector.k", "test_mixed_types.k", "test_semicolon_simple.k",
-                "test_semicolon_vars.k", "test_semicolon_vector.k", "test_single_no_semicolon.k"
+                "test_semicolon_vars.k", "test_semicolon_vector.k", "test_single_no_semicolon.k",
+                // Square bracket syntax tests
+                "square_bracket_function.k", "square_bracket_vector_single.k", "square_bracket_vector_multiple.k"
             };
         }
         
@@ -560,6 +562,12 @@ namespace K3CSharp.Tests
 ("adverb_each_vector_multiply.k", "(5 6 7;6 7 8;7 8 9)"), // (1 2 3) *' (4 5 6) = matrix of element-wise multiplications
                 ("test_grade_up_no_parens.k", "0 4 2 3 1"), // Test < 3 11 9 9 4 without parentheses
                 ("test_grade_down_no_parens.k", "1 2 3 4 0"), // Test > 3 11 9 9 4
+                
+                // Square bracket syntax tests
+                ("square_bracket_function.k", "2"), // Function application: div[8;4] = 2
+                ("square_bracket_vector_single.k", "14"), // Vector indexing: v[4] = 14
+                ("square_bracket_vector_multiple.k", "14 16") // Multiple vector indexing: v[4 6] = 14 16
+                
             };
 
             int passed = 0;
