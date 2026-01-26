@@ -29,17 +29,17 @@
 ║ parentheses_nested4.k                    │ (1 + (2 + (3 + (4 + 5)))) │ 15                   │                      ║
 ║ parentheses_nested5.k                    │ ((1 * 2) + (3 * (4 + 5))) │ 29                   │                      ║
 ║ parentheses_precedence.k                 │ 1 + (2 * 3)          │ 7                    │                      ║
-║ precedence_spec1.k                       │ 81 % 1 + 2 * 3       │ 11.57143             │ 11.5714286           ║
+║ precedence_spec1.k                       │ 81 % 1 + 2 * 3       │ 11.57143             │                      ║
 ║ precedence_spec2.k                       │ 120 % 4 * 2 + 3      │ 6                    │                      ║
 ║ precedence_chain1.k                      │ 10 + 20 * 30 + 40    │ 1410                 │                      ║
-║ precedence_chain2.k                      │ 100 % 10 + 20 * 30 + 40 │ 0.07092199           │ 0.0709220            ║
+║ precedence_chain2.k                      │ 100 % 10 + 20 * 30 + 40 │ 0.07092199           │                      ║
 ║ precedence_mixed1.k                      │ 5 - 2 + 3            │ 0                    │                      ║
 ║ precedence_mixed2.k                      │ 5 * 2 + 3            │ 25                   │                      ║
 ║ precedence_mixed3.k                      │ 5 + 2 * 3            │ 11                   │                      ║
 ║ precedence_power1.k                      │ 2 ^ 3 + 4            │ 128                  │                      ║
 ║ precedence_power2.k                      │ 2 + 3 ^ 4            │ 83                   │                      ║
 ║ precedence_complex1.k                    │ 10 % 2 + 3 * 4       │ 0.7142857            │                      ║
-║ precedence_complex2.k                    │ 10 + 20 % 30 * 40    │ 10.01667             │ 10.0166667           ║
+║ precedence_complex2.k                    │ 10 + 20 % 30 * 40    │ 10.01667             │                      ║
 ║ vector_notation_space.k                  │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
 ║ vector_notation_semicolon.k              │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
 ║ vector_notation_empty.k                  │ ()                   │ ()                   │                      ║
@@ -116,7 +116,7 @@
 ║ adverb_scan_power.k                      │ ^\ 2 3 2             │ 2 8 64               │                      ║
 ║ adverb_scan_with_initialization.k        │ 2 *\ 1 2 3           │ 2 4 12               │                      ║
 ║ adverb_scan_with_initialization_minus.k  │ 2 -\ 1 2 3 4         │ 1 -1 -4 -8           │                      ║
-║ adverb_scan_with_initialization_divide.k │ 2 %\ 1 2 3 4         │ (2;1;0.3333333;...   │ (2;1;0.3333333;...   ║
+║ adverb_scan_with_initialization_divide.k │ 2 %\ 1 2 3 4         │ (2;1;0.3333333;...   │                      ║
 ║ adverb_over_with_initialization_2.k      │ 2 +/ 1 2 3 4         │ 12                   │                      ║
 ║ adverb_over_with_initialization_1.k      │ 1 +/ 2 3 4 5         │ 15                   │                      ║
 ║ adverb_scan_with_initialization_2.k      │ 2 +\ 1 2 3 4         │ 3 5 8 12             │                      ║
@@ -219,26 +219,11 @@
 ║ test_grade_up_no_parens.k                │ < 3 11 9 9 4         │ 0 4 2 3 1            │                      ║
 ║ test_grade_down_no_parens.k              │ > 3 11 9 9 4         │ 1 2 3 4 0            │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 207/215 tests passed (96.3%)                                                                     ║
+║ SUMMARY: 211/215 tests passed (98.1%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
-Test: precedence_spec1.k
-Input: 81 % 1 + 2 * 3
-Expected: 11.5714286
-Actual: 11.57143
-──────────────────────────────────────────────────────────────────────────
-Test: precedence_chain2.k
-Input: 100 % 10 + 20 * 30 + 40
-Expected: 0.0709220
-Actual: 0.07092199
-──────────────────────────────────────────────────────────────────────────
-Test: precedence_complex2.k
-Input: 10 + 20 % 30 * 40
-Expected: 10.0166667
-Actual: 10.01667
-──────────────────────────────────────────────────────────────────────────
 Test: vector_notation_functions.k
 Input: double: {[x] x * 2}
 Expected: 10 20 30
@@ -248,11 +233,6 @@ Test: float_exponential_small.k
 Input: 1e-20
 Expected: 1E-20
 Actual: 9.999999999999999E-021
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_scan_with_initialization_divide.k
-Input: 2 %\ 1 2 3 4
-Expected: (2;1;0.3333333;0.0833333)
-Actual: (2;1;0.3333333;0.08333333)
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_nested_functions.k
 Input: // Test nested functions

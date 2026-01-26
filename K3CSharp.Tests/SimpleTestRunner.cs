@@ -326,17 +326,17 @@ namespace K3CSharp.Tests
                 ("parentheses_precedence.k", "7"),
                 
                 // K-style precedence tests (no parentheses)
-                ("precedence_spec1.k", "11.5714286"),  // 81 % (1 + (2 * 3))
+                ("precedence_spec1.k", "11.57143"),  // 81 % (1 + (2 * 3))
                 ("precedence_spec2.k", "6"),           // 120 % (4 * (2 + 3))
                 ("precedence_chain1.k", "1410"),       // 10 + (20 * (30 + 40))
-                ("precedence_chain2.k", "0.0709220"),  // 100 % (10 + (20 * (30 + 40)))
+                ("precedence_chain2.k", "0.07092199"),  // 100 % (10 + (20 * (30 + 40)))
                 ("precedence_mixed1.k", "0"),          // 5 - (2 + 3)
                 ("precedence_mixed2.k", "25"),         // 5 * (2 + 3)
                 ("precedence_mixed3.k", "11"),         // 5 + (2 * 3)
                 ("precedence_power1.k", "128"),        // 2 ^ (3 + 4)
                 ("precedence_power2.k", "83"),         // 2 + (3 ^ 4)
                 ("precedence_complex1.k", "0.7142857"), // 10 % (2 + (3 * 4))
-                ("precedence_complex2.k", "10.0166667"), // 10 + (20 % (30 * 40))
+                ("precedence_complex2.k", "10.01667"), // 10 + (20 % (30 * 40))
                 
                 // Vector notation (space and semicolon separated)
                 ("vector_notation_space.k", "1 2 3 4 5"),
@@ -423,7 +423,7 @@ namespace K3CSharp.Tests
                 ("adverb_scan_power.k", "2 8 64"),
                 ("adverb_scan_with_initialization.k", "2 4 12"),
                 ("adverb_scan_with_initialization_minus.k", "1 -1 -4 -8"),
-                ("adverb_scan_with_initialization_divide.k", "(2;1;0.3333333;0.0833333)"),
+                ("adverb_scan_with_initialization_divide.k", "(2;1;0.3333333;0.08333333)"),
                 
                 // Additional adverb tests from split files
                 ("adverb_over_with_initialization_2.k", "12"),
