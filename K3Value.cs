@@ -369,6 +369,13 @@ namespace K3CSharp
             if (IsSpecial)
                 return SpecialName;
             
+            // Use exponential notation for very large or very small numbers
+            var absValue = Math.Abs(Value);
+            if (absValue >= 1e15 || (absValue > 0 && absValue < 1e-10))
+            {
+                return Value.ToString("E15"); // Use exponential notation with 15 digits precision
+            }
+            
             // Use precision only if the value has many decimal places
             var str = Value.ToString();
             if (str.Contains('.') && str.Length > 10)
