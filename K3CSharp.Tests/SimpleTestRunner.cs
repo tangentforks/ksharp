@@ -17,7 +17,7 @@ namespace K3CSharp.Tests
         
         private static void WriteResultsTable(List<TestResult> testResults)
         {
-            var outputPath = Path.Combine(Directory.GetCurrentDirectory(), "test_results_persistent.txt");
+            var outputPath = Path.Combine(Directory.GetCurrentDirectory(), "results_table.txt");
             
             // Calculate the maximum filename length for auto-sizing
             var maxFileNameLength = Math.Max(25, testResults.Max(t => t.FileName.Length) + 2); // +2 for padding
@@ -96,177 +96,176 @@ namespace K3CSharp.Tests
         
         public static void RunAllTests()
         {
+            // Comprehensive test list with expected results from K.exe
             var tests = new[]
             {
-                // Basic arithmetic
-                ("simple_addition.k", "3"),
-                ("simple_subtraction.k", "2"),
-                ("simple_multiplication.k", "12"),
-                ("simple_division.k", "4"),
+                // Adverb Each tests (from K.exe results)
+                ("adverb_each_vector_minus.k", "9 18 27"),
+                ("adverb_each_vector_multiply.k", "4 10 18"),
+                ("adverb_each_vector_plus.k", "6 8 10 12"),
                 
-                // Vector operations
-                ("vector_addition.k", "4 6"),
-                ("vector_subtraction.k", "-2 -2"),
-                ("vector_multiplication.k", "3 8"),
-                ("vector_division.k", "0.3333333 0.5"),
-                ("test_vector.k", "1 2 3"),
-                ("scalar_vector_addition.k", "4 5"),
-                ("scalar_vector_multiplication.k", "3 6"),
+                // Adverb Over tests
+                ("adverb_over_divide.k", "10"),
+                ("adverb_over_max.k", "5"),
+                ("adverb_over_min.k", "1"),
+                ("adverb_over_minus.k", "4"),
+                ("adverb_over_multiply.k", "24"),
+                ("adverb_over_plus.k", "15"),
+                ("adverb_over_power.k", "64"),
+                ("adverb_over_with_initialization_1.k", "15"),
+                ("adverb_over_with_initialization_2.k", "12"),
                 
-                // Vector indexing
-                ("vector_index_first.k", "5"),
-                ("vector_index_single.k", "4"),
-                ("vector_index_multiple.k", "8 9"),
-                ("vector_index_duplicate.k", "5 5"),
-                ("vector_index_reverse.k", "9 8"),
+                // Adverb Scan tests
+                ("adverb_scan_divide.k", "(100;50.0;10.0)"),
+                ("adverb_scan_max.k", "1 3 3 5 5"),
+                ("adverb_scan_min.k", "5 3 3 1 1"),
+                ("adverb_scan_minus.k", "10 8 5 4"),
+                ("adverb_scan_multiply.k", "1 2 6 24"),
+                ("adverb_scan_plus.k", "1 3 6 10 15"),
+                ("adverb_scan_power.k", "(2;8.0;64.0)"),
+                ("adverb_scan_with_initialization_1.k", "1 3 6 10 15"),
+                ("adverb_scan_with_initialization_2.k", "2 3 5 8 12"),
+                ("adverb_scan_with_initialization_divide.k", "(2;2;1;0.3333333;0.08333333)"),
+                ("adverb_scan_with_initialization_minus.k", "2 1 -1 -4 -8"),
+                ("adverb_scan_with_initialization.k", "2 2 4 12"),
                 
-                // Parentheses
-                ("parenthesized_vector.k", "1 2 3 4"),
-                ("parentheses_basic.k", "7"),
-                ("parentheses_grouping.k", "9"),
-                ("parentheses_nested.k", "7"),
-                ("parentheses_nested1.k", "21"),
-                ("parentheses_nested2.k", "0.7142857"),
-                ("parentheses_nested3.k", "24"),
-                ("parentheses_nested4.k", "15"),
-                ("parentheses_nested5.k", "29"),
-                ("parentheses_precedence.k", "7"),
+                // Anonymous Function tests
+                ("anonymous_function_double_param.k", "{[op1;op2] op1*op2}"),
+                ("anonymous_function_empty.k", "{}"),
+                ("anonymous_function_simple.k", "{4+5}"),
+                ("anonymous_function_single_param.k", "{[arg1] arg1+6}"),
                 
-                // K-style precedence tests (no parentheses)
-                ("precedence_spec1.k", "11.5714286"),
-                ("precedence_spec2.k", "6"),
-                ("precedence_chain1.k", "1410"),
-                ("precedence_chain2.k", "0.0709220"),
-                ("precedence_mixed1.k", "0"),
-                ("precedence_mixed2.k", "25"),
-                ("precedence_mixed3.k", "11"),
-                ("precedence_power1.k", "128"),
-                ("precedence_power2.k", "83"),
-                ("precedence_complex1.k", "0.7142857"),
-                ("precedence_complex2.k", "10.0166667"),
+                // Atom tests
+                ("atom_scalar.k", "1"),
+                ("atom_vector.k", "0"),
                 
-                // Vector notation (space and semicolon separated)
-                ("vector_notation_space.k", "1 2 3 4 5"),
-                ("vector_notation_semicolon.k", "(7;11;-20.45)"),
-                ("vector_notation_empty.k", "()"),
-                ("vector_notation_single_group.k", "42"),
-                ("vector_notation_mixed_types.k", "(42;3.14;\"hello\";`symbol)"),
-                ("vector_notation_variables.k", "30 200 -10"),
-                ("vector_notation_nested.k", "3 7 11"),
-                ("vector_notation_functions.k", "10 20 30"),
+                // Attribute Handle tests
+                ("attribute_handle_symbol.k", "`a."),
+                ("attribute_handle_vector.k", "`a.`b.`c."),
                 
-                // Variables
-                ("variable_assignment.k", "7"),
-                ("variable_usage.k", "30"),
-                ("variable_reassignment.k", "7.2 4.5"),
-                
-                // Types
-                ("integer_types.k", "123456789L"),
-                ("float_types.k", "3.14"),
-                ("float_exponential.k", "170.0"),
-                ("float_decimal_point.k", "10.0"),
+                // Character tests
                 ("character_single.k", "\"f\""),
                 ("character_vector.k", "\"hello\""),
-                ("symbol_simple.k", "`foo"),
-                ("symbol_quoted.k", "`\"a symbol\""),
                 
-                // Operators
-                ("minimum_operator.k", "3"),
-                ("maximum_operator.k", "5"),
-                ("less_than_operator.k", "1"),
-                ("greater_than_operator.k", "0"),
-                ("equal_operator.k", "0"),
-                ("power_operator.k", "8"),
-                ("modulus_operator.k", "1"),
-                ("negate_operator.k", "1"),
-                ("join_operator.k", "3 5"),
-                ("unary_minus_operator.k", "-5"),
-                ("first_operator.k", "1"),
-                ("reciprocal_operator.k", "0.25"),
-                ("generate_operator.k", "0 0 0 0"),
-                ("reverse_operator.k", "3 2 1"),
+                // Complex Function tests
+                ("complex_function.k", "205"),
+                
+                // Count operator
                 ("count_operator.k", "3"),
-                ("enumerate_operator.k", "0 1 2 3 4"),
+                
+                // Cut vector
+                ("cut_vector.k", "(0 1\n 2 3\n 4 5 6 7)"),
+                
+                // Dictionary tests
+                ("dictionary_empty.k", ".()"),
+                ("dictionary_index.k", "1"),
+                ("dictionary_index_attr.k", ".((`c;3;);(`d;4;))"),
+                ("dictionary_index_value.k", "1"),
+                ("dictionary_index_value2.k", "2"),
+                ("dictionary_multiple.k", ".((`a;1;)\n  (`b;2;))"),
+                ("dictionary_null_attributes.k", ".((`a;1;)\n  (`b;2;))"),
+                ("dictionary_single.k", ".,(`a;`b;)"),
+                ("dictionary_type.k", "5"),
+                ("dictionary_with_null_value.k", ".((`a;1;)\n  (`c;3;))"),
+                
+                // Drop tests
+                ("drop_negative.k", "3 4 5"),
+                ("drop_positive.k", "4 5 6 7"),
+                
+                // Empty mixed vector
+                ("empty_mixed_vector.k", "()"),
+                
+                // Enlist operator
                 ("enlist_operator.k", ",5"),
-                ("floor_operator.k", "3.0"),
-                ("unique_operator.k", "1 2 3"),
-                ("grade_up_operator.k", "0 4 2 3 1"),
+                
+                // Enumerate tests
+                ("enumerate_empty_int.k", "!0"),
+                ("enumerate_empty_long.k", "!0L"),
+                ("enumerate_operator.k", "0 1 2 3 4"),
+                
+                // Equal operator
+                ("equal_operator.k", "0"),
+                
+                // First operator
+                ("first_operator.k", "1"),
+                
+                // Float tests
+                ("float_decimal_point.k", "10.0"),
+                ("float_exponential.k", "170.0"),
+                ("float_exponential_large.k", "1e+015"),
+                ("float_exponential_small.k", "1e-020"),
+                ("float_types.k", "3.14"),
+                
+                // Function tests
+                ("function_add7.k", "12"),
+                ("function_call_anonymous.k", "13"),
+                ("function_call_chain.k", "20"),
+                ("function_call_double.k", "32"),
+                ("function_call_simple.k", "12"),
+                ("function_foo_chain.k", "20"),
+                ("function_mul.k", "32"),
+                
+                // Generate operator
+                ("generate_operator.k", "0 0 0 0"),
+                
+                // Grade operators
                 ("grade_down_operator.k", "1 2 3 4 0"),
-                ("shape_operator.k", "3"),
-                ("shape_operator_matrix.k", "3 3"),
-                ("shape_operator_jagged.k", ",3"),
-                ("shape_operator_scalar.k", "0"),
-                ("shape_operator_vector.k", "5"),
-                ("shape_operator_matrix_2x3.k", "2 3"),
-                ("shape_operator_matrix_3x3.k", "3 3"),
-                ("shape_operator_jagged_matrix.k", ",3"),
-                ("shape_operator_tensor_3d.k", "3 2 2"),
-                ("shape_operator_tensor_2x2x3.k", "2 2 3"),
-                ("shape_operator_jagged_3d.k", "2 2"),
-                ("shape_operator_empty_vector.k", "0"),
-                ("where_operator.k", "0 2 3"),
-                ("where_vector_counts.k", "0 0 0 1 1 2"),
+                ("grade_up_operator.k", "0 4 2 3 1"),
                 
-                // Adverb operations (working ones)
-                ("adverb_over_plus.k", "15"),
-                ("adverb_over_multiply.k", "24"),
-                ("adverb_over_minus.k", "4"),
-                ("adverb_over_divide.k", "10"),
-                ("adverb_over_min.k", "1"),
-                ("adverb_over_max.k", "5"),
-                ("adverb_over_power.k", "64"),
-                ("adverb_scan_plus.k", "1 3 6 10 15"),
-                ("adverb_scan_multiply.k", "1 2 6 24"),
-                ("adverb_scan_minus.k", "10 8 5 4"),
-                ("adverb_scan_divide.k", "100 50 10"),
-                ("adverb_scan_min.k", "5 3 3 1 1"),
-                ("adverb_scan_max.k", "1 3 3 5 5"),
-                ("adverb_scan_power.k", "2 8 64"),
-                ("adverb_mixed_scan.k", "2 4 12"),
-                ("adverb_mixed_scan_minus.k", "1 -1 -4 -8"),
-                ("adverb_mixed_scan_divide.k", "(2;1;0.3333333;0.0833333)"),
+                // Greater than operator
+                ("greater_than_operator.k", "0"),
                 
-                // Additional adverb tests from split files
-                ("adverb_over_mixed_2.k", "12"),
-                ("adverb_over_mixed_1.k", "15"),
-                ("adverb_scan_mixed_2.k", "3 5 8 12"),
-                ("adverb_scan_mixed_1.k", "3 6 10 15"),
+                // Integer types
+                ("integer_types_int.k", "42"),
+                ("integer_types_long.k", "123456789L"),
                 
-                // Division tests
-                ("test_division_int_5_2.k", "2.5"),
-                ("test_division_int_4_2.k", "2"),
-                ("test_division_float_5_2.5.k", "2.0"),
-                ("test_division_float_4_2.0.k", "2.0"),
-                ("test_division_rules_5_2.k", "2.5"),
-                ("test_division_rules_4_2.k", "2"),
-                ("test_division_rules_10_3.k", "3.3333333"),
-                ("test_division_rules_12_4.k", "3"),
-                ("test_type_promotion.k", "2.5"),
-                ("test_smart_division1.k", "2.5 5.0"),
-                ("test_smart_division2.k", "2 4"),
-                ("test_smart_division3.k", "2 4 6"),
-                ("test_simple_scalar_div.k", "2.5"),
-                ("test_enumerate.k", "0 1"),
+                // Join operator
+                ("join_operator.k", "3 5"),
                 
-                // Special values
-                ("special_null.k", "_n"),
-                ("special_int_pos_inf.k", "0I"),
-                ("special_int_null.k", "0N"),
-                ("special_int_neg_inf.k", "-0I"),
-                ("special_long_pos_inf.k", "0IL"),
-                ("special_long_null.k", "0NL"),
-                ("special_long_neg_inf.k", "-0IL"),
-                ("special_float_pos_inf.k", "0i"),
-                ("special_float_null.k", "0n"),
-                ("special_float_neg_inf.k", "-0i"),
+                // Less than operator
+                ("less_than_operator.k", "1"),
+                
+                // Math functions
+                ("math_abs.k", "5.0"),
+                ("math_exp.k", "7.389056"),
+                ("math_log.k", "2.302585"),
+                ("math_sin.k", "0.0"),
+                ("math_sqrt.k", "4.0"),
+                ("math_vector.k", "1 2 3"),
+                
+                // Maximum operator
+                ("maximum_operator.k", "5"),
+                
+                // Minimum operator
+                ("minimum_operator.k", "3"),
+                
+                // Mixed list with null
+                ("mixed_list_with_null.k", "(1;;`test;42.5)"),
+                
+                // Mixed vector tests
+                ("mixed_vector_empty_position.k", "(1;;3)"),
+                ("mixed_vector_multiple_empty.k", "(1;;;4)"),
+                ("mixed_vector_whitespace_position.k", "(1 2 4)"),
+                
+                // Mod tests
+                ("mod_integer.k", "1"),
+                ("mod_rotate.k", "3 4 1 2"),
+                ("mod_vector.k", "1 0 1 0"),
+                ("modulus_operator.k", "1"),
+                
+                // Negate operator
+                ("negate_operator.k", "1"),
+                
+                // Nested vector test
+                ("nested_vector_test.k", "(1 2 3;4 5 6)"),
                 
                 // Overflow tests
-                ("overflow_int_pos_inf.k", "0N"),
-                ("overflow_int_pos_inf_plus2.k", "-0I"),
+                ("overflow_int_max_plus1.k", "0N"),
                 ("overflow_int_neg_inf.k", "0N"),
                 ("overflow_int_neg_inf_minus2.k", "0I"),
-                ("overflow_int_max_plus1.k", "0N"),
                 ("overflow_int_null_minus1.k", "0I"),
+                ("overflow_int_pos_inf.k", "0N"),
+                ("overflow_int_pos_inf_plus2.k", "-0I"),
                 ("overflow_long_max_plus1.k", "0NL"),
                 ("overflow_long_min_minus1.k", "0IL"),
                 ("overflow_long_neg_inf.k", "0NL"),
@@ -276,78 +275,242 @@ namespace K3CSharp.Tests
                 ("overflow_regular_int.k", "-2147483639"),
                 ("underflow_regular_int.k", "2147483617"),
                 
-                // Vector tests with null
-                ("vector_with_null.k", "(;1;2)"),
-                ("vector_with_null_middle.k", "(1;;3)"),
-                ("nested_vector_test.k", "(1 2 3;4 5 6)"),
+                // Parentheses tests
+                ("parentheses_basic.k", "7"),
+                ("parentheses_grouping.k", "9"),
+                ("parentheses_nested.k", "7"),
+                ("parentheses_nested1.k", "21"),
+                ("parentheses_nested2.k", "0.7142857"),
+                ("parentheses_nested3.k", "24"),
+                ("parentheses_nested4.k", "15"),
+                ("parentheses_nested5.k", "29"),
+                ("parentheses_precedence.k", "7"),
+                ("parenthesized_vector.k", "1 2 3 4"),
                 
-                // Take operator
+                // Power operator
+                ("power_operator.k", "8"),
+                
+                // Precedence tests
+                ("precedence_chain1.k", "1410"),
+                ("precedence_chain2.k", "0.07092199"),
+                ("precedence_complex1.k", "0.7142857"),
+                ("precedence_complex2.k", "10.01667"),
+                ("precedence_mixed1.k", "0"),
+                ("precedence_mixed2.k", "25"),
+                ("precedence_mixed3.k", "11"),
+                ("precedence_power1.k", "128"),
+                ("precedence_power2.k", "83"),
+                ("precedence_spec1.k", "11.57143"),
+                ("precedence_spec2.k", "6"),
+                
+                // Reciprocal operator
+                ("reciprocal_operator.k", "0.25"),
+                
+                // Reverse operator
+                ("reverse_operator.k", "3 2 1"),
+                
+                // Scalar vector tests
+                ("scalar_vector_addition.k", "4 5"),
+                ("scalar_vector_multiplication.k", "3 6"),
+                
+                // Shape operator tests
+                ("shape_operator.k", "3"),
+                ("shape_operator_empty_vector.k", "0"),
+                ("shape_operator_jagged.k", ",3"),
+                ("shape_operator_jagged_3d.k", "2 2"),
+                ("shape_operator_jagged_matrix.k", ",3"),
+                ("shape_operator_matrix.k", "3 3"),
+                ("shape_operator_matrix_2x3.k", "2 3"),
+                ("shape_operator_matrix_3x3.k", "3 3"),
+                ("shape_operator_scalar.k", "0"),
+                ("shape_operator_tensor_2x2x3.k", "2 2 3"),
+                ("shape_operator_tensor_3d.k", "3 2 2"),
+                ("shape_operator_vector.k", "5"),
+                
+                // Simple arithmetic tests
+                ("simple_addition.k", "3"),
+                ("simple_division.k", "4"),
+                ("simple_multiplication.k", "12"),
+                ("simple_nested_test.k", "1 2 3"),
+                ("simple_subtraction.k", "2"),
+                
+                // Special values tests
+                ("special_float_neg_inf.k", "-0i"),
+                ("special_float_null.k", "0n"),
+                ("special_float_pos_inf.k", "0i"),
+                ("special_int_neg_inf.k", "-0I"),
+                ("special_int_null.k", "0N"),
+                ("special_int_pos_inf.k", "0I"),
+                ("special_long_neg_inf.k", "-0IL"),
+                ("special_long_null.k", "0NL"),
+                ("special_long_pos_inf.k", "0IL"),
+                ("special_null.k", "_n"),
+                ("special_values_arithmetic.k", "-2147483646"),
+                
+                // Square bracket tests
+                ("square_bracket_function.k", "2"),
+                ("square_bracket_vector_multiple.k", "14 16"),
+                ("square_bracket_vector_single.k", "14"),
+                
+                // String representation tests
+                ("string_representation_int.k", "\"42\""),
+                ("string_representation_mixed.k", "\"(1;2.5;\\\"a\")\""),
+                ("string_representation_symbol.k", "\"`symbol\""),
+                ("string_representation_vector.k", "\"1 2 3\""),
+                
+                // Symbol tests
+                ("symbol_quoted.k", "`\"a symbol\""),
+                ("symbol_simple.k", "`foo"),
+                ("symbol_vector_compact.k", "`a`b`c"),
+                ("symbol_vector_spaces.k", "`a`b`c"),
+                
+                // Take operator tests
+                ("take_operator_basic.k", "1 2 3"),
+                ("take_operator_empty_float.k", "0#0.0"),
+                ("take_operator_empty_symbol.k", "0#`"),
+                ("take_operator_overflow.k", "1 2 3 1 2 3 1 2 3 1"),
                 ("take_operator_scalar.k", "42 42 42"),
-                ("take_operator_overflow.k", "1 2 3 0 0 0 0 0 0 0"),
                 
-                // Function tests
-                ("anonymous_function_empty.k", "{}"),
-                ("anonymous_function_simple.k", "{4+5}"),
-                ("anonymous_function_single_param.k", "{[arg1] arg1+6}"),
-                ("anonymous_function_double_param.k", "{[op1;op2] op1*op2}"),
-                ("function_add7.k", "12"),
-                ("function_mul.k", "32"),
-                ("function_foo_chain.k", "20"),
-                ("function_call_simple.k", "12"),
-                ("function_call_double.k", "32"),
-                ("function_call_chain.k", "20"),
-                ("function_call_anonymous.k", "13"),
-                ("complex_function.k", "205"),
+                // Test division rules
+                ("test_division_float_4_2.0.k", "2.0"),
+                ("test_division_float_5_2.5.k", "2.0"),
+                ("test_division_int_4_2.k", "2"),
+                ("test_division_int_5_2.k", "2.5"),
+                ("test_division_rules_10_3.k", "3.333333"),
+                ("test_division_rules_12_4.k", "3"),
+                ("test_division_rules_4_2.k", "2"),
+                ("test_division_rules_5_2.k", "2.5"),
+                
+                // Test empty vector
+                ("test_empty_vector.k", "()"),
+                
+                // Test enumerate
+                ("test_enumerate.k", "0 1"),
+                
+                // Test grade operators
+                ("test_grade_down_no_parens.k", "1 2 3 4 0"),
+                ("test_grade_up_no_parens.k", "0 4 2 3 1"),
+                
+                // Test mixed types
+                ("test_mixed_types.k", "(42;3.14;\"hello\";`symbol)"),
+                
+                // Test multiline function
                 ("test_multiline_function_single.k", "20"),
+                
+                // Test null vector
+                ("test_null_vector.k", "(;1;2)"),
+                
+                // Test scoping
                 ("test_scoping_single.k", "110"),
                 
-                // Special arithmetic tests
-                ("special_values_arithmetic.k", "-2147483646"),
-                ("test_special_underflow.k", "2147483622"),
-                ("test_special_underflow_2.k", "2147483549"),
-                ("test_special_underflow_3.k", "2147482649"),
+                // Test semicolon tests
+                ("test_semicolon_simple.k", "(1;2;3)"),
+                ("test_semicolon_vars.k", "(5;10;15)"),
+                ("test_semicolon_vector.k", "(1 2;3 4)"),
+                
+                // Test simple scalar div
+                ("test_simple_scalar_div.k", "2.5"),
+                
+                // Test single no semicolon
+                ("test_single_no_semicolon.k", "42"),
+                
+                // Test smart division
+                ("test_smart_division1.k", "2.5 5.0"),
+                ("test_smart_division2.k", "2 4"),
+                ("test_smart_division3.k", "2 4 6"),
+                
+                // Test special values
                 ("test_special_0i_plus_1.k", "0N"),
                 ("test_special_0n_plus_1.k", "-0I"),
                 ("test_special_1_plus_neg0i.k", "-2147483646"),
                 ("test_special_neg0i_plus_1.k", "-2147483646"),
-                ("enumerate_empty_int.k", "!0"),
-                ("enumerate_empty_long.k", "!0L"),
+                ("test_special_underflow.k", "2147483622"),
+                ("test_special_underflow_2.k", "2147483549"),
+                ("test_special_underflow_3.k", "2147482649"),
                 
-                // Symbol vectors
-                ("symbol_vector_compact.k", "`a`b`c"),
-                ("symbol_vector_spaces.k", "`a`b`c"),
-                ("empty_mixed_vector.k", "()"),
+                // Test type operators
+                ("test_type_char.k", "3"),
+                ("test_type_float.k", "2"),
+                ("test_type_null.k", "6"),
+                ("test_type_space.k", "3"),
+                ("test_type_symbol.k", "4"),
+                ("test_type_vector.k", "-1"),
+                ("test_type_vector_debug.k", "-1"),
                 
-                // Dictionary tests
-                ("dictionary_empty.k", ".()"),
-                ("dictionary_single.k", ".((`a;`b;))"),
-                ("dictionary_multiple.k", ".((`a;1;);(`b;2;))"),
-                ("dictionary_null_attributes.k", ".((`a;1;);(`b;2;))"),
-                ("dictionary_with_null_value.k", ".((`a;1;);(`c;3;))"),
-                ("mixed_list_with_null.k", "(1;;`test;42.5)"),
-                ("dictionary_type.k", "5"),
+                // Test vector
+                ("test_vector.k", "1 2 3"),
                 
-                // Atom operator tests
-                ("atom_scalar.k", "1"),
-                ("atom_vector.k", "0"),
+                // Type operator tests
+                ("type_operator_char.k", "3"),
+                ("type_operator_float.k", "2"),
+                ("type_operator_null.k", "6"),
+                ("type_operator_symbol.k", "4"),
+                ("type_operator_vector_char.k", "-3"),
+                ("type_operator_vector_float.k", "-2"),
+                ("type_operator_vector_int.k", "-1"),
+                ("type_operator_vector_mixed.k", ""),
+                ("type_operator_vector_symbol.k", "-3"),
                 
-                // Attribute handle tests
-                ("attribute_handle_symbol.k", "`a."),
-                ("attribute_handle_vector.k", "`a.`b.`c."),
+                // Type promotion tests
+                ("type_promotion_float_int.k", "3.5"),
+                ("type_promotion_float_long.k", "2.5"),
+                ("type_promotion_int_float.k", "3.5"),
+                ("type_promotion_int_long.k", "3L"),
+                ("type_promotion_long_float.k", "2.5"),
+                ("type_promotion_long_int.k", "3L"),
                 
-                // Mod operator tests
-                ("mod_integer.k", "1"),
-                ("mod_vector.k", "1 0 1 0"),
+                // Unary minus operator
+                ("unary_minus_operator.k", "-5"),
                 
-                // Grade tests without parentheses
-                ("test_grade_up_no_parens.k", "0 4 2 3 1"),
-                ("test_grade_down_no_parens.k", "1 2 3 4 0")
+                // Unique operator
+                ("unique_operator.k", "1 2 3"),
+                
+                // Variable tests
+                ("variable_assignment.k", "7"),
+                ("variable_reassignment.k", "7.2 4.5"),
+                ("variable_scoping_global_access.k", "20"),
+                ("variable_scoping_global_assignment.k", "10"),
+                ("variable_scoping_global_unchanged.k", "5"),
+                ("variable_scoping_local_hiding.k", "15"),
+                ("variable_scoping_nested_functions.k", "25"),
+                ("variable_usage.k", "30"),
+                
+                // Vector notation tests
+                ("vector_notation_empty.k", "()"),
+                ("vector_notation_functions.k", "10 20 30"),
+                ("vector_notation_mixed_types.k", "(42;3.14;\"hello\";`symbol)"),
+                ("vector_notation_nested.k", "3 7 11"),
+                ("vector_notation_semicolon.k", "(7;11;-20.45)"),
+                ("vector_notation_single_group.k", "42"),
+                ("vector_notation_space.k", "1 2 3 4 5"),
+                ("vector_notation_variables.k", "30 200 -10"),
+                
+                // Vector operations
+                ("vector_addition.k", "4 6"),
+                ("vector_division.k", "0.3333333 0.5"),
+                ("vector_index_duplicate.k", "5 5"),
+                ("vector_index_first.k", "5"),
+                ("vector_index_multiple.k", "8 9"),
+                ("vector_index_reverse.k", "9 8"),
+                ("vector_index_single.k", "4"),
+                ("vector_multiplication.k", "3 8"),
+                ("vector_subtraction.k", "-2 -2"),
+                ("vector_with_null.k", "(;1;2)"),
+                ("vector_with_null_middle.k", "(1;;3)"),
+                
+                // Where operator
+                ("where_operator.k", "0 2 3"),
+                ("where_vector_counts.k", "0 0 0 1 1 2"),
+                
+                // Floor operator
+                ("floor_operator.k", "3.0")
             };
 
             var testResults = new List<TestResult>();
             var testScriptsPath = Path.Combine(Directory.GetCurrentDirectory(), "TestScripts");
 
-            Console.WriteLine("Running K3CSharp Tests...");
+            Console.WriteLine($"Running K3CSharp Tests...");
+            Console.WriteLine($"Total tests: {tests.Length}");
             Console.WriteLine("=========================");
 
             foreach (var (fileName, expected) in tests)
@@ -393,7 +556,7 @@ namespace K3CSharp.Tests
             var totalCount = testResults.Count;
             
             Console.WriteLine();
-            Console.WriteLine($"Test Results: {passedCount}/{totalCount} passed");
+            Console.WriteLine($"Test Results: {passedCount}/{totalCount} passed ({(passedCount * 100.0 / totalCount):F1}%)");
             
             WriteResultsTable(testResults);
         }
