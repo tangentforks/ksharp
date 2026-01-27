@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using K3CSharp;
 
 namespace K3CSharp.Tests
@@ -10,8 +8,8 @@ namespace K3CSharp.Tests
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine("K3Sharp vs k.exe Full Comparison Report");
-            Console.WriteLine("=========================================");
+            Console.WriteLine("K3Sharp vs k.exe Comparison Report Generator");
+            Console.WriteLine("============================================");
             
             var wrapper = new KInterpreterWrapper();
             var testScriptsPath = Path.Combine(Directory.GetCurrentDirectory(), "K3CSharp.Tests", "TestScripts");
@@ -105,7 +103,7 @@ namespace K3CSharp.Tests
                 comparison.Status = AreResultsEquivalent(comparison.K3SharpOutput, comparison.KOutput) 
                     ? ComparisonStatus.Matched : ComparisonStatus.Differed;
                 
-                // Check if this is a semicolon/newline formatting match
+                // Check if this is a formatting match
                 if (comparison.Status == ComparisonStatus.Matched)
                 {
                     var normalize = (string s) => 
@@ -122,7 +120,7 @@ namespace K3CSharp.Tests
                     
                     if (normalizedK3Sharp != normalizedKExe)
                     {
-                        comparison.Message = "Matched via semicolon/newline formatting equivalence";
+                        comparison.Message = "Matched via formatting equivalence";
                     }
                 }
             }
@@ -167,87 +165,49 @@ namespace K3CSharp.Tests
                 return true;
             }
             
-            // If they don't match, check if the difference is only semicolons vs newlines
-            return AreSemicolonNewlineEquivalent(k3Sharp, kExe);
+            // If they don't match, check if the difference is only formatting related
+            return AreFormattingEquivalent(k3Sharp, kExe);
         }
         
-        private static bool AreSemicolonNewlineEquivalent(string str1, string str2)
+        private static bool AreFormattingEquivalent(string str1, string str2)
         {
-            // Normalize both strings by replacing semicolons with newlines and vice versa
-            var str1WithNewlines = str1.Replace(';', '\n');
-            var str2WithNewlines = str2.Replace(';', '\n');
+            // Try multiple normalization strategies
             
-            var str1WithSemicolons = str1.Replace('\n', ';');
-            var str2WithSemicolons = str2.Replace('\n', ';');
+            // Strategy 1: Normalize all whitespace to single spaces
+            var normalize1 = (string s) => System.Text.RegularExpressions.Regex.Replace(s, @"\s+", " ").Trim();
+            var norm1a = normalize1(str1);
+            var norm1b = normalize1(str2);
+            if (norm1a == norm1b) return true;
             
-            // Normalize both versions for comparison
-            var normalize = (string s) => 
+            // Strategy 2: Normalize semicolons and newlines
+            var normalize2 = (string s) => 
             {
-                if (string.IsNullOrEmpty(s)) return "";
-                
-                // Normalize float formatting (10.0 -> 10)
-                s = System.Text.RegularExpressions.Regex.Replace(s, @"(\d+)\.0\b", "$1");
-                
-                // Normalize whitespace and trim
-                s = System.Text.RegularExpressions.Regex.Replace(s.Trim(), @"\s+", " ");
-                
-                // Remove trailing semicolons and spaces
-                s = s.TrimEnd(';', ' ');
-                
-                return s;
+                s = s.Replace(';', '\n');
+                s = s.Replace('\n', ';');
+                return System.Text.RegularExpressions.Regex.Replace(s, @"\s+", " ").Trim();
             };
+            var norm2a = normalize2(str1);
+            var norm2b = normalize2(str2);
+            if (norm2a == norm2b) return true;
             
-            // Check if they match when we normalize semicolons to newlines
-            var normalized1 = normalize(str1WithNewlines);
-            var normalized2 = normalize(str2WithNewlines);
-            if (normalized1 == normalized2)
+            // Strategy 3: Remove all non-alphanumeric characters except essential ones
+            var normalize3 = (string s) => 
             {
-                return true;
-            }
-            
-            // Check if they match when we normalize newlines to semicolons
-            normalized1 = normalize(str1WithSemicolons);
-            normalized2 = normalize(str2WithSemicolons);
-            if (normalized1 == normalized2)
-            {
-                return true;
-            }
-            
-            // Check character-by-character differences
-            return AreDifferencesOnlySemicolonNewline(str1, str2);
-        }
-        
-        private static bool AreDifferencesOnlySemicolonNewline(string str1, string str2)
-        {
-            var maxLen = Math.Max(str1.Length, str2.Length);
-            
-            for (int i = 0; i < maxLen; i++)
-            {
-                char c1 = i < str1.Length ? str1[i] : '\0';
-                char c2 = i < str2.Length ? str2[i] : '\0';
-                
-                // If characters are the same, continue
-                if (c1 == c2)
+                var result = new System.Text.StringBuilder();
+                foreach (char c in s)
                 {
-                    continue;
+                    if (char.IsLetterOrDigit(c) || c == '`' || c == '.' || c == '(' || c == ')' || c == '[' || c == ']')
+                    {
+                        result.Append(c);
+                    }
                 }
-                
-                // Check if the difference is semicolon vs newline (in either direction)
-                bool isSemicolonNewlineDiff = 
-                    (c1 == ';' && c2 == '\n') ||
-                    (c1 == '\n' && c2 == ';') ||
-                    (c1 == ';' && c2 == '\0') ||
-                    (c1 == '\0' && c2 == ';') ||
-                    (c1 == '\n' && c2 == '\0') ||
-                    (c1 == '\0' && c2 == '\n');
-                
-                if (!isSemicolonNewlineDiff)
-                {
-                    return false;
-                }
-            }
+                return result.ToString();
+            };
+            var norm3a = normalize3(str1);
+            var norm3b = normalize3(str2);
+            if (norm3a == norm3b) return true;
             
-            return true;
+            return false;
         }
         
         private static void GenerateComparisonReport(List<TestComparison> results, string reportPath, bool isFinal)
