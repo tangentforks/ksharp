@@ -199,27 +199,44 @@ namespace K3CSharp
                     tokens.Add(new Token(TokenType.HASH, "#", position));
                     Advance();
                 }
+                else if (char.IsLetter(c))
+                {
+                    tokens.Add(ReadIdentifier());
+                }
                 else if (c == '_')
                 {
-                    // Check for _n null value first
-                    if (position + 1 < input.Length && input[position + 1] == 'n')
+                    // Check if underscore is part of a name (identifier or symbol)
+                    // Look ahead to see if this could be part of a name
+                    if (position > 0 && 
+                        (char.IsLetterOrDigit(input[position - 1]) || input[position - 1] == '_') &&
+                        position + 1 < input.Length && 
+                        (char.IsLetterOrDigit(input[position + 1]) || input[position + 1] == '_'))
                     {
-                        tokens.Add(new Token(TokenType.NULL, "_n", position));
-                        Advance(); // Skip _
-                        Advance(); // Skip n
+                        // Underscore is part of an identifier
+                        tokens.Add(ReadIdentifier());
                     }
                     else
                     {
-                        // Check for mathematical operations
-                        var mathOp = ReadMathOperation();
-                        if (mathOp != null)
+                        // Check for _n null value first
+                        if (position + 1 < input.Length && input[position + 1] == 'n')
                         {
-                            tokens.Add(mathOp);
+                            tokens.Add(new Token(TokenType.NULL, "_n", position));
+                            Advance(); // Skip _
+                            Advance(); // Skip n
                         }
                         else
                         {
-                            tokens.Add(new Token(TokenType.UNDERSCORE, "_", position));
-                            Advance();
+                            // Check for mathematical operations
+                            var mathOp = ReadMathOperation();
+                            if (mathOp != null)
+                            {
+                                tokens.Add(mathOp);
+                            }
+                            else
+                            {
+                                tokens.Add(new Token(TokenType.UNDERSCORE, "_", position));
+                                Advance();
+                            }
                         }
                     }
                 }
@@ -282,10 +299,6 @@ namespace K3CSharp
                 else if (c == '`')
                 {
                     tokens.Add(ReadSymbol());
-                }
-                else if (char.IsLetter(c))
-                {
-                    tokens.Add(ReadIdentifier());
                 }
                 else if (char.IsDigit(c))
                 {
