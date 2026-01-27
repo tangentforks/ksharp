@@ -200,10 +200,11 @@ namespace K3CSharp
                         ">" => GreaterThan(left, right),
                         "=" => Equal(left, right),
                         "," => Join(left, right),
-                        "#" => Count(left),
+                        "#" => Take(left, right),
+                        "_" => Drop(left, right),
                         "::" => GlobalAssignment(left, right),
-                        "ADVERB_SLASH" => Over(left, right),
-                        "ADVERB_BACKSLASH" => Scan(left, right),
+                        "ADVERB_SLASH" => Over(new SymbolValue("+"), left, right),
+                        "ADVERB_BACKSLASH" => Scan(new SymbolValue("+"), left, right),
                         "ADVERB_TICK" => Each(left, right),
                         "TYPE" => GetType(left, right),
                         _ => throw new Exception($"Unknown binary operator: {op.Value}")
@@ -219,8 +220,8 @@ namespace K3CSharp
 
                 return op.Value.ToString() switch
                 {
-                    "ADVERB_SLASH" => Over(left, right),
-                    "ADVERB_BACKSLASH" => Scan(left, right),
+                    "ADVERB_SLASH" => Over(verb, left, right),
+                    "ADVERB_BACKSLASH" => Scan(verb, left, right),
                     "ADVERB_TICK" => Each(verb, left, right),
                     _ => throw new Exception($"Unknown adverb: {op.Value}")
                 };
@@ -1649,20 +1650,18 @@ namespace K3CSharp
             }
         }
 
-        private K3Value Over(K3Value verb, K3Value data)
+        private K3Value Over(K3Value verb, K3Value initialization, K3Value data)
         {
             // Handle vector case (over)
             if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
             {
-                // For mixed adverb operations (scalar + over + vector), the scalar should be used only once
-                // Example: 1 +/ 2 3 4 5 should be 1 + 2 + 3 + 4 + 5, not (1+2) + (1+3) + (1+4) + (1+5)
-                K3Value result;
+                // For adverb with initialization: start with initialization value, then apply verb to accumulate
+                K3Value result = initialization;
                 
                 if (verb is SymbolValue verbSymbol)
                 {
-                    // Regular over: start with first element and apply verb to accumulate
-                    result = dataVec.Elements[0];
-                    for (int i = 1; i < dataVec.Elements.Count; i++)
+                    // Apply verb to each element of the vector, accumulating the result
+                    for (int i = 0; i < dataVec.Elements.Count; i++)
                     {
                         result = ApplyVerb(verbSymbol.Value, result, dataVec.Elements[i]);
                     }
@@ -1670,7 +1669,6 @@ namespace K3CSharp
                 else
                 {
                     // If verb is not a symbol, treat it as a value to apply with the operator
-                    result = verb;
                     for (int i = 0; i < dataVec.Elements.Count; i++)
                     {
                         result = ApplyVerbWithOperator(verb, result, dataVec.Elements[i]);
@@ -1777,87 +1775,40 @@ namespace K3CSharp
             }
         }
 
-        private K3Value Scan(K3Value verb, K3Value data)
+        private K3Value Scan(K3Value verb, K3Value initialization, K3Value data)
         {
-            // Handle mixed scan case where verb is actually a vector (scalar, verb)
-            if (verb is VectorValue verbVec && verbVec.Elements.Count == 2)
-            {
-                var scalar = verbVec.Elements[0];
-                var actualVerb = verbVec.Elements[1];
-                
-                if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
-                {
-                    var result = new List<K3Value>();
-                    var current = ApplyVerbToScalarAndVector(scalar, actualVerb, dataVec.Elements[0]);
-                    result.Add(current);
-                    
-                    for (int i = 1; i < dataVec.Elements.Count; i++)
-                    {
-                        if (actualVerb is SymbolValue verbSymbol)
-                        {
-                            current = ApplyVerb(verbSymbol.Value, current, dataVec.Elements[i]);
-                        }
-                        else
-                        {
-                            // Check if verb is a glyph stored as non-symbol type
-                            string verbStr = actualVerb.ToString();
-                            if (verbStr.Length == 1 && "+-*/%^!&|<>=^,_?#~".Contains(verbStr))
-                            {
-                                current = ApplyVerb(verbStr, current, dataVec.Elements[i]);
-                            }
-                            else
-                            {
-                                // For non-glyph verbs, skip this iteration
-                                continue;
-                            }
-                        }
-                        result.Add(current);
-                    }
-                    
-                    return new VectorValue(result);
-                }
-            }
-            
-            // Handle vector case (regular scan)
-            if (data is VectorValue dataVec2 && dataVec2.Elements.Count > 0)
+            // Handle vector case with initialization
+            if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
             {
                 var result = new List<K3Value>();
-                var current = dataVec2.Elements[0];
+                var current = initialization;
+                
+                // Add the initialization value as the first element
                 result.Add(current);
                 
-                for (int i = 1; i < dataVec2.Elements.Count; i++)
+                if (verb is SymbolValue verbSymbol)
                 {
-                    if (verb is SymbolValue verbSymbol)
+                    // Apply verb to each element, accumulating the result
+                    for (int i = 0; i < dataVec.Elements.Count; i++)
                     {
-                        current = ApplyVerb(verbSymbol.Value, current, dataVec2.Elements[i]);
+                        current = ApplyVerb(verbSymbol.Value, current, dataVec.Elements[i]);
+                        result.Add(current);
                     }
-                    else
+                }
+                else
+                {
+                    // If verb is not a symbol, treat it as a value to apply with the operator
+                    for (int i = 0; i < dataVec.Elements.Count; i++)
                     {
-                        // Check if verb is a glyph stored as non-symbol type
-                        string verbStr = verb.ToString();
-                        if (verbStr.Length == 1 && "+-*/%^!&|<>=^,_?#~".Contains(verbStr))
-                        {
-                            current = ApplyVerb(verbStr, current, dataVec2.Elements[i]);
-                        }
-                        else
-                        {
-                            // For non-glyph verbs, skip this iteration
-                            continue;
-                        }
+                        current = ApplyVerbWithOperator(verb, current, dataVec.Elements[i]);
+                        result.Add(current);
                     }
-                    result.Add(current);
                 }
                 
-                return new VectorValue(result);
+                return new VectorValue(result, "standard");
             }
             
-            // Handle scalar case
-            if (IsScalar(data))
-            {
-                return data;
-            }
-            
-            throw new Exception($"Scan not implemented for types: {verb.Type}, {data.Type}");
+            return data;
         }
 
         private K3Value Each(K3Value verb, K3Value left, K3Value right)
@@ -2188,6 +2139,55 @@ namespace K3CSharp
             else
             {
                 throw new Exception("Take count must be an integer");
+            }
+        }
+
+        private K3Value Drop(K3Value count, K3Value data)
+        {
+            if (count is IntegerValue intCount)
+            {
+                if (data is VectorValue dataVec)
+                {
+                    // Drop from vector
+                    var actualCount = Math.Max(0, intCount.Value);
+                    var result = new List<K3Value>();
+                    
+                    if (dataVec.Elements.Count == 0 || actualCount >= dataVec.Elements.Count)
+                    {
+                        // Empty source vector or drop count >= vector length - return empty result
+                        return new VectorValue(result, "standard");
+                    }
+                    
+                    // Skip the first 'actualCount' elements
+                    for (int i = actualCount; i < dataVec.Elements.Count; i++)
+                    {
+                        result.Add(dataVec.Elements[i]);
+                    }
+                    
+                    return new VectorValue(result, "standard");
+                }
+                else
+                {
+                    // Drop from scalar - if count > 0, return empty, otherwise return scalar
+                    var actualCount = Math.Max(0, intCount.Value);
+                    if (actualCount > 0)
+                    {
+                        return new VectorValue(new List<K3Value>(), "standard");
+                    }
+                    else
+                    {
+                        return data;
+                    }
+                }
+            }
+            else if (count is LongValue longCount)
+            {
+                // Handle long count by converting to integer
+                return Drop(new IntegerValue((int)longCount.Value), data);
+            }
+            else
+            {
+                throw new Exception("Drop count must be an integer");
             }
         }
 
