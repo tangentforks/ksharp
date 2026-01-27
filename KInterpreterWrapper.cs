@@ -163,6 +163,12 @@ namespace K3CSharp
                                 continue;
                             }
                             
+                            // Skip copyright header
+                            if (trimmedLine.StartsWith("K 3.2") && trimmedLine.Contains("Copyright"))
+                            {
+                                continue;
+                            }
+                            
                             // Skip stderr markers
                             if (trimmedLine.StartsWith("STDERR:"))
                             {
@@ -173,7 +179,10 @@ namespace K3CSharp
                             lines.Add(line);
                         }
                         
-                        return string.Join("\n", lines).TrimEnd();
+                        // Filter out empty lines at the start
+                        var filteredLines = lines.SkipWhile(string.IsNullOrWhiteSpace).ToList();
+                        
+                        return string.Join("\n", filteredLines).TrimEnd();
                     }
                 }
                 catch (IOException ex) when (attempt < maxRetries - 1)

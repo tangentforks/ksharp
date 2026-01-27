@@ -125,9 +125,6 @@ namespace K3CSharp.Tests
             {
                 if (string.IsNullOrEmpty(s)) return "";
                 
-                // Remove k.exe copyright header
-                s = System.Text.RegularExpressions.Regex.Replace(s, @"K\s+\d+\.\d+\s+\d{4}-\d{2}-\d{2}\s+Copyright\s+\(C\)\s+\d{4}-\d{4}\s+Kx\s+Systems\s*", "");
-                
                 // Normalize float formatting (10.0 -> 10)
                 s = System.Text.RegularExpressions.Regex.Replace(s, @"(\d+)\.0\b", "$1");
                 
