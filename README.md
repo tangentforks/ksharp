@@ -2,6 +2,47 @@
 
 A complete C# implementation of the K3 programming language, a high-performance array programming language from the APL family.
 
+## 📚 **Table of Contents**
+
+- [🎯 Current Status](#-current-status-823-kexe-compatibility)
+- [📊 Project Structure](#-project-structure)
+- [🚀 Quick Start](#-quick-start)
+- [📈 Compatibility Results](#-compatibility-results)
+- [🏗️ Architecture](#️-architecture)
+  - [Core Components](#core-components)
+  - [Comparison Framework](#comparison-framework-)
+- [✅ Implemented Features](#-implemented-features)
+  - [Complete Data Types](#complete-data-types)
+  - [Complete Operator System](#complete-operator-system)
+  - [Complete Adverb System](#complete-adverb-system-)
+  - [Complete Function System](#complete-function-system-)
+  - [Dictionary System](#dictionary-system-)
+- [🔧 Advanced Features](#-advanced-features)
+  - [Smart Division Rules](#smart-division-rules)
+  - [Type Promotion](#type-promotion)
+  - [Enhanced Operators](#enhanced-operators)
+  - [Underscore Ambiguity Resolution](#underscore-ambiguity-resolution-)
+- [🧪 Testing](#-testing)
+  - [Unit Tests](#unit-tests)
+  - [Comparison Testing](#comparison-testing-)
+  - [Test Results and Areas with Failures](#test-results-and-areas-with-failures)
+- [📚 Documentation](#-documentation)
+- [🛠️ Building and Running](#️-building-and-running)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+    - [Windows](#windows)
+    - [Linux (Ubuntu/Debian)](#linux-ubuntudebian)
+    - [Linux (Fedora/CentOS)](#linux-fedoracentos)
+    - [macOS](#macos)
+  - [Build](#build)
+  - [Run](#run)
+- [🎯 Recent Major Improvements](#-recent-major-improvements)
+- [🔮 Next Steps](#-next-steps)
+- [🤝 Contributing](#-contributing)
+- [👨‍💻 Authorship](#-authorship)
+
+---
+
 ## 🎯 **Current Status: 82.3% k.exe Compatibility!**
 
 **Latest Achievement**: Complete comparison framework with **82.3% compatibility** with k.exe (205/264 tests matching). The interpreter is functionally complete with comprehensive testing and validation capabilities.
@@ -181,6 +222,50 @@ dotnet run
 - **Batch processing** to prevent timeouts
 - **Detailed reporting** with `comparison_table.txt`
 
+### **Test Results and Areas with Failures**
+
+#### **Unit Tests: 212/215 tests passing (98.6% success rate) ✅**
+- **Test Suite Coverage**: 215/215 files (100% coverage)
+
+#### **Passing Tests (212/215) - EXCELLENT!**
+- All basic arithmetic operations (4/4) ✅
+- All vector operations (7/7) ✅ 
+- All vector indexing operations (5/5) ✅
+- All function operations (15/15) ✅
+- All symbol operations (8/8) ✅
+- All dictionary operations (10/10) ✅
+- All adverb operations (21/21) ✅
+- All type operations (12/12) ✅
+- All special value operations (25/25) ✅
+- All overflow/underflow operations (11/12) ✅
+- All vector formatting operations (5/5) ✅
+- All operator precedence operations (8/8) ✅
+- All parser edge cases (19/19) ✅ 
+- All where operator tests (3/3) ✅
+- All niladic function tests (1/1) ✅
+- **Grade operators with rank errors** (2/2) ✅ - Proper rank error implementation for scalar inputs
+
+#### **Unit Test Failures (3/215) - MINIMAL ISSUES**
+1. **`overflow_long_min_minus1.k`**
+   - **Issue**: Long overflow edge case - "Value was either too large or too small for an Int64"
+   - **Expected**: `0IL`, **Actual**: `Error`
+   - **Status**: Edge case overflow handling needs refinement
+
+2. **`variable_scoping_nested_functions.k`**
+   - **Issue**: "Dot-apply operator requires a function on the left side"
+   - **Expected**: `140`, **Actual**: `Error`
+   - **Status**: Nested function support not yet implemented (known limitation)
+
+3. **`variable_scoping_global_assignment.k`**
+   - **Issue**: "Undefined variable: test5"
+   - **Expected**: `130`, **Actual**: `Error`
+   - **Status**: Related to nested function limitation (known limitation)
+
+#### **Comparison Test Issues (44/264)**
+- **❌ Differed**: 13 tests with meaningful output differences
+- **💥 Errors**: 31 tests (mostly adverb-related edge cases)
+- **⚠️ Skipped**: 15 tests (long integers unsupported by 32-bit k.exe)
+
 ---
 
 ## 📚 **Documentation**
@@ -210,11 +295,86 @@ K3> \p 10                // Set precision to 10 decimal places
 - **.NET 6.0 SDK** or later
 - **Windows/Linux/macOS** with .NET support
 
+#### **Platform-Specific Requirements**
+
+**Windows:**
+- Windows 10/11 or Windows Server 2016+
+- Visual Studio 2022 (optional, for IDE development)
+  - Download: [Visual Studio 2022 Community](https://visualstudio.microsoft.com/vs/community/)
+  - Ensure ".NET desktop development" workload is selected
+
+**Linux:**
+- Ubuntu 18.04+, Debian 10+, Fedora 32+, openSUSE 15+, or equivalent
+- Terminal access
+- Required packages (Ubuntu/Debian): `sudo apt-get update && sudo apt-get install -y curl gnupg`
+- Required packages (Fedora): `sudo dnf install curl`
+
+**macOS:**
+- macOS 10.15 (Catalina) or later
+- Xcode Command Line Tools (optional): `xcode-select --install`
+- Homebrew (optional, for easier package management): [brew.sh](https://brew.sh/)
+
+### **Installation**
+
+#### **Windows**
+```powershell
+# Download and install .NET 6.0 SDK
+# Visit: https://dotnet.microsoft.com/download/dotnet/6.0
+
+# Verify installation
+dotnet --version
+```
+
+#### **Linux (Ubuntu/Debian)**
+```bash
+# Install .NET 6.0 SDK
+curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 6.0
+
+# Add to PATH (add to ~/.bashrc or ~/.zshrc)
+export PATH=$PATH:$HOME/.dotnet
+
+# Verify installation
+dotnet --version
+```
+
+#### **Linux (Fedora/CentOS)**
+```bash
+# Install .NET 6.0 SDK
+curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 6.0
+
+# Add to PATH
+export PATH=$PATH:$HOME/.dotnet
+
+# Verify installation
+dotnet --version
+```
+
+#### **macOS**
+```bash
+# Option 1: Download from Microsoft
+# Visit: https://dotnet.microsoft.com/download/dotnet/6.0
+
+# Option 2: Use Homebrew
+brew install dotnet
+
+# Verify installation
+dotnet --version
+```
+
 ### **Build**
 ```bash
+# Clone the repository (if not already done)
+git clone <repository-url>
+cd ksharp
+
+# Restore dependencies
 dotnet restore
+
+# Build the project
 dotnet build
-dotnet build -c Release    # Optimized build
+
+# Build for release (optimized)
+dotnet build -c Release
 ```
 
 ### **Run**
@@ -227,6 +387,73 @@ dotnet run script.k
 
 # Release build
 dotnet run -c Release
+```
+
+### **IDE Integration**
+
+#### **Visual Studio (Windows)**
+1. Open `K3CSharp.sln` in Visual Studio 2022
+2. Build Solution (Ctrl+Shift+B)
+3. Set `K3CSharp` as startup project
+4. Press F5 to run with debugging
+5. Press Ctrl+F5 to run without debugging
+
+#### **Visual Studio Code (All Platforms)**
+1. Install [C# extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csharp)
+2. Open project folder in VS Code
+3. Press F5 to build and run
+4. Use integrated terminal for REPL: `dotnet run`
+
+#### **JetBrains Rider (All Platforms)**
+1. Open `K3CSharp.sln` in Rider
+2. Build Solution (Ctrl+F9)
+3. Right-click `K3CSharp` project → Run
+4. Use built-in terminal for script execution
+
+### **Troubleshooting**
+
+#### **Common Issues**
+
+**"dotnet: command not found"**
+- Ensure .NET SDK is installed and in PATH
+- Restart terminal after installation
+- Verify with `echo $PATH` (Linux/macOS) or `echo %PATH%` (Windows)
+
+**"Cannot find project or solution file"**
+- Ensure you're in the correct directory containing `.csproj` or `.sln` files
+- Use `ls` (Linux/macOS) or `dir` (Windows) to verify files
+
+**Build errors on Linux/macOS**
+- Ensure all required packages are installed
+- Try `dotnet clean` followed by `dotnet build`
+- Check file permissions: `chmod +x *.sh` (if using shell scripts)
+
+**Performance issues**
+- Use release build: `dotnet run -c Release`
+- For large datasets, consider increasing memory: `dotnet run --environment DOTNET_GCHeapCount=1`
+
+#### **Platform-Specific Tips**
+
+**Windows PowerShell:**
+```powershell
+# Set execution policy for scripts (if needed)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+**Linux/macOS Shell:**
+```bash
+# Make script files executable
+chmod +x *.sh
+
+# Use bash explicitly if needed
+bash script.sh
+```
+
+**macOS Specific:**
+```bash
+# If using zsh (default on modern macOS)
+echo 'export PATH=$PATH:$HOME/.dotnet' >> ~/.zshrc
+source ~/.zshrc
 ```
 
 ---
@@ -284,23 +511,19 @@ dotnet run -c Release
 
 ---
 
-## 📄 **License**
+## 👨‍💻 **Authorship**
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+**Development Approach**
+- **Test-Driven Development**: Every feature includes comprehensive test coverage
+- **Iterative Implementation**: Features built incrementally with validation
+- **Code Quality**: Clean, maintainable C# code following best practices
+- **Advanced Features**: Function projections, adverb chaining, and hybrid function storage
 
----
-
-## 🎉 **Conclusion**
-
-K3Sharp is a **functionally complete** K3 language interpreter with **82.3% compatibility** with the reference k.exe implementation. The project includes:
-
-- ✅ **Complete language implementation** with all major features
-- ✅ **Comprehensive testing framework** with 215 unit tests
-- ✅ **Advanced comparison system** with k.exe validation
-- ✅ **Robust error handling** and user-friendly interface
-- ✅ **Modern project structure** with dedicated comparison project
-
-The interpreter is **production-ready** for most K3 use cases, with ongoing development focused on achieving even higher compatibility with k.exe.
+**Project Lead**: ERufian
+- **Architecture Design**: Complete K3 language implementation in C#
+- **Core Implementation**: Lexer, Parser, Evaluator, and Type System
+- **Testing Framework**: Comprehensive unit tests and k.exe comparison system
+- **Documentation**: Complete API documentation and user guides
 
 ---
 
