@@ -28,30 +28,32 @@ namespace K3CSharp
 
         public string ExecuteScript(string scriptContent)
         {
-            string tempScriptPath = null;
-            string tempOutputPath = null;
-
+            var tempScriptPath = CreateTempScriptWithExit(scriptContent);
+            var outputPath = Path.Combine(tempDirectory, $"k_output_{Guid.NewGuid():N}.txt");
+            
             try
             {
-                // Create temporary script with double backslash to force exit
-                tempScriptPath = CreateTempScriptWithExit(scriptContent);
+                // Check for unsupported long integers (32-bit k.exe limitation)
+                if (ContainsLongInteger(scriptContent))
+                {
+                    return "UNSUPPORTED: Script contains long integers (64-bit) - k.exe 32-bit does not support them";
+                }
                 
-                // Create temporary output file
-                tempOutputPath = Path.Combine(tempDirectory, $"k_output_{Guid.NewGuid():N}.txt");
-                
-                // Execute k.exe with the temporary script
-                var result = ExecuteKProcess(tempScriptPath, tempOutputPath);
-                
-                // Read and clean the output
-                var output = ReadAndCleanOutput(tempOutputPath);
-                
-                return output;
+                ExecuteKProcess(tempScriptPath, outputPath);
+                return ReadAndCleanOutput(outputPath);
             }
             finally
             {
-                // Clean up temporary files
-                CleanupTempFiles(tempScriptPath, tempOutputPath);
+                CleanupTempFiles(tempScriptPath, outputPath);
             }
+        }
+
+        private bool ContainsLongInteger(string scriptContent)
+        {
+            // Pattern: digits followed by 'L' (case insensitive)
+            // This matches K long integer notation like 123L, 456l, etc.
+            var longIntegerPattern = @"\b\d+[Ll]\b";
+            return System.Text.RegularExpressions.Regex.IsMatch(scriptContent, longIntegerPattern);
         }
 
         private string CreateTempScriptWithExit(string scriptContent)
