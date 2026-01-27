@@ -1,8 +1,0 @@
-K 3.2 2006-03-01 Copyright (C) 1993-2005 Kx Systems
-character error
-ÿþ2
-^
-load: temp_test.k ... + 1
-temp_test.k:
-parse error
-  

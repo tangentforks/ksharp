@@ -1,8 +1,0 @@
-K 3.2 2006-03-01 Copyright (C) 1993-2005 Kx Systems
-open error
-ÿþ(
-ÿþ ^
-load: test_script.k ... + 1
-test_script.k:
-domain error
-  
