@@ -1659,24 +1659,7 @@ namespace K3CSharp
                 {
                     var adverbType = PreviousToken().Type.ToString().Replace("TokenType.", "");
                     
-                    // Check if this is a vector-vector each operation
-                    if (left.Type == ASTNodeType.Vector && adverbType == "ADVERB_TICK")
-                    {
-                        // This is a vector-vector each operation, which should throw a length error
-                        // Parse the right side of the adverb
-                        var rightSide = ParseExpression();
-                        
-                        // Create adverb node with vector verb
-                        var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
-                        adverbNode.Value = new SymbolValue(adverbType);
-                        adverbNode.Children.Add(left);
-                        adverbNode.Children.Add(rightSide);
-                        
-                        left = adverbNode;
-                        continue;
-                    }
-                    
-                // Convert the binary operator to a verb symbol
+                    // Convert the binary operator to a verb symbol
                     var verbName = op.ToString() switch
                     {
                         "PLUS" => "+",
@@ -1694,47 +1677,18 @@ namespace K3CSharp
                     };
                     var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
                     
-                    // For mixed scan operations (scalar verb\ vector), create a vector containing the scalar and verb
-                    // that the Scan method can recognize as a mixed scan
-                    if (IsScalar(left) && adverbType == "ADVERB_BACKSLASH")
-                    {
-                        var mixedScanVector = new List<ASTNode>();
-                        mixedScanVector.Add(left);
-                        mixedScanVector.Add(verbNode);
-                        var mixedScanNode = ASTNode.MakeVector(mixedScanVector);
-                        
-                        // Parse the right side of the adverb
-                        var right = ParseExpression();
-                        
-                        // Create adverb node with the mixed scan vector
-                        var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
-                        adverbNode.Value = new SymbolValue(adverbType);
-                        adverbNode.Children.Add(mixedScanNode);
-                        adverbNode.Children.Add(right);
-                        
-                        left = adverbNode;
-                    }
-                    else
-                    {
-                        // Regular adverb operation (including mixed over operations)
-                        // Parse the right side of the adverb
-                        var right = ParseExpression();
-                        
-                        // Create adverb node with both scalar and verb information
-                        var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
-                        adverbNode.Value = new SymbolValue(adverbType);
-                        
-                        // Create a vector containing the scalar and verb symbol for mixed adverbs
-                        var mixedAdverbVector = new List<ASTNode>();
-                        mixedAdverbVector.Add(left);  // Add the scalar value
-                        mixedAdverbVector.Add(verbNode);  // Add the verb symbol
-                        var mixedAdverbNode = ASTNode.MakeVector(mixedAdverbVector);
-                        
-                        adverbNode.Children.Add(mixedAdverbNode);
-                        adverbNode.Children.Add(right);
-                        
-                        left = adverbNode;
-                    }
+                    // Parse the right side of the adverb
+                    var rightSide = ParseExpression();
+                    
+                    // Create the correct adverb structure: ADVERB(verb, left, right)
+                    var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                    adverbNode.Value = new SymbolValue(adverbType);
+                    adverbNode.Children.Add(verbNode);
+                    adverbNode.Children.Add(left);
+                    adverbNode.Children.Add(rightSide);
+                    
+                    left = adverbNode;
+                    continue;
                 }
                 else
                 {

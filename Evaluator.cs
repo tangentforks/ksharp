@@ -186,32 +186,50 @@ namespace K3CSharp
                 var left = Evaluate(node.Children[0]);
                 var right = Evaluate(node.Children[1]);
 
-                return op.Value switch
+                if (op.Value is SymbolValue symbol)
                 {
-                    "+" => Add(left, right),
-                    "-" => Subtract(left, right),
-                    "*" => Multiply(left, right),
-                    "%" => Divide(left, right),
-                    "&" => Min(left, right),
-                    "|" => Max(left, right),
-                    "<" => Less(left, right),
-                    ">" => Greater(left, right),
-                    "=" => Equal(left, right),
-                    "^" => Power(left, right),
-                    "!" => Modulus(left, right),
-                    "," => Join(left, right),
-                    "#" => Take(left, right),
-                    "_" => FloorBinary(left, right),
-                    "?" => UniqueBinary(left, right),
-                    "~" => NegateBinary(left, right),
-                    "@" => VectorIndex(left, right),
-                    "." => DotApply(left, right),
-                    "::" => GlobalAssignment(left, right),
-                    "ADVERB_SLASH" => Over(left, right),
-                    "ADVERB_BACKSLASH" => Scan(left, right),
-                    "ADVERB_TICK" => Each(left, right),
-                    "TYPE" => GetType(left, right),
-                    _ => throw new Exception($"Unknown binary operator: {op.Value}")
+                    return symbol.Value switch
+                    {
+                        "+" => Add(left, right),
+                        "-" => Subtract(left, right),
+                        "*" => Multiply(left, right),
+                        "%" => Divide(left, right),
+                        "^" => Power(left, right),
+                        "!" => Modulus(left, right),
+                        "&" => Min(left, right),
+                        "|" => Max(left, right),
+                        "<" => LessThan(left, right),
+                        ">" => GreaterThan(left, right),
+                        "=" => Equal(left, right),
+                        "," => Join(left, right),
+                        "#" => Count(left, right),
+                        "::" => GlobalAssignment(left, right),
+                        "ADVERB_SLASH" => Over(left, right),
+                        "ADVERB_BACKSLASH" => Scan(left, right),
+                        "ADVERB_TICK" => Each(left, right),
+                        "TYPE" => GetType(left, right),
+                        _ => throw new Exception($"Unknown binary operator: {op.Value}")
+                    };
+                }
+                else
+                {
+                    throw new Exception("Binary operator must have a symbol value");
+                }
+            }
+            // Handle 3-argument adverb structure: ADVERB(verb, left, right)
+            else if (node.Children.Count == 3 && op.Value is SymbolValue symbol && 
+                    (symbol.Value == "ADVERB_SLASH" || symbol.Value == "ADVERB_BACKSLASH" || symbol.Value == "ADVERB_TICK"))
+            {
+                var verb = Evaluate(node.Children[0]);
+                var left = Evaluate(node.Children[1]);
+                var right = Evaluate(node.Children[2]);
+
+                return symbol.Value switch
+                {
+                    "ADVERB_SLASH" => Over(verb, left, right),
+                    "ADVERB_BACKSLASH" => Scan(verb, left, right),
+                    "ADVERB_TICK" => Each(verb, left, right),
+                    _ => throw new Exception($"Unknown adverb: {op.Value}")
                 };
             }
             else if (op.Value == "ADVERB_CHAIN")
@@ -1659,6 +1677,7 @@ namespace K3CSharp
                         }
                         return mixedResult;
                     }
+                    return mixedResult;
                 }
                 
                 // For mixed adverb operations (scalar + over + vector), the scalar should be used only once
@@ -1666,24 +1685,25 @@ namespace K3CSharp
                 K3Value result;
                 
                 // Check if this is a mixed adverb (scalar + over + vector)
-                if (IsScalar(verb) && verb.Type != ValueType.Symbol)
+                if (IsScalar(left) && left.Type != ValueType.Symbol)
                 {
                     // Mixed adverb: start with the scalar verb, then apply to each vector element
-                    result = verb;
-                    for (int i = 0; i < dataVec.Elements.Count; i++)
+                    result = left;
+                    for (int i = 0; i < rightVec.Elements.Count; i++)
                     {
-                        result = ApplyVerbWithOperator(verb, result, dataVec.Elements[i]);
+                        result = ApplyVerbWithOperator(left, result, rightVec.Elements[i]);
                     }
                 }
                 else
                 {
                     // Regular over: start with first element and apply verb to accumulate
-                    result = dataVec.Elements[0];
-                    for (int i = 1; i < dataVec.Elements.Count; i++)
+                    result = leftVec.Elements[0];
+                    for (int i = 1; i < leftVec.Elements.Count; i++)
                     {
                         // Apply the verb to result and next element
-                        if (verb is SymbolValue verbSymbol)
+                        if (verbSymbol != null)
                         {
+                            result = ApplyVerb(verbSymbol, result, leftVec.Elements[i]);
                             result = ApplyVerb(verbSymbol.Value, result, dataVec.Elements[i]);
                         }
                         else
@@ -1877,9 +1897,56 @@ namespace K3CSharp
             throw new Exception($"Scan not implemented for types: {verb.Type}, {data.Type}");
         }
 
+        private K3Value Each(K3Value verb, K3Value left, K3Value right)
+        {
+            // New structure: Each(verbSymbol, leftVector, rightVector)
+            if (verb is SymbolValue verbSymbol)
+            {
+                // Handle vector + vector case (same length) - should behave like default operator
+                if (left is VectorValue leftVec && right is VectorValue rightVec)
+                {
+                    // Check if vectors have different lengths - should throw length error
+                    if (leftVec.Elements.Count != rightVec.Elements.Count)
+                    {
+                        throw new Exception($"length error: {leftVec.Elements.Count} != {rightVec.Elements.Count}");
+                    }
+                    
+                    // Apply binary operation element-wise (same as default operator behavior)
+                    var result = new List<K3Value>();
+                    for (int i = 0; i < leftVec.Elements.Count; i++)
+                    {
+                        var leftElement = leftVec.Elements[i];
+                        var rightElement = rightVec.Elements[i];
+                        
+                        result.Add(ApplyVerb(verbSymbol.Value, leftElement, rightElement));
+                    }
+                    return new VectorValue(result);
+                }
+                
+                // Handle scalar + vector case
+                if (IsScalar(left) && right is VectorValue vec)
+                {
+                    var result = new List<K3Value>();
+                    foreach (var element in vec.Elements)
+                    {
+                        result.Add(ApplyVerb(verbSymbol.Value, left, element));
+                    }
+                    return new VectorValue(result);
+                }
+                
+                // Handle scalar + scalar case
+                if (IsScalar(left) && IsScalar(right))
+                {
+                    return ApplyVerb(verbSymbol.Value, left, right);
+                }
+            }
+            
+            throw new Exception($"Each not implemented for types: {verb.Type}, {left.Type}, {right.Type}");
+        }
+
         private K3Value Each(K3Value verb, K3Value data)
         {
-            // Handle vector + vector case (same length)
+            // Legacy 2-argument call for backward compatibility
             if (verb is VectorValue verbVec && data is VectorValue dataVec)
             {
                 // Check if vectors have different lengths - should throw length error
@@ -1909,7 +1976,7 @@ namespace K3CSharp
                 return new VectorValue(result);
             }
             
-            // Handle scalar + vector case
+            // Handle scalar + vector case (legacy)
             if (IsScalar(verb) && data is VectorValue vec)
             {
                 var result = new List<K3Value>();
@@ -1937,7 +2004,7 @@ namespace K3CSharp
                 return new VectorValue(result);
             }
             
-            // Handle scalar + scalar case
+            // Handle scalar + scalar case (legacy)
             if (IsScalar(verb) && IsScalar(data))
             {
                 if (verb is SymbolValue verbSymbol)
