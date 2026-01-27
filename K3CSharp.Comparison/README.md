@@ -52,6 +52,14 @@ The comparison uses multiple normalization strategies:
 - `ComparisonRunner.cs` - Main comparison engine
 - `KInterpreterWrapper.cs` - k.exe execution wrapper
 - `comparison_table.txt` - Generated comparison report
+- `K_WRAPPER_README.md` - Detailed wrapper documentation
+- `K_WRAPPER_SUMMARY.md` - Implementation summary and test results
+
+## Documentation
+
+For detailed information about the KInterpreterWrapper implementation, see:
+- `K_WRAPPER_README.md` - Complete usage guide and API documentation
+- `K_WRAPPER_SUMMARY.md` - Implementation summary and test analysis
 
 ## Dependencies
 
