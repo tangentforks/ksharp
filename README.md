@@ -513,17 +513,13 @@ source ~/.zshrc
 
 ## 👨‍💻 **Authorship**
 
-**Development Approach**
+This K3 interpreter implementation was written by **SWE-1.5** based on a specification, prompts, and comments provided by **Eusebio Rufian-Zilbermann**.
+
+### Development Approach
 - **Test-Driven Development**: Every feature includes comprehensive test coverage
 - **Iterative Implementation**: Features built incrementally with validation
 - **Code Quality**: Clean, maintainable C# code following best practices
 - **Advanced Features**: Function projections, adverb chaining, and hybrid function storage
-
-**Project Lead**: ERufian
-- **Architecture Design**: Complete K3 language implementation in C#
-- **Core Implementation**: Lexer, Parser, Evaluator, and Type System
-- **Testing Framework**: Comprehensive unit tests and k.exe comparison system
-- **Documentation**: Complete API documentation and user guides
 
 ---
 
