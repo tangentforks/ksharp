@@ -56,10 +56,16 @@ namespace K3CSharp
 
         private bool ContainsLongInteger(string scriptContent)
         {
-            // Pattern: digits followed by 'L' (case insensitive)
+            // Pattern 1: Regular long integers: digits followed by 'L' (case insensitive)
             // This matches K long integer notation like 123L, 456l, etc.
-            var longIntegerPattern = @"\b\d+[Ll]\b";
-            return System.Text.RegularExpressions.Regex.IsMatch(scriptContent, longIntegerPattern);
+            var regularLongPattern = @"\b\d+[Ll]\b";
+            
+            // Pattern 2: Special K long integers: 0IL (integer long) and 0NL (null long)
+            var specialLongPattern = @"\b0[ILN][Ll]\b";
+            
+            // Combine both patterns
+            var combinedPattern = $"({regularLongPattern}|{specialLongPattern})";
+            return System.Text.RegularExpressions.Regex.IsMatch(scriptContent, combinedPattern);
         }
 
         private string CreateTempScriptWithExit(string scriptContent)
