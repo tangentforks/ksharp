@@ -186,9 +186,7 @@ namespace K3CSharp
                 var left = Evaluate(node.Children[0]);
                 var right = Evaluate(node.Children[1]);
 
-                if (op.Value is SymbolValue symbol)
-                {
-                    return symbol.Value switch
+                return op.Value.ToString() switch
                     {
                         "+" => Add(left, right),
                         "-" => Subtract(left, right),
@@ -202,7 +200,7 @@ namespace K3CSharp
                         ">" => GreaterThan(left, right),
                         "=" => Equal(left, right),
                         "," => Join(left, right),
-                        "#" => Count(left, right),
+                        "#" => Count(left),
                         "::" => GlobalAssignment(left, right),
                         "ADVERB_SLASH" => Over(left, right),
                         "ADVERB_BACKSLASH" => Scan(left, right),
@@ -210,29 +208,24 @@ namespace K3CSharp
                         "TYPE" => GetType(left, right),
                         _ => throw new Exception($"Unknown binary operator: {op.Value}")
                     };
-                }
-                else
-                {
-                    throw new Exception("Binary operator must have a symbol value");
-                }
             }
             // Handle 3-argument adverb structure: ADVERB(verb, left, right)
-            else if (node.Children.Count == 3 && op.Value is SymbolValue symbol && 
-                    (symbol.Value == "ADVERB_SLASH" || symbol.Value == "ADVERB_BACKSLASH" || symbol.Value == "ADVERB_TICK"))
+            else if (node.Children.Count == 3 && 
+                    (op.Value.ToString() == "ADVERB_SLASH" || op.Value.ToString() == "ADVERB_BACKSLASH" || op.Value.ToString() == "ADVERB_TICK"))
             {
                 var verb = Evaluate(node.Children[0]);
                 var left = Evaluate(node.Children[1]);
                 var right = Evaluate(node.Children[2]);
 
-                return symbol.Value switch
+                return op.Value.ToString() switch
                 {
-                    "ADVERB_SLASH" => Over(verb, left, right),
-                    "ADVERB_BACKSLASH" => Scan(verb, left, right),
-                    "ADVERB_TICK" => Each(verb, left, right),
+                    "ADVERB_SLASH" => Over(left, right),
+                    "ADVERB_BACKSLASH" => Scan(left, right),
+                    "ADVERB_TICK" => Each(left, right),
                     _ => throw new Exception($"Unknown adverb: {op.Value}")
                 };
             }
-            else if (op.Value == "ADVERB_CHAIN")
+            else if (op.Value.ToString() == "ADVERB_CHAIN")
             {
                 return EvaluateAdverbChain(node);
             }
@@ -1661,56 +1654,26 @@ namespace K3CSharp
             // Handle vector case (over)
             if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
             {
-                // Check if this is a mixed adverb operation (verb is a vector with [scalar, verbSymbol])
-                if (verb is VectorValue mixedVerbVec && mixedVerbVec.Elements.Count == 2)
-                {
-                    var scalar = mixedVerbVec.Elements[0];
-                    var verbSymbol = mixedVerbVec.Elements[1] as SymbolValue;
-                    
-                    if (verbSymbol != null)
-                    {
-                        // Mixed adverb: start with the scalar, then apply the verb to each vector element
-                        var mixedResult = scalar;
-                        for (int i = 0; i < dataVec.Elements.Count; i++)
-                        {
-                            mixedResult = ApplyVerb(verbSymbol.Value, mixedResult, dataVec.Elements[i]);
-                        }
-                        return mixedResult;
-                    }
-                    return mixedResult;
-                }
-                
                 // For mixed adverb operations (scalar + over + vector), the scalar should be used only once
                 // Example: 1 +/ 2 3 4 5 should be 1 + 2 + 3 + 4 + 5, not (1+2) + (1+3) + (1+4) + (1+5)
                 K3Value result;
                 
-                // Check if this is a mixed adverb (scalar + over + vector)
-                if (IsScalar(left) && left.Type != ValueType.Symbol)
+                if (verb is SymbolValue verbSymbol)
                 {
-                    // Mixed adverb: start with the scalar verb, then apply to each vector element
-                    result = left;
-                    for (int i = 0; i < rightVec.Elements.Count; i++)
+                    // Regular over: start with first element and apply verb to accumulate
+                    result = dataVec.Elements[0];
+                    for (int i = 1; i < dataVec.Elements.Count; i++)
                     {
-                        result = ApplyVerbWithOperator(left, result, rightVec.Elements[i]);
+                        result = ApplyVerb(verbSymbol.Value, result, dataVec.Elements[i]);
                     }
                 }
                 else
                 {
-                    // Regular over: start with first element and apply verb to accumulate
-                    result = leftVec.Elements[0];
-                    for (int i = 1; i < leftVec.Elements.Count; i++)
+                    // If verb is not a symbol, treat it as a value to apply with the operator
+                    result = verb;
+                    for (int i = 0; i < dataVec.Elements.Count; i++)
                     {
-                        // Apply the verb to result and next element
-                        if (verbSymbol != null)
-                        {
-                            result = ApplyVerb(verbSymbol, result, leftVec.Elements[i]);
-                            result = ApplyVerb(verbSymbol.Value, result, dataVec.Elements[i]);
-                        }
-                        else
-                        {
-                            // If verb is not a symbol, treat it as a value to apply with the operator
-                            result = ApplyVerbWithOperator(verb, result, dataVec.Elements[i]);
-                        }
+                        result = ApplyVerbWithOperator(verb, result, dataVec.Elements[i]);
                     }
                 }
                 
