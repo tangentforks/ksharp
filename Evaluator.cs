@@ -221,7 +221,7 @@ namespace K3CSharp
                 {
                     "ADVERB_SLASH" => Over(left, right),
                     "ADVERB_BACKSLASH" => Scan(left, right),
-                    "ADVERB_TICK" => Each(left, right),
+                    "ADVERB_TICK" => Each(verb, left, right),
                     _ => throw new Exception($"Unknown adverb: {op.Value}")
                 };
             }
