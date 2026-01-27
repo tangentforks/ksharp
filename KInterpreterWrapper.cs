@@ -12,12 +12,14 @@ namespace K3CSharp
         private readonly string kExePath;
         private readonly string tempDirectory;
         private readonly int timeoutMs;
+        private readonly string runId;
 
         public KInterpreterWrapper(string kExePath = @"c:\k\k.exe", int timeoutMs = 10000)
         {
             this.kExePath = kExePath;
             this.timeoutMs = timeoutMs;
-            this.tempDirectory = Path.Combine(Path.GetTempPath(), "ksharp_wrapper");
+            this.runId = $"{DateTime.Now:yyyyMMdd_HHmmss}_{Environment.ProcessId}_{Guid.NewGuid():N}";
+            this.tempDirectory = Path.Combine(Path.GetTempPath(), "ksharp_wrapper", runId);
             
             // Ensure temp directory exists
             if (!Directory.Exists(tempDirectory))
@@ -28,23 +30,27 @@ namespace K3CSharp
 
         public string ExecuteScript(string scriptContent)
         {
-            var tempScriptPath = CreateTempScriptWithExit(scriptContent);
-            var outputPath = Path.Combine(tempDirectory, $"k_output_{Guid.NewGuid():N}.txt");
+            // Check for unsupported long integers (32-bit k.exe limitation)
+            if (ContainsLongInteger(scriptContent))
+            {
+                return "UNSUPPORTED: Script contains long integers (64-bit) - k.exe 32-bit does not support them";
+            }
+            
+            string tempScriptPath = null;
+            string outputPath = null;
             
             try
             {
-                // Check for unsupported long integers (32-bit k.exe limitation)
-                if (ContainsLongInteger(scriptContent))
-                {
-                    return "UNSUPPORTED: Script contains long integers (64-bit) - k.exe 32-bit does not support them";
-                }
+                tempScriptPath = CreateTempScriptWithExit(scriptContent);
+                outputPath = Path.Combine(tempDirectory, $"k_output_{Guid.NewGuid():N}_{DateTime.Now.Ticks}.txt");
                 
                 ExecuteKProcess(tempScriptPath, outputPath);
                 return ReadAndCleanOutput(outputPath);
             }
             finally
             {
-                CleanupTempFiles(tempScriptPath, outputPath);
+                // Cleanup with retry mechanism
+                CleanupTempFilesWithRetry(tempScriptPath, outputPath);
             }
         }
 
@@ -58,14 +64,19 @@ namespace K3CSharp
 
         private string CreateTempScriptWithExit(string scriptContent)
         {
-            var tempScriptPath = Path.Combine(tempDirectory, $"k_script_{Guid.NewGuid():N}.k");
+            var tempScriptPath = Path.Combine(tempDirectory, $"k_script_{Guid.NewGuid():N}_{DateTime.Now.Ticks}.k");
             
             // Add _exit 0 to force k.exe to exit with status code 0
             // This is more explicit than double backslash and provides a clean exit
             var modifiedContent = scriptContent.TrimEnd() + "\n_exit 0\n";
             
-            // Use ASCII encoding to avoid UTF-8 BOM issues with k.exe
-            File.WriteAllText(tempScriptPath, modifiedContent, Encoding.ASCII);
+            // Use atomic write with file sharing to prevent locking issues
+            using (var fileStream = new FileStream(tempScriptPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            using (var writer = new StreamWriter(fileStream, Encoding.ASCII))
+            {
+                writer.Write(modifiedContent);
+            }
+            
             return tempScriptPath;
         }
 
@@ -75,7 +86,7 @@ namespace K3CSharp
             var startInfo = new ProcessStartInfo
             {
                 FileName = "cmd.exe",
-                Arguments = $"/c \"{kExePath}\" \"{scriptPath}\" > \"{outputPath}\" 2>&1",
+                Arguments = $"/c \"\"{kExePath}\" \"{scriptPath}\" > \"{outputPath}\" 2>&1\"",
                 UseShellExecute = false,
                 RedirectStandardOutput = false, // Don't redirect - using shell redirection
                 RedirectStandardError = false,  // Don't redirect - using shell redirection
@@ -88,46 +99,8 @@ namespace K3CSharp
             {
                 process.Start();
                 
-                // Monitor output file with timeout
-                var checkIntervalMs = 500; // Check every 500ms
-                var elapsedMs = 0;
-                var lastFileSize = 0L;
-                var lastModified = DateTime.MinValue;
-                
-                while (!process.HasExited && elapsedMs < timeoutMs)
-                {
-                    System.Threading.Thread.Sleep(checkIntervalMs);
-                    elapsedMs += checkIntervalMs;
-                    
-                    // Check if output file exists and is being written to
-                    if (File.Exists(outputPath))
-                    {
-                        var fileInfo = new FileInfo(outputPath);
-                        var currentSize = fileInfo.Length;
-                        var currentModified = fileInfo.LastWriteTime;
-                        
-                        // If file hasn't changed in the last check interval, consider it hung
-                        if (currentSize == lastFileSize && currentModified == lastModified)
-                        {
-                            // File hasn't changed - might be hung
-                            if (elapsedMs >= 2000) // Give at least 2 seconds before considering hung
-                            {
-                                Console.WriteLine($"k.exe appears to be hung (no output for {checkIntervalMs}ms)");
-                                process.Kill();
-                                throw new TimeoutException($"k.exe execution timed out - no output for {elapsedMs}ms");
-                            }
-                        }
-                        else
-                        {
-                            // File is being written to, reset timeout
-                            lastFileSize = currentSize;
-                            lastModified = currentModified;
-                        }
-                    }
-                }
-                
-                // Final check for process completion
-                if (!process.HasExited)
+                // Simple wait with timeout
+                if (!process.WaitForExit(timeoutMs))
                 {
                     process.Kill();
                     throw new TimeoutException($"k.exe execution timed out after {timeoutMs}ms");
@@ -163,46 +136,91 @@ namespace K3CSharp
                 return "";
             }
 
-            var lines = File.ReadAllLines(outputPath, Encoding.UTF8);
-            var cleanedLines = new List<string>();
-
-            foreach (var line in lines)
-            {
-                var trimmedLine = line.Trim();
-                
-                // Skip licensing information lines that start with WIN32 and end with EVAL
-                if (trimmedLine.StartsWith("WIN32") && trimmedLine.EndsWith("EVAL"))
-                {
-                    continue;
-                }
-                
-                // Skip stderr markers
-                if (trimmedLine.StartsWith("STDERR:"))
-                {
-                    continue;
-                }
-                
-                // Add the cleaned line
-                cleanedLines.Add(line);
-            }
-
-            return string.Join("\n", cleanedLines).TrimEnd();
-        }
-
-        private void CleanupTempFiles(params string[] filePaths)
-        {
-            foreach (var filePath in filePaths)
+            // Use retry mechanism for file access
+            const int maxRetries = 3;
+            const int retryDelayMs = 100;
+            
+            for (int attempt = 0; attempt < maxRetries; attempt++)
             {
                 try
                 {
-                    if (filePath != null && File.Exists(filePath))
+                    using (var fileStream = new FileStream(outputPath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, FileOptions.SequentialScan))
+                    using (var reader = new StreamReader(fileStream, Encoding.UTF8))
                     {
-                        File.Delete(filePath);
+                        var lines = new List<string>();
+                        string line;
+                        
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            var trimmedLine = line.Trim();
+                            
+                            // Skip licensing information lines that start with WIN32 and end with EVAL
+                            if (trimmedLine.StartsWith("WIN32") && trimmedLine.EndsWith("EVAL"))
+                            {
+                                continue;
+                            }
+                            
+                            // Skip stderr markers
+                            if (trimmedLine.StartsWith("STDERR:"))
+                            {
+                                continue;
+                            }
+                            
+                            // Add the cleaned line
+                            lines.Add(line);
+                        }
+                        
+                        return string.Join("\n", lines).TrimEnd();
                     }
                 }
-                catch
+                catch (IOException ex) when (attempt < maxRetries - 1)
                 {
-                    // Ignore cleanup errors
+                    // File might be locked, wait and retry
+                    System.Threading.Thread.Sleep(retryDelayMs);
+                    continue;
+                }
+            }
+            
+            // If all retries failed, try one more time with basic read
+            try
+            {
+                return File.ReadAllText(outputPath, Encoding.UTF8).TrimEnd();
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        private void CleanupTempFilesWithRetry(params string[] filePaths)
+        {
+            const int maxRetries = 3;
+            const int retryDelayMs = 50;
+            
+            foreach (var filePath in filePaths)
+            {
+                if (filePath == null) continue;
+                
+                for (int attempt = 0; attempt < maxRetries; attempt++)
+                {
+                    try
+                    {
+                        if (File.Exists(filePath))
+                        {
+                            File.Delete(filePath);
+                        }
+                        break; // Success
+                    }
+                    catch (IOException) when (attempt < maxRetries - 1)
+                    {
+                        // File might be locked, wait and retry
+                        System.Threading.Thread.Sleep(retryDelayMs);
+                    }
+                    catch
+                    {
+                        // Other exceptions, don't retry
+                        break;
+                    }
                 }
             }
         }
