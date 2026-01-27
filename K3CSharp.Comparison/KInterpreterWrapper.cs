@@ -54,7 +54,7 @@ namespace K3CSharp
             }
         }
 
-        private bool ContainsLongInteger(string scriptContent)
+        public bool ContainsLongInteger(string scriptContent)
         {
             // Pattern 1: Regular long integers: digits followed by 'L' (case insensitive)
             // This matches K long integer notation like 123L, 456l, etc.

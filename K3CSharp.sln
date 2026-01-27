@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "K3CSharp", "K3CSharp.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "K3CSharp.Tests", "K3CSharp.Tests\K3CSharp.Tests.csproj", "{FFBEDADE-DC8C-C4FB-7325-577C7067BCAA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "K3CSharp.Comparison", "K3CSharp.Comparison\K3CSharp.Comparison.csproj", "{12345678-1234-5678-9ABC-123456789ABC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{FFBEDADE-DC8C-C4FB-7325-577C7067BCAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFBEDADE-DC8C-C4FB-7325-577C7067BCAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFBEDADE-DC8C-C4FB-7325-577C7067BCAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12345678-1234-5678-9ABC-123456789ABC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12345678-1234-5678-9ABC-123456789ABC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12345678-1234-5678-9ABC-123456789ABC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12345678-1234-5678-9ABC-123456789ABC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
