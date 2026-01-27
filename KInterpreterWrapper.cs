@@ -106,6 +106,9 @@ namespace K3CSharp
                     throw new TimeoutException($"k.exe execution timed out after {timeoutMs}ms");
                 }
 
+                // Add delay after exit to allow file operations to complete
+                System.Threading.Thread.Sleep(100); // 100ms delay
+
                 if (process.ExitCode != 0)
                 {
                     // Read error from output file if it exists
