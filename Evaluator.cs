@@ -201,7 +201,8 @@ namespace K3CSharp
                         "=" => Equal(left, right),
                         "," => Join(left, right),
                         "#" => Take(left, right),
-                        "_" => Drop(left, right),
+                        "_" => FloorBinary(left, right),
+                        "@" => AtIndex(left, right),
                         "::" => GlobalAssignment(left, right),
                         "ADVERB_SLASH" => Over(new SymbolValue("+"), left, right),
                         "ADVERB_BACKSLASH" => Scan(new SymbolValue("+"), left, right),
@@ -1262,8 +1263,8 @@ namespace K3CSharp
                 
                 if (!hasNestedVectors)
                 {
-                    // Simple vector - return its length
-                    return new IntegerValue(vecA.Elements.Count);
+                    // Simple vector - return its length as a 1-element vector
+                    return new VectorValue(new List<K3Value> { new IntegerValue(vecA.Elements.Count) });
                 }
                 else
                 {
@@ -1358,7 +1359,7 @@ namespace K3CSharp
                 }
             }
             
-            return new VectorValue(new List<K3Value>(), "enumerate_int"); // For scalars - return !0 (empty integer list)
+            return new VectorValue(new List<K3Value>(), "enumerate_int"); // For scalars - return !0 (empty integer vector)
         }
 
         private K3Value Enumerate(K3Value a)
@@ -1655,23 +1656,51 @@ namespace K3CSharp
             // Handle vector case (over)
             if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
             {
-                // For adverb with initialization: start with initialization value, then apply verb to accumulate
-                K3Value result = initialization;
+                K3Value result;
                 
-                if (verb is SymbolValue verbSymbol)
+                // If initialization is 0, use first element as initialization (K behavior for / without explicit init)
+                if (initialization is IntegerValue intInit && intInit.Value == 0 && dataVec.Elements.Count > 0)
                 {
-                    // Apply verb to each element of the vector, accumulating the result
-                    for (int i = 0; i < dataVec.Elements.Count; i++)
+                    result = dataVec.Elements[0]; // Use first element as starting point
+                    var startIndex = 1; // Start from second element
+                    
+                    if (verb is SymbolValue verbSymbol)
                     {
-                        result = ApplyVerb(verbSymbol.Value, result, dataVec.Elements[i]);
+                        // Apply verb to remaining elements
+                        for (int i = startIndex; i < dataVec.Elements.Count; i++)
+                        {
+                            result = ApplyVerb(verbSymbol.Value, result, dataVec.Elements[i]);
+                        }
+                    }
+                    else
+                    {
+                        // If verb is not a symbol, treat it as a value to apply with the operator
+                        for (int i = startIndex; i < dataVec.Elements.Count; i++)
+                        {
+                            result = ApplyVerbWithOperator(verb, result, dataVec.Elements[i]);
+                        }
                     }
                 }
                 else
                 {
-                    // If verb is not a symbol, treat it as a value to apply with the operator
-                    for (int i = 0; i < dataVec.Elements.Count; i++)
+                    // Use provided initialization value
+                    result = initialization;
+                    
+                    if (verb is SymbolValue verbSymbol)
                     {
-                        result = ApplyVerbWithOperator(verb, result, dataVec.Elements[i]);
+                        // Apply verb to each element of the vector, accumulating the result
+                        for (int i = 0; i < dataVec.Elements.Count; i++)
+                        {
+                            result = ApplyVerb(verbSymbol.Value, result, dataVec.Elements[i]);
+                        }
+                    }
+                    else
+                    {
+                        // If verb is not a symbol, treat it as a value to apply with the operator
+                        for (int i = 0; i < dataVec.Elements.Count; i++)
+                        {
+                            result = ApplyVerbWithOperator(verb, result, dataVec.Elements[i]);
+                        }
                     }
                 }
                 
@@ -1781,27 +1810,60 @@ namespace K3CSharp
             if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
             {
                 var result = new List<K3Value>();
-                var current = initialization;
+                K3Value current;
                 
-                // Add the initialization value as the first element
-                result.Add(current);
-                
-                if (verb is SymbolValue verbSymbol)
+                // If initialization is 0, use first element as initialization (K behavior for \ without explicit init)
+                if (initialization is IntegerValue intInit && intInit.Value == 0 && dataVec.Elements.Count > 0)
                 {
-                    // Apply verb to each element, accumulating the result
-                    for (int i = 0; i < dataVec.Elements.Count; i++)
+                    current = dataVec.Elements[0]; // Use first element as starting point
+                    result.Add(current); // Add first element to result
+                    
+                    var startIndex = 1; // Start from second element
+                    
+                    if (verb is SymbolValue verbSymbol)
                     {
-                        current = ApplyVerb(verbSymbol.Value, current, dataVec.Elements[i]);
-                        result.Add(current);
+                        // Apply verb to remaining elements
+                        for (int i = startIndex; i < dataVec.Elements.Count; i++)
+                        {
+                            current = ApplyVerb(verbSymbol.Value, current, dataVec.Elements[i]);
+                            result.Add(current);
+                        }
+                    }
+                    else
+                    {
+                        // If verb is not a symbol, treat it as a value to apply with the operator
+                        for (int i = startIndex; i < dataVec.Elements.Count; i++)
+                        {
+                            current = ApplyVerbWithOperator(verb, current, dataVec.Elements[i]);
+                            result.Add(current);
+                        }
                     }
                 }
                 else
                 {
-                    // If verb is not a symbol, treat it as a value to apply with the operator
-                    for (int i = 0; i < dataVec.Elements.Count; i++)
+                    // Use provided initialization value
+                    current = initialization;
+                    
+                    // Add the initialization value as the first element
+                    result.Add(current);
+                    
+                    if (verb is SymbolValue verbSymbol)
                     {
-                        current = ApplyVerbWithOperator(verb, current, dataVec.Elements[i]);
-                        result.Add(current);
+                        // Apply verb to each element, accumulating the result
+                        for (int i = 0; i < dataVec.Elements.Count; i++)
+                        {
+                            current = ApplyVerb(verbSymbol.Value, current, dataVec.Elements[i]);
+                            result.Add(current);
+                        }
+                    }
+                    else
+                    {
+                        // If verb is not a symbol, treat it as a value to apply with the operator
+                        for (int i = 0; i < dataVec.Elements.Count; i++)
+                        {
+                            current = ApplyVerbWithOperator(verb, current, dataVec.Elements[i]);
+                            result.Add(current);
+                        }
                     }
                 }
                 
@@ -2012,9 +2074,148 @@ namespace K3CSharp
         
         private K3Value StringRepresentation(K3Value value)
         {
-            // 5: verb - produce string representation of the argument
-            string representation = value.ToString();
+            // 5: verb - produce string representation of the argument with proper escaping
+            string representation = ToStringWithEscaping(value);
             return new VectorValue(new List<K3Value> { new CharacterValue(representation) });
+        }
+        
+        private string ToStringWithEscaping(K3Value value)
+        {
+            if (value is CharacterValue charVal)
+            {
+                // For character values, escape the result of ToString() which already includes quotes
+                return EscapeString(charVal.ToString());
+            }
+            else if (value is VectorValue vec)
+            {
+                // Handle vector representation with escaping
+                return VectorToStringWithEscaping(vec);
+            }
+            else
+            {
+                // For other types, use regular ToString
+                return value.ToString();
+            }
+        }
+        
+        private string EscapeString(string input)
+        {
+            var result = new System.Text.StringBuilder();
+            
+            foreach (char c in input)
+            {
+                switch (c)
+                {
+                    case '"':
+                        result.Append("\\\"");
+                        break;
+                    case '\\':
+                        result.Append("\\\\");
+                        break;
+                    case '\n':
+                        result.Append("\\n");
+                        break;
+                    case '\r':
+                        result.Append("\\r");
+                        break;
+                    case '\t':
+                        result.Append("\\t");
+                        break;
+                    case '\b':
+                        result.Append("\\b");
+                        break;
+                    case '\f':
+                        result.Append("\\f");
+                        break;
+                    default:
+                        if (c < ' ' || c > '~')
+                        {
+                            // Non-printable characters as octal escape
+                            result.Append($"\\{(int)c:o3}");
+                        }
+                        else
+                        {
+                            result.Append(c);
+                        }
+                        break;
+                }
+            }
+            
+            return result.ToString();
+        }
+        
+        private string VectorToStringWithEscaping(VectorValue vec)
+        {
+            if (vec.Elements.Count == 0)
+            {
+                return "()";
+            }
+            
+            // Check if this is a character vector - display as quoted string with escaping
+            if (vec.Elements.All(e => e is CharacterValue))
+            {
+                var chars = vec.Elements.Select(e => ((CharacterValue)e).Value);
+                var content = string.Concat(chars);
+                return $"\"{EscapeString(content)}\"";
+            }
+            
+            // Check if this is a symbol vector - display in compact format without spaces
+            if (vec.Elements.All(e => e is SymbolValue))
+            {
+                var symbols = vec.Elements.Select(e => ((SymbolValue)e).ToString());
+                return string.Concat(symbols);
+            }
+            
+            // Check if this is a mixed vector - keep parentheses and semicolons for clarity
+            var elementTypes = vec.Elements.Select(e => e.GetType()).Distinct().ToList();
+            var hasNestedVectors = vec.Elements.Any(e => e is VectorValue);
+            var hasNullValues = vec.Elements.Any(e => e is NullValue);
+            
+            // Check if this is truly mixed (different types) OR has nested vectors OR has null values
+            var isTrulyMixed = elementTypes.Count > 1 || hasNestedVectors || hasNullValues;
+            
+            if (isTrulyMixed)
+            {
+                var elementsStr = string.Join(";", vec.Elements.Select(e => 
+                {
+                    if (e is NullValue)
+                    {
+                        return ""; // Display null as empty position
+                    }
+                    else if (e is VectorValue innerVec)
+                    {
+                        // For character vectors in mixed context, treat as single string element with escaping
+                        if (innerVec.Elements.All(x => x is CharacterValue))
+                        {
+                            var chars = innerVec.Elements.Select(x => ((CharacterValue)x).Value);
+                            var content = string.Concat(chars);
+                            return $"\"{EscapeString(content)}\"";
+                        }
+                        // For simple homogeneous vectors, don't add inner parentheses
+                        else if (innerVec.Elements.All(x => x is IntegerValue) || 
+                            innerVec.Elements.All(x => x is FloatValue) ||
+                            innerVec.Elements.All(x => x is LongValue))
+                        {
+                            return VectorToStringWithEscaping(innerVec);
+                        }
+                        return VectorToStringWithEscaping(innerVec);
+                    }
+                    return ToStringWithEscaping(e);
+                }));
+                return "(" + elementsStr + ")";
+            }
+            
+            // For homogeneous vectors (except characters), use space-separated format
+            var vectorStr = string.Join(" ", vec.Elements.Select(e => e.ToString()));
+            
+            // Add enlist comma for single-element vectors of integer, symbol, and character types
+            if (vec.Elements.Count == 1 && 
+                (vec.Elements[0] is IntegerValue || vec.Elements[0] is SymbolValue || vec.Elements[0] is CharacterValue))
+            {
+                return "," + vectorStr;
+            }
+            
+            return vectorStr;
         }
         
         private K3Value Make(K3Value value)
@@ -2142,52 +2343,163 @@ namespace K3CSharp
             }
         }
 
-        private K3Value Drop(K3Value count, K3Value data)
+        private K3Value AtIndex(K3Value data, K3Value index)
         {
-            if (count is IntegerValue intCount)
+            // @ operator for indexing: data @ index
+            
+            // Handle dictionary indexing
+            if (data is DictionaryValue dict)
             {
-                if (data is VectorValue dataVec)
+                if (index is SymbolValue symbol)
                 {
-                    // Drop from vector
-                    var actualCount = Math.Max(0, intCount.Value);
+                    // Check if this is attribute access (symbol ends with .)
+                    if (symbol.Value.EndsWith("."))
+                    {
+                        // Remove the trailing . to get the key name
+                        var keyName = symbol.Value.Substring(0, symbol.Value.Length - 1);
+                        var keySymbol = new SymbolValue(keyName);
+                        
+                        foreach (var entry in dict.Entries)
+                        {
+                            if (entry.Key.Equals(keySymbol))
+                            {
+                                return entry.Value.Attribute; // Return Attribute from tuple
+                            }
+                        }
+                        throw new Exception($"Key '{keyName}' not found in dictionary");
+                    }
+                    else
+                    {
+                        // Dictionary @ symbol - get value by key
+                        foreach (var entry in dict.Entries)
+                        {
+                            if (entry.Key.Equals(symbol))
+                            {
+                                return entry.Value.Value; // Extract Value from tuple
+                            }
+                        }
+                        throw new Exception($"Key '{symbol.Value}' not found in dictionary");
+                    }
+                }
+                else if (index is VectorValue indexVec)
+                {
+                    // Dictionary @ vector of symbols - get multiple values
                     var result = new List<K3Value>();
-                    
-                    if (dataVec.Elements.Count == 0 || actualCount >= dataVec.Elements.Count)
+                    foreach (var idx in indexVec.Elements)
                     {
-                        // Empty source vector or drop count >= vector length - return empty result
-                        return new VectorValue(result, "standard");
+                        if (idx is SymbolValue sym)
+                        {
+                            bool found = false;
+                            foreach (var entry in dict.Entries)
+                            {
+                                if (entry.Key.Equals(sym))
+                                {
+                                    result.Add(entry.Value.Value); // Extract Value from tuple
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found)
+                            {
+                                throw new Exception($"Key '{sym.Value}' not found in dictionary");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("Dictionary indices must be symbols");
+                        }
                     }
-                    
-                    // Skip the first 'actualCount' elements
-                    for (int i = actualCount; i < dataVec.Elements.Count; i++)
-                    {
-                        result.Add(dataVec.Elements[i]);
-                    }
-                    
                     return new VectorValue(result, "standard");
                 }
                 else
                 {
-                    // Drop from scalar - if count > 0, return empty, otherwise return scalar
-                    var actualCount = Math.Max(0, intCount.Value);
-                    if (actualCount > 0)
+                    throw new Exception("Dictionary indices must be symbols or vector of symbols");
+                }
+            }
+            
+            // Handle vector indexing
+            if (index is IntegerValue intIndex)
+            {
+                if (data is VectorValue dataVec)
+                {
+                    // Vector @ integer
+                    var actualIndex = intIndex.Value;
+                    if (actualIndex < 0)
                     {
-                        return new VectorValue(new List<K3Value>(), "standard");
+                        actualIndex = dataVec.Elements.Count + actualIndex;
                     }
-                    else
+                    
+                    if (actualIndex < 0 || actualIndex >= dataVec.Elements.Count)
+                    {
+                        throw new Exception($"Index {intIndex.Value} out of bounds for vector of length {dataVec.Elements.Count}");
+                    }
+                    
+                    return dataVec.Elements[actualIndex];
+                }
+                else
+                {
+                    // Scalar @ integer - treat scalar as single-element vector
+                    if (intIndex.Value == 0)
                     {
                         return data;
                     }
+                    else
+                    {
+                        throw new Exception($"Index {intIndex.Value} out of bounds for scalar");
+                    }
                 }
             }
-            else if (count is LongValue longCount)
+            else if (index is VectorValue indexVec)
             {
-                // Handle long count by converting to integer
-                return Drop(new IntegerValue((int)longCount.Value), data);
+                if (data is VectorValue dataVec)
+                {
+                    // Vector @ vector of indices
+                    var result = new List<K3Value>();
+                    foreach (var idx in indexVec.Elements)
+                    {
+                        if (idx is IntegerValue intIdx)
+                        {
+                            var actualIndex = intIdx.Value;
+                            if (actualIndex < 0)
+                            {
+                                actualIndex = dataVec.Elements.Count + actualIndex;
+                            }
+                            
+                            if (actualIndex < 0 || actualIndex >= dataVec.Elements.Count)
+                            {
+                                throw new Exception($"Index {intIdx.Value} out of bounds for vector of length {dataVec.Elements.Count}");
+                            }
+                            
+                            result.Add(dataVec.Elements[actualIndex]);
+                        }
+                        else
+                        {
+                            throw new Exception("Vector indices must be integers");
+                        }
+                    }
+                    return new VectorValue(result, "standard");
+                }
+                else
+                {
+                    // Scalar @ vector of indices
+                    var result = new List<K3Value>();
+                    foreach (var idx in indexVec.Elements)
+                    {
+                        if (idx is IntegerValue intIdx && intIdx.Value == 0)
+                        {
+                            result.Add(data);
+                        }
+                        else
+                        {
+                            throw new Exception($"Index out of bounds for scalar");
+                        }
+                    }
+                    return new VectorValue(result, "standard");
+                }
             }
             else
             {
-                throw new Exception("Drop count must be an integer");
+                throw new Exception("Index must be integer, symbol, or vector of integers/symbols");
             }
         }
 

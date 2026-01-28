@@ -116,13 +116,13 @@ namespace K3CSharp.Tests
                 ("adverb_over_with_initialization_2.k", "12"),
                 
                 // Adverb Scan tests
-                ("adverb_scan_divide.k", "(100;50.0;10.0)"),
+                ("adverb_scan_divide.k", "100 50 10"),
                 ("adverb_scan_max.k", "1 3 3 5 5"),
                 ("adverb_scan_min.k", "5 3 3 1 1"),
                 ("adverb_scan_minus.k", "10 8 5 4"),
                 ("adverb_scan_multiply.k", "1 2 6 24"),
                 ("adverb_scan_plus.k", "1 3 6 10 15"),
-                ("adverb_scan_power.k", "(2;8.0;64.0)"),
+                ("adverb_scan_power.k", "2 8 64"),
                 ("adverb_scan_with_initialization_1.k", "1 3 6 10 15"),
                 ("adverb_scan_with_initialization_2.k", "2 3 5 8 12"),
                 ("adverb_scan_with_initialization_divide.k", "(2;2;1;0.3333333;0.08333333)"),
@@ -154,7 +154,7 @@ namespace K3CSharp.Tests
                 ("count_operator.k", "3"),
                 
                 // Cut vector
-                ("cut_vector.k", "(0 1\n 2 3\n 4 5 6 7)"),
+                ("cut_vector.k", "(0 1;2 3;4 5 6 7)"),
                 
                 // Dictionary tests
                 ("dictionary_empty.k", ".()"),
@@ -162,14 +162,14 @@ namespace K3CSharp.Tests
                 ("dictionary_index_attr.k", ".((`c;3;);(`d;4;))"),
                 ("dictionary_index_value.k", "1"),
                 ("dictionary_index_value2.k", "2"),
-                ("dictionary_multiple.k", ".((`a;1;)\n  (`b;2;))"),
-                ("dictionary_null_attributes.k", ".((`a;1;)\n  (`b;2;))"),
+                ("dictionary_multiple.k", ".((`a;1;);(`b;2;))"),
+                ("dictionary_null_attributes.k", ".((`a;1;);(`b;2;))"),
                 ("dictionary_single.k", ".,(`a;`b;)"),
                 ("dictionary_type.k", "5"),
-                ("dictionary_with_null_value.k", ".((`a;1;)\n  (`c;3;))"),
+                ("dictionary_with_null_value.k", ".((`a;1;);(`b;;);(`c;3;))"),
                 
                 // Drop tests
-                ("drop_negative.k", "3 4 5"),
+                ("drop_negative.k", "0 1 2 3"),
                 ("drop_positive.k", "4 5 6 7"),
                 
                 // Empty mixed vector
@@ -231,7 +231,7 @@ namespace K3CSharp.Tests
                 ("math_log.k", "2.302585"),
                 ("math_sin.k", "0.0"),
                 ("math_sqrt.k", "4.0"),
-                ("math_vector.k", "1 2 3"),
+                ("math_vector.k", "0.841471 0.9092974 0.14112"),
                 
                 // Maximum operator
                 ("maximum_operator.k", "5"),
@@ -243,9 +243,9 @@ namespace K3CSharp.Tests
                 ("mixed_list_with_null.k", "(1;;`test;42.5)"),
                 
                 // Mixed vector tests
-                ("mixed_vector_empty_position.k", "(1;;3)"),
-                ("mixed_vector_multiple_empty.k", "(1;;;4)"),
-                ("mixed_vector_whitespace_position.k", "(1 2 4)"),
+                ("mixed_vector_empty_position.k", "(1;;2)"),
+                ("mixed_vector_multiple_empty.k", "(1;;;3)"),
+                ("mixed_vector_whitespace_position.k", "(1;;2)"),
                 
                 // Mod tests
                 ("mod_integer.k", "1"),
@@ -314,18 +314,18 @@ namespace K3CSharp.Tests
                 ("scalar_vector_multiplication.k", "3 6"),
                 
                 // Shape operator tests
-                ("shape_operator.k", "3"),
-                ("shape_operator_empty_vector.k", "0"),
+                ("shape_operator.k", ",3"),
+                ("shape_operator_empty_vector.k", ",0"),
                 ("shape_operator_jagged.k", ",3"),
                 ("shape_operator_jagged_3d.k", "2 2"),
                 ("shape_operator_jagged_matrix.k", ",3"),
                 ("shape_operator_matrix.k", "3 3"),
                 ("shape_operator_matrix_2x3.k", "2 3"),
                 ("shape_operator_matrix_3x3.k", "3 3"),
-                ("shape_operator_scalar.k", "0"),
+                ("shape_operator_scalar.k", "!0"),
                 ("shape_operator_tensor_2x2x3.k", "2 2 3"),
                 ("shape_operator_tensor_3d.k", "3 2 2"),
-                ("shape_operator_vector.k", "5"),
+                ("shape_operator_vector.k", ",5"),
                 
                 // Simple arithmetic tests
                 ("simple_addition.k", "3"),
@@ -345,7 +345,16 @@ namespace K3CSharp.Tests
                 ("special_long_null.k", "0NL"),
                 ("special_long_pos_inf.k", "0IL"),
                 ("special_null.k", "_n"),
-                ("special_values_arithmetic.k", "-2147483646"),
+                
+                // Additional special value arithmetic tests (separated from special_values_arithmetic.k)
+                ("special_int_pos_inf_plus_1.k", "0N"),
+                ("special_int_null_plus_1.k", "-0I"),
+                ("special_int_neg_inf_plus_1.k", "-2147483646"),
+                ("special_float_null_plus_1.k", "0n"),
+                ("special_1_plus_int_pos_inf.k", "0N"),
+                ("special_1_plus_int_null.k", "-0I"),
+                ("special_int_vector.k", "0I 0N -0I"),
+                ("special_float_vector.k", "0i 0n -0i"),
                 
                 // Square bracket tests
                 ("square_bracket_function.k", "2"),
@@ -354,7 +363,7 @@ namespace K3CSharp.Tests
                 
                 // String representation tests
                 ("string_representation_int.k", "\"42\""),
-                ("string_representation_mixed.k", "\"(1;2.5;\\\"a\")\""),
+                ("string_representation_mixed.k", "\"(1;2.5;\\\"a\\\")\""),
                 ("string_representation_symbol.k", "\"`symbol\""),
                 ("string_representation_vector.k", "\"1 2 3\""),
                 
@@ -401,12 +410,12 @@ namespace K3CSharp.Tests
                 ("test_null_vector.k", "(;1;2)"),
                 
                 // Test scoping
-                ("test_scoping_single.k", "110"),
+                ("test_scoping_single.k", "60"),
                 
                 // Test semicolon tests
-                ("test_semicolon_simple.k", "(1;2;3)"),
-                ("test_semicolon_vars.k", "(5;10;15)"),
-                ("test_semicolon_vector.k", "(1 2;3 4)"),
+                ("test_semicolon_simple.k", "(7;11;-20.45)"),
+                ("test_semicolon_vars.k", "30 200 -10"),
+                ("test_semicolon_vector.k", "(7;3 4;-20.45)"),
                 
                 // Test simple scalar div
                 ("test_simple_scalar_div.k", "2.5"),
@@ -448,7 +457,7 @@ namespace K3CSharp.Tests
                 ("type_operator_vector_char.k", "-3"),
                 ("type_operator_vector_float.k", "-2"),
                 ("type_operator_vector_int.k", "-1"),
-                ("type_operator_vector_mixed.k", ""),
+                ("type_operator_vector_mixed.k", "0"),
                 ("type_operator_vector_symbol.k", "-3"),
                 
                 // Type promotion tests
@@ -468,7 +477,7 @@ namespace K3CSharp.Tests
                 // Variable tests
                 ("variable_assignment.k", "7"),
                 ("variable_reassignment.k", "7.2 4.5"),
-                ("variable_scoping_global_access.k", "20"),
+                ("variable_scoping_global_access.k", "150"),
                 ("variable_scoping_global_assignment.k", "10"),
                 ("variable_scoping_global_unchanged.k", "5"),
                 ("variable_scoping_local_hiding.k", "15"),

@@ -828,12 +828,33 @@ namespace K3CSharp
                         }
                         
                         // Parse semicolon-separated elements
-                        while (Match(TokenType.SEMICOLON) && !IsAtEnd() && CurrentToken().Type != TokenType.RIGHT_PAREN)
+                        while (!IsAtEnd() && CurrentToken().Type != TokenType.RIGHT_PAREN)
                         {
-                            var expr = ParseExpression();
-                            if (expr != null)
+                            if (Match(TokenType.SEMICOLON))
                             {
-                                elements.Add(expr);
+                                // Check if this is an empty position (consecutive semicolons or semicolon before right paren)
+                                if (CurrentToken().Type == TokenType.SEMICOLON || CurrentToken().Type == TokenType.RIGHT_PAREN)
+                                {
+                                    elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                                }
+                                else
+                                {
+                                    // Parse the next element
+                                    var expr = ParseExpression();
+                                    if (expr != null)
+                                    {
+                                        elements.Add(expr);
+                                    }
+                                    else
+                                    {
+                                        elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // This shouldn't happen in well-formed input, but handle gracefully
+                                break;
                             }
                         }
                         
@@ -849,13 +870,7 @@ namespace K3CSharp
                     else
                     {
                         // Parse space-separated vector
-                        Console.WriteLine($"DEBUG: Parsing space-separated vector in parentheses, current token: {CurrentToken().Type} = {CurrentToken().Lexeme}");
                         var expression = ParseExpression();
-                        if (expression == null)
-                        {
-                            throw new Exception("Expected expression inside parentheses but found statement separator");
-                        }
-                        Console.WriteLine($"DEBUG: Parsed expression result: {expression.Type} = {expression.Value}");
                         
                         if (!Match(TokenType.RIGHT_PAREN))
                         {
@@ -998,7 +1013,7 @@ namespace K3CSharp
             else if (Match(TokenType.LOG))
             {
                 // Mathematical logarithm operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_log");
                 node.Children.Add(operand);
@@ -1007,7 +1022,7 @@ namespace K3CSharp
             else if (Match(TokenType.EXP))
             {
                 // Mathematical exponential operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_exp");
                 node.Children.Add(operand);
@@ -1016,7 +1031,7 @@ namespace K3CSharp
             else if (Match(TokenType.ABS))
             {
                 // Mathematical absolute value operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_abs");
                 node.Children.Add(operand);
@@ -1025,7 +1040,7 @@ namespace K3CSharp
             else if (Match(TokenType.SQR))
             {
                 // Mathematical square operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_sqr");
                 node.Children.Add(operand);
@@ -1034,7 +1049,7 @@ namespace K3CSharp
             else if (Match(TokenType.SQRT))
             {
                 // Mathematical square root operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_sqrt");
                 node.Children.Add(operand);
@@ -1043,7 +1058,7 @@ namespace K3CSharp
             else if (Match(TokenType.FLOOR_MATH))
             {
                 // Mathematical floor operation (always returns float)
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_floor");
                 node.Children.Add(operand);
@@ -1052,7 +1067,7 @@ namespace K3CSharp
             else if (Match(TokenType.DOT))
             {
                 // Linear algebra dot product operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_dot");
                 node.Children.Add(operand);
@@ -1061,7 +1076,7 @@ namespace K3CSharp
             else if (Match(TokenType.MUL))
             {
                 // Linear algebra matrix multiplication operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_mul");
                 node.Children.Add(operand);
@@ -1070,7 +1085,7 @@ namespace K3CSharp
             else if (Match(TokenType.INV))
             {
                 // Linear algebra matrix inverse operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_inv");
                 node.Children.Add(operand);
@@ -1079,7 +1094,7 @@ namespace K3CSharp
             else if (Match(TokenType.SIN))
             {
                 // Mathematical sine operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_sin");
                 node.Children.Add(operand);
@@ -1088,7 +1103,7 @@ namespace K3CSharp
             else if (Match(TokenType.COS))
             {
                 // Mathematical cosine operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_cos");
                 node.Children.Add(operand);
@@ -1097,7 +1112,7 @@ namespace K3CSharp
             else if (Match(TokenType.TAN))
             {
                 // Mathematical tangent operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_tan");
                 node.Children.Add(operand);
@@ -1106,7 +1121,7 @@ namespace K3CSharp
             else if (Match(TokenType.ASIN))
             {
                 // Mathematical arcsine operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_asin");
                 node.Children.Add(operand);
@@ -1115,7 +1130,7 @@ namespace K3CSharp
             else if (Match(TokenType.ACOS))
             {
                 // Mathematical arccosine operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_acos");
                 node.Children.Add(operand);
@@ -1124,7 +1139,7 @@ namespace K3CSharp
             else if (Match(TokenType.ATAN))
             {
                 // Mathematical arctangent operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_atan");
                 node.Children.Add(operand);
@@ -1133,7 +1148,7 @@ namespace K3CSharp
             else if (Match(TokenType.SINH))
             {
                 // Mathematical hyperbolic sine operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_sinh");
                 node.Children.Add(operand);
@@ -1142,7 +1157,7 @@ namespace K3CSharp
             else if (Match(TokenType.COSH))
             {
                 // Mathematical hyperbolic cosine operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_cosh");
                 node.Children.Add(operand);
@@ -1151,36 +1166,11 @@ namespace K3CSharp
             else if (Match(TokenType.TANH))
             {
                 // Mathematical hyperbolic tangent operation
-                var operand = ParsePrimary();
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_tanh");
                 node.Children.Add(operand);
                 return node;
-            }
-            else if (Match(TokenType.LEFT_PAREN))
-            {
-                // Parentheses are for grouping - parse as complete expression
-                // Space-separated lists are inherently vectors in K3, parentheses don't change that
-                if (!Match(TokenType.RIGHT_PAREN))
-                {
-                    var expression = ParseExpression();
-                    if (expression == null)
-                    {
-                        throw new Exception("Expected expression inside parentheses but found statement separator");
-                    }
-                    
-                    if (!Match(TokenType.RIGHT_PAREN))
-                    {
-                        throw new Exception("Expected ')' after expression");
-                    }
-                    
-                    result = expression;
-                }
-                else
-                {
-                    // Empty parentheses - create empty vector
-                    result = ASTNode.MakeVector(new List<ASTNode>());
-                }
             }
             else if (Match(TokenType.LEFT_BRACE))
             {
@@ -1699,12 +1689,33 @@ namespace K3CSharp
                 }
             }
 
-            // Handle standalone adverbs (like +' 1 2 3)
+            // Handle standalone adverbs (like +' 1 2 3 or +/ 1 2 3)
             if (Match(TokenType.ADVERB_SLASH) || Match(TokenType.ADVERB_BACKSLASH) || Match(TokenType.ADVERB_TICK))
             {
                 var adverbToken = PreviousToken();
-                var right = ParseTerm();
-                return ASTNode.MakeBinaryOp(adverbToken.Type, left, right);
+                var adverbType = adverbToken.Type.ToString().Replace("TokenType.", "");
+                
+                // Check if left is a verb (operator) that should be the adverb's verb
+                if (left != null && left.Type == ASTNodeType.Literal && left.Value is SymbolValue leftSymbol)
+                {
+                    // This is a projection: verb + adverb + data
+                    var right = ParseTerm();
+                    
+                    // Create the correct adverb structure: ADVERB(verb, left, right)
+                    var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                    adverbNode.Value = new SymbolValue(adverbType);
+                    adverbNode.Children.Add(left); // verb
+                    adverbNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(0))); // left operand (for over/scan, this is initialization)
+                    adverbNode.Children.Add(right); // right operand (data)
+                    
+                    return adverbNode;
+                }
+                else
+                {
+                    // This is just an adverb without a verb, treat as binary operation
+                    var right = ParseTerm();
+                    return ASTNode.MakeBinaryOp(adverbToken.Type, left, right);
+                }
             }
 
             // Check for assignment

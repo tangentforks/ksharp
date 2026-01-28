@@ -298,6 +298,23 @@ namespace K3CSharp
             Value = value;
             Type = ValueType.Float;
             IsSpecial = false;
+            
+            // Check if this value should be treated as special
+            if (double.IsNaN(value))
+            {
+                IsSpecial = true;
+                SpecialName = "0n";
+            }
+            else if (double.IsPositiveInfinity(value))
+            {
+                IsSpecial = true;
+                SpecialName = "0i";
+            }
+            else if (double.IsNegativeInfinity(value))
+            {
+                IsSpecial = true;
+                SpecialName = "-0i";
+            }
         }
 
         public FloatValue(string specialName)
@@ -933,6 +950,8 @@ namespace K3CSharp
                     return "0#`";
                 else if (CreationMethod == "enumerate_char" || (Elements.Count > 0 && Elements.All(e => e is CharacterValue)))
                     return "\"\"";
+                else if (CreationMethod == "standard")
+                    return "0"; // Empty standard integer vector
                 else if (asElement || CreationMethod == "mixed")
                     return "()"; // Empty mixed vector
                 else
@@ -1131,11 +1150,7 @@ namespace K3CSharp
                 var value = kvp.Value.Value;
                 var attr = kvp.Value.Attribute;
                 
-                // Skip null values in the dictionary
-                if (value is NullValue)
-                    continue;
-                
-                var valueStr = value.ToString();
+                var valueStr = value is NullValue ? "" : value.ToString();
                 
                 if (attr != null && attr.Entries.Count > 0)
                 {
@@ -1146,6 +1161,18 @@ namespace K3CSharp
                     // Always show the semicolon for attributes, even when null
                     entries.Add($"({key};{valueStr};)");
                 }
+            }
+            
+            // Handle single-element case with comma prefix (per specification)
+            if (entries.Count == 1)
+            {
+                // Remove the outer parentheses from the single entry to avoid double parentheses
+                var singleEntry = entries[0];
+                if (singleEntry.StartsWith("(") && singleEntry.EndsWith(")"))
+                {
+                    singleEntry = singleEntry.Substring(1, singleEntry.Length - 2);
+                }
+                return ".,(" + singleEntry + ")";
             }
             
             return ".(" + string.Join(";", entries) + ")";

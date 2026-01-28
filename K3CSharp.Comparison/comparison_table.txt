@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-01-26 23:53:35
+Generated: 2026-01-27 20:27:40
 
 SUMMARY:
 --------
-Total Tests:     264
-✅ Matched:       205
-❌ Differed:      13
+Total Tests:     271
+✅ Matched:       246
+❌ Differed:      8
 ⚠️  Skipped:       15
-💥 Errors:        31
-Success Rate:    82.3%
+💥 Errors:        2
+Success Rate:    96.1%
 
 DETAILED RESULTS:
 -----------------
@@ -18,22 +18,22 @@ Status   Test File                                K3Sharp Output            k.ex
 ✅ PASS   adverb_each_vector_minus.k               9 18 27                   9 18 27                   
 ✅ PASS   adverb_each_vector_multiply.k            4 10 18                   4 10 18                   
 ✅ PASS   adverb_each_vector_plus.k                6 8 10 12                 6 8 10 12                 
-💥 ERROR adverb_over_divide.k                                                                         Cannot add Symbol...
-💥 ERROR adverb_over_max.k                                                                            Cannot add Symbol...
-💥 ERROR adverb_over_min.k                                                                            Cannot add Symbol...
-💥 ERROR adverb_over_minus.k                                                                          Cannot add Symbol...
-💥 ERROR adverb_over_multiply.k                                                                       Cannot add Symbol...
-💥 ERROR adverb_over_plus.k                                                                           Cannot add Symbol...
-💥 ERROR adverb_over_power.k                                                                          Cannot add Symbol...
+✅ PASS   adverb_over_divide.k                     10                        10.0                      
+✅ PASS   adverb_over_max.k                        5                         5                         
+✅ PASS   adverb_over_min.k                        1                         1                         
+✅ PASS   adverb_over_minus.k                      4                         4                         
+✅ PASS   adverb_over_multiply.k                   24                        24                        
+✅ PASS   adverb_over_plus.k                       15                        15                        
+✅ PASS   adverb_over_power.k                      64                        64.0                      
 ✅ PASS   adverb_over_with_initialization_1.k      15                        15                        
 ✅ PASS   adverb_over_with_initialization_2.k      12                        12                        
-💥 ERROR adverb_scan_divide.k                                                                         Cannot add Symbol...
-💥 ERROR adverb_scan_max.k                                                                            Cannot add Symbol...
-💥 ERROR adverb_scan_min.k                                                                            Cannot add Symbol...
-💥 ERROR adverb_scan_minus.k                                                                          Cannot add Symbol...
-💥 ERROR adverb_scan_multiply.k                                                                       Cannot add Symbol...
-💥 ERROR adverb_scan_plus.k                                                                           Cannot add Symbol...
-💥 ERROR adverb_scan_power.k                                                                          Cannot add Symbol...
+❌ FAIL   adverb_scan_divide.k                     100 50 10                 (100;50.0;10.0)           
+✅ PASS   adverb_scan_max.k                        1 3 3 5 5                 1 3 3 5 5                 
+✅ PASS   adverb_scan_min.k                        5 3 3 1 1                 5 3 3 1 1                 
+✅ PASS   adverb_scan_minus.k                      10 8 5 4                  10 8 5 4                  
+✅ PASS   adverb_scan_multiply.k                   1 2 6 24                  1 2 6 24                  
+✅ PASS   adverb_scan_plus.k                       1 3 6 10 15               1 3 6 10 15               
+❌ FAIL   adverb_scan_power.k                      2 8 64                    (2;8.0;64.0)              
 ✅ PASS   adverb_scan_with_initialization_1.k      1 3 6 10 15               1 3 6 10 15               
 ✅ PASS   adverb_scan_with_initialization_2.k      2 3 5 8 12                2 3 5 8 12                
 ✅ PASS   adverb_scan_with_initialization_divide.k (2;2;1;0.3333333;0.0...   (2;2.0;1.0;0.3333333...   
@@ -51,22 +51,25 @@ Status   Test File                                K3Sharp Output            k.ex
 ✅ PASS   character_vector.k                       "hello"                   "hello"                   
 ✅ PASS   complex_function.k                       205                       205.0                     
 ✅ PASS   count_operator.k                         3                         3                         
-💥 ERROR cut_vector.k                                                                                 Drop count must b...
+✅ PASS   cut_vector.k                             (0 1;2 3;4 5 6 7)         (0 1
+ 2 3
+ 4 5 6 7)       Matched via forma...
 ✅ PASS   dictionary_empty.k                       .()                       .()                       
-💥 ERROR dictionary_index_attr.k                                                                      Unknown binary op...
-💥 ERROR dictionary_index_value.k                                                                     Unknown binary op...
-💥 ERROR dictionary_index_value2.k                                                                    Unknown binary op...
-💥 ERROR dictionary_index.k                                                                           Unknown binary op...
+✅ PASS   dictionary_index_attr.k                  .((`c;3;);(`d;4;))        .((`c;3;)
+  (`d;4;))      Matched via forma...
+✅ PASS   dictionary_index_value.k                 1                         1                         
+✅ PASS   dictionary_index_value2.k                2                         2                         
+✅ PASS   dictionary_index.k                       1                         1                         
 ✅ PASS   dictionary_multiple.k                    .((`a;1;);(`b;2;))        .((`a;1;)
   (`b;2;))      Matched via forma...
 ✅ PASS   dictionary_null_attributes.k             .((`a;1;);(`b;2;))        .((`a;1;)
   (`b;2;))      Matched via forma...
-❌ FAIL   dictionary_single.k                      .((`a;`b;))               .,(`a;`b;)                
+✅ PASS   dictionary_single.k                      .,(`a;`b;)                .,(`a;`b;)                
 ✅ PASS   dictionary_type.k                        5                         5                         
-❌ FAIL   dictionary_with_null_value.k             .((`a;1;);(`c;3;))        .((`a;1;)
+✅ PASS   dictionary_with_null_value.k             .((`a;1;);(`b;;);(`c...   .((`a;1;)
   (`b;;)
- ...   
-❌ FAIL   drop_negative.k                          0 1 2 3 4 5 6 7           0 1 2 3                   
+ ...   Matched via forma...
+✅ PASS   drop_negative.k                          0 1 2 3                   0 1 2 3                   
 ✅ PASS   drop_positive.k                          4 5 6 7                   4 5 6 7                   
 ✅ PASS   empty_mixed_vector.k                     ()                        ()                        
 ✅ PASS   enlist_operator.k                        ,5                        ,5                        
@@ -101,13 +104,13 @@ Status   Test File                                K3Sharp Output            k.ex
 ✅ PASS   math_log.k                               2.302585                  2.302585                  
 ✅ PASS   math_sin.k                               0.0                       0.0                       
 ✅ PASS   math_sqrt.k                              4.0                       4.0                       
-❌ FAIL   math_vector.k                            0.841471                  0.841471 0.9092974 0...   
+✅ PASS   math_vector.k                            0.841471 0.9092974 0...   0.841471 0.9092974 0...   
 ✅ PASS   maximum_operator.k                       5                         5                         
 ✅ PASS   minimum_operator.k                       3                         3                         
 ✅ PASS   mixed_list_with_null.k                   (1;;`test;42.5)           (1;;`test;42.5)           
-💥 ERROR mixed_vector_empty_position.k                                                                Unexpected token:...
-💥 ERROR mixed_vector_multiple_empty.k                                                                Unexpected token:...
-💥 ERROR mixed_vector_whitespace_position.k                                                           Unexpected token:...
+✅ PASS   mixed_vector_empty_position.k            (1;;2)                    (1;;2)                    
+✅ PASS   mixed_vector_multiple_empty.k            (1;;;3)                   (1;;;3)                   
+✅ PASS   mixed_vector_whitespace_position.k       (1;;2)                    (1;;2)                    
 ✅ PASS   mod_integer.k                            1                         1                         
 ✅ PASS   mod_rotate.k                             3 4 1 2                   3 4 1 2                   
 ✅ PASS   mod_vector.k                             1 0 1 0                   1 0 1 0                   
@@ -154,7 +157,7 @@ Status   Test File                                K3Sharp Output            k.ex
 ✅ PASS   reverse_operator.k                       3 2 1                     3 2 1                     
 ✅ PASS   scalar_vector_addition.k                 4 5                       4 5                       
 ✅ PASS   scalar_vector_multiplication.k           3 6                       3 6                       
-✅ PASS   shape_operator_empty_vector.k            0                         ,0                        Matched via forma...
+✅ PASS   shape_operator_empty_vector.k            ,0                        ,0                        
 ✅ PASS   shape_operator_jagged_3d.k               2 2                       2 2                       
 ✅ PASS   shape_operator_jagged_matrix.k           ,3                        ,3                        
 ✅ PASS   shape_operator_jagged.k                  ,3                        ,3                        
@@ -164,32 +167,36 @@ Status   Test File                                K3Sharp Output            k.ex
 ✅ PASS   shape_operator_scalar.k                  !0                        !0                        
 ✅ PASS   shape_operator_tensor_2x2x3.k            2 2 3                     2 2 3                     
 ✅ PASS   shape_operator_tensor_3d.k               3 2 2                     3 2 2                     
-✅ PASS   shape_operator_vector.k                  5                         ,5                        Matched via forma...
-✅ PASS   shape_operator.k                         3                         ,3                        Matched via forma...
+✅ PASS   shape_operator_vector.k                  ,5                        ,5                        
+✅ PASS   shape_operator.k                         ,3                        ,3                        
 ✅ PASS   simple_addition.k                        3                         3                         
 ✅ PASS   simple_division.k                        4                         4.0                       
 ✅ PASS   simple_multiplication.k                  12                        12                        
 ✅ PASS   simple_nested_test.k                     1 2 3                     1 2 3                     
 ✅ PASS   simple_subtraction.k                     2                         2                         
+✅ PASS   special_1_plus_int_null.k                -0I                       -0I                       
+✅ PASS   special_1_plus_int_pos_inf.k             0N                        0N                        
 ✅ PASS   special_float_neg_inf.k                  -0i                       -0i                       
+✅ PASS   special_float_null_plus_1.k              0n                        0n                        
 ✅ PASS   special_float_null.k                     0n                        0n                        
 ✅ PASS   special_float_pos_inf.k                  0i                        0i                        
+✅ PASS   special_float_vector.k                   0i 0n -0i                 0i 0n -0i                 
+✅ PASS   special_int_neg_inf_plus_1.k             -2147483646               -2147483646               
 ✅ PASS   special_int_neg_inf.k                    -0I                       -0I                       
+✅ PASS   special_int_null_plus_1.k                -0I                       -0I                       
 ✅ PASS   special_int_null.k                       0N                        0N                        
+✅ PASS   special_int_pos_inf_plus_1.k             0N                        0N                        
 ✅ PASS   special_int_pos_inf.k                    0I                        0I                        
+✅ PASS   special_int_vector.k                     0I 0N -0I                 0I 0N -0I                 
 ⚠️  SKIP special_long_neg_inf.k                                                                       Contains long int...
 ⚠️  SKIP special_long_null.k                                                                          Contains long int...
 ⚠️  SKIP special_long_pos_inf.k                                                                       Contains long int...
 ❌ FAIL   special_null.k                           _n                                                  
-❌ FAIL   special_values_arithmetic.k              -2147483646               0N
--0I
--2147483646
-0...   
 ✅ PASS   square_bracket_function.k                2                         2.0                       
 ✅ PASS   square_bracket_vector_multiple.k         14 16                     14 16                     
 ✅ PASS   square_bracket_vector_single.k           14                        14                        
 ✅ PASS   string_representation_int.k              "42"                      "42"                      
-✅ PASS   string_representation_mixed.k            "(1;2.5;"a")"             "(1;2.5;\"a\")"           Matched via forma...
+✅ PASS   string_representation_mixed.k            "(1;2.5;\"a\")"           "(1;2.5;\"a\")"           
 ✅ PASS   string_representation_symbol.k           "`symbol"                 "`symbol"                 
 ✅ PASS   string_representation_vector.k           "1 2 3"                   "1 2 3"                   
 ✅ PASS   symbol_quoted.k                          `"a symbol"               `"a symbol"               
@@ -215,11 +222,13 @@ Status   Test File                                K3Sharp Output            k.ex
 ✅ PASS   test_grade_up_no_parens.k                0 4 2 3 1                 0 4 2 3 1                 
 ✅ PASS   test_mixed_types.k                       (42;3.14;"hello";`sy...   (42;3.14;"hello";`sy...   
 ✅ PASS   test_multiline_function_single.k         20                        20                        
-❌ FAIL   test_null_vector.k                       _n                        1 2                       
+✅ PASS   test_null_vector.k                       (;1;2)                    (;1;2)                    
 ❌ FAIL   test_scoping_single.k                    110                       60                        
 ✅ PASS   test_semicolon_simple.k                  (7;11;-20.45)             (7;11;-20.45)             
 ✅ PASS   test_semicolon_vars.k                    30 200 -10                30 200 -10                
-💥 ERROR test_semicolon_vector.k                                                                      Undefined variabl...
+✅ PASS   test_semicolon_vector.k                  (7;3 4;-20.45)            (7
+ 3 4
+ -20.45)          Matched via forma...
 ✅ PASS   test_simple_scalar_div.k                 2.5                       2.5                       
 ✅ PASS   test_single_no_semicolon.k               42                        42                        
 ✅ PASS   test_smart_division1.k                   2.5 5.0                   2.5 5                     
@@ -235,7 +244,7 @@ Status   Test File                                K3Sharp Output            k.ex
 ✅ PASS   test_type_char.k                         3                         3                         
 ✅ PASS   test_type_float.k                        2                         2                         
 ✅ PASS   test_type_null.k                         6                         6                         
-✅ PASS   test_type_space.k                        1                         1                         
+✅ PASS   test_type_space.k                        3                         3                         
 ✅ PASS   test_type_symbol.k                       4                         4                         
 ✅ PASS   test_type_vector_debug.k                 -1                        -1                        
 ✅ PASS   test_type_vector.k                       -1                        -1                        
@@ -247,7 +256,7 @@ Status   Test File                                K3Sharp Output            k.ex
 ✅ PASS   type_operator_vector_char.k              -3                        -3                        
 ✅ PASS   type_operator_vector_float.k             -2                        -2                        
 ✅ PASS   type_operator_vector_int.k               -1                        -1                        
-💥 ERROR type_operator_vector_mixed.k                                                                 Expected ')' afte...
+✅ PASS   type_operator_vector_mixed.k             0                         0                         
 ✅ PASS   type_operator_vector_symbol.k            -3                        -3                        
 ✅ PASS   type_promotion_float_int.k               3.5                       3.5                       
 ⚠️  SKIP type_promotion_float_long.k                                                                  Contains long int...
@@ -265,16 +274,14 @@ Status   Test File                                K3Sharp Output            k.ex
 ❌ FAIL   variable_scoping_global_unchanged.k      50                        100                       
 ❌ FAIL   variable_scoping_local_hiding.k          110                       60                        
 💥 ERROR variable_scoping_nested_functions.k                                                          Unknown binary op...
-❌ FAIL   variable_usage.k                         30                        10
-20
-30                  
+✅ PASS   variable_usage.k                         30                        30                        
 ✅ PASS   vector_addition.k                        4 6                       4 6                       
 ✅ PASS   vector_division.k                        0.3333333 0.5             0.3333333 0.5             
-💥 ERROR vector_index_duplicate.k                                                                     Unknown binary op...
-💥 ERROR vector_index_first.k                                                                         Unknown binary op...
-💥 ERROR vector_index_multiple.k                                                                      Unknown binary op...
-💥 ERROR vector_index_reverse.k                                                                       Unknown binary op...
-💥 ERROR vector_index_single.k                                                                        Unknown binary op...
+✅ PASS   vector_index_duplicate.k                 5 5                       5 5                       
+✅ PASS   vector_index_first.k                     5                         5                         
+✅ PASS   vector_index_multiple.k                  8 9                       8 9                       
+✅ PASS   vector_index_reverse.k                   9 8                       9 8                       
+✅ PASS   vector_index_single.k                    4                         4                         
 ✅ PASS   vector_multiplication.k                  3 8                       3 8                       
 ✅ PASS   vector_notation_empty.k                  ()                        ()                        
 ❌ FAIL   vector_notation_functions.k              {[x] x*2} {[x] x*2} ...   10 20 30                  
@@ -292,45 +299,17 @@ Status   Test File                                K3Sharp Output            k.ex
 
 FAILED TESTS DETAILS:
 --------------------
-File: dictionary_single.k
-K3Sharp: .((`a;`b;))
-k.exe:   .,(`a;`b;)
+File: adverb_scan_divide.k
+K3Sharp: 100 50 10
+k.exe:   (100;50.0;10.0)
 
-File: dictionary_with_null_value.k
-K3Sharp: .((`a;1;);(`c;3;))
-k.exe:   .((`a;1;)
-  (`b;;)
-  (`c;3;))
-
-File: drop_negative.k
-K3Sharp: 0 1 2 3 4 5 6 7
-k.exe:   0 1 2 3
-
-File: math_vector.k
-K3Sharp: 0.841471
-k.exe:   0.841471 0.9092974 0.14112
+File: adverb_scan_power.k
+K3Sharp: 2 8 64
+k.exe:   (2;8.0;64.0)
 
 File: special_null.k
 K3Sharp: _n
 k.exe:   
-
-File: special_values_arithmetic.k
-K3Sharp: -2147483646
-k.exe:   0N
--0I
--2147483646
-0i
-0n
--0i
-0I 0N -0I
-0i 0n -0i
-0N
--0I
--2147483646
-
-File: test_null_vector.k
-K3Sharp: _n
-k.exe:   1 2
 
 File: test_scoping_single.k
 K3Sharp: 110
@@ -344,38 +323,20 @@ File: variable_scoping_global_unchanged.k
 K3Sharp: 50
 k.exe:   100
 
-... and 3 more failed tests
+File: variable_scoping_local_hiding.k
+K3Sharp: 110
+k.exe:   60
+
+File: vector_notation_functions.k
+K3Sharp: {[x] x*2} {[x] x*2} {[x] x*2}
+k.exe:   10 20 30
+
 
 ERROR TESTS DETAILS:
 -------------------
-File: adverb_over_divide.k
-Error: Cannot add Symbol and Integer
+File: variable_scoping_global_assignment.k
+Error: Undefined variable: test5
 
-File: adverb_over_max.k
-Error: Cannot add Symbol and Integer
+File: variable_scoping_nested_functions.k
+Error: Unknown binary operator: .
 
-File: adverb_over_min.k
-Error: Cannot add Symbol and Integer
-
-File: adverb_over_minus.k
-Error: Cannot add Symbol and Integer
-
-File: adverb_over_multiply.k
-Error: Cannot add Symbol and Integer
-
-File: adverb_over_plus.k
-Error: Cannot add Symbol and Integer
-
-File: adverb_over_power.k
-Error: Cannot add Symbol and Integer
-
-File: adverb_scan_divide.k
-Error: Cannot add Symbol and Integer
-
-File: adverb_scan_max.k
-Error: Cannot add Symbol and Integer
-
-File: adverb_scan_min.k
-Error: Cannot add Symbol and Integer
-
-... and 21 more error tests

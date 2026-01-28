@@ -15,13 +15,13 @@
 ║ adverb_over_power.k                      │ ^/ 2 3 2             │ 64                   │                      ║
 ║ adverb_over_with_initialization_1.k      │ 1 +/ 2 3 4 5         │ 15                   │                      ║
 ║ adverb_over_with_initialization_2.k      │ 2 +/ 1 2 3 4         │ 12                   │                      ║
-║ adverb_scan_divide.k                     │ %\ 100 2 5           │ 0 0 0 0              │ (100;50.0;10.0)      ║
-║ adverb_scan_max.k                        │ |\ 1 3 2 5 4         │ 0 1 3 3 5 5          │ 1 3 3 5 5            ║
-║ adverb_scan_min.k                        │ &\ 5 3 4 1 2         │ 0 0 0 0 0 0          │ 5 3 3 1 1            ║
-║ adverb_scan_minus.k                      │ -\ 10 2 3 1          │ 0 -10 -12 -15 -16    │ 10 8 5 4             ║
-║ adverb_scan_multiply.k                   │ *\ 1 2 3 4           │ 0 0 0 0 0            │ 1 2 6 24             ║
-║ adverb_scan_plus.k                       │ +\ 1 2 3 4 5         │ 0 1 3 6 10 15        │ 1 3 6 10 15          ║
-║ adverb_scan_power.k                      │ ^\ 2 3 2             │ 0 0 0 0              │ (2;8.0;64.0)         ║
+║ adverb_scan_divide.k                     │ %\ 100 2 5           │ 100 50 10            │                      ║
+║ adverb_scan_max.k                        │ |\ 1 3 2 5 4         │ 1 3 3 5 5            │                      ║
+║ adverb_scan_min.k                        │ &\ 5 3 4 1 2         │ 5 3 3 1 1            │                      ║
+║ adverb_scan_minus.k                      │ -\ 10 2 3 1          │ 10 8 5 4             │                      ║
+║ adverb_scan_multiply.k                   │ *\ 1 2 3 4           │ 1 2 6 24             │                      ║
+║ adverb_scan_plus.k                       │ +\ 1 2 3 4 5         │ 1 3 6 10 15          │                      ║
+║ adverb_scan_power.k                      │ ^\ 2 3 2             │ 2 8 64               │                      ║
 ║ adverb_scan_with_initialization_1.k      │ 1 +\ 2 3 4 5         │ 1 3 6 10 15          │                      ║
 ║ adverb_scan_with_initialization_2.k      │ 2 +\ 1 2 3 4         │ 2 3 5 8 12           │                      ║
 ║ adverb_scan_with_initialization_divide.k │ 2 %\ 1 2 3 4         │ (2;2;1;0.333333...   │                      ║
@@ -39,23 +39,18 @@
 ║ character_vector.k                       │ "hello"              │ "hello"              │                      ║
 ║ complex_function.k                       │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2} │ 205                  │                      ║
 ║ count_operator.k                         │ # (1 2 3)            │ 3                    │                      ║
-║ cut_vector.k                             │ 0 2 4 _ 0 1 2 3 4 5 6 7 │ Error: Drop cou...   │ (0 1
- 2 3
- 4 5 ...   ║
+║ cut_vector.k                             │ (0 2 4) _ (0 1 2 3 4 5 6 7) │ (0 1;2 3;4 5 6 7)    │                      ║
 ║ dictionary_empty.k                       │ .()                  │ .()                  │                      ║
-║ dictionary_index.k                       │ .((`a;1);(`b;2)) @ `a │ 1                    │                      ║
-║ dictionary_index_attr.k                  │ .((`a;1);(`b;2;.((`c;3);(`d;4)))) @ `b. │ .((`c;3;);(`d;4;))   │                      ║
-║ dictionary_index_value.k                 │ .((`a;1);(`b;2)) @ `a │ 1                    │                      ║
-║ dictionary_index_value2.k                │ .((`a;1);(`b;2)) @ `b │ 2                    │                      ║
-║ dictionary_multiple.k                    │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │ .((`a;1;)
-  (`b...   ║
-║ dictionary_null_attributes.k             │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │ .((`a;1;)
-  (`b...   ║
-║ dictionary_single.k                      │ .,(`a;`b)            │ .((`a;`b;))          │ .,(`a;`b;)           ║
+║ dictionary_index.k                       │ (.((`a;1);(`b;2))) @ `a │ 1                    │                      ║
+║ dictionary_index_attr.k                  │ (.((`a;1);(`b;2;.((`c;3);(`d;4))))) @ `b. │ .((`c;3;);(`d;4;))   │                      ║
+║ dictionary_index_value.k                 │ (.((`a;1);(`b;2))) @ `a │ 1                    │                      ║
+║ dictionary_index_value2.k                │ (.((`a;1);(`b;2))) @ `b │ 2                    │                      ║
+║ dictionary_multiple.k                    │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
+║ dictionary_null_attributes.k             │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
+║ dictionary_single.k                      │ .,(`a;`b)            │ .,(`a;`b;)           │                      ║
 ║ dictionary_type.k                        │ 4:.((`a;1);(`b;2))   │ 5                    │                      ║
-║ dictionary_with_null_value.k             │ .((`a;1);(`b;_n);(`c;3)) │ .((`a;1;);(`c;3;))   │ .((`a;1;)
-  (`c...   ║
-║ drop_negative.k                          │ -4 _ 0 1 2 3 4 5 6 7 │ 0 1 2 3 4 5 6 7      │ 3 4 5                ║
+║ dictionary_with_null_value.k             │ .((`a;1);(`b;_n);(`c;3)) │ .((`a;1;);(`b;;...   │                      ║
+║ drop_negative.k                          │ -4 _ 0 1 2 3 4 5 6 7 │ 0 1 2 3              │                      ║
 ║ drop_positive.k                          │ 4 _ 0 1 2 3 4 5 6 7  │ 4 5 6 7              │                      ║
 ║ empty_mixed_vector.k                     │ ()                   │ ()                   │                      ║
 ║ enlist_operator.k                        │ ,5                   │ ,5                   │                      ║
@@ -89,13 +84,13 @@
 ║ math_log.k                               │ _log 10              │ 2.302585             │                      ║
 ║ math_sin.k                               │ _sin 0               │ 0.0                  │                      ║
 ║ math_sqrt.k                              │ _sqrt 16             │ 4.0                  │                      ║
-║ math_vector.k                            │ _sin 1 2 3           │ 0.841471             │ 1 2 3                ║
+║ math_vector.k                            │ _sin 1 2 3           │ 0.841471 0.9092...   │                      ║
 ║ maximum_operator.k                       │ 3 | 5                │ 5                    │                      ║
 ║ minimum_operator.k                       │ 3 & 5                │ 3                    │                      ║
 ║ mixed_list_with_null.k                   │ (1;_n;`test;42.5)    │ (1;;`test;42.5)      │                      ║
-║ mixed_vector_empty_position.k            │ (1;;2)               │ Error: Unexpect...   │ (1;;3)               ║
-║ mixed_vector_multiple_empty.k            │ (1;;;3)              │ Error: Unexpect...   │ (1;;;4)              ║
-║ mixed_vector_whitespace_position.k       │ (1; ;2)              │ Error: Unexpect...   │ (1 2 4)              ║
+║ mixed_vector_empty_position.k            │ (1;;2)               │ (1;;2)               │                      ║
+║ mixed_vector_multiple_empty.k            │ (1;;;3)              │ (1;;;3)              │                      ║
+║ mixed_vector_whitespace_position.k       │ (1; ;2)              │ (1;;2)               │                      ║
 ║ mod_integer.k                            │ 7!3                  │ 1                    │                      ║
 ║ mod_rotate.k                             │ 2 ! 1 2 3 4          │ 3 4 1 2              │                      ║
 ║ mod_vector.k                             │ 1 2 3 4 ! 2          │ 1 0 1 0              │                      ║
@@ -142,18 +137,18 @@
 ║ reverse_operator.k                       │ | (1 2 3)            │ 3 2 1                │                      ║
 ║ scalar_vector_addition.k                 │ 1 2 + 3              │ 4 5                  │                      ║
 ║ scalar_vector_multiplication.k           │ 1 2 * 3              │ 3 6                  │                      ║
-║ shape_operator.k                         │ ^ (1 2 3)            │ 3                    │                      ║
-║ shape_operator_empty_vector.k            │ ^ ()                 │ 0                    │                      ║
+║ shape_operator.k                         │ ^ (1 2 3)            │ ,3                   │                      ║
+║ shape_operator_empty_vector.k            │ ^ ()                 │ ,0                   │                      ║
 ║ shape_operator_jagged.k                  │ // Test shape operator on non-rectangular matrix (jagged array) │ ,3                   │                      ║
 ║ shape_operator_jagged_3d.k               │ ^ (((1 2); (3 4 5)); ((6 7); (8 9 10))) │ 2 2                  │                      ║
 ║ shape_operator_jagged_matrix.k           │ ^ ((1 2 3); (4 5); (6 7 8 9)) │ ,3                   │                      ║
 ║ shape_operator_matrix.k                  │ // Test shape operator on rectangular matrix (3x3) │ 3 3                  │                      ║
 ║ shape_operator_matrix_2x3.k              │ ^ ((1 2 3); (4 5 6)) │ 2 3                  │                      ║
 ║ shape_operator_matrix_3x3.k              │ ^ ((1 2 3); (4 5 6); (7 8 9)) │ 3 3                  │                      ║
-║ shape_operator_scalar.k                  │ ^ 42                 │ !0                   │ 0                    ║
+║ shape_operator_scalar.k                  │ ^ 42                 │ !0                   │                      ║
 ║ shape_operator_tensor_2x2x3.k            │ ^ (((1 2 3); (4 5 6)); ((7 8 9); (10 11 12))) │ 2 2 3                │                      ║
 ║ shape_operator_tensor_3d.k               │ ^ (((1 2); (3 4)); ((5 6); (7 8)); ((9 10); (11 12))) │ 3 2 2                │                      ║
-║ shape_operator_vector.k                  │ ^ (1 2 3 4 5)        │ 5                    │                      ║
+║ shape_operator_vector.k                  │ ^ (1 2 3 4 5)        │ ,5                   │                      ║
 ║ simple_addition.k                        │ 1 + 2                │ 3                    │                      ║
 ║ simple_division.k                        │ 8 % 2                │ 4                    │                      ║
 ║ simple_multiplication.k                  │ 4 * 3                │ 12                   │                      ║
@@ -169,12 +164,19 @@
 ║ special_long_null.k                      │ 0NL                  │ 0NL                  │                      ║
 ║ special_long_pos_inf.k                   │ 0IL                  │ 0IL                  │                      ║
 ║ special_null.k                           │ _n                   │ _n                   │                      ║
-║ special_values_arithmetic.k              │ 0I + 1               │ -2147483646          │                      ║
+║ special_int_pos_inf_plus_1.k             │ 0I + 1               │ 0N                   │                      ║
+║ special_int_null_plus_1.k                │ 0N + 1               │ -0I                  │                      ║
+║ special_int_neg_inf_plus_1.k             │ -0I + 1              │ -2147483646          │                      ║
+║ special_float_null_plus_1.k              │ 0n + 1               │ 0n                   │                      ║
+║ special_1_plus_int_pos_inf.k             │ 1 + 0I               │ 0N                   │                      ║
+║ special_1_plus_int_null.k                │ 1 + 0N               │ -0I                  │                      ║
+║ special_int_vector.k                     │ 0I 0N -0I            │ 0I 0N -0I            │                      ║
+║ special_float_vector.k                   │ 0i 0n -0i            │ 0i 0n -0i            │                      ║
 ║ square_bracket_function.k                │ div:{[op1;op2] op1%op2} │ 2                    │                      ║
 ║ square_bracket_vector_multiple.k         │ v:10 11 12 13 14 15 16 │ 14 16                │                      ║
 ║ square_bracket_vector_single.k           │ v:10 11 12 13 14 15 16 │ 14                   │                      ║
 ║ string_representation_int.k              │ 5:42                 │ "42"                 │                      ║
-║ string_representation_mixed.k            │ 5:(1;2.5;"a")        │ "(1;2.5;"a")"        │ "(1;2.5;\"a")"       ║
+║ string_representation_mixed.k            │ 5:(1;2.5;"a")        │ "(1;2.5;\"a\")"      │                      ║
 ║ string_representation_symbol.k           │ 5:`symbol            │ "`symbol"            │                      ║
 ║ string_representation_vector.k           │ 5:(1 2 3)            │ "1 2 3"              │                      ║
 ║ symbol_quoted.k                          │ `"a symbol"          │ `"a symbol"          │                      ║
@@ -200,11 +202,11 @@
 ║ test_grade_up_no_parens.k                │ < 3 11 9 9 4         │ 0 4 2 3 1            │                      ║
 ║ test_mixed_types.k                       │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
 ║ test_multiline_function_single.k         │ test: {[x] a:x*2; a+10} │ 20                   │                      ║
-║ test_null_vector.k                       │ _n 1 2               │ _n                   │ (;1;2)               ║
-║ test_scoping_single.k                    │ globalVar: 100       │ 110                  │                      ║
-║ test_semicolon_simple.k                  │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │ (1;2;3)              ║
-║ test_semicolon_vars.k                    │ a: 10                │ 30 200 -10           │ (5;10;15)            ║
-║ test_semicolon_vector.k                  │ (3 + 4; a _ b; -20.45) │ Error: Undefine...   │ (1 2;3 4)            ║
+║ test_null_vector.k                       │ (;1;2)               │ (;1;2)               │                      ║
+║ test_scoping_single.k                    │ globalVar: 100       │ 110                  │ 60                   ║
+║ test_semicolon_simple.k                  │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
+║ test_semicolon_vars.k                    │ a: 10                │ 30 200 -10           │                      ║
+║ test_semicolon_vector.k                  │ a: 1 2               │ (7;3 4;-20.45)       │                      ║
 ║ test_simple_scalar_div.k                 │ 5 % 2                │ 2.5                  │                      ║
 ║ test_single_no_semicolon.k               │ (42)                 │ 42                   │                      ║
 ║ test_smart_division1.k                   │ 5 10 % 2             │ 2.5 5.0              │                      ║
@@ -232,7 +234,7 @@
 ║ type_operator_vector_char.k              │ 4: ("abc")           │ -3                   │                      ║
 ║ type_operator_vector_float.k             │ 4: (1.0 2.0 3.0)     │ -2                   │                      ║
 ║ type_operator_vector_int.k               │ 4: (1 2 3)           │ -1                   │                      ║
-║ type_operator_vector_mixed.k             │ 4: (1 2.0 "a")       │ Error: Expected...   │                      ║
+║ type_operator_vector_mixed.k             │ 4: (1;2.0;"a")       │ 0                    │                      ║
 ║ type_operator_vector_symbol.k            │ 4: "abc"             │ -3                   │                      ║
 ║ type_promotion_float_int.k               │ 1.5 + 2              │ 3.5                  │                      ║
 ║ type_promotion_float_long.k              │ 1.5 + 1L             │ 2.5                  │                      ║
@@ -244,7 +246,7 @@
 ║ unique_operator.k                        │ ? (1 2 1 3)          │ 1 2 3                │                      ║
 ║ variable_assignment.k                    │ foo:7                │ 7                    │                      ║
 ║ variable_reassignment.k                  │ foo:7                │ 7.2 4.5              │                      ║
-║ variable_scoping_global_access.k         │ // Test function accessing global variable │ 150                  │ 20                   ║
+║ variable_scoping_global_access.k         │ // Test function accessing global variable │ 150                  │                      ║
 ║ variable_scoping_global_assignment.k     │ // Test global assignment from nested function │ Error: Undefine...   │ 10                   ║
 ║ variable_scoping_global_unchanged.k      │ // Test verify global variable unchanged │ 50                   │ 5                    ║
 ║ variable_scoping_local_hiding.k          │ // Test function with local variable hiding global │ 110                  │ 15                   ║
@@ -273,140 +275,15 @@
 ║ where_vector_counts.k                    │ & (3 2 1)            │ 0 0 0 1 1 2          │                      ║
 ║ floor_operator.k                         │ _3.7                 │ 3.0                  │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 234/264 tests passed (88.6%)                                                                     ║
+║ SUMMARY: 265/271 tests passed (97.8%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
-Test: adverb_scan_divide.k
-Input: %\ 100 2 5
-Expected: (100;50.0;10.0)
-Actual: 0 0 0 0
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_scan_max.k
-Input: |\ 1 3 2 5 4
-Expected: 1 3 3 5 5
-Actual: 0 1 3 3 5 5
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_scan_min.k
-Input: &\ 5 3 4 1 2
-Expected: 5 3 3 1 1
-Actual: 0 0 0 0 0 0
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_scan_minus.k
-Input: -\ 10 2 3 1
-Expected: 10 8 5 4
-Actual: 0 -10 -12 -15 -16
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_scan_multiply.k
-Input: *\ 1 2 3 4
-Expected: 1 2 6 24
-Actual: 0 0 0 0 0
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_scan_plus.k
-Input: +\ 1 2 3 4 5
-Expected: 1 3 6 10 15
-Actual: 0 1 3 6 10 15
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_scan_power.k
-Input: ^\ 2 3 2
-Expected: (2;8.0;64.0)
-Actual: 0 0 0 0
-──────────────────────────────────────────────────────────────────────────
-Test: cut_vector.k
-Input: 0 2 4 _ 0 1 2 3 4 5 6 7
-Expected: (0 1
- 2 3
- 4 5 6 7)
-Actual: Error: Drop count must be an integer
-──────────────────────────────────────────────────────────────────────────
-Test: dictionary_multiple.k
-Input: .((`a;1);(`b;2))
-Expected: .((`a;1;)
-  (`b;2;))
-Actual: .((`a;1;);(`b;2;))
-──────────────────────────────────────────────────────────────────────────
-Test: dictionary_null_attributes.k
-Input: .((`a;1);(`b;2))
-Expected: .((`a;1;)
-  (`b;2;))
-Actual: .((`a;1;);(`b;2;))
-──────────────────────────────────────────────────────────────────────────
-Test: dictionary_single.k
-Input: .,(`a;`b)
-Expected: .,(`a;`b;)
-Actual: .((`a;`b;))
-──────────────────────────────────────────────────────────────────────────
-Test: dictionary_with_null_value.k
-Input: .((`a;1);(`b;_n);(`c;3))
-Expected: .((`a;1;)
-  (`c;3;))
-Actual: .((`a;1;);(`c;3;))
-──────────────────────────────────────────────────────────────────────────
-Test: drop_negative.k
-Input: -4 _ 0 1 2 3 4 5 6 7
-Expected: 3 4 5
-Actual: 0 1 2 3 4 5 6 7
-──────────────────────────────────────────────────────────────────────────
-Test: math_vector.k
-Input: _sin 1 2 3
-Expected: 1 2 3
-Actual: 0.841471
-──────────────────────────────────────────────────────────────────────────
-Test: mixed_vector_empty_position.k
-Input: (1;;2)
-Expected: (1;;3)
-Actual: Error: Unexpected token: SEMICOLON(;)
-──────────────────────────────────────────────────────────────────────────
-Test: mixed_vector_multiple_empty.k
-Input: (1;;;3)
-Expected: (1;;;4)
-Actual: Error: Unexpected token: SEMICOLON(;)
-──────────────────────────────────────────────────────────────────────────
-Test: mixed_vector_whitespace_position.k
-Input: (1; ;2)
-Expected: (1 2 4)
-Actual: Error: Unexpected token: SEMICOLON(;)
-──────────────────────────────────────────────────────────────────────────
-Test: shape_operator_scalar.k
-Input: ^ 42
-Expected: 0
-Actual: !0
-──────────────────────────────────────────────────────────────────────────
-Test: string_representation_mixed.k
-Input: 5:(1;2.5;"a")
-Expected: "(1;2.5;\"a")"
-Actual: "(1;2.5;"a")"
-──────────────────────────────────────────────────────────────────────────
-Test: test_null_vector.k
-Input: _n 1 2
-Expected: (;1;2)
-Actual: _n
-──────────────────────────────────────────────────────────────────────────
-Test: test_semicolon_simple.k
-Input: (3 + 4; 5 + 6; -20.45)
-Expected: (1;2;3)
-Actual: (7;11;-20.45)
-──────────────────────────────────────────────────────────────────────────
-Test: test_semicolon_vars.k
-Input: a: 10
-Expected: (5;10;15)
-Actual: 30 200 -10
-──────────────────────────────────────────────────────────────────────────
-Test: test_semicolon_vector.k
-Input: (3 + 4; a _ b; -20.45)
-Expected: (1 2;3 4)
-Actual: Error: Undefined variable: a
-──────────────────────────────────────────────────────────────────────────
-Test: type_operator_vector_mixed.k
-Input: 4: (1 2.0 "a")
-Expected: 
-Actual: Error: Expected ')' after expression
-──────────────────────────────────────────────────────────────────────────
-Test: variable_scoping_global_access.k
-Input: // Test function accessing global variable
-Expected: 20
-Actual: 150
+Test: test_scoping_single.k
+Input: globalVar: 100
+Expected: 60
+Actual: 110
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: // Test global assignment from nested function
