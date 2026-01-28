@@ -1031,6 +1031,10 @@ namespace K3CSharp
         public List<string> Parameters { get; }
         public int Valence { get; }
         public List<Token> PreParsedTokens { get; }
+        
+        // AST cache for performance optimization
+        private ASTNode _cachedAst;
+        private readonly object _astCacheLock = new object();
 
         public FunctionValue(string bodyText, List<string> parameters, List<Token> preParsedTokens = null)
         {
@@ -1039,6 +1043,42 @@ namespace K3CSharp
             Type = ValueType.Function;
             Valence = parameters.Count;
             PreParsedTokens = preParsedTokens;
+        }
+        
+        // Get or create cached AST (thread-safe)
+        public ASTNode GetCachedAst()
+        {
+            if (_cachedAst != null)
+            {
+                return _cachedAst;
+            }
+            
+            lock (_astCacheLock)
+            {
+                // Double-check pattern for thread safety
+                if (_cachedAst != null)
+                {
+                    return _cachedAst;
+                }
+                
+                // Parse and cache the AST
+                ASTNode ast;
+                if (PreParsedTokens != null && PreParsedTokens.Count > 0)
+                {
+                    var parser = new Parser(PreParsedTokens, BodyText);
+                    ast = parser.Parse();
+                }
+                else
+                {
+                    var lexer = new Lexer(BodyText);
+                    var tokens = lexer.Tokenize();
+                    var parser = new Parser(tokens, BodyText);
+                    ast = parser.Parse();
+                }
+                
+                _cachedAst = ast;
+                return _cachedAst;
+            }
         }
 
         public override K3Value Add(K3Value other)

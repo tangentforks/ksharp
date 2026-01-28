@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-01-27 20:27:40
+Generated: 2026-01-28 01:19:25
 
 SUMMARY:
 --------
-Total Tests:     271
-✅ Matched:       246
-❌ Differed:      8
+Total Tests:     280
+✅ Matched:       257
+❌ Differed:      5
 ⚠️  Skipped:       15
-💥 Errors:        2
-Success Rate:    96.1%
+💥 Errors:        3
+Success Rate:    97.0%
 
 DETAILED RESULTS:
 -----------------
@@ -208,6 +208,9 @@ Status   Test File                                K3Sharp Output            k.ex
 ✅ PASS   take_operator_empty_symbol.k             0#`                       0#`                       
 ✅ PASS   take_operator_overflow.k                 1 2 3 1 2 3 1 2 3 1       1 2 3 1 2 3 1 2 3 1       
 ✅ PASS   take_operator_scalar.k                   42 42 42                  42 42 42                  
+✅ PASS   test_dictionary_enumerate.k              `a`b                      `a `b                     Matched via forma...
+✅ PASS   test_dictionary_null_index.k             1 2                       1 2                       
+💥 ERROR test_dictionary_unmake.k                 ((`a;1;);(`b;2;))                                   Failed to execute...
 ✅ PASS   test_division_float_4_2.0.k              2.0                       2.0                       
 ✅ PASS   test_division_float_5_2.5.k              2.0                       2.0                       
 ✅ PASS   test_division_int_4_2.k                  2                         2.0                       
@@ -216,14 +219,21 @@ Status   Test File                                K3Sharp Output            k.ex
 ✅ PASS   test_division_rules_12_4.k               3                         3.0                       
 ✅ PASS   test_division_rules_4_2.k                2                         2.0                       
 ✅ PASS   test_division_rules_5_2.k                2.5                       2.5                       
+✅ PASS   test_dot_execute_context.k               8                         8                         
+✅ PASS   test_dot_execute.k                       4                         4                         
+✅ PASS   test_empty_brackets_dictionary.k         1 2                       1 2                       
+✅ PASS   test_empty_brackets_vector.k             1 2 3 4                   1 2 3 4                   
 ✅ PASS   test_empty_vector.k                      ()                        ()                        
 ✅ PASS   test_enumerate.k                         0 1                       0 1                       
 ✅ PASS   test_grade_down_no_parens.k              1 2 3 4 0                 1 2 3 4 0                 
 ✅ PASS   test_grade_up_no_parens.k                0 4 2 3 1                 0 4 2 3 1                 
+✅ PASS   test_group_operator.k                    (0 1 6;2 7 16;3 5 12...   (0 1 6
+ 2 7 16
+ 3 5 ...   Matched via forma...
 ✅ PASS   test_mixed_types.k                       (42;3.14;"hello";`sy...   (42;3.14;"hello";`sy...   
 ✅ PASS   test_multiline_function_single.k         20                        20                        
 ✅ PASS   test_null_vector.k                       (;1;2)                    (;1;2)                    
-❌ FAIL   test_scoping_single.k                    110                       60                        
+✅ PASS   test_scoping_single.k                    60                        60                        
 ✅ PASS   test_semicolon_simple.k                  (7;11;-20.45)             (7;11;-20.45)             
 ✅ PASS   test_semicolon_vars.k                    30 200 -10                30 200 -10                
 ✅ PASS   test_semicolon_vector.k                  (7;3 4;-20.45)            (7
@@ -248,6 +258,7 @@ Status   Test File                                K3Sharp Output            k.ex
 ✅ PASS   test_type_symbol.k                       4                         4                         
 ✅ PASS   test_type_vector_debug.k                 -1                        -1                        
 ✅ PASS   test_type_vector.k                       -1                        -1                        
+✅ PASS   test_vector_null_index.k                 1 2 3 4                   1 2 3 4                   
 ✅ PASS   test_vector.k                            1 2 3                     1 2 3                     
 ✅ PASS   type_operator_char.k                     3                         3                         
 ✅ PASS   type_operator_float.k                    2                         2                         
@@ -271,9 +282,9 @@ Status   Test File                                K3Sharp Output            k.ex
 ✅ PASS   variable_reassignment.k                  7.2 4.5                   7.2 4.5                   
 ✅ PASS   variable_scoping_global_access.k         150                       150                       
 💥 ERROR variable_scoping_global_assignment.k                                                         Undefined variabl...
-❌ FAIL   variable_scoping_global_unchanged.k      50                        100                       
-❌ FAIL   variable_scoping_local_hiding.k          110                       60                        
-💥 ERROR variable_scoping_nested_functions.k                                                          Unknown binary op...
+✅ PASS   variable_scoping_global_unchanged.k      100                       100                       
+✅ PASS   variable_scoping_local_hiding.k          60                        60                        
+💥 ERROR variable_scoping_nested_functions.k                                                          Dot-apply operato...
 ✅ PASS   variable_usage.k                         30                        30                        
 ✅ PASS   vector_addition.k                        4 6                       4 6                       
 ✅ PASS   vector_division.k                        0.3333333 0.5             0.3333333 0.5             
@@ -311,21 +322,9 @@ File: special_null.k
 K3Sharp: _n
 k.exe:   
 
-File: test_scoping_single.k
-K3Sharp: 110
-k.exe:   60
-
 File: variable_assignment.k
 K3Sharp: 7
 k.exe:   
-
-File: variable_scoping_global_unchanged.k
-K3Sharp: 50
-k.exe:   100
-
-File: variable_scoping_local_hiding.k
-K3Sharp: 110
-k.exe:   60
 
 File: vector_notation_functions.k
 K3Sharp: {[x] x*2} {[x] x*2} {[x] x*2}
@@ -334,9 +333,12 @@ k.exe:   10 20 30
 
 ERROR TESTS DETAILS:
 -------------------
+File: test_dictionary_unmake.k
+Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
 File: variable_scoping_global_assignment.k
 Error: Undefined variable: test5
 
 File: variable_scoping_nested_functions.k
-Error: Unknown binary operator: .
+Error: Dot-apply operator requires a function on the left side
 

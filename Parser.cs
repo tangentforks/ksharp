@@ -1351,6 +1351,29 @@ namespace K3CSharp
                     {
                         var bodyLexer = new Lexer(bodyText);
                         preParsedTokens = bodyLexer.Tokenize();
+                        
+                        // For nested functions, we'll defer validation to runtime
+                        // The main parser should handle nested function definitions correctly
+                        // We only validate simple function bodies here
+                        if (!bodyText.Contains("{[") && !bodyText.Contains("::"))
+                        {
+                            try
+                            {
+                                var testParser = new Parser(preParsedTokens, bodyText);
+                                testParser.Parse();
+                            }
+                            catch
+                            {
+                                // Pre-parsing failed, defer to runtime parsing
+                                preParsedTokens = null;
+                            }
+                        }
+                        else
+                        {
+                            // For complex function bodies with nested functions, store as character vector
+                            // and use dot execute at runtime for more robust evaluation
+                            preParsedTokens = null; // Don't pre-parse complex bodies
+                        }
                     }
                     catch
                     {
@@ -1532,6 +1555,16 @@ namespace K3CSharp
                 node.Children.Add(operand);
                 return node;
             }
+            
+            // Handle unary group operator
+            if (Match(TokenType.EQUAL))
+            {
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("=");
+                node.Children.Add(operand);
+                return node;
+            }
 
             var left = ParseTerm();
             if (left == null)
@@ -1612,6 +1645,13 @@ namespace K3CSharp
                     {
                         throw new Exception("Expected ']' after bracket expression");
                     }
+                }
+                else
+                {
+                    // Empty square brackets [] - equivalent to @_n (null indexing)
+                    // Create a null literal node as the argument
+                    var nullNode = ASTNode.MakeLiteral(new NullValue());
+                    arguments.Add(nullNode);
                 }
                 
                 // If we have multiple space-separated arguments (no semicolons), 

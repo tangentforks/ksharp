@@ -11,6 +11,9 @@ namespace K3CSharp
         public bool isInFunctionCall = false; // Track if we're evaluating a function call
         public static int floatPrecision = 7; // Default precision for floating point display
         
+        // Reference to the current function being executed (for AST caching)
+        public FunctionValue currentFunctionValue = null;
+
         // Reference to parent evaluator for global scope access
         private Evaluator parentEvaluator = null;
 
@@ -37,7 +40,7 @@ namespace K3CSharp
                     {
                         var assignName = node.Value is SymbolValue assignmentSym ? assignmentSym.Value : node.Value.ToString();
                         var value = Evaluate(node.Children[0]);
-                        SetGlobalVariable(assignName, value); // Use global variables for K-style assignments
+                        SetVariable(assignName, value); // Use local variables for regular assignments
                         return value; // Return the assigned value
                     }
 
@@ -148,6 +151,7 @@ namespace K3CSharp
                     "#" => Count(operand),
                     "_" => Floor(operand),
                     "?" => Unique(operand),
+                    "=" => Group(operand),
                     "NEGATE" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue))
                     ? AttributeHandle(operand)
                     : LogicalNegate(operand),
@@ -203,6 +207,7 @@ namespace K3CSharp
                         "#" => Take(left, right),
                         "_" => FloorBinary(left, right),
                         "@" => AtIndex(left, right),
+                        "." => DotApply(left, right),
                         "::" => GlobalAssignment(left, right),
                         "ADVERB_SLASH" => Over(new SymbolValue("+"), left, right),
                         "ADVERB_BACKSLASH" => Scan(new SymbolValue("+"), left, right),
@@ -236,7 +241,7 @@ namespace K3CSharp
                 throw new Exception($"Binary operator must have exactly 2 children, got {node.Children.Count}");
             }
         }
-
+        
         private K3Value EvaluateVector(ASTNode node)
         {
             var elements = new List<K3Value>();
@@ -247,7 +252,6 @@ namespace K3CSharp
             // Use "mixed" creation method for empty vectors created from parentheses
             return new VectorValue(elements, elements.Count == 0 ? "mixed" : "standard");
         }
-
         private K3Value EvaluateFunction(ASTNode node)
         {
             // The function value should already be stored in node.Value from the parser
@@ -278,6 +282,20 @@ namespace K3CSharp
                 arguments.Add(Evaluate(node.Children[i]));
             }
 
+            // First evaluate the left side to see if it's a vector or dictionary
+            var leftValue = Evaluate(functionNode);
+            
+            // Check if this should be treated as indexing instead of function call
+            if (leftValue is VectorValue || leftValue is DictionaryValue)
+            {
+                // This is indexing: vector[index] or dictionary[index]
+                if (arguments.Count != 1)
+                {
+                    throw new Exception("Indexing requires exactly one argument");
+                }
+                return VectorIndex(leftValue, arguments[0]);
+            }
+
             // Handle function calls differently based on the function node type
             if (functionNode.Type == ASTNodeType.Function)
             {
@@ -293,7 +311,7 @@ namespace K3CSharp
             else
             {
                 // Evaluate the function expression and call it
-                var function = Evaluate(functionNode);
+                var function = leftValue;
                 
                 if (function is FunctionValue functionValue)
                 {
@@ -461,11 +479,20 @@ namespace K3CSharp
                 functionEvaluator.globalVariables[kvp.Key] = kvp.Value;
             }
             
+            // Copy local variables to function scope (for nested functions)
+            foreach (var kvp in localVariables)
+            {
+                functionEvaluator.localVariables[kvp.Key] = kvp.Value;
+            }
+            
             // Bind parameters to arguments (in local scope)
             for (int i = 0; i < parameters.Count; i++)
             {
                 functionEvaluator.SetVariable(parameters[i], arguments[i]);
             }
+            
+            // Set the current function value for AST caching optimization
+            functionEvaluator.currentFunctionValue = functionValue;
             
             // Execute the function body using recursive text evaluation
             return ExecuteFunctionBody(bodyText, functionEvaluator, functionValue.PreParsedTokens);
@@ -482,19 +509,51 @@ namespace K3CSharp
             {
                 ASTNode ast;
                 
-                // Use pre-parsed tokens if available (better performance)
-                if (preParsedTokens != null && preParsedTokens.Count > 0)
+                // Try to get cached AST from the function value if available
+                // This is a performance optimization to avoid re-parsing the same function
+                if (functionEvaluator.currentFunctionValue != null)
                 {
-                    var parser = new Parser(preParsedTokens, bodyText);
-                    ast = parser.Parse();
+                    ast = functionEvaluator.currentFunctionValue.GetCachedAst();
                 }
                 else
                 {
-                    // Fall back to parsing from text (deferred validation per spec)
-                    var lexer = new Lexer(bodyText);
-                    var tokens = lexer.Tokenize();
-                    var parser = new Parser(tokens, bodyText);
-                    ast = parser.Parse();
+                    // Fallback to parsing from text (deferred validation per spec)
+                    if (preParsedTokens != null && preParsedTokens.Count > 0)
+                    {
+                        var parser = new Parser(preParsedTokens, bodyText);
+                        ast = ParseFunctionBodyStatements(parser, bodyText);
+                    }
+                    else
+                    {
+                        // For complex function bodies with nested functions, use enhanced parsing
+                        if (bodyText.Contains("{[") || bodyText.Contains("::"))
+                        {
+                            // Use enhanced parsing for complex function bodies
+                            // Try manual parsing first, fall back to dot execute if needed
+                            try
+                            {
+                                var lexer = new Lexer(bodyText);
+                                var tokens = lexer.Tokenize();
+                                var parser = new Parser(tokens, bodyText);
+                                ast = ParseFunctionBodyStatements(parser, bodyText);
+                            }
+                            catch
+                            {
+                                // If parsing fails, use dot execute as a robust fallback
+                                // This preserves variable context and handles complex nested scenarios
+                                var chars = bodyText.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
+                                var charVector = new VectorValue(chars, "standard");
+                                return Make(charVector);
+                            }
+                        }
+                        else
+                        {
+                            var lexer = new Lexer(bodyText);
+                            var tokens = lexer.Tokenize();
+                            var parser = new Parser(tokens, bodyText);
+                            ast = ParseFunctionBodyStatements(parser, bodyText);
+                        }
+                    }
                 }
                 
                 return functionEvaluator.Evaluate(ast);
@@ -502,7 +561,258 @@ namespace K3CSharp
             catch (Exception ex)
             {
                 // Runtime validation - function body errors are caught here (per spec)
-                throw new Exception($"Function execution error: {ex.Message}");
+                throw new Exception($"Function execution error: {ex.Message}", ex);
+            }
+        }
+        
+        private ASTNode ParseFunctionBodyStatements(Parser parser, string bodyText)
+        {
+            // For function bodies, we need to handle multiple statements separated by semicolons or newlines
+            // The main parser.Parse() method should handle this correctly for function bodies
+            try
+            {
+                return parser.Parse();
+            }
+            catch (Exception ex)
+            {
+                // If parsing fails, it might be due to nested function definitions
+                // Let's try a more robust approach by parsing the function body manually
+                return ParseFunctionBodyManually(bodyText);
+            }
+        }
+        
+        private ASTNode ParseFunctionBodyManually(string bodyText)
+        {
+            // Manual parsing for function bodies with nested functions
+            // This is a simplified version that focuses on the core issue
+            var lexer = new Lexer(bodyText);
+            var tokens = lexer.Tokenize();
+            var statements = new List<ASTNode>();
+            
+            int current = 0;
+            while (current < tokens.Count)
+            {
+                var token = tokens[current];
+                
+                // Skip whitespace and newlines
+                if (token.Type == TokenType.NEWLINE || token.Type == TokenType.SEMICOLON)
+                {
+                    current++;
+                    continue;
+                }
+                
+                // Check for assignment: variable : expression
+                if (token.Type == TokenType.SYMBOL && current + 1 < tokens.Count && tokens[current + 1].Type == TokenType.ASSIGNMENT)
+                {
+                    var varName = token.Lexeme;
+                    current += 2; // Skip variable and assignment
+                    
+                    // Parse the right side of the assignment
+                    var rightSide = ParseRightSide(tokens, ref current);
+                    
+                    if (rightSide != null)
+                    {
+                        var assignment = ASTNode.MakeAssignment(varName, rightSide);
+                        statements.Add(assignment);
+                    }
+                }
+                else
+                {
+                    // For now, just skip unknown tokens to avoid crashes
+                    current++;
+                }
+            }
+            
+            // Create a block node for the function body
+            var block = new ASTNode(ASTNodeType.Block);
+            foreach (var statement in statements)
+            {
+                block.Children.Add(statement);
+            }
+            
+            return block;
+        }
+        
+        private ASTNode ParseRightSide(List<Token> tokens, ref int current)
+        {
+            if (current >= tokens.Count) return null;
+            
+            var token = tokens[current];
+            
+            // Check for function definition: {[params] body}
+            if (token.Type == TokenType.LEFT_BRACE)
+            {
+                return ParseFunctionDefinitionFromTokens(tokens, ref current);
+            }
+            
+            // Parse as regular expression
+            return ParseExpressionFromTokens(tokens, ref current);
+        }
+        
+        private ASTNode ParseFunctionDefinitionFromTokens(List<Token> tokens, ref int current)
+        {
+            // Parse function definition: {[params] body}
+            if (current >= tokens.Count || tokens[current].Type != TokenType.LEFT_BRACE)
+                return null;
+                
+            current++; // Skip LEFT_BRACE
+            
+            var parameters = new List<string>();
+            
+            // Check for parameter list
+            if (current < tokens.Count && tokens[current].Type == TokenType.LEFT_BRACKET)
+            {
+                current++; // Skip LEFT_BRACKET
+                
+                // Parse parameters
+                while (current < tokens.Count && tokens[current].Type != TokenType.RIGHT_BRACKET)
+                {
+                    if (tokens[current].Type == TokenType.IDENTIFIER)
+                    {
+                        parameters.Add(tokens[current].Lexeme);
+                    }
+                    current++;
+                    
+                    // Skip semicolons between parameters
+                    if (current < tokens.Count && tokens[current].Type == TokenType.SEMICOLON)
+                    {
+                        current++;
+                    }
+                }
+                
+                if (current < tokens.Count && tokens[current].Type == TokenType.RIGHT_BRACKET)
+                {
+                    current++; // Skip RIGHT_BRACKET
+                }
+            }
+            
+            // Parse function body (everything until RIGHT_BRACE)
+            var bodyStart = current;
+            var braceLevel = 1;
+            
+            while (current < tokens.Count && braceLevel > 0)
+            {
+                if (tokens[current].Type == TokenType.LEFT_BRACE)
+                    braceLevel++;
+                else if (tokens[current].Type == TokenType.RIGHT_BRACE)
+                    braceLevel--;
+                    
+                if (braceLevel > 0)
+                    current++;
+            }
+            
+            if (braceLevel == 0)
+            {
+                current--; // Back up to the RIGHT_BRACE
+                
+                // Extract body tokens
+                var bodyTokens = new List<Token>();
+                for (int i = bodyStart; i < current; i++)
+                {
+                    bodyTokens.Add(tokens[i]);
+                }
+                
+                current++; // Skip the RIGHT_BRACE
+                
+                // Create function body text
+                var bodyText = string.Join(" ", bodyTokens.Select(t => t.Lexeme));
+                
+                // Create function value
+                var functionValue = new FunctionValue(bodyText, parameters, bodyTokens);
+                
+                // Create function AST node
+                var functionNode = new ASTNode(ASTNodeType.Function);
+                functionNode.Value = functionValue;
+                functionNode.Parameters = parameters;
+                
+                return functionNode;
+            }
+            
+            return null;
+        }
+        
+        private ASTNode ParseExpressionFromTokens(List<Token> tokens, ref int current)
+        {
+            // Simple expression parsing - this is a simplified version
+            // In a full implementation, this would be more sophisticated
+            if (current >= tokens.Count) return null;
+            
+            var token = tokens[current];
+            
+            // Handle literals
+            if (token.Type == TokenType.INTEGER || token.Type == TokenType.FLOAT || token.Type == TokenType.SYMBOL)
+            {
+                current++;
+                return ASTNode.MakeLiteral(CreateK3Value(token));
+            }
+            
+            // Handle function calls: variable . argument (dot-apply)
+            if (token.Type == TokenType.SYMBOL && current + 2 < tokens.Count && tokens[current + 1].Type == TokenType.DOT_APPLY)
+            {
+                var funcName = token.Lexeme;
+                var argToken = tokens[current + 2];
+                
+                // Check if the next token could be an argument
+                if (IsArgumentToken(argToken))
+                {
+                    current += 3; // Skip function, dot, and argument
+                    
+                    var funcVar = ASTNode.MakeVariable(funcName);
+                    var argValue = ASTNode.MakeLiteral(CreateK3Value(argToken));
+                    
+                    var funcCall = new ASTNode(ASTNodeType.FunctionCall);
+                    funcCall.Children.Add(funcVar);
+                    funcCall.Children.Add(argValue);
+                    
+                    return funcCall;
+                }
+            }
+            
+            // Handle function calls: variable argument (space-separated)
+            if (token.Type == TokenType.SYMBOL && current + 1 < tokens.Count)
+            {
+                var funcName = token.Lexeme;
+                var argToken = tokens[current + 1];
+                
+                // Check if the next token could be an argument
+                if (IsArgumentToken(argToken))
+                {
+                    current += 2;
+                    
+                    var funcVar = ASTNode.MakeVariable(funcName);
+                    var argValue = ASTNode.MakeLiteral(CreateK3Value(argToken));
+                    
+                    var funcCall = new ASTNode(ASTNodeType.FunctionCall);
+                    funcCall.Children.Add(funcVar);
+                    funcCall.Children.Add(argValue);
+                    
+                    return funcCall;
+                }
+            }
+            
+            // Skip unknown tokens
+            current++;
+            return null;
+        }
+        
+        private bool IsArgumentToken(Token token)
+        {
+            return token.Type == TokenType.INTEGER || token.Type == TokenType.FLOAT || 
+                   token.Type == TokenType.SYMBOL;
+        }
+        
+        private K3Value CreateK3Value(Token token)
+        {
+            switch (token.Type)
+            {
+                case TokenType.INTEGER:
+                    return new IntegerValue(int.Parse(token.Lexeme));
+                case TokenType.FLOAT:
+                    return new FloatValue(double.Parse(token.Lexeme));
+                case TokenType.SYMBOL:
+                    return new SymbolValue(token.Lexeme);
+                default:
+                    return new NullValue();
             }
         }
 
@@ -1376,11 +1686,21 @@ namespace K3CSharp
             else if (a is LongValue longA)
             {
                 var elements = new List<K3Value>();
-                for (int i = 0; i < longA.Value; i++)
+                for (long i = 0; i < longA.Value; i++)
                 {
                     elements.Add(new LongValue(i));
                 }
                 return new VectorValue(elements, longA.Value == 0 ? "enumerate_long" : "standard");
+            }
+            else if (a is DictionaryValue dict)
+            {
+                // Enumerate operator on dictionary returns list of keys
+                var keys = new List<K3Value>();
+                foreach (var key in dict.Entries.Keys)
+                {
+                    keys.Add(key);
+                }
+                return new VectorValue(keys, "standard");
             }
             
             throw new Exception($"Cannot enumerate {a.Type}");
@@ -1429,6 +1749,48 @@ namespace K3CSharp
                 }
                 
                 return new VectorValue(uniqueElements);
+            }
+            
+            return a; // For scalars, return the value itself
+        }
+
+        private K3Value Group(K3Value a)
+        {
+            if (a is VectorValue vecA)
+            {
+                var groups = new Dictionary<string, List<int>>();
+                
+                // First pass: collect indices for each unique value
+                for (int i = 0; i < vecA.Elements.Count; i++)
+                {
+                    var element = vecA.Elements[i];
+                    var key = element.ToString();
+                    
+                    if (!groups.ContainsKey(key))
+                    {
+                        groups[key] = new List<int>();
+                    }
+                    groups[key].Add(i);
+                }
+                
+                // Second pass: create group vectors in order of first appearance
+                var result = new List<K3Value>();
+                var seenKeys = new HashSet<string>();
+                
+                for (int i = 0; i < vecA.Elements.Count; i++)
+                {
+                    var element = vecA.Elements[i];
+                    var key = element.ToString();
+                    
+                    if (seenKeys.Add(key)) // First time seeing this value
+                    {
+                        // Create vector of indices for this group
+                        var indices = groups[key].Select(idx => (K3Value)new IntegerValue(idx)).ToList();
+                        result.Add(new VectorValue(indices));
+                    }
+                }
+                
+                return new VectorValue(result);
             }
             
             return a; // For scalars, return the value itself
@@ -1536,7 +1898,13 @@ namespace K3CSharp
             // Handle vector indexing: vector @ index
             if (vector is VectorValue vec)
             {
-                if (index is IntegerValue intIndex)
+                // Handle null indexing (_n) - "all" operation
+                if (index is NullValue)
+                {
+                    // Return all elements of the vector
+                    return new VectorValue(vec.Elements);
+                }
+                else if (index is IntegerValue intIndex)
                 {
                     // Single index: return element at position
                     int idx = intIndex.Value;
@@ -1575,8 +1943,19 @@ namespace K3CSharp
             }
             else if (vector is DictionaryValue dict)
             {
+                // Handle null indexing (_n) - "all" operation for dictionaries
+                if (index is NullValue)
+                {
+                    // Return all values of the dictionary
+                    var values = new List<K3Value>();
+                    foreach (var entry in dict.Entries)
+                    {
+                        values.Add(entry.Value.Value);
+                    }
+                    return new VectorValue(values);
+                }
                 // Handle dictionary indexing: dictionary @ key
-                if (index is SymbolValue key)
+                else if (index is SymbolValue key)
                 {
                     // Check if key ends with period for attribute retrieval
                     bool getAttribute = key.Value.EndsWith(".");
@@ -1752,6 +2131,7 @@ namespace K3CSharp
                 "#" => Count(operand),
                 "_" => Floor(operand),
                 "?" => Unique(operand),
+                "=" => Group(operand),
                 "~" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue)) 
                     ? AttributeHandle(operand) 
                     : LogicalNegate(operand),
@@ -2220,10 +2600,66 @@ namespace K3CSharp
         
         private K3Value Make(K3Value value)
         {
-            // . (make) operator - create dictionary from mixed vector
-            if (value is VectorValue vec)
+            // . (make) operator - create dictionary from mixed vector OR execute character vector
+            // IMPORTANT: Check for character vector FIRST, then handle dictionaries and other vectors
+            
+            // Check if this is specifically a character vector (all elements are CharacterValue)
+            if (value is VectorValue charVec && charVec.Elements.Count > 0 && charVec.Elements.All(e => e is CharacterValue))
             {
-                var dict = new Dictionary<SymbolValue, (K3Value, DictionaryValue)>();
+                // Execute operation: ."text" executes the text as if it was entered in the parser
+                // IMPORTANT: Dot execute works in the current variable context (no new variable space)
+                var chars = charVec.Elements.Select(e => ((CharacterValue)e).Value);
+                var executeText = string.Concat(chars);
+                
+                // Create a new parser instance but use the current evaluator (current variable context)
+                var lexer = new Lexer(executeText);
+                var tokens = lexer.Tokenize();
+                var parser = new Parser(tokens, executeText);
+                
+                try
+                {
+                    var ast = parser.Parse();
+                    // Use current evaluator (this) to maintain variable context
+                    return Evaluate(ast);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Execute operation failed: {ex.Message}", ex);
+                }
+            }
+            else if (value is DictionaryValue dict)
+            {
+                // Unmake operation: .dictionary returns list of triplets
+                var triplets = new List<K3Value>();
+                
+                foreach (var kvp in dict.Entries)
+                {
+                    var key = kvp.Key;
+                    var (val, attr) = kvp.Value;
+                    
+                    // Create triplet vector: (key; value; attribute)
+                    var tripletElements = new List<K3Value> { key, val };
+                    
+                    // Add attribute (null if no attribute)
+                    if (attr != null)
+                    {
+                        tripletElements.Add(attr);
+                    }
+                    else
+                    {
+                        // Add null for missing attribute
+                        tripletElements.Add(new NullValue());
+                    }
+                    
+                    triplets.Add(new VectorValue(tripletElements));
+                }
+                
+                return new VectorValue(triplets);
+            }
+            else if (value is VectorValue vec)
+            {
+                // Make operation: .() creates empty dictionary, .(elements) creates dictionary
+                var newDict = new Dictionary<SymbolValue, (K3Value, DictionaryValue)>();
                 
                 foreach (var element in vec.Elements)
                 {
@@ -2234,7 +2670,7 @@ namespace K3CSharp
                             // Tuple (key; value) - attribute is null
                             if (entryVec.Elements[0] is SymbolValue key)
                             {
-                                dict[key] = (entryVec.Elements[1], null);
+                                newDict[key] = (entryVec.Elements[1], null);
                             }
                             else
                             {
@@ -2247,7 +2683,7 @@ namespace K3CSharp
                             if (entryVec.Elements[0] is SymbolValue key)
                             {
                                 var attribute = entryVec.Elements[2] as DictionaryValue;
-                                dict[key] = (entryVec.Elements[1], attribute);
+                                newDict[key] = (entryVec.Elements[1], attribute);
                             }
                             else
                             {
@@ -2265,11 +2701,11 @@ namespace K3CSharp
                     }
                 }
                 
-                return new DictionaryValue(dict);
+                return new DictionaryValue(newDict);
             }
             else
             {
-                throw new Exception("Make operator requires a vector");
+                throw new Exception("Make operator requires a vector or dictionary");
             }
         }
         

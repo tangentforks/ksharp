@@ -203,7 +203,7 @@
 ║ test_mixed_types.k                       │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
 ║ test_multiline_function_single.k         │ test: {[x] a:x*2; a+10} │ 20                   │                      ║
 ║ test_null_vector.k                       │ (;1;2)               │ (;1;2)               │                      ║
-║ test_scoping_single.k                    │ globalVar: 100       │ 110                  │ 60                   ║
+║ test_scoping_single.k                    │ globalVar: 100       │ 60                   │                      ║
 ║ test_semicolon_simple.k                  │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
 ║ test_semicolon_vars.k                    │ a: 10                │ 30 200 -10           │                      ║
 ║ test_semicolon_vector.k                  │ a: 1 2               │ (7;3 4;-20.45)       │                      ║
@@ -248,10 +248,19 @@
 ║ variable_reassignment.k                  │ foo:7                │ 7.2 4.5              │                      ║
 ║ variable_scoping_global_access.k         │ // Test function accessing global variable │ 150                  │                      ║
 ║ variable_scoping_global_assignment.k     │ // Test global assignment from nested function │ Error: Undefine...   │ 10                   ║
-║ variable_scoping_global_unchanged.k      │ // Test verify global variable unchanged │ 50                   │ 5                    ║
-║ variable_scoping_local_hiding.k          │ // Test function with local variable hiding global │ 110                  │ 15                   ║
-║ variable_scoping_nested_functions.k      │ // Test nested functions │ Error: Unknown ...   │ 25                   ║
+║ variable_scoping_global_unchanged.k      │ // Test verify global variable unchanged │ 100                  │                      ║
+║ variable_scoping_local_hiding.k          │ // Test function with local variable hiding global │ 60                   │                      ║
+║ variable_scoping_nested_functions.k      │ // Test nested functions │ Error: Dot-appl...   │ 25                   ║
 ║ variable_usage.k                         │ x:10                 │ 30                   │                      ║
+║ test_dot_execute.k                       │ ."2+2"               │ 4                    │                      ║
+║ test_dot_execute_context.k               │ foo:7                │ 8                    │                      ║
+║ test_dictionary_enumerate.k              │ d: .((`a;1);(`b;2))  │ `a`b                 │                      ║
+║ test_dictionary_unmake.k                 │ d: .((`a;1);(`b;2))  │ ((`a;1;);(`b;2;))    │                      ║
+║ test_dictionary_null_index.k             │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
+║ test_vector_null_index.k                 │ v: 1 2 3 4           │ 1 2 3 4              │                      ║
+║ test_empty_brackets_vector.k             │ v: 1 2 3 4           │ 1 2 3 4              │                      ║
+║ test_empty_brackets_dictionary.k         │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
+║ test_group_operator.k                    │ a: 3 3 8 7 5 7 3 8 4 4 9 2 7 6 0 7 8 7 0 1 │ (0 1 6;2 7 16;3...   │                      ║
 ║ vector_notation_empty.k                  │ ()                   │ ()                   │                      ║
 ║ vector_notation_functions.k              │ double: {[x] x * 2}  │ {[x] x*2} {[x] ...   │ 10 20 30             ║
 ║ vector_notation_mixed_types.k            │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
@@ -275,35 +284,20 @@
 ║ where_vector_counts.k                    │ & (3 2 1)            │ 0 0 0 1 1 2          │                      ║
 ║ floor_operator.k                         │ _3.7                 │ 3.0                  │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 265/271 tests passed (97.8%)                                                                     ║
+║ SUMMARY: 277/280 tests passed (98.9%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
-Test: test_scoping_single.k
-Input: globalVar: 100
-Expected: 60
-Actual: 110
-──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: // Test global assignment from nested function
 Expected: 10
 Actual: Error: Undefined variable: test5
 ──────────────────────────────────────────────────────────────────────────
-Test: variable_scoping_global_unchanged.k
-Input: // Test verify global variable unchanged
-Expected: 5
-Actual: 50
-──────────────────────────────────────────────────────────────────────────
-Test: variable_scoping_local_hiding.k
-Input: // Test function with local variable hiding global
-Expected: 15
-Actual: 110
-──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_nested_functions.k
 Input: // Test nested functions
 Expected: 25
-Actual: Error: Unknown binary operator: .
+Actual: Error: Dot-apply operator requires a function on the left side
 ──────────────────────────────────────────────────────────────────────────
 Test: vector_notation_functions.k
 Input: double: {[x] x * 2}
