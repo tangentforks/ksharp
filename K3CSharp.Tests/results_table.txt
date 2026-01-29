@@ -279,9 +279,6 @@
 ║ test_form_integer.k                              │ 0$1                  │ 1                    │                      ║
 ║ test_form_float.k                                │ 0.0$1                │ 1.0                  │                      ║
 ║ test_form_long.k                                 │ 0L$42                │ 42L                  │                      ║
-║ test_form_symbol.k                               │ `$1                  │ `1                   │                      ║
-║ test_form_string.k                               │ " "$1                │ "1"                  │                      ║
-║ test_form_string_spec.k                          │ " "$42               │ "42"                 │                      ║
 ║ test_form_specifier.k                            │ 5$1                  │ "    1"              │                      ║
 ║ test_form_string_pad_left.k                      │ 7$"hello"            │ "  hello"            │                      ║
 ║ test_form_string_pad_right.k                     │ -10$"test"           │ "test      "         │                      ║
@@ -291,10 +288,7 @@
 ║ test_form_float_precision_2.k                    │ 10.2$3.14159         │ "3.141589999999...   │                      ║
 ║ test_form_float_format.k                         │ 8.2$3.14159          │ "3.141589999999...   │ "    3.14"           ║
 ║ test_form_vector_int.k                           │ 0$(1;2;3)            │ 1 2 3                │                      ║
-║ test_form_vector_symbol.k                        │ `$(1;2;3)            │ `1`2`3               │                      ║
-║ test_form_braces_vector.k                        │ {}$(1;2;3)           │ 1 2 3                │                      ║
 ║ test_form_braces_mixed.k                         │ {}$(1;2.5;"hello")   │ Error: Undefine...   │ (1;2.5;"hello")      ║
-║ test_form_braces_nested.k                        │ {}$((1;2);(3;4))     │ (1 2;3 4)            │                      ║
 ║ test_form_braces_expressions.k                   │ a:5                  │ 8 15 2               │                      ║
 ║ test_form_braces_nested_expr.k                   │ x:10                 │ (12 20;(7;3.333...   │                      ║
 ║ test_form_braces_complex.k                       │ a:1.5                │ 8.25 12.0 9.0        │                      ║
@@ -340,7 +334,7 @@
 ║ where_vector_counts.k                            │ & (3 2 1)            │ 0 0 0 1 1 2          │                      ║
 ║ floor_operator.k                                 │ _3.7                 │ 3.0                  │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 327/336 tests passed (97.3%)                                                                             ║
+║ SUMMARY: 321/330 tests passed (97.3%)                                                                             ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:

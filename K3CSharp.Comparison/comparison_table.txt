@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-01-29 02:27:09
+Generated: 2026-01-29 12:38:05
 
 SUMMARY:
 --------
-Total Tests:     345
+Total Tests:     338
 ✅ Matched:       289
 ❌ Differed:      25
 ⚠️  Skipped:       17
-💥 Errors:        14
-Success Rate:    88.1%
+💥 Errors:        7
+Success Rate:    90.0%
 
 DETAILED RESULTS:
 -----------------
@@ -230,13 +230,11 @@ Status   Test File                                          K3Sharp Output      
  "2        ...   
 ✅ PASS   test_binary_form_string_pad_left.k                 "     hello"                   "     hello"                   
 ✅ PASS   test_binary_form_string_pad_right.k                "test      "                   "test      "                   
-💥 ERROR test_binary_form_string_spec.k                     "42"                                                          Failed to execute...
 ❌ FAIL   test_binary_form_symbol_pad_left.k                 "    `hello"                   "     hello"                   
 ❌ FAIL   test_binary_form_symbol_string_mixed_vector.k      (`h`e`l`l`o;`w`o`r`l`d;`t...   `hello `world `test            
 ❌ FAIL   test_binary_form_vector_int.k                      1 2 3                          (""
  ""
  "")                   
-💥 ERROR test_binary_form_vector_symbol.k                   `1`2`3                                                        Failed to execute...
 ✅ PASS   test_dictionary_dot_apply.k                        1                              1                              
 ✅ PASS   test_dictionary_enumerate.k                        `a`b                           `a `b                          Matched via forma...
 ✅ PASS   test_dictionary_null_index.k                       1 2                            1 2                            
@@ -271,10 +269,8 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   test_form_braces_nested_expr.k                     (12 20;(7;3.333333))           (12 20
  (7;3.333333))          Matched via forma...
 ✅ PASS   test_form_braces_nested_function_calls.k           5 8 25                         5 8 25                         
-💥 ERROR test_form_braces_nested.k                          (1 2;3 4)                                                     Failed to execute...
 ✅ PASS   test_form_braces_simple.k                          8                              8                              
 💥 ERROR test_form_braces_string.k                                                                                        Expected ')' afte...
-💥 ERROR test_form_braces_vector.k                          1 2 3                                                         Failed to execute...
 ❌ FAIL   test_form_float_format.k                           "3.14158999999999988262"       "    3.14"                     
 ❌ FAIL   test_form_float_precision_2.k                      "3.14158999999999988262"       "      3.14"                   
 ❌ FAIL   test_form_float.k                                  1.0                            ,"1"                           
@@ -286,14 +282,11 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   test_form_specifier.k                              "    1"                        "    1"                        
 ✅ PASS   test_form_string_pad_left.k                        "  hello"                      "  hello"                      
 ✅ PASS   test_form_string_pad_right.k                       "test      "                   "test      "                   
-💥 ERROR test_form_string_spec.k                            "42"                                                          Failed to execute...
 💥 ERROR test_form_string.k                                 "1"                                                           Failed to execute...
 ❌ FAIL   test_form_symbol_pad_left.k                        "  `hello"                     "   hello"                     
-💥 ERROR test_form_symbol.k                                 `1                                                            Failed to execute...
 ❌ FAIL   test_form_vector_int.k                             1 2 3                          (""
  ""
  "")                   
-💥 ERROR test_form_vector_symbol.k                          `1`2`3                                                        Failed to execute...
 ✅ PASS   test_grade_down_no_parens.k                        1 2 3 4 0                      1 2 3 4 0                      
 ✅ PASS   test_grade_up_no_parens.k                          0 4 2 3 1                      0 4 2 3 1                      
 ✅ PASS   test_group_operator.k                              (0 1 6;2 7 16;3 5 12 15 1...   (0 1 6
@@ -465,12 +458,6 @@ k.exe:   ("1         "
 
 ERROR TESTS DETAILS:
 -------------------
-File: test_binary_form_string_spec.k
-Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
-
-File: test_binary_form_vector_symbol.k
-Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
-
 File: test_dictionary_unmake.k
 Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
 
@@ -480,19 +467,15 @@ Error: Unexpected token: LEFT_BRACKET([)
 File: test_form_braces_mixed.k
 Error: Undefined variable: hello
 
-File: test_form_braces_nested.k
-Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
-
 File: test_form_braces_string.k
 Error: Expected ')' after expression
-
-File: test_form_braces_vector.k
-Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
-
-File: test_form_string_spec.k
-Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
 
 File: test_form_string.k
 Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
 
-... and 4 more error tests
+File: variable_scoping_global_assignment.k
+Error: Undefined variable: test5
+
+File: variable_scoping_nested_functions.k
+Error: Dot-apply operator requires a function on the left side
+
