@@ -50,6 +50,7 @@ namespace K3CSharp
         TYPE,           // 4: type operator
         STRING_REPRESENTATION, // :: string representation operator
         GLOBAL_ASSIGNMENT, // :: global assignment operator
+        DOLLAR,          // $ format/form operator
         
         // Mathematical floating point operations
         LOG,            // _log logarithm

@@ -609,6 +609,12 @@ namespace K3CSharp
             }
         }
         
+        public string ToStringForFormat()
+        {
+            // For unary $ formatting, return symbol name in quotes without backtick
+            return $"\"{Value}\"";
+        }
+        
         private bool ContainsSpecialCharacters(string value)
         {
             if (string.IsNullOrEmpty(value))
@@ -937,6 +943,11 @@ namespace K3CSharp
         
         public string ToString(bool asElement)
         {
+            return ToString(asElement, false);
+        }
+        
+        public string ToString(bool asElement, bool skipComma)
+        {
             if (Elements.Count == 0)
             {
                 // Handle special empty vector display formats
@@ -962,7 +973,15 @@ namespace K3CSharp
             if (Elements.All(e => e is CharacterValue))
             {
                 var chars = Elements.Select(e => ((CharacterValue)e).Value);
-                return $"\"{string.Concat(chars)}\"";
+                var result = $"\"{string.Concat(chars)}\"";
+                
+                // Add enlist comma for single-element character vectors (unless skipped or string representation)
+                if (Elements.Count == 1 && !skipComma && CreationMethod != "string_representation")
+                {
+                    result = "," + result;
+                }
+                
+                return result;
             }
             
             // Check if this is a symbol vector - display in compact format without spaces
@@ -991,6 +1010,11 @@ namespace K3CSharp
                     }
                     else if (e is VectorValue vec)
                     {
+                        // Special handling for single-element vectors
+                        if (vec.Elements.Count == 1)
+                        {
+                            return "," + vec.ToString(false, true); // Add comma prefix, but skip inner comma logic
+                        }
                         // For simple homogeneous vectors (like integer vectors), don't add inner parentheses
                         if (vec.Elements.All(x => x is IntegerValue) || 
                             vec.Elements.All(x => x is FloatValue) ||
@@ -1008,9 +1032,8 @@ namespace K3CSharp
             // For homogeneous vectors (except characters), use space-separated format
             var vectorStr = string.Join(" ", Elements.Select(e => e.ToString()));
             
-            // Add enlist comma for single-element vectors of integer, symbol, and character types
-            if (Elements.Count == 1 && 
-                (Elements[0] is IntegerValue || Elements[0] is SymbolValue || Elements[0] is CharacterValue))
+            // Add enlist comma for any single-element vector (unless skipped)
+            if (Elements.Count == 1 && !skipComma)
             {
                 return "," + vectorStr;
             }

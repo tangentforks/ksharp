@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace K3CSharp
 {
@@ -152,6 +153,7 @@ namespace K3CSharp
                     "_" => Floor(operand),
                     "?" => Unique(operand),
                     "=" => Group(operand),
+                    "$" => Format(operand),
                     "NEGATE" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue))
                     ? AttributeHandle(operand)
                     : LogicalNegate(operand),
@@ -208,6 +210,7 @@ namespace K3CSharp
                         "_" => FloorBinary(left, right),
                         "@" => AtIndex(left, right),
                         "." => DotApply(left, right),
+                        "$" => Format(left, right),
                         "::" => GlobalAssignment(left, right),
                         "ADVERB_SLASH" => Over(new SymbolValue("+"), left, right),
                         "ADVERB_BACKSLASH" => Scan(new SymbolValue("+"), left, right),
@@ -1896,6 +1899,12 @@ namespace K3CSharp
         private K3Value VectorIndex(K3Value vector, K3Value index)
         {
             // Handle vector indexing: vector @ index
+            // If vector is null, return the index (spec: _n@x returns x)
+            if (vector is NullValue)
+            {
+                return index;
+            }
+            
             if (vector is VectorValue vec)
             {
                 // Handle null indexing (_n) - "all" operation
@@ -2456,7 +2465,7 @@ namespace K3CSharp
         {
             // 5: verb - produce string representation of the argument with proper escaping
             string representation = ToStringWithEscaping(value);
-            return new VectorValue(new List<K3Value> { new CharacterValue(representation) });
+            return new VectorValue(new List<K3Value> { new CharacterValue(representation) }, "string_representation");
         }
         
         private string ToStringWithEscaping(K3Value value)
@@ -2782,6 +2791,11 @@ namespace K3CSharp
         private K3Value AtIndex(K3Value data, K3Value index)
         {
             // @ operator for indexing: data @ index
+            // If data is null, return the index (spec: _n@x returns x)
+            if (data is NullValue)
+            {
+                return index;
+            }
             
             // Handle dictionary indexing
             if (data is DictionaryValue dict)
@@ -2842,96 +2856,31 @@ namespace K3CSharp
                         }
                         else
                         {
-                            throw new Exception("Dictionary indices must be symbols");
+                            throw new Exception($"Dictionary indices must be symbols, got {idx.Type}");
                         }
                     }
-                    return new VectorValue(result, "standard");
+                    return new VectorValue(result);
+                }
+                else if (index is NullValue)
+                {
+                    // Handle null indexing (_n) - "all" operation for dictionaries
+                    var values = new List<K3Value>();
+                    foreach (var entry in dict.Entries)
+                    {
+                        values.Add(entry.Value.Value);
+                    }
+                    return new VectorValue(values);
                 }
                 else
                 {
-                    throw new Exception("Dictionary indices must be symbols or vector of symbols");
+                    throw new Exception($"Dictionary index must be symbol, vector of symbols, or null, got {index.Type}");
                 }
             }
             
             // Handle vector indexing
-            if (index is IntegerValue intIndex)
+            if (data is VectorValue vec)
             {
-                if (data is VectorValue dataVec)
-                {
-                    // Vector @ integer
-                    var actualIndex = intIndex.Value;
-                    if (actualIndex < 0)
-                    {
-                        actualIndex = dataVec.Elements.Count + actualIndex;
-                    }
-                    
-                    if (actualIndex < 0 || actualIndex >= dataVec.Elements.Count)
-                    {
-                        throw new Exception($"Index {intIndex.Value} out of bounds for vector of length {dataVec.Elements.Count}");
-                    }
-                    
-                    return dataVec.Elements[actualIndex];
-                }
-                else
-                {
-                    // Scalar @ integer - treat scalar as single-element vector
-                    if (intIndex.Value == 0)
-                    {
-                        return data;
-                    }
-                    else
-                    {
-                        throw new Exception($"Index {intIndex.Value} out of bounds for scalar");
-                    }
-                }
-            }
-            else if (index is VectorValue indexVec)
-            {
-                if (data is VectorValue dataVec)
-                {
-                    // Vector @ vector of indices
-                    var result = new List<K3Value>();
-                    foreach (var idx in indexVec.Elements)
-                    {
-                        if (idx is IntegerValue intIdx)
-                        {
-                            var actualIndex = intIdx.Value;
-                            if (actualIndex < 0)
-                            {
-                                actualIndex = dataVec.Elements.Count + actualIndex;
-                            }
-                            
-                            if (actualIndex < 0 || actualIndex >= dataVec.Elements.Count)
-                            {
-                                throw new Exception($"Index {intIdx.Value} out of bounds for vector of length {dataVec.Elements.Count}");
-                            }
-                            
-                            result.Add(dataVec.Elements[actualIndex]);
-                        }
-                        else
-                        {
-                            throw new Exception("Vector indices must be integers");
-                        }
-                    }
-                    return new VectorValue(result, "standard");
-                }
-                else
-                {
-                    // Scalar @ vector of indices
-                    var result = new List<K3Value>();
-                    foreach (var idx in indexVec.Elements)
-                    {
-                        if (idx is IntegerValue intIdx && intIdx.Value == 0)
-                        {
-                            result.Add(data);
-                        }
-                        else
-                        {
-                            throw new Exception($"Index out of bounds for scalar");
-                        }
-                    }
-                    return new VectorValue(result, "standard");
-                }
+                return VectorIndex(vec, index);
             }
             else
             {
@@ -3537,6 +3486,32 @@ namespace K3CSharp
         {
             // Dot-apply operator: function . argument
             // Similar to function application but with different precedence
+            // If left is null, return the right (spec: _n . x returns x)
+            if (left is NullValue)
+            {
+                return right;
+            }
+            
+            // Handle dictionary dot-apply with symbol vectors (spec: d@`v is equivalent to d .,`v)
+            if (left is DictionaryValue dict)
+            {
+                if (right is SymbolValue symbol)
+                {
+                    // Single symbol lookup - same as dictionary indexing
+                    return VectorIndex(dict, symbol);
+                }
+                else if (right is VectorValue rightVec && rightVec.Elements.Count == 1 && rightVec.Elements[0] is VectorValue symbolVec)
+                {
+                    // Single-item list containing a vector of symbols
+                    return VectorIndex(dict, symbolVec);
+                }
+                else if (right is VectorValue vec && vec.Elements.All(e => e is SymbolValue))
+                {
+                    // Vector of symbols - same as dictionary indexing with vector
+                    return VectorIndex(dict, vec);
+                }
+            }
+            
             if (left is FunctionValue function)
             {
                 // Create a temporary AST node for the function to reuse existing logic
@@ -3594,6 +3569,437 @@ namespace K3CSharp
             }
             
             return value;
+        }
+
+        private K3Value Format(K3Value operand)
+        {
+            // Unary $ operator - convert to string representation
+            // For vectors, preserve structure and convert each element to string
+            if (operand is VectorValue vec)
+            {
+                // Special handling for character vectors (strings) - split into individual characters
+                if (vec.Elements.Count > 0 && vec.Elements.All(e => e is CharacterValue))
+                {
+                    if (vec.Elements.Count == 1)
+                    {
+                        // Single character - return as enlisted form with comma
+                        return new VectorValue(new List<K3Value> { vec.Elements[0] });
+                    }
+                    else
+                    {
+                        // Character vector with multiple characters - return as-is (identity operation)
+                        return vec;
+                    }
+                }
+                
+                // Regular vector - convert each element to string representation (no enlisting)
+                var vecResult = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    // Convert each element to string without unary format enlisting
+                    vecResult.Add(ConvertToString(element));
+                }
+                return new VectorValue(vecResult);
+            }
+            else
+            {
+                // Convert single value to string (character vector)
+                // Per spec: result is expected to be always a character vector and never a single character
+                // If the result has a single character it must be returned in enlisted form
+                
+                if (operand is CharacterValue charVal)
+                {
+                    // Single character - return as enlisted form
+                    return new VectorValue(new List<K3Value> { charVal });
+                }
+                else
+                {
+                    // Convert to string and create proper character vector with individual characters
+                    string str = operand is SymbolValue sym ? sym.Value : operand.ToString();
+                    var charElements = str.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
+                    return new VectorValue(charElements);
+                }
+            }
+        }
+
+        private K3Value ConvertToString(K3Value value)
+        {
+            // Convert value to string representation without unary format enlisting
+            if (value is VectorValue vec && vec.Elements.Count > 0 && vec.Elements.All(e => e is CharacterValue))
+            {
+                // Character vector - return as-is
+                return vec;
+            }
+            else
+            {
+                // Convert to string and create proper character vector with individual characters
+                string str = value is SymbolValue sym ? sym.Value : value.ToString();
+                var charElements = str.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
+                return new VectorValue(charElements);
+            }
+        }
+
+        private K3Value Format(K3Value left, K3Value right)
+        {
+            // Binary $ operator - form/type conversion
+            // Left argument specifies the type, right argument is the value to convert
+            
+            // Handle format specifiers (numeric left argument other than 0, 0L, 0.0)
+            if (left is IntegerValue intFormat && intFormat.Value != 0)
+            {
+                return FormatWithSpecifier(intFormat.Value, right);
+            }
+            else if (left is FloatValue floatFormat && (floatFormat.Value != 0.0 || floatFormat.Value.ToString().Contains(".")))
+            {
+                return FormatWithFloatSpecifier(floatFormat.Value, right);
+            }
+            
+            // Handle type conversions
+            return ConvertType(left, right);
+        }
+
+        private K3Value FormatWithSpecifier(int formatSpec, K3Value value)
+        {
+            string str;
+            
+            // Handle character vectors (strings) properly
+            if (value is VectorValue vec && vec.Elements.Count > 0 && vec.Elements.All(e => e is CharacterValue))
+            {
+                // Extract the raw string content from character vector
+                var chars = vec.Elements.Select(e => ((CharacterValue)e).Value);
+                str = string.Concat(chars);
+            }
+            else
+            {
+                str = value.ToString();
+            }
+            
+            if (formatSpec > 0)
+            {
+                // Positive: pad with spaces on the left
+                if (str.Length < formatSpec)
+                {
+                    str = str.PadLeft(formatSpec);
+                }
+                else if (str.Length > formatSpec)
+                {
+                    // Length overflow: return asterisks
+                    str = new string('*', formatSpec);
+                }
+            }
+            else if (formatSpec < 0)
+            {
+                // Negative: pad with spaces on the right
+                int targetLength = Math.Abs(formatSpec);
+                if (str.Length < targetLength)
+                {
+                    str = str.PadRight(targetLength);
+                }
+                else if (str.Length > targetLength)
+                {
+                    // Length overflow: return asterisks
+                    str = new string('*', targetLength);
+                }
+            }
+            
+            return new CharacterValue(str);
+        }
+
+        private K3Value FormatWithFloatSpecifier(double formatSpec, K3Value value)
+        {
+            if (value is VectorValue vec)
+            {
+                // Apply formatting to each element of the vector
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(FormatFloatElement(formatSpec, element));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                return FormatFloatElement(formatSpec, value);
+            }
+        }
+        
+        private K3Value FormatFloatElement(double formatSpec, K3Value value)
+        {
+            // Extract decimal places from the fractional part
+            double wholePart = Math.Truncate(formatSpec);
+            double fracPart = formatSpec - wholePart;
+            
+            // The fractional part represents decimal places as 0.xx where xx is the number of decimal places
+            // For example: 8.2 means 8 total length with 20 decimal places (2 * 10)
+            int decimalPlaces = (int)Math.Round(fracPart * 100);
+            
+            int totalLength = (int)wholePart;
+            
+            string str;
+            if (value is FloatValue fv)
+            {
+                str = fv.Value.ToString($"F{decimalPlaces}");
+            }
+            else if (value is IntegerValue iv)
+            {
+                str = ((double)iv.Value).ToString($"F{decimalPlaces}");
+            }
+            else if (value is LongValue lv)
+            {
+                str = ((double)lv.Value).ToString($"F{decimalPlaces}");
+            }
+            else
+            {
+                str = value.ToString();
+            }
+            
+            // Apply length overflow handling only for integer format specifiers
+            // Float format specifiers should not apply overflow handling based on comparison tests
+            if (totalLength != 0)
+            {
+                int targetLength = Math.Abs(totalLength);
+                
+                if (totalLength > 0 && str.Length < targetLength)
+                {
+                    // Positive: pad with spaces on the left
+                    str = str.PadLeft(targetLength);
+                }
+                else if (totalLength < 0 && str.Length < targetLength)
+                {
+                    // Negative: pad with spaces on the right
+                    str = str.PadRight(targetLength);
+                }
+                // Note: Float format specifiers don't apply overflow handling
+                // Only integer format specifiers should return asterisks on overflow
+            }
+            
+            return new CharacterValue(str);
+        }
+
+        private K3Value ConvertType(K3Value typeSpec, K3Value value)
+        {
+            // Check for special type specifiers: 0, 0L, 0.0, `, " ", {}
+            if (typeSpec is IntegerValue intSpec && intSpec.Value == 0)
+            {
+                // Convert to integer
+                return ConvertToInteger(value);
+            }
+            else if (typeSpec is LongValue longSpec && longSpec.Value == 0)
+            {
+                // Convert to long integer
+                return ConvertToLong(value);
+            }
+            else if (typeSpec is FloatValue floatSpec && floatSpec.Value == 0.0)
+            {
+                // Convert to float
+                return ConvertToFloat(value);
+            }
+            else if (typeSpec is SymbolValue symSpec && (symSpec.Value == "" || symSpec.Value == "\"`\""))
+            {
+                // Convert to symbol (empty backtick or quoted backtick)
+                return ConvertToSymbol(value);
+            }
+            else if (typeSpec is CharacterValue charSpec && charSpec.Value == " ")
+            {
+                // Convert to string representation
+                return new CharacterValue(value.ToString());
+            }
+            else if (typeSpec is FunctionValue funcSpec && funcSpec.BodyText == "")
+            {
+                // Evaluate expressions ({} case) - evaluate each leaf expression
+                return EvaluateExpressions(value);
+            }
+            else if (typeSpec is VectorValue vecSpec && vecSpec.Elements.Count == 0)
+            {
+                // Evaluate expressions ({} case) - evaluate each leaf expression
+                return EvaluateExpressions(value);
+            }
+            else
+            {
+                throw new Exception($"Invalid type specifier: {typeSpec}");
+            }
+        }
+
+        private K3Value EvaluateExpressions(K3Value value)
+        {
+            // {} format specifier - evaluate each leaf expression
+            if (value is VectorValue vec)
+            {
+                // Check if this is a character vector (string) that should be evaluated
+                if (vec.Elements.Count > 0 && vec.Elements.All(e => e is CharacterValue))
+                {
+                    // Reconstruct the string from individual characters
+                    var chars = vec.Elements.Select(e => ((CharacterValue)e).Value);
+                    var code = string.Concat(chars);
+                    
+                    // Remove outer quotes if present
+                    if (code.StartsWith("\"") && code.EndsWith("\"") && code.Length > 1)
+                    {
+                        code = code.Substring(1, code.Length - 1);
+                    }
+                    
+                    // Evaluate the reconstructed string using full parser for consistency
+                    var lexer = new Lexer(code);
+                    var tokens = lexer.Tokenize();
+                    var parser = new Parser(tokens, code);
+                    var ast = parser.Parse();
+                    return Evaluate(ast);
+                }
+                
+                // Regular vector - recurse on elements
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(EvaluateExpressions(element));
+                }
+                return new VectorValue(result);
+            }
+            else if (value is CharacterValue charVal)
+            {
+                // For character values (strings), evaluate as K code using full parser
+                var code = charVal.Value;
+                if (code.StartsWith("\"") && code.EndsWith("\""))
+                {
+                    code = code.Substring(1, code.Length - 2);
+                }
+                
+                // Use full parser for consistency
+                var lexer = new Lexer(code);
+                var tokens = lexer.Tokenize();
+                var parser = new Parser(tokens, code);
+                var ast = parser.Parse();
+                return Evaluate(ast);
+            }
+            else
+            {
+                // For non-string scalars, return as-is
+                return value;
+            }
+        }
+        
+        private K3Value ConvertToInteger(K3Value value)
+        {
+            if (value is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(ConvertToInteger(element));
+                }
+                return new VectorValue(result);
+            }
+            else if (value is IntegerValue)
+            {
+                return value;
+            }
+            else if (value is LongValue lv)
+            {
+                return new IntegerValue((int)lv.Value);
+            }
+            else if (value is FloatValue fv)
+            {
+                return new IntegerValue((int)fv.Value);
+            }
+            else if (value is CharacterValue charVal)
+            {
+                return new IntegerValue((int)charVal.Value[0]);
+            }
+            else if (value is SymbolValue sv)
+            {
+                // Try to parse symbol as integer
+                if (int.TryParse(sv.Value, out int result))
+                {
+                    return new IntegerValue(result);
+                }
+                throw new Exception($"Cannot convert symbol '{sv.Value}' to integer");
+            }
+            else
+            {
+                throw new Exception($"Cannot convert {value.Type} to integer");
+            }
+        }
+
+        private K3Value ConvertToLong(K3Value value)
+        {
+            if (value is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(ConvertToLong(element));
+                }
+                return new VectorValue(result);
+            }
+            else if (value is LongValue)
+            {
+                return value;
+            }
+            else if (value is IntegerValue iv)
+            {
+                return new LongValue(iv.Value);
+            }
+            else if (value is FloatValue fv)
+            {
+                return new LongValue((long)fv.Value);
+            }
+            else
+            {
+                throw new Exception($"Cannot convert {value.Type} to long");
+            }
+        }
+
+        private K3Value ConvertToFloat(K3Value value)
+        {
+            if (value is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(ConvertToFloat(element));
+                }
+                return new VectorValue(result);
+            }
+            else if (value is FloatValue)
+            {
+                return value;
+            }
+            else if (value is IntegerValue iv)
+            {
+                return new FloatValue(iv.Value);
+            }
+            else if (value is LongValue lv)
+            {
+                return new FloatValue(lv.Value);
+            }
+            else
+            {
+                throw new Exception($"Cannot convert {value.Type} to float");
+            }
+        }
+
+        private K3Value ConvertToSymbol(K3Value value)
+        {
+            if (value is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(ConvertToSymbol(element));
+                }
+                return new VectorValue(result);
+            }
+            else if (value is SymbolValue)
+            {
+                return value;
+            }
+            else if (value is CharacterValue charVal)
+            {
+                return new SymbolValue(charVal.Value);
+            }
+            else
+            {
+                return new SymbolValue(value.ToString());
+            }
         }
     }
 }

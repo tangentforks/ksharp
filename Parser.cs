@@ -68,6 +68,7 @@ namespace K3CSharp
                 TokenType.UNDERSCORE => "_",
                 TokenType.QUESTION => "?",
                 TokenType.NEGATE => "~",
+                TokenType.DOLLAR => "$",
                 TokenType.APPLY => "@",
                 TokenType.DOT_APPLY => ".",
                 TokenType.TYPE => "TYPE",
@@ -262,7 +263,7 @@ namespace K3CSharp
                    type == TokenType.LESS || type == TokenType.GREATER || type == TokenType.EQUAL || 
                    type == TokenType.POWER || type == TokenType.MODULUS || type == TokenType.JOIN ||
                    type == TokenType.HASH || type == TokenType.UNDERSCORE || type == TokenType.QUESTION || 
-                   type == TokenType.NEGATE;
+                   type == TokenType.NEGATE || type == TokenType.DOLLAR;
         }
 
         private static readonly TokenType[] ParseUntilEndStopTokens = {
@@ -272,7 +273,7 @@ namespace K3CSharp
         private static readonly TokenType[] DefaultStopTokens = {
             TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.MIN, TokenType.MAX,
             TokenType.LESS, TokenType.GREATER, TokenType.EQUAL, TokenType.POWER, TokenType.MODULUS, TokenType.JOIN,
-            TokenType.HASH, TokenType.UNDERSCORE, TokenType.QUESTION, TokenType.NEGATE, TokenType.RIGHT_PAREN,
+            TokenType.HASH, TokenType.UNDERSCORE, TokenType.QUESTION, TokenType.NEGATE, TokenType.DOLLAR, TokenType.RIGHT_PAREN,
             TokenType.RIGHT_BRACE, TokenType.SEMICOLON, TokenType.NEWLINE, TokenType.ASSIGNMENT, TokenType.GLOBAL_ASSIGNMENT,
             TokenType.LEFT_BRACKET, TokenType.APPLY, TokenType.DOT_APPLY, TokenType.TYPE, TokenType.STRING_REPRESENTATION,
             TokenType.ADVERB_SLASH, TokenType.ADVERB_BACKSLASH, TokenType.ADVERB_TICK, TokenType.EOF
@@ -316,6 +317,17 @@ namespace K3CSharp
                 }
                 
                 var nextElement = ParsePrimary();
+                
+                // Special case: function calls (variable followed by expression)
+                // Check if the first element is a variable and the next element is any expression
+                if (firstElementType == ASTNodeType.Variable && nextElement != null)
+                {
+                    // This is a function call: functionName argument
+                    var funcCall = new ASTNode(ASTNodeType.FunctionCall);
+                    funcCall.Children.Add(elements[0]); // Function name
+                    funcCall.Children.Add(nextElement);  // Argument
+                    return funcCall;
+                }
                 
                 // Special case: compact symbol vectors (symbols back-to-back without spaces)
                 // Check if the first element was a symbol and the current element is also a symbol
@@ -426,12 +438,13 @@ namespace K3CSharp
             else if (Match(TokenType.CHARACTER_VECTOR))
             {
                 var value = PreviousToken().Lexeme;
-                var elements = new List<K3Value>();
+                // Create a VectorValue containing individual CharacterValue objects
+                var charVector = new List<K3Value>();
                 foreach (char c in value)
                 {
-                    elements.Add(new CharacterValue(c.ToString()));
+                    charVector.Add(new CharacterValue(c.ToString()));
                 }
-                result = ASTNode.MakeLiteral(new VectorValue(elements));
+                result = ASTNode.MakeLiteral(new VectorValue(charVector));
             }
             else if (Match(TokenType.SYMBOL))
             {
@@ -915,6 +928,35 @@ namespace K3CSharp
                 {
                     // Binary negate symbol
                     result = ASTNode.MakeLiteral(new SymbolValue("~"));
+                }
+            }
+            else if (Match(TokenType.DOLLAR))
+            {
+                // Check if this is unary format (at start of expression)
+                if (result == null)
+                {
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("$"));
+                    }
+                    else
+                    {
+                        // This is unary format
+                        var operand = ParseExpression();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("$");
+                        node.Children.Add(operand);
+                        return node;
+                    }
+                }
+                else
+                {
+                    // Binary format symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("$"));
                 }
             }
             else if (Match(TokenType.HASH))
@@ -1680,7 +1722,7 @@ namespace K3CSharp
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
                    Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
                    Match(TokenType.EQUAL) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
-                   Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION))
+                   Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.DOLLAR) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION))
             {
                 var op = PreviousToken().Type;
                 

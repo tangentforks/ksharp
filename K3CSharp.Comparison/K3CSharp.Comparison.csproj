@@ -7,6 +7,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <StartupObject>K3CSharp.Comparison.ComparisonRunner</StartupObject>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\K3CSharp.csproj" />
   </ItemGroup>

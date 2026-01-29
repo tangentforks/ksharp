@@ -373,70 +373,50 @@ namespace K3CSharp
                     
                 case "\\":
                     // Display top level help message
-                    Console.WriteLine("K3 REPL Help Commands:");
-                    Console.WriteLine("  \\       - Display this help message");
-                    Console.WriteLine("  \\p [n]  - Set or display float precision (default: 7)");
-                    Console.WriteLine("  \\0      - Display information about data types");
-                    Console.WriteLine("  \\+      - Display information about verbs/operators");
-                    Console.WriteLine("  \\'      - Display information about adverbs");
-                    Console.WriteLine("  \\.      - Display information about assignment");
-                    Console.WriteLine("  \\\\      - Exit the REPL");
-                    Console.WriteLine("");
-                    Console.WriteLine("New Operators:");
-                    Console.WriteLine("  =       - Group operator: =1 2 1 3 -> (0;2;1;3)");
-                    Console.WriteLine("  !dict   - Dictionary enumerate: !.(`a;1);(`b;2) -> `a`b");
-                    Console.WriteLine("  .dict   - Dictionary unmake: .d -> ((`a;1;);(`b;2;))");
-                    Console.WriteLine("  dict@_n - Dictionary all values: d@_n -> (1;2)");
-                    Console.WriteLine("  dict[]  - Same as @_n: d[] -> (1;2)");
-                    Console.WriteLine("  v@_n    - Vector all elements: v@_n -> all elements");
-                    Console.WriteLine("  v[]     - Same as @_n: v[] -> all elements");
+                    Console.WriteLine("\\  help");
+                    Console.WriteLine("\\0 data types");
+                    Console.WriteLine("\\+ verbs");
+                    Console.WriteLine("\\' adverbs");
+                    Console.WriteLine("\\. assignment");
+                    Console.WriteLine("\\p precision");
+                    Console.WriteLine("\\\\ exit");
                     break;
                     
                 case "\\0":
                     // Display constants, literals and data types information
-                    Console.WriteLine("Data Types:");
-                    Console.WriteLine("  Integer: 42, 123L (64-bit)");
-                    Console.WriteLine("  Float: 3.14, 2.5e10");
-                    Console.WriteLine("  Character: \"a\", \"hello\"");
-                    Console.WriteLine("  Symbol: `symbol, `\"symbol with spaces\"");
-                    Console.WriteLine("  Vector: (1;2;3), 1 2 3");
-                    Console.WriteLine("  Dictionary: .(`a;1);(`b;2)");
-                    Console.WriteLine("  Null: _n");
-                    Console.WriteLine("  Special floats: 0i (inf), 0n (NaN), -0i (-inf)");
-                    Console.WriteLine("  Type operator: 4: returns type code");
+                    Console.WriteLine("int long float char symbol vector dictionary null");
+                    Console.WriteLine("4: type");
+                    Console.WriteLine("0i 0n -0i inf NaN -inf");
                     break;
                     
                 case "\\+":
                     // Display verbs information
-                    Console.WriteLine("Verbs (Operators):");
-                    Console.WriteLine("  Arithmetic: + - * %");
-                    Console.WriteLine("  Comparison: < > =");
-                    Console.WriteLine("  Min/Max: & |");
-                    Console.WriteLine("  Power: ^");
-                    Console.WriteLine("  Unary: - + * % & | < > ^ ! , # _ ? ~ @ . =");
-                    Console.WriteLine("  Binary: ! _ @ . 4: ::");
-                    Console.WriteLine("  Dictionary: ! . @ []");
-                    Console.WriteLine("  Math: _log _exp _abs _sqrt _sin _cos _tan");
-                    Console.WriteLine("  Linear: _dot _mul _inv");
+                    Console.WriteLine("arithmetic: + - * % < > = & | ^");
+                    Console.WriteLine("unary: - + * % & | < > ^ ! , # _ ? ~ @ . = $");
+                    Console.WriteLine("binary: ! _ @ . :: $");
+                    Console.WriteLine("indexing: @_n []");
+                    Console.WriteLine("dict: !dict .dict");
+                    Console.WriteLine("math: _log _exp _abs _sqrt _sin _cos _tan");
+                    Console.WriteLine("linear: _dot _mul _inv");
+                    Console.WriteLine("group: =");
+                    Console.WriteLine("format: $value format${}expr");
                     break;
                     
                 case "\\'":
                     // Display adverbs information
-                    Console.WriteLine("Adverbs (Higher-order functions):");
-                    Console.WriteLine("  / (over/reduce):  +/ 1 2 3 4 -> 10");
-                    Console.WriteLine("  \\ (scan):        +\\ 1 2 3 4 -> (1;3;6;10)");
-                    Console.WriteLine("  ' (each):         +' 1 2 3 4 -> (1;2;3;4)");
-                    Console.WriteLine("Adverbs have higher precedence than unary operators");
+                    Console.WriteLine("/ over reduce");
+                    Console.WriteLine("\\ scan");
+                    Console.WriteLine("' each");
+                    Console.WriteLine("/: each-right");
+                    Console.WriteLine("\\: each-left");
+                    Console.WriteLine("': each-prior");
                     break;
                     
                 case "\\.":
                     // Display assignment information
-                    Console.WriteLine("Assignment:");
-                    Console.WriteLine("  Global:    name: value");
-                    Console.WriteLine("  Local:     [name] value (in functions)");
-                    Console.WriteLine("  Functions: name: {[params]} body");
-                    Console.WriteLine("  Global from function: name :: value");
-                    Console.WriteLine("Assignment has lower precedence than adverbs");
+                    Console.WriteLine("name: value");
+                    Console.WriteLine("name:: value (global)");
+                    Console.WriteLine("{[x;y] x+y} function");
                     break;
                     
                 default:

@@ -40,7 +40,7 @@ namespace K3CSharp.Comparison
                     foreach (var fileName in batch)
                     {
                         processed++;
-                        Console.Write($"{processed:D3}. {fileName,-40} ");
+                        Console.Write($"{processed:D3}. {fileName,-50} ");
                         
                         var result = CompareTestFile(wrapper, fileName, testScriptsPath);
                         results.Add(result);
@@ -251,8 +251,8 @@ namespace K3CSharp.Comparison
                     // Detailed results table
                     writer.WriteLine("DETAILED RESULTS:");
                     writer.WriteLine("-----------------");
-                    writer.WriteLine("Status".PadRight(8) + " " + "Test File".PadRight(40) + " " + "K3Sharp Output".PadRight(25) + " " + "k.exe Output".PadRight(25) + " " + "Notes");
-                    writer.WriteLine(new string('-', 110));
+                    writer.WriteLine("Status".PadRight(8) + " " + "Test File".PadRight(50) + " " + "K3Sharp Output".PadRight(30) + " " + "k.exe Output".PadRight(30) + " " + "Notes");
+                    writer.WriteLine(new string('-', 130));
                     
                     foreach (var result in results.OrderBy(r => r.FileName))
                     {
@@ -265,11 +265,11 @@ namespace K3CSharp.Comparison
                             _ => "❓ UNKNOWN"
                         };
                         
-                        var k3SharpOutput = TruncateString(result.K3SharpOutput, 23);
-                        var kOutput = TruncateString(result.KOutput, 23);
+                        var k3SharpOutput = TruncateString(result.K3SharpOutput, 28);
+                        var kOutput = TruncateString(result.KOutput, 28);
                         var notes = TruncateString(result.Message, 20);
                         
-                        writer.WriteLine($"{status.PadRight(8)} {result.FileName.PadRight(40)} {k3SharpOutput.PadRight(25)} {kOutput.PadRight(25)} {notes}");
+                        writer.WriteLine($"{status.PadRight(8)} {result.FileName.PadRight(50)} {k3SharpOutput.PadRight(30)} {kOutput.PadRight(30)} {notes}");
                     }
                     
                     writer.WriteLine();
