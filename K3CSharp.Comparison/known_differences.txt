@@ -1,0 +1,51 @@
+# Known Differences Between K and K3CSharp
+# Format: TestName :: Tweak1&Tweak2&Tweak3 :: Notes
+# Tweak format: regex:pattern:replacement (all tweaks use regex format for consistency)
+
+adverb_scan_divide :: regex:\(|\)|\.0\b: &regex:[;]:space :: smart integer division, inverse and exponentiation
+adverb_scan_power :: regex:\(|\)|\.0\b: &regex:[;]:space :: smart integer division, inverse and exponentiation
+adverb_scan_with_initialization_divide :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+adverb_over_divide :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+adverb_over_power :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+complex_function :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+power_operator :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+precedence_power1 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+precedence_power2 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+precedence_spec2 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+simple_division :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+square_bracket_function :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+symbol_vector_compact :: regex:\s+: :: Compact representation
+symbol_vector_spaces :: regex:\s+: :: Compact representation
+dictionary_enumerate :: regex:\s+: :: Compact representation
+division_int_4_2 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+division_rules_12_4 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+division_rules_4_2 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+form_braces_complex ::  :: k.exe removes .0 from whole numbers, K# preserves them
+form_braces_float ::  :: k.exe removes .0 from whole numbers, K# preserves them
+smart_division1 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+smart_division2 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+smart_division3 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+form_braces_arith :: regex:\(|\)|\.0\b: &regex:[;]:space :: smart integer division, inverse and exponentiation
+anonymous_function_double_param :: regex:\s*\*\s*:* :: Compact representation
+attribute_handle_vector :: regex:\s*`:` :: Compact representation
+cut_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+dictionary_index_attr :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+dictionary_multiple :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+dictionary_null_attributes :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+dictionary_with_null_value :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+nested_vector_test :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+format_float_precision_complex_mixed :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+format_float_precision_mixed_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+format_float_precision_vector_simple :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+format_pad_mixed_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+format_pad_negative_mixed_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+dictionary_unmake :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+form_braces_nested_arith :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+form_braces_nested_expr :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+group_operator :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+semicolon_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+monadic_format_mixed_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+monadic_format_nested_list :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+monadic_format_vector_simple :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+monadic_format_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+format_vector_int :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation

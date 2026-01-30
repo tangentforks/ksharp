@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-01-29 12:38:05
+Generated: 2026-01-30 14:31:06
 
 SUMMARY:
 --------
-Total Tests:     338
-✅ Matched:       289
-❌ Differed:      25
+Total Tests:     346
+✅ Matched:       307
+❌ Differed:      19
 ⚠️  Skipped:       17
-💥 Errors:        7
-Success Rate:    90.0%
+💥 Errors:        3
+Success Rate:    93.3%
 
 DETAILED RESULTS:
 -----------------
@@ -18,64 +18,79 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   adverb_each_vector_minus.k                         9 18 27                        9 18 27                        
 ✅ PASS   adverb_each_vector_multiply.k                      4 10 18                        4 10 18                        
 ✅ PASS   adverb_each_vector_plus.k                          6 8 10 12                      6 8 10 12                      
-✅ PASS   adverb_over_divide.k                               10                             10.0                           
+✅ PASS   adverb_over_divide.k                               10                             10                             smart integer div...
 ✅ PASS   adverb_over_max.k                                  5                              5                              
 ✅ PASS   adverb_over_min.k                                  1                              1                              
 ✅ PASS   adverb_over_minus.k                                4                              4                              
 ✅ PASS   adverb_over_multiply.k                             24                             24                             
 ✅ PASS   adverb_over_plus.k                                 15                             15                             
-✅ PASS   adverb_over_power.k                                64                             64.0                           
+✅ PASS   adverb_over_power.k                                64                             64                             smart integer div...
 ✅ PASS   adverb_over_with_initialization_1.k                15                             15                             
 ✅ PASS   adverb_over_with_initialization_2.k                12                             12                             
-❌ FAIL   adverb_scan_divide.k                               100 50 10                      (100;50.0;10.0)                
+✅ PASS   adverb_scan_divide.k                               100 50 10                      100 50 10                      smart integer div...
 ✅ PASS   adverb_scan_max.k                                  1 3 3 5 5                      1 3 3 5 5                      
 ✅ PASS   adverb_scan_min.k                                  5 3 3 1 1                      5 3 3 1 1                      
 ✅ PASS   adverb_scan_minus.k                                10 8 5 4                       10 8 5 4                       
 ✅ PASS   adverb_scan_multiply.k                             1 2 6 24                       1 2 6 24                       
 ✅ PASS   adverb_scan_plus.k                                 1 3 6 10 15                    1 3 6 10 15                    
-❌ FAIL   adverb_scan_power.k                                2 8 64                         (2;8.0;64.0)                   
+✅ PASS   adverb_scan_power.k                                2 8 64                         2 8 64                         smart integer div...
 ✅ PASS   adverb_scan_with_initialization_1.k                1 3 6 10 15                    1 3 6 10 15                    
 ✅ PASS   adverb_scan_with_initialization_2.k                2 3 5 8 12                     2 3 5 8 12                     
-✅ PASS   adverb_scan_with_initialization_divide.k           (2;2;1;0.3333333;0.08333333)   (2;2.0;1.0;0.3333333;0.08...   
+✅ PASS   adverb_scan_with_initialization_divide.k           (2;2;1;0.3333333;0.08333333)   (2;2;1;0.3333333;0.08333333)   smart integer div...
 ✅ PASS   adverb_scan_with_initialization_minus.k            2 1 -1 -4 -8                   2 1 -1 -4 -8                   
 ✅ PASS   adverb_scan_with_initialization.k                  2 2 4 12                       2 2 4 12                       
-✅ PASS   anonymous_function_double_param.k                  {[op1;op2] op1*op2}            {[op1;op2] op1 * op2}          Matched via forma...
+✅ PASS   anonymous_function_double_param.k                  {[op1;op2] op1*op2}            {[op1;op2] op1*op2}            Compact represent...
 ✅ PASS   anonymous_function_empty.k                         {}                             {}                             
 ✅ PASS   anonymous_function_simple.k                        {4+5}                          {4+5}                          
 ✅ PASS   anonymous_function_single_param.k                  {[arg1] arg1+6}                {[arg1] arg1+6}                
 ✅ PASS   atom_scalar.k                                      1                              1                              
 ✅ PASS   atom_vector.k                                      0                              0                              
 ✅ PASS   attribute_handle_symbol.k                          `a.                            `a.                            
-✅ PASS   attribute_handle_vector.k                          `a.`b.`c.                      `a. `b. `c.                    Matched via forma...
+✅ PASS   attribute_handle_vector.k                          `a.`b.`c.                      `a.`b.`c.                      Compact represent...
 ✅ PASS   character_single.k                                 "f"                            "f"                            
 ✅ PASS   character_vector.k                                 "hello"                        "hello"                        
-✅ PASS   complex_function.k                                 205                            205.0                          
+✅ PASS   complex_function.k                                 205                            205                            smart integer div...
 ✅ PASS   count_operator.k                                   3                              3                              
-✅ PASS   cut_vector.k                                       (0 1;2 3;4 5 6 7)              (0 1
- 2 3
- 4 5 6 7)            Matched via forma...
+✅ PASS   cut_vector.k                                       (0 1;2 3;4 5 6 7)              (0 1;2 3;4 5 6 7)              Compact represent...
+✅ PASS   dictionary_dot_apply.k                             1                              1                              
 ✅ PASS   dictionary_empty.k                                 .()                            .()                            
-✅ PASS   dictionary_index_attr.k                            .((`c;3;);(`d;4;))             .((`c;3;)
-  (`d;4;))           Matched via forma...
+✅ PASS   dictionary_enumerate.k                             `a`b                           `a`b                           Compact represent...
+✅ PASS   dictionary_index_attr.k                            .((`c;3;);(`d;4;))             .((`c;3;);(`d;4;))             Compact represent...
 ✅ PASS   dictionary_index_value.k                           1                              1                              
 ✅ PASS   dictionary_index_value2.k                          2                              2                              
 ✅ PASS   dictionary_index.k                                 1                              1                              
-✅ PASS   dictionary_multiple.k                              .((`a;1;);(`b;2;))             .((`a;1;)
-  (`b;2;))           Matched via forma...
-✅ PASS   dictionary_null_attributes.k                       .((`a;1;);(`b;2;))             .((`a;1;)
-  (`b;2;))           Matched via forma...
+✅ PASS   dictionary_multiple.k                              .((`a;1;);(`b;2;))             .((`a;1;);(`b;2;))             Compact represent...
+✅ PASS   dictionary_null_attributes.k                       .((`a;1;);(`b;2;))             .((`a;1;);(`b;2;))             Compact represent...
+✅ PASS   dictionary_null_index.k                            1 2                            1 2                            
 ✅ PASS   dictionary_single.k                                .,(`a;`b;)                     .,(`a;`b;)                     
 ✅ PASS   dictionary_type.k                                  5                              5                              
-✅ PASS   dictionary_with_null_value.k                       .((`a;1;);(`b;;);(`c;3;))      .((`a;1;)
-  (`b;;)
-  (`c;...   Matched via forma...
+✅ PASS   dictionary_unmake.k                                ((`a;1;);(`b;2;))              ((`a;1;);(`b;2;))              Compact represent...
+✅ PASS   dictionary_with_null_value.k                       .((`a;1;);(`b;;);(`c;3;))      .((`a;1;);(`b;;);(`c;3;))      Compact represent...
+✅ PASS   divide_float.k                                     0.6                            0.6                            
+✅ PASS   divide_integer.k                                   2.5                            2.5                            
+✅ PASS   division_float_4_2.0.k                             2.0                            2.0                            
+✅ PASS   division_float_5_2.5.k                             2.0                            2.0                            
+✅ PASS   division_int_4_2.k                                 2                              2                              smart integer div...
+✅ PASS   division_int_5_2.k                                 2.5                            2.5                            
+✅ PASS   division_rules_10_3.k                              3.333333                       3.333333                       
+✅ PASS   division_rules_12_4.k                              3                              3                              smart integer div...
+✅ PASS   division_rules_4_2.k                               2                              2                              smart integer div...
+✅ PASS   division_rules_5_2.k                               2.5                            2.5                            
+✅ PASS   division.k                                         0.6                            0.6                            
+✅ PASS   dot_execute_context.k                              8                              8                              
+✅ PASS   dot_execute_variables.k                            0.6                            0.6                            
+✅ PASS   dot_execute.k                                      4                              4                              
 ✅ PASS   drop_negative.k                                    0 1 2 3                        0 1 2 3                        
 ✅ PASS   drop_positive.k                                    4 5 6 7                        4 5 6 7                        
+✅ PASS   empty_brackets_dictionary.k                        1 2                            1 2                            
+✅ PASS   empty_brackets_vector.k                            1 2 3 4                        1 2 3 4                        
 ✅ PASS   empty_mixed_vector.k                               ()                             ()                             
+✅ PASS   empty_vector.k                                     ()                             ()                             
 ✅ PASS   enlist_operator.k                                  ,5                             ,5                             
 ✅ PASS   enumerate_empty_int.k                              !0                             !0                             
-⚠️  SKIP enumerate_empty_long.k                                                                                           Contains long int...
+⚠️  SKIP enumerate_empty_long.k                                                                                           k.exe 32-bit limi...
 ✅ PASS   enumerate_operator.k                               0 1 2 3 4                      0 1 2 3 4                      
+✅ PASS   enumerate.k                                        0 1                            0 1                            
 ✅ PASS   equal_operator.k                                   0                              0                              
 ✅ PASS   first_operator.k                                   1                              1                              
 ✅ PASS   float_decimal_point.k                              10.0                           10.0                           
@@ -83,7 +98,55 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   float_exponential_small.k                          1e-020                         1e-020                         
 ✅ PASS   float_exponential.k                                170.0                          170.0                          
 ✅ PASS   float_types.k                                      3.14                           3.14                           
-✅ PASS   floor_operator.k                                   3.0                            3                              
+❌ FAIL   floor_operator.k                                   3.0                            3                              
+✅ PASS   form_braces_arith.k                                8 15 2 12 20 5                 8 15 2 12 20 5                 smart integer div...
+💥 ERROR form_braces_complex_expressions.k                                                 14 20 10                       K3Sharp error, k....
+❌ FAIL   form_braces_complex.k                              8.25 12.0 9.0                  8.25 12 9                      k.exe removes .0 ...
+✅ PASS   form_braces_example.k                              8 9                            8 9                            
+✅ PASS   form_braces_expressions.k                          8 15 2                         8 15 2                         
+❌ FAIL   form_braces_float.k                                4.0 3.75 0.6 -1.0              4 3.75 0.6 -1                  k.exe removes .0 ...
+✅ PASS   form_braces_function_calls.k                       5 20 12                        5 20 12                        
+✅ PASS   form_braces_mixed_arith.k                          17.5 32.5 4.5                  17.5 32.5 4.5                  
+✅ PASS   form_braces_mixed_type.k                           (42;"hello";`test;47;"hel...   (42;"hello";`test;47;"hel...   
+✅ PASS   form_braces_nested_arith.k                         (7 10;(2;2.5);5 -1)            (7 10;(2;2.5);5 -1)            Compact represent...
+✅ PASS   form_braces_nested_expr.k                          (12 20;(7;3.333333))           (12 20;(7;3.333333))           Compact represent...
+✅ PASS   form_braces_nested_function_calls.k                5 8 25                         5 8 25                         
+✅ PASS   form_braces_simple.k                               8                              8                              
+✅ PASS   form_braces_string.k                               ("John";"is";25;"years old")   ("John";"is";25;"years old")   
+❌ FAIL   form_character_charvector.k                        ""aaa""                        "aaa"                          
+✅ PASS   form_integer_charvector.k                          42                             42                             
+⚠️  SKIP form_long.k                                                                                                      k.exe 32-bit limi...
+✅ PASS   form_string_pad_left.k                             "  hello"                      "  hello"                      
+✅ PASS   form_string_pad_right.k                            "test      "                   "test      "                   
+❌ FAIL   form_symbol_pad_left.k                             "  `hello"                     "   hello"                     
+❌ FAIL   format_0_1.k                                       "1.0"                          ""                             
+❌ FAIL   format_1_1.k                                       "*"                            ,"1"                           
+❌ FAIL   format_float_numeric.k                             "1"                            ,"1"                           
+✅ PASS   format_float_precision_complex_mixed.k             ("     1.234";"     2.567...   ("     1.234";"     2.567...   Compact represent...
+✅ PASS   format_float_precision_mixed_vector.k              ("   1.50";"   2.70";"   ...   ("   1.50";"   2.70";"   ...   Compact represent...
+✅ PASS   format_float_precision_vector_simple.k             ("       1.5";"       2.5")    ("       1.5";"       2.5")    Compact represent...
+✅ PASS   format_float_precision.k                           "    3.14"                     "    3.14"                     
+❌ FAIL   format_float_vector.k                              ("1";"2";"3";"42")             (,"1"
+ ,"3"
+ ,"3"
+ "42")       
+✅ PASS   format_float_width_precision.k                     "      3.14"                   "      3.14"                   
+❌ FAIL   format_int_vector.k                                ("1";"2.5";"3.14";"42")        (""
+ ""
+ ""
+ "")               
+❌ FAIL   format_integer.k                                   "1"                            ""                             
+⚠️  SKIP format_long_vector.k                                                                                             k.exe 32-bit limi...
+✅ PASS   format_numeric.k                                   "    1"                        "    1"                        
+✅ PASS   format_pad_left.k                                  "   42"                        "   42"                        
+✅ PASS   format_pad_mixed_vector.k                          ("         1";"         2...   ("         1";"         2...   Compact represent...
+✅ PASS   format_pad_negative_mixed_vector.k                 ("1         ";"2         ...   ("1         ";"2         ...   Compact represent...
+✅ PASS   format_pad_right.k                                 "42   "                        "42   "                        
+✅ PASS   format_string_pad_left.k                           "     hello"                   "     hello"                   
+✅ PASS   format_string_pad_right.k                          "test      "                   "test      "                   
+❌ FAIL   format_symbol_pad_left.k                           "    `hello"                   "     hello"                   
+❌ FAIL   format_symbol_string_mixed_vector.k                (`h`e`l`l`o;`w`o`r`l`d;`t...   `hello `world `test            
+❌ FAIL   format_vector_int.k                                ("1";"2";"3")                  ("";"";"")                     Compact represent...
 ✅ PASS   function_add7.k                                    12                             12                             
 ✅ PASS   function_call_anonymous.k                          13                             13                             
 ✅ PASS   function_call_chain.k                              20                             20                             
@@ -92,14 +155,18 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   function_foo_chain.k                               20                             20                             
 ✅ PASS   function_mul.k                                     32                             32                             
 ✅ PASS   generate_operator.k                                0 0 0 0                        0 0 0 0                        
+✅ PASS   grade_down_no_parens.k                             1 2 3 4 0                      1 2 3 4 0                      
 ✅ PASS   grade_down_operator.k                              1 2 3 4 0                      1 2 3 4 0                      
+✅ PASS   grade_up_no_parens.k                               0 4 2 3 1                      0 4 2 3 1                      
 ✅ PASS   grade_up_operator.k                                0 4 2 3 1                      0 4 2 3 1                      
 ✅ PASS   greater_than_operator.k                            0                              0                              
+✅ PASS   group_operator.k                                   (0 1 6;2 7 16;3 5 12 15 1...   (0 1 6;2 7 16;3 5 12 15 1...   Compact represent...
 ✅ PASS   integer_types_int.k                                42                             42                             
-⚠️  SKIP integer_types_long.k                                                                                             Contains long int...
+⚠️  SKIP integer_types_long.k                                                                                             k.exe 32-bit limi...
+✅ PASS   isolated.k                                         0.6                            0.6                            
 ✅ PASS   join_operator.k                                    3 5                            3 5                            
 ✅ PASS   less_than_operator.k                               1                              1                              
-✅ PASS   math_abs.k                                         5.0                            5                              
+❌ FAIL   math_abs.k                                         5.0                            5                              
 ✅ PASS   math_exp.k                                         7.389056                       7.389056                       
 ✅ PASS   math_log.k                                         2.302585                       2.302585                       
 ✅ PASS   math_sin.k                                         0.0                            0.0                            
@@ -107,29 +174,48 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   math_vector.k                                      0.841471 0.9092974 0.14112     0.841471 0.9092974 0.14112     
 ✅ PASS   maximum_operator.k                                 5                              5                              
 ✅ PASS   minimum_operator.k                                 3                              3                              
+✅ PASS   minus_integer.k                                    2                              2                              
 ✅ PASS   mixed_list_with_null.k                             (1;;`test;42.5)                (1;;`test;42.5)                
+✅ PASS   mixed_types.k                                      (42;3.14;"hello";`symbol)      (42;3.14;"hello";`symbol)      
 ✅ PASS   mixed_vector_empty_position.k                      (1;;2)                         (1;;2)                         
 ✅ PASS   mixed_vector_multiple_empty.k                      (1;;;3)                        (1;;;3)                        
 ✅ PASS   mixed_vector_whitespace_position.k                 (1;;2)                         (1;;2)                         
 ✅ PASS   mod_integer.k                                      1                              1                              
 ✅ PASS   mod_rotate.k                                       3 4 1 2                        3 4 1 2                        
 ✅ PASS   mod_vector.k                                       1 0 1 0                        1 0 1 0                        
+✅ PASS   modulo.k                                           0.6                            0.6                            
 ✅ PASS   modulus_operator.k                                 1                              1                              
+✅ PASS   monadic_format_basic.k                             ,"1"                           ,"1"                           
+❌ FAIL   monadic_format_dictionary.k                        ".((`a;1;);(`b;2;);(`c;3;))"   ".(..)"                        
+✅ PASS   monadic_format_float.k                             "3.14"                         "3.14"                         
+✅ PASS   monadic_format_integer.k                           "42"                           "42"                           
+✅ PASS   monadic_format_mixed_vector.k                      (,"1";"2.5";"hello";"symb...   (,"1";"2.5";"hello";"symb...   Compact represent...
+✅ PASS   monadic_format_nested_list.k                       ((,"1";,"2";,"3");(,"4";,...   ((,"1";,"2";,"3");(,"4";,...   Compact represent...
+✅ PASS   monadic_format_string_a.k                          ,"a"                           ,"a"                           
+✅ PASS   monadic_format_string_hello.k                      "hello"                        "hello"                        
+✅ PASS   monadic_format_symbol_hello.k                      "hello"                        "hello"                        
+✅ PASS   monadic_format_symbol_simple.k                     "test"                         "test"                         
+✅ PASS   monadic_format_types.k                             "42.5"                         "42.5"                         
+✅ PASS   monadic_format_vector_simple.k                     (,"1";,"2";,"3")               (,"1";,"2";,"3")               Compact represent...
+✅ PASS   monadic_format_vector.k                            (,"1";,"2";,"3")               (,"1";,"2";,"3")               Compact represent...
+✅ PASS   multiline_function_single.k                        20                             20                             
 ✅ PASS   negate_operator.k                                  1                              1                              
-✅ PASS   nested_vector_test.k                               (1 2 3;4 5 6)                  (1 2 3
- 4 5 6)                 Matched via forma...
+✅ PASS   nested_debug_modulo.k                              2.5                            2.5                            
+✅ PASS   nested_vector_test.k                               (1 2 3;4 5 6)                  (1 2 3;4 5 6)                  Compact represent...
+✅ PASS   null_operations.k                                  7                              7                              
+✅ PASS   null_vector.k                                      (;1;2)                         (;1;2)                         
 ✅ PASS   overflow_int_max_plus1.k                           0N                             0N                             
 ✅ PASS   overflow_int_neg_inf_minus2.k                      0I                             0I                             
 ✅ PASS   overflow_int_neg_inf.k                             0N                             0N                             
 ✅ PASS   overflow_int_null_minus1.k                         0I                             0I                             
 ✅ PASS   overflow_int_pos_inf_plus2.k                       -0I                            -0I                            
 ✅ PASS   overflow_int_pos_inf.k                             0N                             0N                             
-⚠️  SKIP overflow_long_max_plus1.k                                                                                        Contains long int...
-⚠️  SKIP overflow_long_min_minus1.k                                                                                       Contains long int...
-⚠️  SKIP overflow_long_neg_inf_minus2.k                                                                                   Contains long int...
-⚠️  SKIP overflow_long_neg_inf.k                                                                                          Contains long int...
-⚠️  SKIP overflow_long_pos_inf_plus2.k                                                                                    Contains long int...
-⚠️  SKIP overflow_long_pos_inf.k                                                                                          Contains long int...
+⚠️  SKIP overflow_long_max_plus1.k                                                                                        k.exe 32-bit limi...
+⚠️  SKIP overflow_long_min_minus1.k                                                                                       k.exe 32-bit limi...
+⚠️  SKIP overflow_long_neg_inf_minus2.k                                                                                   k.exe 32-bit limi...
+⚠️  SKIP overflow_long_neg_inf.k                                                                                          k.exe 32-bit limi...
+⚠️  SKIP overflow_long_pos_inf_plus2.k                                                                                    k.exe 32-bit limi...
+⚠️  SKIP overflow_long_pos_inf.k                                                                                          k.exe 32-bit limi...
 ✅ PASS   overflow_regular_int.k                             -2147483639                    -2147483639                    
 ✅ PASS   parentheses_basic.k                                7                              7                              
 ✅ PASS   parentheses_grouping.k                             9                              9                              
@@ -141,7 +227,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   parentheses_nested5.k                              29                             29                             
 ✅ PASS   parentheses_precedence.k                           7                              7                              
 ✅ PASS   parenthesized_vector.k                             1 2 3 4                        1 2 3 4                        
-✅ PASS   power_operator.k                                   8                              8.0                            
+✅ PASS   power_operator.k                                   8                              8                              smart integer div...
 ✅ PASS   precedence_chain1.k                                1410                           1410                           
 ✅ PASS   precedence_chain2.k                                0.07092199                     0.07092199                     
 ✅ PASS   precedence_complex1.k                              0.7142857                      0.7142857                      
@@ -149,14 +235,18 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   precedence_mixed1.k                                0                              0                              
 ✅ PASS   precedence_mixed2.k                                25                             25                             
 ✅ PASS   precedence_mixed3.k                                11                             11                             
-✅ PASS   precedence_power1.k                                128                            128.0                          
-✅ PASS   precedence_power2.k                                83                             83.0                           
+✅ PASS   precedence_power1.k                                128                            128                            smart integer div...
+✅ PASS   precedence_power2.k                                83                             83                             smart integer div...
 ✅ PASS   precedence_spec1.k                                 11.57143                       11.57143                       
-✅ PASS   precedence_spec2.k                                 6                              6.0                            
+✅ PASS   precedence_spec2.k                                 6                              6                              smart integer div...
 ✅ PASS   reciprocal_operator.k                              0.25                           0.25                           
 ✅ PASS   reverse_operator.k                                 3 2 1                          3 2 1                          
 ✅ PASS   scalar_vector_addition.k                           4 5                            4 5                            
 ✅ PASS   scalar_vector_multiplication.k                     3 6                            3 6                            
+✅ PASS   scoping_single.k                                   60                             60                             
+✅ PASS   semicolon_simple.k                                 (7;11;-20.45)                  (7;11;-20.45)                  
+✅ PASS   semicolon_vars.k                                   30 200 -10                     30 200 -10                     
+✅ PASS   semicolon_vector.k                                 (7;3 4;-20.45)                 (7;3 4;-20.45)                 Compact represent...
 ✅ PASS   shape_operator_empty_vector.k                      ,0                             ,0                             
 ✅ PASS   shape_operator_jagged_3d.k                         2 2                            2 2                            
 ✅ PASS   shape_operator_jagged_matrix.k                     ,3                             ,3                             
@@ -170,12 +260,20 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   shape_operator_vector.k                            ,5                             ,5                             
 ✅ PASS   shape_operator.k                                   ,3                             ,3                             
 ✅ PASS   simple_addition.k                                  3                              3                              
-✅ PASS   simple_division.k                                  4                              4.0                            
+✅ PASS   simple_division.k                                  4                              4                              smart integer div...
 ✅ PASS   simple_multiplication.k                            12                             12                             
 ✅ PASS   simple_nested_test.k                               1 2 3                          1 2 3                          
+✅ PASS   simple_scalar_div.k                                2.5                            2.5                            
 ✅ PASS   simple_subtraction.k                               2                              2                              
+✅ PASS   single_no_semicolon.k                              42                             42                             
+❌ FAIL   smart_division1.k                                  2.5 5.0                        2.5 5                          smart integer div...
+✅ PASS   smart_division2.k                                  2 4                            2 4                            smart integer div...
+✅ PASS   smart_division3.k                                  2 4 6                          2 4 6                          smart integer div...
+✅ PASS   special_0i_plus_1.k                                0N                             0N                             
+✅ PASS   special_0n_plus_1.k                                -0I                            -0I                            
 ✅ PASS   special_1_plus_int_null.k                          -0I                            -0I                            
 ✅ PASS   special_1_plus_int_pos_inf.k                       0N                             0N                             
+✅ PASS   special_1_plus_neg0i.k                             -2147483646                    -2147483646                    
 ✅ PASS   special_float_neg_inf.k                            -0i                            -0i                            
 ✅ PASS   special_float_null_plus_1.k                        0n                             0n                             
 ✅ PASS   special_float_null.k                               0n                             0n                             
@@ -188,165 +286,34 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   special_int_pos_inf_plus_1.k                       0N                             0N                             
 ✅ PASS   special_int_pos_inf.k                              0I                             0I                             
 ✅ PASS   special_int_vector.k                               0I 0N -0I                      0I 0N -0I                      
-⚠️  SKIP special_long_neg_inf.k                                                                                           Contains long int...
-⚠️  SKIP special_long_null.k                                                                                              Contains long int...
-⚠️  SKIP special_long_pos_inf.k                                                                                           Contains long int...
+⚠️  SKIP special_long_neg_inf.k                                                                                           k.exe 32-bit limi...
+⚠️  SKIP special_long_null.k                                                                                              k.exe 32-bit limi...
+⚠️  SKIP special_long_pos_inf.k                                                                                           k.exe 32-bit limi...
+✅ PASS   special_neg0i_plus_1.k                             -2147483646                    -2147483646                    
 ❌ FAIL   special_null.k                                     _n                                                            
-✅ PASS   square_bracket_function.k                          2                              2.0                            
+✅ PASS   special_underflow_2.k                              2147483549                     2147483549                     
+✅ PASS   special_underflow_3.k                              2147482649                     2147482649                     
+✅ PASS   special_underflow.k                                2147483622                     2147483622                     
+✅ PASS   square_bracket_function.k                          2                              2                              smart integer div...
 ✅ PASS   square_bracket_vector_multiple.k                   14 16                          14 16                          
 ✅ PASS   square_bracket_vector_single.k                     14                             14                             
+✅ PASS   string_parse.k                                     "a+b"                          "a+b"                          
 ✅ PASS   string_representation_int.k                        "42"                           "42"                           
 ✅ PASS   string_representation_mixed.k                      "(1;2.5;\"a\")"                "(1;2.5;\"a\")"                
 ✅ PASS   string_representation_symbol.k                     "`symbol"                      "`symbol"                      
 ✅ PASS   string_representation_vector.k                     "1 2 3"                        "1 2 3"                        
 ✅ PASS   symbol_quoted.k                                    `"a symbol"                    `"a symbol"                    
 ✅ PASS   symbol_simple.k                                    `foo                           `foo                           
-✅ PASS   symbol_vector_compact.k                            `a`b`c                         `a `b `c                       Matched via forma...
-✅ PASS   symbol_vector_spaces.k                             `a`b`c                         `a `b `c                       Matched via forma...
+✅ PASS   symbol_vector_compact.k                            `a`b`c                         `a`b`c                         Compact represent...
+✅ PASS   symbol_vector_spaces.k                             `a`b`c                         `a`b`c                         Compact represent...
 ✅ PASS   take_operator_basic.k                              1 2 3                          1 2 3                          
 ✅ PASS   take_operator_empty_float.k                        0#0.0                          0#0.0                          
 ✅ PASS   take_operator_empty_symbol.k                       0#`                            0#`                            
 ✅ PASS   take_operator_overflow.k                           1 2 3 1 2 3 1 2 3 1            1 2 3 1 2 3 1 2 3 1            
 ✅ PASS   take_operator_scalar.k                             42 42 42                       42 42 42                       
-❌ FAIL   test_binary_form_float_numeric_mixed_vector.k      1.0 2.5 3.14 42.0              (,"1"
- ,"3"
- ,"3"
- "42")       
-❌ FAIL   test_binary_form_float_precision_complex_mixed.k   "1.2339999999999999857891...   ("     1.234"
- "     2.56...   
-❌ FAIL   test_binary_form_float_precision_mixed_vector.k    "1.500000000000000000002....   ("   1.50"
- "   2.70"
- " ...   
-❌ FAIL   test_binary_form_float_precision_vector_simple.k   "1.50000000002.5000000000"     ("       1.5"
- "       2.5")   
-❌ FAIL   test_binary_form_int_numeric_mixed_vector.k        1 2 3 42                       (""
- ""
- ""
- "")               
-⚠️  SKIP test_binary_form_long_numeric_mixed_vector.k                                                                     Contains long int...
-❌ FAIL   test_binary_form_pad_mixed_vector.k                "     1 2 3"                   ("         1"
- "         ...   
-❌ FAIL   test_binary_form_pad_negative_mixed_vector.k       "1 2 3     "                   ("1         "
- "2        ...   
-✅ PASS   test_binary_form_string_pad_left.k                 "     hello"                   "     hello"                   
-✅ PASS   test_binary_form_string_pad_right.k                "test      "                   "test      "                   
-❌ FAIL   test_binary_form_symbol_pad_left.k                 "    `hello"                   "     hello"                   
-❌ FAIL   test_binary_form_symbol_string_mixed_vector.k      (`h`e`l`l`o;`w`o`r`l`d;`t...   `hello `world `test            
-❌ FAIL   test_binary_form_vector_int.k                      1 2 3                          (""
- ""
- "")                   
-✅ PASS   test_dictionary_dot_apply.k                        1                              1                              
-✅ PASS   test_dictionary_enumerate.k                        `a`b                           `a `b                          Matched via forma...
-✅ PASS   test_dictionary_null_index.k                       1 2                            1 2                            
-💥 ERROR test_dictionary_unmake.k                           ((`a;1;);(`b;2;))                                             Failed to execute...
-✅ PASS   test_division_float_4_2.0.k                        2.0                            2.0                            
-✅ PASS   test_division_float_5_2.5.k                        2.0                            2.0                            
-✅ PASS   test_division_int_4_2.k                            2                              2.0                            
-✅ PASS   test_division_int_5_2.k                            2.5                            2.5                            
-✅ PASS   test_division_rules_10_3.k                         3.333333                       3.333333                       
-✅ PASS   test_division_rules_12_4.k                         3                              3.0                            
-✅ PASS   test_division_rules_4_2.k                          2                              2.0                            
-✅ PASS   test_division_rules_5_2.k                          2.5                            2.5                            
-✅ PASS   test_dot_execute_context.k                         8                              8                              
-✅ PASS   test_dot_execute.k                                 4                              4                              
-✅ PASS   test_empty_brackets_dictionary.k                   1 2                            1 2                            
-✅ PASS   test_empty_brackets_vector.k                       1 2 3 4                        1 2 3 4                        
-✅ PASS   test_empty_vector.k                                ()                             ()                             
-✅ PASS   test_enumerate.k                                   0 1                            0 1                            
-❌ FAIL   test_form_braces_arith.k                           8 15 2 12 20 5                 (8;15;2;12;20;5.0)             
-💥 ERROR test_form_braces_complex_expressions.k                                                                           Unexpected token:...
-✅ PASS   test_form_braces_complex.k                         8.25 12.0 9.0                  8.25 12 9                      
-✅ PASS   test_form_braces_example.k                         8 9                            8 9                            
-✅ PASS   test_form_braces_expressions.k                     8 15 2                         8 15 2                         
-✅ PASS   test_form_braces_float.k                           4.0 3.75 0.6 -1.0              4 3.75 0.6 -1                  
-✅ PASS   test_form_braces_function_calls.k                  5 20 12                        5 20 12                        
-✅ PASS   test_form_braces_mixed_arith.k                     17.5 32.5 4.5                  17.5 32.5 4.5                  
-❌ FAIL   test_form_braces_mixed_type.k                      (42;"hello";`test;47;0)        (42;"hello";`test;47;"hel...   
-💥 ERROR test_form_braces_mixed.k                                                                                         Undefined variabl...
-✅ PASS   test_form_braces_nested_arith.k                    (7 10;(2;2.5);5 -1)            (7 10
- (2;2.5)
- 5 -1)          Matched via forma...
-✅ PASS   test_form_braces_nested_expr.k                     (12 20;(7;3.333333))           (12 20
- (7;3.333333))          Matched via forma...
-✅ PASS   test_form_braces_nested_function_calls.k           5 8 25                         5 8 25                         
-✅ PASS   test_form_braces_simple.k                          8                              8                              
-💥 ERROR test_form_braces_string.k                                                                                        Expected ')' afte...
-❌ FAIL   test_form_float_format.k                           "3.14158999999999988262"       "    3.14"                     
-❌ FAIL   test_form_float_precision_2.k                      "3.14158999999999988262"       "      3.14"                   
-❌ FAIL   test_form_float.k                                  1.0                            ,"1"                           
-❌ FAIL   test_form_integer.k                                1                              ""                             
-⚠️  SKIP test_form_long.k                                                                                                 Contains long int...
-✅ PASS   test_form_pad_negative.k                           "42   "                        "42   "                        
-✅ PASS   test_form_pad_positive.k                           "   42"                        "   42"                        
-❌ FAIL   test_form_parentheses_empty.k                      1                              ()                             
-✅ PASS   test_form_specifier.k                              "    1"                        "    1"                        
-✅ PASS   test_form_string_pad_left.k                        "  hello"                      "  hello"                      
-✅ PASS   test_form_string_pad_right.k                       "test      "                   "test      "                   
-💥 ERROR test_form_string.k                                 "1"                                                           Failed to execute...
-❌ FAIL   test_form_symbol_pad_left.k                        "  `hello"                     "   hello"                     
-❌ FAIL   test_form_vector_int.k                             1 2 3                          (""
- ""
- "")                   
-✅ PASS   test_grade_down_no_parens.k                        1 2 3 4 0                      1 2 3 4 0                      
-✅ PASS   test_grade_up_no_parens.k                          0 4 2 3 1                      0 4 2 3 1                      
-✅ PASS   test_group_operator.k                              (0 1 6;2 7 16;3 5 12 15 1...   (0 1 6
- 2 7 16
- 3 5 12 15...   Matched via forma...
-✅ PASS   test_mixed_types.k                                 (42;3.14;"hello";`symbol)      (42;3.14;"hello";`symbol)      
-✅ PASS   test_multiline_function_single.k                   20                             20                             
-✅ PASS   test_null_operations.k                             7                              7                              
-✅ PASS   test_null_vector.k                                 (;1;2)                         (;1;2)                         
-✅ PASS   test_scoping_single.k                              60                             60                             
-✅ PASS   test_semicolon_simple.k                            (7;11;-20.45)                  (7;11;-20.45)                  
-✅ PASS   test_semicolon_vars.k                              30 200 -10                     30 200 -10                     
-✅ PASS   test_semicolon_vector.k                            (7;3 4;-20.45)                 (7
- 3 4
- -20.45)               Matched via forma...
-✅ PASS   test_simple_scalar_div.k                           2.5                            2.5                            
-✅ PASS   test_single_no_semicolon.k                         42                             42                             
-✅ PASS   test_smart_division1.k                             2.5 5.0                        2.5 5                          
-✅ PASS   test_smart_division2.k                             2 4                            2 4.0                          
-✅ PASS   test_smart_division3.k                             2 4 6                          2 4 6.0                        
-✅ PASS   test_special_0i_plus_1.k                           0N                             0N                             
-✅ PASS   test_special_0n_plus_1.k                           -0I                            -0I                            
-✅ PASS   test_special_1_plus_neg0i.k                        -2147483646                    -2147483646                    
-✅ PASS   test_special_neg0i_plus_1.k                        -2147483646                    -2147483646                    
-✅ PASS   test_special_underflow_2.k                         2147483549                     2147483549                     
-✅ PASS   test_special_underflow_3.k                         2147482649                     2147482649                     
-✅ PASS   test_special_underflow.k                           2147483622                     2147483622                     
-✅ PASS   test_string_parse.k                                "a+b"                          "a+b"                          
-✅ PASS   test_type_char.k                                   3                              3                              
-✅ PASS   test_type_float.k                                  2                              2                              
-✅ PASS   test_type_null.k                                   6                              6                              
-✅ PASS   test_type_space.k                                  3                              3                              
-✅ PASS   test_type_symbol.k                                 4                              4                              
-✅ PASS   test_type_vector_debug.k                           -1                             -1                             
-✅ PASS   test_type_vector.k                                 -1                             -1                             
-✅ PASS   test_unary_format_basic.k                          ,"1"                           ,"1"                           
-❌ FAIL   test_unary_format_dictionary.k                     ".((`a;1;);(`b;2;);(`c;3;))"   ".(..)"                        
-✅ PASS   test_unary_format_float.k                          "3.14"                         "3.14"                         
-✅ PASS   test_unary_format_integer.k                        "42"                           "42"                           
-✅ PASS   test_unary_format_mixed_vector.k                   (,"1";"2.5";"hello";"symb...   (,"1"
- "2.5"
- "hello"
- "s...   Matched via forma...
-❌ FAIL   test_unary_format_nested_list.k                    ("1 2 3";"4 5 6")              ((,"1"
-  ,"2"
-  ,"3")
- (,...   
-✅ PASS   test_unary_format_string_a.k                       ,"a"                           ,"a"                           
-✅ PASS   test_unary_format_string_hello.k                   "hello"                        "hello"                        
-✅ PASS   test_unary_format_symbol_hello.k                   "hello"                        "hello"                        
-✅ PASS   test_unary_format_symbol_simple.k                  "test"                         "test"                         
-✅ PASS   test_unary_format_types.k                          "42.5"                         "42.5"                         
-✅ PASS   test_unary_format_vector_simple.k                  (,"1";,"2";,"3")               (,"1"
- ,"2"
- ,"3")             Matched via forma...
-✅ PASS   test_unary_format_vector.k                         (,"1";,"2";,"3")               (,"1"
- ,"2"
- ,"3")             Matched via forma...
-✅ PASS   test_vector_null_index.k                           1 2 3 4                        1 2 3 4                        
-✅ PASS   test_vector.k                                      1 2 3                          1 2 3                          
+✅ PASS   type_char.k                                        3                              3                              
+✅ PASS   type_float.k                                       2                              2                              
+✅ PASS   type_null.k                                        6                              6                              
 ✅ PASS   type_operator_char.k                               3                              3                              
 ✅ PASS   type_operator_float.k                              2                              2                              
 ✅ PASS   type_operator_null.k                               6                              6                              
@@ -357,21 +324,26 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   type_operator_vector_mixed.k                       0                              0                              
 ✅ PASS   type_operator_vector_symbol.k                      -3                             -3                             
 ✅ PASS   type_promotion_float_int.k                         3.5                            3.5                            
-⚠️  SKIP type_promotion_float_long.k                                                                                      Contains long int...
+⚠️  SKIP type_promotion_float_long.k                                                                                      k.exe 32-bit limi...
 ✅ PASS   type_promotion_int_float.k                         3.5                            3.5                            
-⚠️  SKIP type_promotion_int_long.k                                                                                        Contains long int...
-⚠️  SKIP type_promotion_long_float.k                                                                                      Contains long int...
-⚠️  SKIP type_promotion_long_int.k                                                                                        Contains long int...
+⚠️  SKIP type_promotion_int_long.k                                                                                        k.exe 32-bit limi...
+⚠️  SKIP type_promotion_long_float.k                                                                                      k.exe 32-bit limi...
+⚠️  SKIP type_promotion_long_int.k                                                                                        k.exe 32-bit limi...
+✅ PASS   type_space.k                                       3                              3                              
+✅ PASS   type_symbol.k                                      4                              4                              
+✅ PASS   type_vector_debug.k                                -1                             -1                             
+✅ PASS   type_vector.k                                      -1                             -1                             
 ✅ PASS   unary_minus_operator.k                             -5                             -5                             
 ✅ PASS   underflow_regular_int.k                            2147483617                     2147483617                     
 ✅ PASS   unique_operator.k                                  1 2 3                          1 2 3                          
 ❌ FAIL   variable_assignment.k                              7                                                             
 ✅ PASS   variable_reassignment.k                            7.2 4.5                        7.2 4.5                        
 ✅ PASS   variable_scoping_global_access.k                   150                            150                            
-💥 ERROR variable_scoping_global_assignment.k                                                                             Undefined variabl...
+💥 ERROR variable_scoping_global_assignment.k                                              30
+30                          K3Sharp error, k....
 ✅ PASS   variable_scoping_global_unchanged.k                100                            100                            
 ✅ PASS   variable_scoping_local_hiding.k                    60                             60                             
-💥 ERROR variable_scoping_nested_functions.k                                                                              Dot-apply operato...
+💥 ERROR variable_scoping_nested_functions.k                                               140                            K3Sharp error, k....
 ✅ PASS   variable_usage.k                                   30                             30                             
 ✅ PASS   vector_addition.k                                  4 6                            4 6                            
 ✅ PASS   vector_division.k                                  0.3333333 0.5                  0.3333333 0.5                  
@@ -389,93 +361,72 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   vector_notation_single_group.k                     42                             42                             
 ✅ PASS   vector_notation_space.k                            1 2 3 4 5                      1 2 3 4 5                      
 ✅ PASS   vector_notation_variables.k                        30 200 -10                     30 200 -10                     
+✅ PASS   vector_null_index.k                                1 2 3 4                        1 2 3 4                        
 ✅ PASS   vector_subtraction.k                               -2 -2                          -2 -2                          
 ✅ PASS   vector_with_null_middle.k                          (1;;3)                         (1;;3)                         
 ✅ PASS   vector_with_null.k                                 (;1;2)                         (;1;2)                         
+✅ PASS   vector.k                                           1 2 3                          1 2 3                          
 ✅ PASS   where_operator.k                                   0 2 3                          0 2 3                          
 ✅ PASS   where_vector_counts.k                              0 0 0 1 1 2                    0 0 0 1 1 2                    
 
 FAILED TESTS DETAILS:
 --------------------
-File: adverb_scan_divide.k
-K3Sharp: 100 50 10
-k.exe:   (100;50.0;10.0)
+File: floor_operator.k
+K3Sharp: 3.0
+k.exe:   3
 
-File: adverb_scan_power.k
-K3Sharp: 2 8 64
-k.exe:   (2;8.0;64.0)
+File: form_braces_complex.k
+K3Sharp: 8.25 12.0 9.0
+k.exe:   8.25 12 9
 
-File: special_null.k
-K3Sharp: _n
-k.exe:   
+File: form_braces_float.k
+K3Sharp: 4.0 3.75 0.6 -1.0
+k.exe:   4 3.75 0.6 -1
 
-File: test_binary_form_float_numeric_mixed_vector.k
-K3Sharp: 1.0 2.5 3.14 42.0
+File: form_character_charvector.k
+K3Sharp: ""aaa""
+k.exe:   "aaa"
+
+File: form_symbol_pad_left.k
+K3Sharp: "  `hello"
+k.exe:   "   hello"
+
+File: format_0_1.k
+K3Sharp: "1.0"
+k.exe:   ""
+
+File: format_1_1.k
+K3Sharp: "*"
+k.exe:   ,"1"
+
+File: format_float_numeric.k
+K3Sharp: "1"
+k.exe:   ,"1"
+
+File: format_float_vector.k
+K3Sharp: ("1";"2";"3";"42")
 k.exe:   (,"1"
  ,"3"
  ,"3"
  "42")
 
-File: test_binary_form_float_precision_complex_mixed.k
-K3Sharp: "1.2339999999999999857891452847982.5670000000000001705302565824243.8900000000000001243449787580184.123000000000000220268248085631"
-k.exe:   ("     1.234"
- "     2.567"
- "     3.890"
- "     4.123")
-
-File: test_binary_form_float_precision_mixed_vector.k
-K3Sharp: "1.500000000000000000002.700000000000000177643.141589999999999882624.20000000000000017764"
-k.exe:   ("   1.50"
- "   2.70"
- "   3.14"
- "   4.20")
-
-File: test_binary_form_float_precision_vector_simple.k
-K3Sharp: "1.50000000002.5000000000"
-k.exe:   ("       1.5"
- "       2.5")
-
-File: test_binary_form_int_numeric_mixed_vector.k
-K3Sharp: 1 2 3 42
+File: format_int_vector.k
+K3Sharp: ("1";"2.5";"3.14";"42")
 k.exe:   (""
  ""
  ""
  "")
 
-File: test_binary_form_pad_mixed_vector.k
-K3Sharp: "     1 2 3"
-k.exe:   ("         1"
- "         2"
- "         3")
-
-File: test_binary_form_pad_negative_mixed_vector.k
-K3Sharp: "1 2 3     "
-k.exe:   ("1         "
- "2         "
- "3         ")
-
-... and 15 more failed tests
+... and 9 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------
-File: test_dictionary_unmake.k
-Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
-
-File: test_form_braces_complex_expressions.k
-Error: Unexpected token: LEFT_BRACKET([)
-
-File: test_form_braces_mixed.k
-Error: Undefined variable: hello
-
-File: test_form_braces_string.k
-Error: Expected ')' after expression
-
-File: test_form_string.k
-Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+File: form_braces_complex_expressions.k
+Error: K3Sharp Error: Error evaluating string expression 'product[sum[2;3];4]': Unexpected token: LEFT_BRACKET([)
 
 File: variable_scoping_global_assignment.k
-Error: Undefined variable: test5
+Error: K3Sharp Error: Undefined variable: test5
 
 File: variable_scoping_nested_functions.k
-Error: Dot-apply operator requires a function on the left side
+Error: K3Sharp Error: Dot-apply operator requires a function on the left side
 

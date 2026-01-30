@@ -14,7 +14,8 @@ namespace K3CSharp
         Variable,
         Function,
         FunctionCall,
-        Block
+        Block,
+        FormSpecifier
     }
 
     public class ASTNode
@@ -1216,6 +1217,19 @@ namespace K3CSharp
             }
             else if (Match(TokenType.LEFT_BRACE))
             {
+                // Check if this is a form specifier (empty braces followed by $)
+                if (CurrentToken().Type == TokenType.RIGHT_BRACE && 
+                    !IsAtEnd() && PeekNext().Type == TokenType.DOLLAR)
+                {
+                    // This is {} form specifier
+                    Match(TokenType.RIGHT_BRACE); // Consume the }
+                    
+                    // Create a special node for {} form specifier
+                    var node = new ASTNode(ASTNodeType.FormSpecifier);
+                    node.Value = new SymbolValue("{}");
+                    return node;
+                }
+                
                 // Parse function
                 var parameters = new List<string>();
                 
@@ -1536,12 +1550,20 @@ namespace K3CSharp
 
         private Token CurrentToken()
         {
-            return current < tokens.Count ? tokens[current] : new Token(TokenType.EOF, "", -1);
+            if (IsAtEnd()) return new Token(TokenType.EOF, "", 0);
+            return tokens[current];
         }
 
         private Token PreviousToken()
         {
-            return current > 0 ? tokens[current - 1] : new Token(TokenType.EOF, "", -1);
+            return tokens[current - 1];
+        }
+
+        private Token PeekNext()
+        {
+            var nextIndex = current + 1;
+            if (nextIndex >= tokens.Count) return new Token(TokenType.EOF, "", 0);
+            return tokens[nextIndex];
         }
 
         private bool IsScalar(ASTNode node)
@@ -1837,7 +1859,7 @@ namespace K3CSharp
 
         private bool IsAtEnd()
         {
-            return current >= tokens.Count || CurrentToken().Type == TokenType.EOF;
+            return current >= tokens.Count || (current < tokens.Count && tokens[current].Type == TokenType.EOF);
         }
 
         private bool Match(TokenType type)

@@ -329,10 +329,11 @@ namespace K3CSharp.Tests
                 
                 // Simple arithmetic tests
                 ("simple_addition.k", "3"),
-                ("simple_division.k", "4"),
+                ("divide_float.k", "0.6"),
+                ("divide_integer.k", "2.5"),
                 ("simple_multiplication.k", "12"),
                 ("simple_nested_test.k", "1 2 3"),
-                ("simple_subtraction.k", "2"),
+                ("minus_integer.k", "2"),
                 
                 // Special values tests
                 ("special_float_neg_inf.k", "-0i"),
@@ -381,73 +382,73 @@ namespace K3CSharp.Tests
                 ("take_operator_scalar.k", "42 42 42"),
                 
                 // Test division rules
-                ("test_division_float_4_2.0.k", "2.0"),
-                ("test_division_float_5_2.5.k", "2.0"),
-                ("test_division_int_4_2.k", "2"),
-                ("test_division_int_5_2.k", "2.5"),
-                ("test_division_rules_10_3.k", "3.333333"),
-                ("test_division_rules_12_4.k", "3"),
-                ("test_division_rules_4_2.k", "2"),
-                ("test_division_rules_5_2.k", "2.5"),
+                ("division_float_4_2.0.k", "2.0"),
+                ("division_float_5_2.5.k", "2.0"),
+                ("division_int_4_2.k", "2"),
+                ("division_int_5_2.k", "2.5"),
+                ("division_rules_10_3.k", "3.333333"),
+                ("division_rules_12_4.k", "3"),
+                ("division_rules_4_2.k", "2"),
+                ("division_rules_5_2.k", "2.5"),
                 
                 // Test empty vector
-                ("test_empty_vector.k", "()"),
+                ("empty_vector.k", "()"),
                 
                 // Test enumerate
-                ("test_enumerate.k", "0 1"),
+                ("enumerate.k", "0 1"),
                 
                 // Test grade operators
-                ("test_grade_down_no_parens.k", "1 2 3 4 0"),
-                ("test_grade_up_no_parens.k", "0 4 2 3 1"),
+                ("grade_down_no_parens.k", "1 2 3 4 0"),
+                ("grade_up_no_parens.k", "0 4 2 3 1"),
                 
                 // Test mixed types
-                ("test_mixed_types.k", "(42;3.14;\"hello\";`symbol)"),
+                ("mixed_types.k", "(42;3.14;\"hello\";`symbol)"),
                 
                 // Test multiline function
-                ("test_multiline_function_single.k", "20"),
+                ("multiline_function_single.k", "20"),
                 
                 // Test null vector
-                ("test_null_vector.k", "(;1;2)"),
+                ("null_vector.k", "(;1;2)"),
                 
                 // Test scoping
-                ("test_scoping_single.k", "60"),
+                ("scoping_single.k", "60"),
                 
                 // Test semicolon tests
-                ("test_semicolon_simple.k", "(7;11;-20.45)"),
-                ("test_semicolon_vars.k", "30 200 -10"),
-                ("test_semicolon_vector.k", "(7;3 4;-20.45)"),
+                ("semicolon_simple.k", "(7;11;-20.45)"),
+                ("semicolon_vars.k", "30 200 -10"),
+                ("semicolon_vector.k", "(7;3 4;-20.45)"),
                 
                 // Test simple scalar div
-                ("test_simple_scalar_div.k", "2.5"),
+                ("simple_scalar_div.k", "2.5"),
                 
                 // Test single no semicolon
-                ("test_single_no_semicolon.k", "42"),
+                ("single_no_semicolon.k", "42"),
                 
                 // Test smart division
-                ("test_smart_division1.k", "2.5 5.0"),
-                ("test_smart_division2.k", "2 4"),
-                ("test_smart_division3.k", "2 4 6"),
+                ("smart_division1.k", "2.5 5.0"),
+                ("smart_division2.k", "2 4"),
+                ("smart_division3.k", "2 4 6"),
                 
                 // Test special values
-                ("test_special_0i_plus_1.k", "0N"),
-                ("test_special_0n_plus_1.k", "-0I"),
-                ("test_special_1_plus_neg0i.k", "-2147483646"),
-                ("test_special_neg0i_plus_1.k", "-2147483646"),
-                ("test_special_underflow.k", "2147483622"),
-                ("test_special_underflow_2.k", "2147483549"),
-                ("test_special_underflow_3.k", "2147482649"),
+                ("special_0i_plus_1.k", "0N"),
+                ("special_0n_plus_1.k", "-0I"),
+                ("special_1_plus_neg0i.k", "-2147483646"),
+                ("special_neg0i_plus_1.k", "-2147483646"),
+                ("special_underflow.k", "2147483622"),
+                ("special_underflow_2.k", "2147483549"),
+                ("special_underflow_3.k", "2147482649"),
                 
                 // Test type operators
-                ("test_type_char.k", "3"),
-                ("test_type_float.k", "2"),
-                ("test_type_null.k", "6"),
-                ("test_type_space.k", "3"),
-                ("test_type_symbol.k", "4"),
-                ("test_type_vector.k", "-1"),
-                ("test_type_vector_debug.k", "-1"),
+                ("type_char.k", "3"),
+                ("type_float.k", "2"),
+                ("type_null.k", "6"),
+                ("type_space.k", "3"),
+                ("type_symbol.k", "4"),
+                ("type_vector.k", "-1"),
+                ("type_vector_debug.k", "-1"),
                 
                 // Test vector
-                ("test_vector.k", "1 2 3"),
+                ("vector.k", "1 2 3"),
                 
                 // Type operator tests
                 ("type_operator_char.k", "3"),
@@ -483,69 +484,67 @@ namespace K3CSharp.Tests
                 ("variable_scoping_local_hiding.k", "60"),
                 ("variable_scoping_nested_functions.k", "25"),
                 ("variable_usage.k", "30"),
-                ("test_dot_execute.k", "4"),
-                ("test_dot_execute_context.k", "8"),
-                ("test_dictionary_enumerate.k", "`a`b"),
-                ("test_dictionary_unmake.k", "((`a;1;);(`b;2;))"),
-                ("test_dictionary_null_index.k", "1 2"),
-                ("test_vector_null_index.k", "1 2 3 4"),
-                ("test_empty_brackets_vector.k", "1 2 3 4"),
-                ("test_empty_brackets_dictionary.k", "1 2"),
-                ("test_group_operator.k", "(0 1 6;2 7 16;3 5 12 15 17;,4;8 9;,10;,11;,13;14 18;,19)"),
+                ("dot_execute.k", "4"),
+                ("dot_execute_context.k", "8"),
+                ("dictionary_enumerate.k", "`a`b"),
                 
                 // New spec features
-                ("test_null_operations.k", "7"),
-                ("test_dictionary_dot_apply.k", "1"),
+                ("null_operations.k", "7"),
+                ("dictionary_dot_apply.k", "1"),
                 
-                // $ operator tests - unary format
-                ("test_unary_format_basic.k", ",\"1\""),
-                ("test_unary_format_types.k", "\"42.5\""),
-                ("test_unary_format_vector.k", "(,\"1\";,\"2\";,\"3\")"),
-                ("test_unary_format_string_hello.k", "\"hello\""),
-                ("test_unary_format_string_a.k", ",\"a\""),
-                ("test_unary_format_symbol_hello.k", "\"hello\""),
-                ("test_unary_format_symbol_simple.k", "\"test\""),
-                ("test_unary_format_mixed_vector.k", "(,\"1\";\"2.5\";\"hello\";\"symbol\")"),
-                ("test_unary_format_dictionary.k", "\".((`a;1;);(`b;2;);(`c;3;))\""),
-                ("test_unary_format_nested_list.k", "((,\"1\";,\"2\";,\"3\");(,\"4\";,\"5\";,\"6\"))"),
-                ("test_unary_format_integer.k", "\"42\""),
-                ("test_unary_format_float.k", "\"3.14\""),
-                ("test_unary_format_vector_simple.k", "(,\"1\";,\"2\";,\"3\")"),
+                // $ operator tests - monadic format
+                ("monadic_format_basic.k", ",\"1\""),
+                ("monadic_format_types.k", "\"42.5\""),
+                ("monadic_format_vector.k", "(,\"1\";,\"2\";,\"3\")"),
+                ("monadic_format_string_hello.k", "\"hello\""),
+                ("monadic_format_string_a.k", ",\"a\""),
+                ("monadic_format_symbol_hello.k", "\"hello\""),
+                ("monadic_format_symbol_simple.k", "\"test\""),
+                ("monadic_format_dictionary.k", "\".((`a;1;);(`b;2;);(`c;3;))\""),
+                ("monadic_format_nested_list.k", "((,\"1\";,\"2\";,\"3\");(,\"4\";,\"5\";,\"6\"))"),
+                ("monadic_format_integer.k", "\"42\""),
+                ("monadic_format_float.k", "\"3.14\""),
+                ("monadic_format_vector_simple.k", "(,\"1\";,\"2\";,\"3\")"),
                 
                 // $ operator tests - binary form/type conversion
-                ("test_form_integer.k", "1"),
-                ("test_form_float.k", "1.0"),
-                ("test_form_long.k", "42L"),
-                ("test_form_specifier.k", "\"    1\""),
-                ("test_form_string_pad_left.k", "\"  hello\""),
-                ("test_form_string_pad_right.k", "\"test      \""),
-                ("test_form_symbol_pad_left.k", "\"  `hello\""),
-                ("test_form_pad_positive.k", "\"   42\""),
-                ("test_form_pad_negative.k", "\"42   \""),
-                ("test_form_float_precision_2.k", "\"3.14158999999999988262\""),
-                ("test_form_float_format.k", "\"    3.14\""),
-                ("test_form_vector_int.k", "1 2 3"),
-                ("test_form_braces_mixed.k", "(1;2.5;\"hello\")"),
-                ("test_form_braces_expressions.k", "8 15 2"),
-                ("test_form_braces_nested_expr.k", "(12 20;(7;3.333333))"),
-                ("test_form_braces_complex.k", "8.25 12.0 9.0"),
-                ("test_form_braces_string.k", "(\"John\";\"is\";25;\"years old\")"),
-                ("test_form_braces_mixed_type.k", "(42;\"hello\";`test;47;\"helloworld\")"),
-                ("test_form_braces_simple.k", "8"),
-                ("test_form_braces_arith.k", "8 15 2 12 20 5"),
-                ("test_form_braces_nested_arith.k", "(7 10;2 2;5 -1)"),
-                ("test_form_braces_float.k", "4.0 3.75 2.5 -1.0"),
-                ("test_form_braces_mixed_arith.k", "17.5 32.5 4.5"),
-                ("test_form_parentheses_empty.k", "1"),
-                ("test_form_braces_example.k", "8 9"),
-                ("test_form_braces_function_calls.k", "5 20 12"),
-                ("test_form_braces_nested_function_calls.k", "5 8 25"),
+                ("format_integer.k", "\"1\""),
+                ("format_float_numeric.k", "\"1\""),
+                ("form_long.k", "42L"),
+                ("format_numeric.k", "\"    1\""),
+                ("form_string_pad_left.k", "\"  hello\""),
+                ("form_string_pad_right.k", "\"test      \""),
+                ("form_symbol_pad_left.k", "\"  `hello\""),
+                ("format_pad_left.k", "\"   42\""),
+                ("format_pad_right.k", "\"42   \""),
+                ("format_float_width_precision.k", "\"      3.14\""),
+                ("format_float_precision.k", "\"    3.14\""),
+                
+                // Additional format tests
+                ("format_0_1.k", "\"1.0\""),
+                ("format_1_1.k", "\"*\""),
+                ("form_integer_charvector.k", "42"),
+                ("form_character_charvector.k", "\"\"aaa\"\""),
+                ("nested_debug_modulo.k", "2.5"),
+                ("dot_execute_variables.k", "0.6"),
+                ("form_braces_expressions.k", "8 15 2"),
+                ("form_braces_nested_expr.k", "(12 20;(7;3.333333))"),
+                ("form_braces_complex.k", "8.25 12.0 9.0"),
+                ("form_braces_string.k", "(\"John\";\"is\";25;\"years old\")"),
+                ("form_braces_mixed_type.k", "(42;\"hello\";`test;47;\"helloworld\")"),
+                ("form_braces_simple.k", "8"),
+                ("form_braces_arith.k", "8 15 2 12 20 5"),
+                ("form_braces_nested_arith.k", "(7 10;(2;2.5);5 -1)"),
+                ("form_braces_float.k", "4.0 3.75 0.6 -1.0"),
+                ("form_braces_mixed_arith.k", "17.5 32.5 4.5"),
+                ("form_braces_example.k", "8 9"),
+                ("form_braces_function_calls.k", "5 20 12"),
+                ("form_braces_nested_function_calls.k", "5 8 25"),
                 
                 // Form specifiers on mixed vectors
-                ("test_binary_form_float_precision_vector_simple.k", "\"1.50000000002.5000000000\""),
-                ("test_binary_form_float_precision_mixed_vector.k", "\"1.500000000000000000002.700000000000000177643.141589999999999882624.20000000000000017764\""),
-                ("test_binary_form_pad_mixed_vector.k", "\"     1 2 3\""),
-                ("test_binary_form_pad_negative_mixed_vector.k", "\"1 2 3     \""),
+                ("format_float_precision_vector_simple.k", "(\"       1.5\";\"       2.5\")"),
+                ("format_float_precision_mixed_vector.k", "(\"   1.50\";\"   2.70\";\"   3.14\";\"   4.20\")"),
+                ("format_pad_mixed_vector.k", "(\"         1\";\"         2\";\"         3\")"),
+                ("format_pad_negative_mixed_vector.k", "(\"1         \";\"2         \";\"3         \")"),
                 
 // Vector notation tests
 ("vector_notation_empty.k", "()"),

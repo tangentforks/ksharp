@@ -969,9 +969,18 @@ namespace K3CSharp
                     return "()";
             }
             
-            // Check if this is a character vector - display as quoted string
+            // Check if this is a character vector - display as vector of quoted strings
             if (Elements.All(e => e is CharacterValue))
             {
+                // For formatted vectors (like from $ operator), return vector of character vectors
+                // Only apply this to actual formatting operations, not type conversions
+                if (CreationMethod == "formatted")
+                {
+                    var elementsStr = string.Join(";", Elements.Select(e => e.ToString()));
+                    return $"({elementsStr})";
+                }
+                
+                // For simple character vectors, display as quoted string
                 var chars = Elements.Select(e => ((CharacterValue)e).Value);
                 var result = $"\"{string.Concat(chars)}\"";
                 

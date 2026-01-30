@@ -327,8 +327,46 @@ namespace K3CSharp
             string value = "";
             while (currentChar != '"' && currentChar != '\0')
             {
-                value += currentChar;
-                Advance();
+                if (currentChar == '\\')
+                {
+                    Advance(); // Skip backslash
+                    if (currentChar == '\0')
+                    {
+                        // End of input after backslash - treat backslash as literal
+                        value += '\\';
+                        break;
+                    }
+                    
+                    // Handle escape sequences
+                    switch (currentChar)
+                    {
+                        case '"':
+                            value += '"';
+                            break;
+                        case '\\':
+                            value += '\\';
+                            break;
+                        case 'n':
+                            value += '\n';
+                            break;
+                        case 't':
+                            value += '\t';
+                            break;
+                        case 'r':
+                            value += '\r';
+                            break;
+                        default:
+                            // Unknown escape sequence - treat backslash and character literally
+                            value += '\\' + currentChar;
+                            break;
+                    }
+                    Advance();
+                }
+                else
+                {
+                    value += currentChar;
+                    Advance();
+                }
             }
             
             if (currentChar == '"')

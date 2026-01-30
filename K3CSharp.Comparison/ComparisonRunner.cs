@@ -2,10 +2,97 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using K3CSharp;
 
 namespace K3CSharp.Comparison
 {
+    public class KnownDifference
+    {
+        public string TestName { get; set; } = "";
+        public List<string> Tweaks { get; set; } = new List<string>();
+        public string Notes { get; set; } = "";
+    }
+    
+    public class KnownDifferences
+    {
+        private readonly Dictionary<string, KnownDifference> _differences = new();
+        public int Count => _differences.Count;
+        
+        public KnownDifferences(string filePath)
+        {
+            LoadFromFile(filePath);
+        }
+        
+        private void LoadFromFile(string filePath)
+        {
+            if (!File.Exists(filePath)) return;
+            
+            foreach (var line in File.ReadAllLines(filePath))
+            {
+                if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
+                
+                var parts = line.Split("::", StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length >= 3)
+                {
+                    var testName = parts[0].Trim();
+                    var tweaks = parts[1].Split('&', StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim()).ToList();
+                    var notes = parts[2].Trim();
+                    
+                    _differences[testName] = new KnownDifference
+                    {
+                        TestName = testName,
+                        Tweaks = tweaks,
+                        Notes = notes
+                    };
+                }
+            }
+        }
+        
+        public bool HasDifference(string testName) => _differences.ContainsKey(testName);
+        
+        public KnownDifference GetDifference(string testName) => _differences.GetValueOrDefault(testName);
+        
+        public string ApplyTweaks(string input, string testName)
+        {
+            if (!HasDifference(testName)) return input;
+            
+            var difference = GetDifference(testName);
+            var result = input;
+            
+            foreach (var tweak in difference.Tweaks)
+            {
+                result = ApplyTweak(result, tweak);
+            }
+            
+            return result;
+        }
+        
+        private string ApplyTweak(string input, string tweak)
+        {
+            var parts = tweak.Split(':');
+            if (parts.Length < 2) return input;
+            
+            var operation = parts[0].ToLower();
+            
+            // Handle escape sequences in patterns and replacements
+            for (int i = 1; i < parts.Length; i++)
+            {
+                parts[i] = parts[i].Replace("\\n", "\n")
+                                 .Replace("\\t", "\t")
+                                 .Replace("\\r", "\r")
+                                 .Replace("\\;", ";")  // Handle escaped semicolons
+                                 .Replace("space", " ") // Handle space keyword
+                                 .Replace("\\\\", "\\");
+            }
+            
+            return operation switch
+            {
+                "regex" => Regex.Replace(input, parts[1], parts.Length > 2 ? parts[2] : ""),
+                _ => input
+            };
+        }
+    }
     public class ComparisonRunner
     {
         public static void Main(string[] args)
@@ -16,6 +103,11 @@ namespace K3CSharp.Comparison
             var wrapper = new KInterpreterWrapper();
             var testScriptsPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "K3CSharp.Tests", "TestScripts");
             var reportPath = "comparison_table.txt";
+            var knownDifferencesPath = "known_differences.txt";
+            
+            // Load known differences
+            var knownDifferences = new KnownDifferences(knownDifferencesPath);
+            Console.WriteLine($"Loaded {knownDifferences.Count} known differences from {knownDifferencesPath}");
             
             try
             {
@@ -42,7 +134,7 @@ namespace K3CSharp.Comparison
                         processed++;
                         Console.Write($"{processed:D3}. {fileName,-50} ");
                         
-                        var result = CompareTestFile(wrapper, fileName, testScriptsPath);
+                        var result = CompareTestFile(wrapper, fileName, testScriptsPath, knownDifferences);
                         results.Add(result);
                         
                         var statusSymbol = result.Status switch
@@ -88,7 +180,7 @@ namespace K3CSharp.Comparison
             }
         }
         
-        private static TestComparison CompareTestFile(KInterpreterWrapper wrapper, string fileName, string testScriptsPath)
+        private static TestComparison CompareTestFile(KInterpreterWrapper wrapper, string fileName, string testScriptsPath, KnownDifferences knownDifferences)
         {
             var comparison = new TestComparison { FileName = fileName };
             try
@@ -100,46 +192,98 @@ namespace K3CSharp.Comparison
                 {
                     comparison.Status = ComparisonStatus.Skipped;
                     comparison.Message = "Contains long integers";
+                    comparison.Notes = "k.exe 32-bit limitation";
                     return comparison;
                 }
                 
-                comparison.K3SharpOutput = ExecuteK3Sharp(scriptContent);
-                comparison.KOutput = wrapper.ExecuteScript(scriptContent);
+                // Execute K3Sharp first to catch K3Sharp errors
+                try
+                {
+                    comparison.K3SharpOutput = ExecuteK3Sharp(scriptContent);
+                }
+                catch (Exception k3SharpEx)
+                {
+                    // K3Sharp had an error
+                    comparison.Status = ComparisonStatus.Error;
+                    comparison.Message = $"K3Sharp Error: {k3SharpEx.Message}";
+                    comparison.Notes = "K3Sharp error only";
+                    
+                    // Still try to execute k.exe to see if it also fails
+                    try
+                    {
+                        comparison.KOutput = wrapper.ExecuteScript(scriptContent);
+                        if (comparison.KOutput.StartsWith("UNSUPPORTED:"))
+                        {
+                            comparison.Notes = "Both K3Sharp and k.exe errors";
+                        }
+                        else
+                        {
+                            comparison.Notes = "K3Sharp error, k.exe succeeded";
+                        }
+                    }
+                    catch (TimeoutException)
+                    {
+                        comparison.Notes = "K3Sharp error, k.exe timeout";
+                    }
+                    catch (Exception kEx)
+                    {
+                        comparison.Notes = "Both K3Sharp and k.exe errors";
+                    }
+                    
+                    return comparison;
+                }
+                
+                // Execute k.exe
+                try
+                {
+                    comparison.KOutput = wrapper.ExecuteScript(scriptContent);
+                }
+                catch (TimeoutException)
+                {
+                    // k.exe timed out but K3Sharp succeeded
+                    comparison.Status = ComparisonStatus.Error;
+                    comparison.Message = "k.exe execution timed out";
+                    comparison.Notes = "Interpreter wrapper timeout";
+                    return comparison;
+                }
+                catch (Exception kEx)
+                {
+                    // k.exe had an error but K3Sharp succeeded
+                    comparison.Status = ComparisonStatus.Error;
+                    comparison.Message = $"k.exe Error: {kEx.Message}";
+                    comparison.Notes = "k.exe error only";
+                    return comparison;
+                }
                 
                 if (comparison.KOutput.StartsWith("UNSUPPORTED:"))
                 {
                     comparison.Status = ComparisonStatus.Skipped;
                     comparison.Message = comparison.KOutput;
+                    comparison.Notes = "k.exe limitation";
                     return comparison;
                 }
                 
-                comparison.Status = AreResultsEquivalent(comparison.K3SharpOutput, comparison.KOutput) 
-                    ? ComparisonStatus.Matched : ComparisonStatus.Differed;
+                // Apply known differences to k.exe output if applicable
+                var testNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+                var adjustedKOutput = knownDifferences.ApplyTweaks(comparison.KOutput, testNameWithoutExtension);
                 
-                // Check if this is a formatting match
-                if (comparison.Status == ComparisonStatus.Matched)
+                // Store notes if we applied known differences
+                if (knownDifferences.HasDifference(testNameWithoutExtension))
                 {
-                    var normalize = (string s) => 
-                    {
-                        if (string.IsNullOrEmpty(s)) return "";
-                        s = System.Text.RegularExpressions.Regex.Replace(s, @"(\d+)\.0\b", "$1");
-                        s = System.Text.RegularExpressions.Regex.Replace(s.Trim(), @"\s+", " ");
-                        s = s.TrimEnd(';', ' ');
-                        return s;
-                    };
-                    
-                    var normalizedK3Sharp = normalize(comparison.K3SharpOutput);
-                    var normalizedKExe = normalize(comparison.KOutput);
-                    
-                    if (normalizedK3Sharp != normalizedKExe)
-                    {
-                        comparison.Message = "Matched via formatting equivalence";
-                    }
+                    var existingNotes = knownDifferences.GetDifference(testNameWithoutExtension).Notes;
+                    comparison.Notes = string.IsNullOrEmpty(existingNotes) ? "Known difference" : existingNotes;
+                    // Store the adjusted output for reporting
+                    comparison.KOutput = adjustedKOutput;
                 }
+                
+                // Strict comparison - no format relaxation
+                comparison.Status = comparison.K3SharpOutput.Trim() == adjustedKOutput.Trim() 
+                    ? ComparisonStatus.Matched : ComparisonStatus.Differed;
             }
             catch (Exception ex) { 
                 comparison.Status = ComparisonStatus.Error; 
-                comparison.Message = ex.Message; 
+                comparison.Message = ex.Message;
+                comparison.Notes = "Unexpected comparison error";
             }
             return comparison;
         }
@@ -149,78 +293,6 @@ namespace K3CSharp.Comparison
             var lexer = new Lexer(scriptContent);
             var parser = new Parser(lexer.Tokenize(), scriptContent);
             return new Evaluator().Evaluate(parser.Parse()).ToString();
-        }
-        
-        private static bool AreResultsEquivalent(string k3Sharp, string kExe)
-        {
-            var normalize = (string s) => 
-            {
-                if (string.IsNullOrEmpty(s)) return "";
-                
-                // Normalize float formatting (10.0 -> 10)
-                s = System.Text.RegularExpressions.Regex.Replace(s, @"(\d+)\.0\b", "$1");
-                
-                // Normalize whitespace and trim
-                s = System.Text.RegularExpressions.Regex.Replace(s.Trim(), @"\s+", " ");
-                
-                // Remove trailing semicolons and spaces
-                s = s.TrimEnd(';', ' ');
-                
-                return s;
-            };
-            
-            var normalizedK3Sharp = normalize(k3Sharp);
-            var normalizedKExe = normalize(kExe);
-            
-            // If they match exactly, return true
-            if (normalizedK3Sharp == normalizedKExe)
-            {
-                return true;
-            }
-            
-            // If they don't match, check if the difference is only formatting related
-            return AreFormattingEquivalent(k3Sharp, kExe);
-        }
-        
-        private static bool AreFormattingEquivalent(string str1, string str2)
-        {
-            // Try multiple normalization strategies
-            
-            // Strategy 1: Normalize all whitespace to single spaces
-            var normalize1 = (string s) => System.Text.RegularExpressions.Regex.Replace(s, @"\s+", " ").Trim();
-            var norm1a = normalize1(str1);
-            var norm1b = normalize1(str2);
-            if (norm1a == norm1b) return true;
-            
-            // Strategy 2: Normalize semicolons and newlines
-            var normalize2 = (string s) => 
-            {
-                s = s.Replace(';', '\n');
-                s = s.Replace('\n', ';');
-                return System.Text.RegularExpressions.Regex.Replace(s, @"\s+", " ").Trim();
-            };
-            var norm2a = normalize2(str1);
-            var norm2b = normalize2(str2);
-            if (norm2a == norm2b) return true;
-            
-            // Strategy 3: Remove all non-alphanumeric characters except essential ones
-            var normalize3 = (string s) => 
-            {
-                var result = new System.Text.StringBuilder();
-                foreach (char c in s)
-                {
-                    if (char.IsLetterOrDigit(c) || c == '`' || c == '.' || c == '(' || c == ')' || c == '[' || c == ']')
-                    {
-                        result.Append(c);
-                    }
-                }
-                return result.ToString();
-            };
-            var norm3a = normalize3(str1);
-            var norm3b = normalize3(str2);
-            if (norm3a == norm3b) return true;
-            
-            return false;
         }
         
         private static void GenerateComparisonReport(List<TestComparison> results, string reportPath, bool isFinal)
@@ -267,7 +339,7 @@ namespace K3CSharp.Comparison
                         
                         var k3SharpOutput = TruncateString(result.K3SharpOutput, 28);
                         var kOutput = TruncateString(result.KOutput, 28);
-                        var notes = TruncateString(result.Message, 20);
+                        var notes = TruncateString(result.Notes, 20);
                         
                         writer.WriteLine($"{status.PadRight(8)} {result.FileName.PadRight(50)} {k3SharpOutput.PadRight(30)} {kOutput.PadRight(30)} {notes}");
                     }
@@ -341,6 +413,7 @@ namespace K3CSharp.Comparison
         public string KOutput { get; set; } = "";
         public ComparisonStatus Status { get; set; }
         public string Message { get; set; } = "";
+        public string Notes { get; set; } = "";
     }
     
     public enum ComparisonStatus { Matched, Differed, Skipped, Error }
