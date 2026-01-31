@@ -2046,8 +2046,28 @@ namespace K3CSharp
         private K3Value Over(K3Value verb, K3Value initialization, K3Value data)
         {
             // Handle vector case (over)
-            if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
+            if (data is VectorValue dataVec)
             {
+                // Special case: empty vector
+                if (dataVec.Elements.Count == 0)
+                {
+                    // For +/!0 and +/!0L, return 0 (identity element for addition)
+                    if (verb is SymbolValue verbSymbol && verbSymbol.Value == "+")
+                    {
+                        return new IntegerValue(0);
+                    }
+                    // For */!0 and */!0L, return 1 (identity element for multiplication)
+                    else if (verb is SymbolValue verbSymbolMul && verbSymbolMul.Value == "*")
+                    {
+                        return new IntegerValue(1);
+                    }
+                    // For other verbs with empty vectors, return the initialization value
+                    else
+                    {
+                        return initialization;
+                    }
+                }
+                
                 K3Value result;
                 
                 // If initialization is 0, use first element as initialization (K behavior for / without explicit init)
@@ -3672,10 +3692,20 @@ namespace K3CSharp
             // Otherwise, this is a format operation with numeric specifier
             if (left is IntegerValue intFormat)
             {
+                // Special case: k.exe treats format specifier 0 as always returning empty string
+                if (intFormat.Value == 0)
+                {
+                    return new CharacterValue("");
+                }
                 return FormatWithSpecifier(intFormat.Value, right);
             }
             else if (left is FloatValue floatFormat)
             {
+                // Special case: k.exe treats format specifier 0.0 as always returning empty string
+                if (floatFormat.Value == 0.0)
+                {
+                    return new CharacterValue("");
+                }
                 return FormatWithFloatSpecifier(floatFormat.Value, right);
             }
             else
@@ -3689,7 +3719,7 @@ namespace K3CSharp
             return (left is IntegerValue intValue && intValue.Value == 0) ||
                    (left is LongValue longValue && longValue.Value == 0) ||
                    (left is FloatValue floatValue && floatValue.Value == 0.0) ||
-                   (left is SymbolValue symValue && (symValue.Value == "" || symValue.Value == "\"`\"")) ||
+                   (left is SymbolValue symValue && symValue.Value == "") ||
                    (left is CharacterValue charValue && charValue.Value == " ");
         }
         
@@ -3824,6 +3854,11 @@ namespace K3CSharp
                 var chars = charVec.Elements.Select(e => ((CharacterValue)e).Value);
                 str = string.Concat(chars);
             }
+            else if (value is SymbolValue symValue)
+            {
+                // For symbols, format just the name without the backtick
+                str = symValue.Value;
+            }
             else
             {
                 str = value.ToString();
@@ -3855,6 +3890,13 @@ namespace K3CSharp
                     // Length overflow: return asterisks
                     str = new string('*', targetLength);
                 }
+            }
+            
+            // According to K3 spec: single character results should be enlisted
+            // to make them 1-item character vectors, e.g., ,"a" or ,"1"
+            if (str.Length == 1)
+            {
+                return new VectorValue(new List<K3Value> { new CharacterValue(str) }, "string");
             }
             
             return new CharacterValue(str);
@@ -3925,6 +3967,13 @@ namespace K3CSharp
                 str = str.PadRight(Math.Abs(totalWidth));
             }
             
+            // According to K3 spec: single character results should be enlisted
+            // to make them 1-item character vectors, e.g., ,"a" or ,"1"
+            if (str.Length == 1)
+            {
+                return new VectorValue(new List<K3Value> { new CharacterValue(str) }, "string");
+            }
+            
             return new CharacterValue(str);
         }
 
@@ -3946,9 +3995,9 @@ namespace K3CSharp
                 // Convert to float
                 return ConvertToFloat(value);
             }
-            else if (typeSpec is SymbolValue symSpec && (symSpec.Value == "" || symSpec.Value == "\"`\""))
+            else if (typeSpec is SymbolValue symSpec && symSpec.Value == "")
             {
-                // Convert to symbol (empty backtick or quoted backtick)
+                // Convert to symbol (empty backtick)
                 return ConvertToSymbol(value);
             }
             else if (typeSpec is CharacterValue charSpec && charSpec.Value == " ")
@@ -4183,10 +4232,19 @@ namespace K3CSharp
 
         private K3Value ConvertToSymbol(K3Value value)
         {
-            if (value is VectorValue vec)
+            // Check if this is a character vector (string) - treat as leaf element per spec
+            if (value is VectorValue vec && vec.Elements.Count > 0 && vec.Elements.All(e => e is CharacterValue))
+            {
+                // Character vector should be treated as a leaf element, not descended into
+                // Extract the string content and convert to a single symbol
+                var chars = vec.Elements.Select(e => ((CharacterValue)e).Value);
+                var symbolName = string.Concat(chars);
+                return new SymbolValue(symbolName);
+            }
+            else if (value is VectorValue regularVec)
             {
                 var result = new List<K3Value>();
-                foreach (var element in vec.Elements)
+                foreach (var element in regularVec.Elements)
                 {
                     result.Add(ConvertToSymbol(element));
                 }

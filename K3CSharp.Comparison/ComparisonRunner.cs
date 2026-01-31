@@ -105,6 +105,13 @@ namespace K3CSharp.Comparison
             var reportPath = "comparison_table.txt";
             var knownDifferencesPath = "known_differences.txt";
             
+            // Check if single test mode
+            if (args.Length > 0)
+            {
+                RunSingleTest(args[0], wrapper, testScriptsPath, knownDifferencesPath);
+                return;
+            }
+            
             // Load known differences
             var knownDifferences = new KnownDifferences(knownDifferencesPath);
             Console.WriteLine($"Loaded {knownDifferences.Count} known differences from {knownDifferencesPath}");
@@ -176,6 +183,64 @@ namespace K3CSharp.Comparison
                 Console.WriteLine($"Stack Trace: {ex.StackTrace}");
             }
             finally { 
+                wrapper.CleanupTempDirectory();
+            }
+        }
+        
+        private static void RunSingleTest(string testName, KInterpreterWrapper wrapper, string testScriptsPath, string knownDifferencesPath)
+        {
+            // Load known differences
+            var knownDifferences = new KnownDifferences(knownDifferencesPath);
+            
+            // Construct test file name (add .k extension if not present)
+            var fileName = testName.EndsWith(".k") ? testName : $"{testName}.k";
+            var testFilePath = Path.Combine(testScriptsPath, fileName);
+            
+            Console.WriteLine($"🔍 Running comparison for: {fileName}");
+            Console.WriteLine("===================================================");
+            
+            if (!File.Exists(testFilePath))
+            {
+                Console.WriteLine($"❌ Test file not found: {testFilePath}");
+                return;
+            }
+            
+            try
+            {
+                var result = CompareTestFile(wrapper, fileName, testScriptsPath, knownDifferences);
+                
+                // Output full results to stdout without truncation
+                Console.WriteLine($"K3Sharp: {result.K3SharpOutput}");
+                Console.WriteLine($"k.exe:   {result.KOutput}");
+                
+                if (!string.IsNullOrEmpty(result.Notes))
+                {
+                    Console.WriteLine($"Notes:    {result.Notes}");
+                }
+                
+                if (result.Status == ComparisonStatus.Error)
+                {
+                    Console.WriteLine($"Error:    {result.Message}");
+                }
+                
+                var statusSymbol = result.Status switch
+                {
+                    ComparisonStatus.Matched => "✅",
+                    ComparisonStatus.Differed => "❌", 
+                    ComparisonStatus.Skipped => "⚠️",
+                    ComparisonStatus.Error => "💥",
+                    _ => "❓"
+                };
+                
+                Console.WriteLine($"ℹ️  Result: {statusSymbol} {result.Status}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"💥 Error running test: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
+            }
+            finally
+            {
                 wrapper.CleanupTempDirectory();
             }
         }
@@ -323,8 +388,8 @@ namespace K3CSharp.Comparison
                     // Detailed results table
                     writer.WriteLine("DETAILED RESULTS:");
                     writer.WriteLine("-----------------");
-                    writer.WriteLine("Status".PadRight(8) + " " + "Test File".PadRight(50) + " " + "K3Sharp Output".PadRight(30) + " " + "k.exe Output".PadRight(30) + " " + "Notes");
-                    writer.WriteLine(new string('-', 130));
+                    writer.WriteLine("Status".PadRight(8) + " " + "Test File".PadRight(50) + " " + "K3Sharp Output".PadRight(30) + " " + "k.exe Output".PadRight(30) + " " + "Notes".PadRight(50));
+                    writer.WriteLine(new string('-', 170));
                     
                     foreach (var result in results.OrderBy(r => r.FileName))
                     {
@@ -339,9 +404,9 @@ namespace K3CSharp.Comparison
                         
                         var k3SharpOutput = TruncateString(result.K3SharpOutput, 28);
                         var kOutput = TruncateString(result.KOutput, 28);
-                        var notes = TruncateString(result.Notes, 20);
+                        var notes = TruncateString(result.Notes, 48);
                         
-                        writer.WriteLine($"{status.PadRight(8)} {result.FileName.PadRight(50)} {k3SharpOutput.PadRight(30)} {kOutput.PadRight(30)} {notes}");
+                        writer.WriteLine($"{status.PadRight(8)} {result.FileName.PadRight(50)} {k3SharpOutput.PadRight(30)} {kOutput.PadRight(30)} {notes.PadRight(50)}");
                     }
                     
                     writer.WriteLine();

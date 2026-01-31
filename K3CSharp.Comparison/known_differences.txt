@@ -16,6 +16,7 @@ simple_division :: regex:\.0\b: :: smart integer division, inverse and exponenti
 square_bracket_function :: regex:\.0\b: :: smart integer division, inverse and exponentiation
 symbol_vector_compact :: regex:\s+: :: Compact representation
 symbol_vector_spaces :: regex:\s+: :: Compact representation
+format_symbol_string_mixed_vector :: regex:\s+: :: Compact representation
 dictionary_enumerate :: regex:\s+: :: Compact representation
 division_int_4_2 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
 division_rules_12_4 :: regex:\.0\b: :: smart integer division, inverse and exponentiation

@@ -416,3 +416,12 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# internal documentation
+vibe-docs
+BEST.md
+kref*.*
+kusr*.*
+speck#.*
+updates_from_usr_and_ref.md
+K3CSharp_implementation_details.md

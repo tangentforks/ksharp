@@ -111,6 +111,8 @@ namespace K3CSharp.Tests
                 ("adverb_over_minus.k", "4"),
                 ("adverb_over_multiply.k", "24"),
                 ("adverb_over_plus.k", "15"),
+                ("plus_over_empty.k", "0"),
+                ("multiply_over_empty.k", "1"),
                 ("adverb_over_power.k", "64"),
                 ("adverb_over_with_initialization_1.k", "15"),
                 ("adverb_over_with_initialization_2.k", "12"),
@@ -393,6 +395,7 @@ namespace K3CSharp.Tests
                 
                 // Test empty vector
                 ("empty_vector.k", "()"),
+                ("enumerate_empty.k", "!0"),
                 
                 // Test enumerate
                 ("enumerate.k", "0 1"),
@@ -507,23 +510,25 @@ namespace K3CSharp.Tests
                 ("monadic_format_vector_simple.k", "(,\"1\";,\"2\";,\"3\")"),
                 
                 // $ operator tests - binary form/type conversion
-                ("format_integer.k", "\"1\""),
-                ("format_float_numeric.k", "\"1\""),
+                ("format_integer.k", "\"\""),
+                ("format_float_numeric.k", ",\"1\""),
                 ("form_long.k", "42L"),
                 ("format_numeric.k", "\"    1\""),
                 ("form_string_pad_left.k", "\"  hello\""),
                 ("form_string_pad_right.k", "\"test      \""),
-                ("form_symbol_pad_left.k", "\"  `hello\""),
+                ("format_symbol_pad_left.k", "\"     hello\""),
+                ("format_symbol_pad_left_8.k", "\"   hello\""),
                 ("format_pad_left.k", "\"   42\""),
                 ("format_pad_right.k", "\"42   \""),
                 ("format_float_width_precision.k", "\"      3.14\""),
                 ("format_float_precision.k", "\"    3.14\""),
                 
                 // Additional format tests
-                ("format_0_1.k", "\"1.0\""),
-                ("format_1_1.k", "\"*\""),
+                ("format_0_1.k", "\"\""),
+                ("format_1_1.k", ",\"1\""),
+                ("format_symbol_string_mixed_vector.k", "`hello`world`test"),
                 ("form_integer_charvector.k", "42"),
-                ("form_character_charvector.k", "\"\"aaa\"\""),
+                ("form_character_charvector.k", "\"aaa\""),
                 ("nested_debug_modulo.k", "2.5"),
                 ("dot_execute_variables.k", "0.6"),
                 ("form_braces_expressions.k", "8 15 2"),

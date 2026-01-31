@@ -12,6 +12,8 @@
 ║ adverb_over_minus.k                      │ -/ 10 2 3 1          │ 4                    │                      ║
 ║ adverb_over_multiply.k                   │ */ 1 2 3 4           │ 24                   │                      ║
 ║ adverb_over_plus.k                       │ +/ 1 2 3 4 5         │ 15                   │                      ║
+║ plus_over_empty.k                        │ +/!0                 │ 0                    │                      ║
+║ multiply_over_empty.k                    │ */!0                 │ 1                    │                      ║
 ║ adverb_over_power.k                      │ ^/ 2 3 2             │ 64                   │                      ║
 ║ adverb_over_with_initialization_1.k      │ 1 +/ 2 3 4 5         │ 15                   │                      ║
 ║ adverb_over_with_initialization_2.k      │ 2 +/ 1 2 3 4         │ 12                   │                      ║
@@ -198,6 +200,7 @@
 ║ division_rules_4_2.k                     │ 4 % 2                │ 2                    │                      ║
 ║ division_rules_5_2.k                     │ 5 % 2                │ 2.5                  │                      ║
 ║ empty_vector.k                           │ ()                   │ ()                   │                      ║
+║ enumerate_empty.k                        │ !0                   │ !0                   │                      ║
 ║ enumerate.k                              │ ! 2                  │ 0 1                  │                      ║
 ║ grade_down_no_parens.k                   │ > 3 11 9 9 4         │ 1 2 3 4 0            │                      ║
 ║ grade_up_no_parens.k                     │ < 3 11 9 9 4         │ 0 4 2 3 1            │                      ║
@@ -270,21 +273,23 @@
 ║ monadic_format_integer.k                 │ $42                  │ "42"                 │                      ║
 ║ monadic_format_float.k                   │ $3.14                │ "3.14"               │                      ║
 ║ monadic_format_vector_simple.k           │ $1 2 3               │ (,"1";,"2";,"3")     │                      ║
-║ format_integer.k                         │ 0$1                  │ "1"                  │                      ║
-║ format_float_numeric.k                   │ 0.0$1                │ "1"                  │                      ║
+║ format_integer.k                         │ 0$1                  │ ""                   │                      ║
+║ format_float_numeric.k                   │ 0.0$1                │ ""                   │ ,"1"                 ║
 ║ form_long.k                              │ 0L$"42"              │ 42L                  │                      ║
 ║ format_numeric.k                         │ 5$1                  │ "    1"              │                      ║
 ║ form_string_pad_left.k                   │ 7$"hello"            │ "  hello"            │                      ║
 ║ form_string_pad_right.k                  │ -10$"test"           │ "test      "         │                      ║
-║ form_symbol_pad_left.k                   │ 8$`hello             │ "  `hello"           │                      ║
+║ format_symbol_pad_left.k                 │ 10$`hello            │ "     hello"         │                      ║
+║ format_symbol_pad_left_8.k               │ 8$`hello             │ "   hello"           │                      ║
 ║ format_pad_left.k                        │ 5$42                 │ "   42"              │                      ║
 ║ format_pad_right.k                       │ -5$42                │ "42   "              │                      ║
 ║ format_float_width_precision.k           │ 10.2$3.14159         │ "      3.14"         │                      ║
 ║ format_float_precision.k                 │ 8.2$3.14159          │ "    3.14"           │                      ║
-║ format_0_1.k                             │ 0$1.0                │ "1.0"                │                      ║
-║ format_1_1.k                             │ 1$1.0                │ "*"                  │                      ║
+║ format_0_1.k                             │ 0$1.0                │ ""                   │                      ║
+║ format_1_1.k                             │ 1$1.0                │ ,"*"                 │ ,"1"                 ║
+║ format_symbol_string_mixed_vector.k      │ `$("hello";"world";"test") │ `hello`world`test    │                      ║
 ║ form_integer_charvector.k                │ 0$"42"               │ 42                   │                      ║
-║ form_character_charvector.k              │ " "$"aaa"            │ ""aaa""              │                      ║
+║ form_character_charvector.k              │ " "$"aaa"            │ ""aaa""              │ "aaa"                ║
 ║ nested_debug_modulo.k                    │ a:5                  │ 2.5                  │                      ║
 ║ dot_execute_variables.k                  │ a:1.5                │ 0.6                  │                      ║
 ║ form_braces_expressions.k                │ a:5                  │ 8 15 2               │                      ║
@@ -331,7 +336,7 @@
 ║ where_vector_counts.k                    │ & (3 2 1)            │ 0 0 0 1 1 2          │                      ║
 ║ floor_operator.k                         │ _3.7                 │ 3.0                  │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 325/327 tests passed (99.4%)                                                                     ║
+║ SUMMARY: 327/332 tests passed (98.5%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -345,4 +350,19 @@ Test: variable_scoping_nested_functions.k
 Input: // Test nested functions
 Expected: 25
 Actual: Error: Dot-apply operator requires a function on the left side
+──────────────────────────────────────────────────────────────────────────
+Test: format_float_numeric.k
+Input: 0.0$1
+Expected: ,"1"
+Actual: ""
+──────────────────────────────────────────────────────────────────────────
+Test: format_1_1.k
+Input: 1$1.0
+Expected: ,"1"
+Actual: ,"*"
+──────────────────────────────────────────────────────────────────────────
+Test: form_character_charvector.k
+Input: " "$"aaa"
+Expected: "aaa"
+Actual: ""aaa""
 ──────────────────────────────────────────────────────────────────────────

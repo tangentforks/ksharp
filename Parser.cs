@@ -1047,6 +1047,35 @@ namespace K3CSharp
                     result = ASTNode.MakeLiteral(new SymbolValue("?"));
                 }
             }
+            else if (Match(TokenType.MODULUS))
+            {
+                // Check if this is unary enumerate (at start of expression)
+                if (result == null)
+                {
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("!"));
+                    }
+                    else
+                    {
+                        // This is unary enumerate
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("!");
+                        node.Children.Add(operand);
+                        return node;
+                    }
+                }
+                else
+                {
+                    // Binary modulus symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("!"));
+                }
+            }
             else if (Match(TokenType.ADVERB_SLASH))
             {
                 // Standalone adverb slash - this should not happen in valid K3

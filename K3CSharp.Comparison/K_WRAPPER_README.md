@@ -29,9 +29,18 @@ wrapper.CleanupTempDirectory();
 var wrapper = new KInterpreterWrapper(@"d:\kdb\k.exe");
 ```
 
+## Integration Status
+
+The KInterpreterWrapper is fully integrated into the K3CSharp.Comparison project and provides:
+
+- **Reliable k.exe Execution**: Successfully executes K scripts with proper exit handling
+- **Output Cleaning**: Removes licensing information and normalizes output
+- **Error Management**: Handles timeouts, process failures, and cleanup automatically
+- **Comparison Ready**: Designed specifically for K3Sharp vs k.exe compatibility testing
+
 ## Key Requirements Handled
 
-1. **Exit Handling**: When k.exe is invoked with a script, it normally doesn't exit the REPL. The wrapper automatically adds `_exit 0` to the end of scripts to force exit.
+1. **Exit Handling**: When k.exe is invoked with a script, it normally doesn't exit the REPL. The wrapper automatically adds `\\` to the end of scripts to force exit.
 
 2. **Licensing Information**: Lines like `WIN32 32CPU 4095MB rufeu01-hx.rufian.zilbermann.com 0 EVAL` are automatically filtered from output.
 
@@ -48,64 +57,33 @@ var wrapper = new KInterpreterWrapper(@"d:\kdb\k.exe");
 
 Main wrapper class for executing K scripts.
 
-**Methods:**
-- `ExecuteScript(string scriptContent)` - Executes a K script and returns cleaned output
-- `CleanupTempDirectory()` - Manually cleanup temporary files
+#### Key Methods
+- `ExecuteScript(string script)` - Execute a K script and return cleaned output
+- `CleanupTempDirectory()` - Clean up temporary files
+- Constructor accepts optional k.exe path parameter
 
-### KComparisonTestRunner
-
-Utility for comparing K3Sharp output with k.exe output across test suites.
-
-**Methods:**
-- `RunComparisonTests()` - Runs comparison tests on all test files
-- `CompareTestFile(string fileName)` - Compares a single test file
-
-### KWrapperDemo
-
-Demonstration program showing wrapper usage with various K features.
-
-## Example Output
-
-```csharp
-var wrapper = new KInterpreterWrapper();
-
-// Simple arithmetic
-string result1 = wrapper.ExecuteScript("2 + 3");
-// Returns: "5"
-
-// Vector operations
-string result2 = wrapper.ExecuteScript("1 2 3 + 4 5 6");
-// Returns: "5 7 9"
-
-// Function definition and call
-string result3 = wrapper.ExecuteScript("f:{[x] x*2}\nf 5");
-// Returns: "10"
-
-// Vector indexing
-string result4 = wrapper.ExecuteScript("v:10 20 30 40 50\nv[2]");
-// Returns: "30"
-```
+#### Properties
+- `KExecutablePath` - Path to k.exe executable (default: `c:\k\k.exe`)
+- `TempDirectory` - Temporary directory for script execution
+- `TimeoutMs` - Execution timeout in milliseconds (default: 10000)
 
 ## Error Handling
 
-The wrapper includes comprehensive error handling:
+The wrapper provides comprehensive error handling:
+- **Timeout Protection**: 10-second default timeout prevents hanging
+- **Process Management**: Proper process cleanup and resource management
+- **File System Errors**: Graceful handling of temporary file issues
+- **K.exe Errors**: Clear error messages for k.exe execution failures
 
-- **Timeout Protection**: 10-second timeout for k.exe execution
-- **Process Management**: Proper process cleanup and termination
-- **File I/O Errors**: Graceful handling of temporary file issues
-- **Encoding Support**: UTF-8 encoding for proper character handling
+## Dependencies
 
-## Integration with Test Suite
+- k.exe (32-bit) must be available at the specified path
+- .NET 6.0 or later
+- Windows operating system (k.exe is Windows-specific)
 
-The wrapper can be integrated with the existing test suite to validate K3Sharp behavior against the reference K implementation:
+## Notes
 
-```csharp
-var runner = new KComparisonTestRunner();
-runner.RunComparisonTests();
-```
-
-This will run comparison tests and show:
-- Total tests compared
-- Match percentage
-- Acceptable discrepancies
-- Error counts for both implementations
+- The wrapper is specifically designed for comparison testing, not general K execution
+- All temporary files are automatically cleaned up after execution
+- The wrapper handles both script execution and interactive mode scenarios
+- Output is normalized to remove k.exe-specific artifacts

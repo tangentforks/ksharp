@@ -5,6 +5,7 @@ This project provides comprehensive comparison testing between K3Sharp and k.exe
 ## Features
 
 - **Dynamic Test Discovery**: Automatically finds all `*.k` files in `K3CSharp.Tests/TestScripts/`
+- **Single Test Mode**: Run individual test scripts for targeted debugging
 - **Batch Processing**: Processes tests in batches to avoid timeouts
 - **Intelligent Comparison**: Handles formatting differences (semicolons vs newlines, whitespace variations)
 - **Long Integer Detection**: Automatically skips tests with 64-bit integers that k.exe 32-bit cannot handle
@@ -15,6 +16,16 @@ This project provides comprehensive comparison testing between K3Sharp and k.exe
 ### Run Full Comparison
 ```bash
 dotnet run --project K3CSharp.Comparison
+# or using the batch file
+run_comparison.bat
+```
+
+### Run Single Test
+```bash
+dotnet run --project K3CSharp.Comparison -- <test_name>
+# Examples:
+dotnet run --project K3CSharp.Comparison -- format_symbol_pad_left
+dotnet run --project K3CSharp.Comparison -- plus_over_empty
 ```
 
 ### Build Only
@@ -30,6 +41,8 @@ The comparison generates `comparison_table.txt` in the project root with:
 - **Detailed Results**: Individual test results with K3Sharp vs k.exe outputs
 - **Failed Tests Details**: Specific differences for failed tests
 - **Error Tests Details**: Error messages for tests that couldn't execute
+
+For single test mode, results are displayed directly to console with full output without truncation.
 
 ## Comparison Logic
 
@@ -49,17 +62,11 @@ The comparison uses multiple normalization strategies:
 
 ## Files
 
-- `ComparisonRunner.cs` - Main comparison engine
+- `ComparisonRunner.cs` - Main comparison engine with single test support
 - `KInterpreterWrapper.cs` - k.exe execution wrapper
 - `comparison_table.txt` - Generated comparison report
-- `K_WRAPPER_README.md` - Detailed wrapper documentation
-- `K_WRAPPER_SUMMARY.md` - Implementation summary and test results
-
-## Documentation
-
-For detailed information about the KInterpreterWrapper implementation, see:
-- `K_WRAPPER_README.md` - Complete usage guide and API documentation
-- `K_WRAPPER_SUMMARY.md` - Implementation summary and test analysis
+- `known_differences.txt` - Known differences configuration file
+- `run_comparison.bat` - Batch file for easy execution
 
 ## Dependencies
 
@@ -72,3 +79,4 @@ For detailed information about the KInterpreterWrapper implementation, see:
 - Progress is saved after each batch
 - Long integer detection includes: `123L`, `456l`, `0IL`, `0NL`
 - Formatting equivalence handles semicolon/newline differences intelligently
+- Single test mode provides immediate feedback for debugging specific issues
