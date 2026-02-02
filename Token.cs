@@ -32,6 +32,7 @@ namespace K3CSharp
         NEGATE,
         JOIN,
         ASSIGNMENT,
+        COLON,          // : conditional evaluation / assignment
         SEMICOLON,
         NEWLINE,
         QUOTE,
@@ -73,6 +74,26 @@ namespace K3CSharp
         DOT,            // _dot dot product
         MUL,            // _mul matrix multiplication
         INV,            // _inv matrix inverse
+        
+        // System functions (missing from current implementation)
+        TIME,           // _t current time
+        DRAW,           // _draw random number generation
+        IN,             // _in search/find function
+        BIN,            // _bin binary search
+        BINL,           // _binl binary search each-left
+        LSQ,            // _lsq least squares
+        GTIME,          // _gtime GMT time conversion
+        LTIME,          // _ltime local time conversion
+        VS,             // _vs database function
+        SV,             // _sv database function
+        SS,             // _ss database function
+        CI,             // _ci database function
+        IC,             // _ic database function
+        DO,             // _do control flow
+        WHILE,          // _while control flow
+        IF_FUNC,        // _if control flow
+        GOTO,           // _goto control flow
+        EXIT,           // _exit control flow
         EOF,
         UNKNOWN
     }

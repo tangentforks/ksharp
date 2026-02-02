@@ -545,6 +545,23 @@ namespace K3CSharp.Tests
                 ("form_braces_function_calls.k", "5 20 12"),
                 ("form_braces_nested_function_calls.k", "5 8 25"),
                 
+                // Test underscore functions
+                ("log.k", "2.302585"),
+                ("time.k", "Error - _t (current time) operation reserved for future use"),
+                ("draw.k", "Error - _draw (random number generation) operation reserved for future use"),
+                ("in.k", "4"),
+                
+                // Find operator tests
+                ("find_basic.k", "2"),
+                ("find_notfound.k", "7"),
+                ("find_scalar_found.k", "0"),
+                ("find_scalar_notfound.k", "1"),
+                ("find_nil.k", "42"),
+                
+                ("bin.k", "Error - _bin (binary search) operation reserved for future use"),
+                ("lsq.k", "Error - _lsq (least squares) operation reserved for future use"),
+                ("do.k", "Error - _do (control flow) operation reserved for future use"),
+                
                 // Form specifiers on mixed vectors
                 ("format_float_precision_vector_simple.k", "(\"       1.5\";\"       2.5\")"),
                 ("format_float_precision_mixed_vector.k", "(\"   1.50\";\"   2.70\";\"   3.14\";\"   4.20\")"),

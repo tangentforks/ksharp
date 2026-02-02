@@ -1,0 +1,1 @@
+-[10; 3]  // Dyadic subtraction with bracket notation

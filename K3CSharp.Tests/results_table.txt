@@ -12,8 +12,8 @@
 ║ adverb_over_minus.k                      │ -/ 10 2 3 1          │ 4                    │                      ║
 ║ adverb_over_multiply.k                   │ */ 1 2 3 4           │ 24                   │                      ║
 ║ adverb_over_plus.k                       │ +/ 1 2 3 4 5         │ 15                   │                      ║
-║ plus_over_empty.k                        │ +/!0                 │ 0                    │                      ║
-║ multiply_over_empty.k                    │ */!0                 │ 1                    │                      ║
+║ plus_over_empty.k                        │ +/!0                 │ Error: ! operat...   │ 0                    ║
+║ multiply_over_empty.k                    │ */!0                 │ Error: ! operat...   │ 1                    ║
 ║ adverb_over_power.k                      │ ^/ 2 3 2             │ 64                   │                      ║
 ║ adverb_over_with_initialization_1.k      │ 1 +/ 2 3 4 5         │ 15                   │                      ║
 ║ adverb_over_with_initialization_2.k      │ 2 +/ 1 2 3 4         │ 12                   │                      ║
@@ -39,7 +39,7 @@
 ║ attribute_handle_vector.k                │ ~(`a`b`c)            │ `a.`b.`c.            │                      ║
 ║ character_single.k                       │ "f"                  │ "f"                  │                      ║
 ║ character_vector.k                       │ "hello"              │ "hello"              │                      ║
-║ complex_function.k                       │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2} │ 205                  │                      ║
+║ complex_function.k                       │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2} │ Error: Undefine...   │ 205                  ║
 ║ count_operator.k                         │ # (1 2 3)            │ 3                    │                      ║
 ║ cut_vector.k                             │ (0 2 4) _ (0 1 2 3 4 5 6 7) │ (0 1;2 3;4 5 6 7)    │                      ║
 ║ dictionary_empty.k                       │ .()                  │ .()                  │                      ║
@@ -66,13 +66,13 @@
 ║ float_exponential_large.k                │ 1e15                 │ 1e+015               │                      ║
 ║ float_exponential_small.k                │ 1e-20                │ 1e-020               │                      ║
 ║ float_types.k                            │ 3.14                 │ 3.14                 │                      ║
-║ function_add7.k                          │ add7:{[arg1] arg1+7} │ 12                   │                      ║
+║ function_add7.k                          │ add7:{[arg1] arg1+7} │ Error: Undefine...   │ 12                   ║
 ║ function_call_anonymous.k                │ {[arg1] arg1+6} . 7  │ 13                   │                      ║
-║ function_call_chain.k                    │ mul:{[op1;op2] op1 * op2} │ 20                   │                      ║
-║ function_call_double.k                   │ mul:{[op1;op2] op1 * op2} │ 32                   │                      ║
-║ function_call_simple.k                   │ add7:{[arg1] arg1+7} │ 12                   │                      ║
-║ function_foo_chain.k                     │ mul:{[op1;op2] op1 * op2} │ 20                   │                      ║
-║ function_mul.k                           │ mul:{[op1;op2] op1 * op2} │ 32                   │                      ║
+║ function_call_chain.k                    │ mul:{[op1;op2] op1 * op2} │ Error: Undefine...   │ 20                   ║
+║ function_call_double.k                   │ mul:{[op1;op2] op1 * op2} │ Error: Undefine...   │ 32                   ║
+║ function_call_simple.k                   │ add7:{[arg1] arg1+7} │ Error: Undefine...   │ 12                   ║
+║ function_foo_chain.k                     │ mul:{[op1;op2] op1 * op2} │ Error: Undefine...   │ 20                   ║
+║ function_mul.k                           │ mul:{[op1;op2] op1 * op2} │ Error: Undefine...   │ 32                   ║
 ║ generate_operator.k                      │ &4                   │ 0 0 0 0              │                      ║
 ║ grade_down_operator.k                    │ > (3 11 9 9 4)       │ 1 2 3 4 0            │                      ║
 ║ grade_up_operator.k                      │ < (3 11 9 9 4)       │ 0 4 2 3 1            │                      ║
@@ -152,11 +152,11 @@
 ║ shape_operator_tensor_3d.k               │ ^ (((1 2); (3 4)); ((5 6); (7 8)); ((9 10); (11 12))) │ 3 2 2                │                      ║
 ║ shape_operator_vector.k                  │ ^ (1 2 3 4 5)        │ ,5                   │                      ║
 ║ simple_addition.k                        │ 1 + 2                │ 3                    │                      ║
-║ divide_float.k                           │ a:1.5                │ 0.6                  │                      ║
-║ divide_integer.k                         │ a:5                  │ 2.5                  │                      ║
+║ divide_float.k                           │ a:1.5                │ Error: Undefine...   │ 0.6                  ║
+║ divide_integer.k                         │ a:5                  │ Error: Undefine...   │ 2.5                  ║
 ║ simple_multiplication.k                  │ 4 * 3                │ 12                   │                      ║
 ║ simple_nested_test.k                     │ (1 2 3)              │ 1 2 3                │                      ║
-║ minus_integer.k                          │ a:5                  │ 2                    │                      ║
+║ minus_integer.k                          │ a:5                  │ Error: Undefine...   │ 2                    ║
 ║ special_float_neg_inf.k                  │ -0i                  │ -0i                  │                      ║
 ║ special_float_null.k                     │ 0n                   │ 0n                   │                      ║
 ║ special_float_pos_inf.k                  │ 0i                   │ 0i                   │                      ║
@@ -175,9 +175,9 @@
 ║ special_1_plus_int_null.k                │ 1 + 0N               │ -0I                  │                      ║
 ║ special_int_vector.k                     │ 0I 0N -0I            │ 0I 0N -0I            │                      ║
 ║ special_float_vector.k                   │ 0i 0n -0i            │ 0i 0n -0i            │                      ║
-║ square_bracket_function.k                │ div:{[op1;op2] op1%op2} │ 2                    │                      ║
-║ square_bracket_vector_multiple.k         │ v:10 11 12 13 14 15 16 │ 14 16                │                      ║
-║ square_bracket_vector_single.k           │ v:10 11 12 13 14 15 16 │ 14                   │                      ║
+║ square_bracket_function.k                │ div:{[op1;op2] op1%op2} │ Error: Undefine...   │ 2                    ║
+║ square_bracket_vector_multiple.k         │ v:10 11 12 13 14 15 16 │ Error: Undefine...   │ 14 16                ║
+║ square_bracket_vector_single.k           │ v:10 11 12 13 14 15 16 │ Error: Undefine...   │ 14                   ║
 ║ string_representation_int.k              │ 5:42                 │ "42"                 │                      ║
 ║ string_representation_mixed.k            │ 5:(1;2.5;"a")        │ "(1;2.5;\"a\")"      │                      ║
 ║ string_representation_symbol.k           │ 5:`symbol            │ "`symbol"            │                      ║
@@ -205,12 +205,12 @@
 ║ grade_down_no_parens.k                   │ > 3 11 9 9 4         │ 1 2 3 4 0            │                      ║
 ║ grade_up_no_parens.k                     │ < 3 11 9 9 4         │ 0 4 2 3 1            │                      ║
 ║ mixed_types.k                            │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
-║ multiline_function_single.k              │ test: {[x] a:x*2; a+10} │ 20                   │                      ║
+║ multiline_function_single.k              │ test: {[x] a:x*2; a+10} │ Error: Undefine...   │ 20                   ║
 ║ null_vector.k                            │ (;1;2)               │ (;1;2)               │                      ║
-║ scoping_single.k                         │ globalVar: 100       │ 60                   │                      ║
+║ scoping_single.k                         │ globalVar: 100       │ Error: Undefine...   │ 60                   ║
 ║ semicolon_simple.k                       │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
-║ semicolon_vars.k                         │ a: 10                │ 30 200 -10           │                      ║
-║ semicolon_vector.k                       │ a: 1 2               │ (7;3 4;-20.45)       │                      ║
+║ semicolon_vars.k                         │ a: 10                │ Error: Undefine...   │ 30 200 -10           ║
+║ semicolon_vector.k                       │ a: 1 2               │ Error: Undefine...   │ (7;3 4;-20.45)       ║
 ║ simple_scalar_div.k                      │ 5 % 2                │ 2.5                  │                      ║
 ║ single_no_semicolon.k                    │ (42)                 │ 42                   │                      ║
 ║ smart_division1.k                        │ 5 10 % 2             │ 2.5 5.0              │                      ║
@@ -248,19 +248,19 @@
 ║ type_promotion_long_int.k                │ 1L + 2               │ 3L                   │                      ║
 ║ unary_minus_operator.k                   │ - 5                  │ -5                   │                      ║
 ║ unique_operator.k                        │ ? (1 2 1 3)          │ 1 2 3                │                      ║
-║ variable_assignment.k                    │ foo:7                │ 7                    │                      ║
-║ variable_reassignment.k                  │ foo:7                │ 7.2 4.5              │                      ║
-║ variable_scoping_global_access.k         │ // Test function accessing global variable │ 150                  │                      ║
+║ variable_assignment.k                    │ foo:7                │ Error: Undefine...   │ 7                    ║
+║ variable_reassignment.k                  │ foo:7                │ Error: Undefine...   │ 7.2 4.5              ║
+║ variable_scoping_global_access.k         │ // Test function accessing global variable │ Error: Undefine...   │ 150                  ║
 ║ variable_scoping_global_assignment.k     │ // Test global assignment from nested function │ Error: Undefine...   │ 10                   ║
-║ variable_scoping_global_unchanged.k      │ // Test verify global variable unchanged │ 100                  │                      ║
-║ variable_scoping_local_hiding.k          │ // Test function with local variable hiding global │ 60                   │                      ║
-║ variable_scoping_nested_functions.k      │ // Test nested functions │ Error: Dot-appl...   │ 25                   ║
-║ variable_usage.k                         │ x:10                 │ 30                   │                      ║
+║ variable_scoping_global_unchanged.k      │ // Test verify global variable unchanged │ Error: Undefine...   │ 100                  ║
+║ variable_scoping_local_hiding.k          │ // Test function with local variable hiding global │ Error: Undefine...   │ 60                   ║
+║ variable_scoping_nested_functions.k      │ // Test nested functions │ Error: Undefine...   │ 25                   ║
+║ variable_usage.k                         │ x:10                 │ Error: Undefine...   │ 30                   ║
 ║ dot_execute.k                            │ ."2+2"               │ 4                    │                      ║
-║ dot_execute_context.k                    │ foo:7                │ 8                    │                      ║
-║ dictionary_enumerate.k                   │ d: .((`a;1);(`b;2))  │ `a`b                 │                      ║
+║ dot_execute_context.k                    │ foo:7                │ Error: Undefine...   │ 8                    ║
+║ dictionary_enumerate.k                   │ d: .((`a;1);(`b;2))  │ Error: Undefine...   │ `a`b                 ║
 ║ null_operations.k                        │ _n@7                 │ 7                    │                      ║
-║ dictionary_dot_apply.k                   │ d: .((`a;1;.());(`b;2;.())) │ 1                    │                      ║
+║ dictionary_dot_apply.k                   │ d: .((`a;1;.());(`b;2;.())) │ Error: Undefine...   │ 1                    ║
 ║ monadic_format_basic.k                   │ $1                   │ ,"1"                 │                      ║
 ║ monadic_format_types.k                   │ $42.5                │ "42.5"               │                      ║
 ║ monadic_format_vector.k                  │ $1 2 3               │ (,"1";,"2";,"3")     │                      ║
@@ -290,37 +290,49 @@
 ║ format_symbol_string_mixed_vector.k      │ `$("hello";"world";"test") │ `hello`world`test    │                      ║
 ║ form_integer_charvector.k                │ 0$"42"               │ 42                   │                      ║
 ║ form_character_charvector.k              │ " "$"aaa"            │ ""aaa""              │ "aaa"                ║
-║ nested_debug_modulo.k                    │ a:5                  │ 2.5                  │                      ║
-║ dot_execute_variables.k                  │ a:1.5                │ 0.6                  │                      ║
-║ form_braces_expressions.k                │ a:5                  │ 8 15 2               │                      ║
-║ form_braces_nested_expr.k                │ x:10                 │ (12 20;(7;3.333...   │                      ║
-║ form_braces_complex.k                    │ a:1.5                │ 8.25 12.0 9.0        │                      ║
-║ form_braces_string.k                     │ name:"John"          │ ("John";"is";25...   │                      ║
-║ form_braces_mixed_type.k                 │ num:42               │ (42;"hello";`te...   │                      ║
-║ form_braces_simple.k                     │ a:5                  │ 8                    │                      ║
-║ form_braces_arith.k                      │ a:5                  │ 8 15 2 12 20 5       │                      ║
-║ form_braces_nested_arith.k               │ a:5                  │ (7 10;(2;2.5);5...   │                      ║
-║ form_braces_float.k                      │ a:1.5                │ 4.0 3.75 0.6 -1.0    │                      ║
-║ form_braces_mixed_arith.k                │ x:10                 │ 17.5 32.5 4.5        │                      ║
-║ form_braces_example.k                    │ a:5                  │ 8 9                  │                      ║
-║ form_braces_function_calls.k             │ sum:{[a;b] a+b}      │ 5 20 12              │                      ║
-║ form_braces_nested_function_calls.k      │ sum:{[a;b] a+b}      │ 5 8 25               │                      ║
+║ nested_debug_modulo.k                    │ a:5                  │ Error: Undefine...   │ 2.5                  ║
+║ dot_execute_variables.k                  │ a:1.5                │ Error: Undefine...   │ 0.6                  ║
+║ form_braces_expressions.k                │ a:5                  │ Error: Undefine...   │ 8 15 2               ║
+║ form_braces_nested_expr.k                │ x:10                 │ Error: Undefine...   │ (12 20;(7;3.333...   ║
+║ form_braces_complex.k                    │ a:1.5                │ Error: Undefine...   │ 8.25 12.0 9.0        ║
+║ form_braces_string.k                     │ name:"John"          │ Error: Undefine...   │ ("John";"is";25...   ║
+║ form_braces_mixed_type.k                 │ num:42               │ Error: Undefine...   │ (42;"hello";`te...   ║
+║ form_braces_simple.k                     │ a:5                  │ Error: Undefine...   │ 8                    ║
+║ form_braces_arith.k                      │ a:5                  │ Error: Undefine...   │ 8 15 2 12 20 5       ║
+║ form_braces_nested_arith.k               │ a:5                  │ Error: Undefine...   │ (7 10;(2;2.5);5...   ║
+║ form_braces_float.k                      │ a:1.5                │ Error: Undefine...   │ 4.0 3.75 0.6 -1.0    ║
+║ form_braces_mixed_arith.k                │ x:10                 │ Error: Undefine...   │ 17.5 32.5 4.5        ║
+║ form_braces_example.k                    │ a:5                  │ Error: Undefine...   │ 8 9                  ║
+║ form_braces_function_calls.k             │ sum:{[a;b] a+b}      │ Error: Undefine...   │ 5 20 12              ║
+║ form_braces_nested_function_calls.k      │ sum:{[a;b] a+b}      │ Error: Undefine...   │ 5 8 25               ║
+║ log.k                                    │ _log 10              │ 2.302585             │                      ║
+║ time.k                                   │ _t                   │ Error: _t (curr...   │ Error - _t (cur...   ║
+║ draw.k                                   │ _draw                │ Error: _draw (r...   │ Error - _draw (...   ║
+║ in.k                                     │ 4 _in 1 7 2 4 6 3    │ 4                    │                      ║
+║ find_basic.k                             │ 9 8 7 6 5 4 3 ? 7  // Find operator - basic functionality │ 2                    │                      ║
+║ find_notfound.k                          │ 9 8 7 6 5 4 3 ? 1  // Find operator - not found case │ 7                    │                      ║
+║ find_scalar_found.k                      │ 7 ? 7  // Find operator - scalar found case │ 0                    │                      ║
+║ find_scalar_notfound.k                   │ 7 ? 1  // Find operator - scalar not found case │ 1                    │                      ║
+║ find_nil.k                               │ _n ? 42  // Find operator - nil case │ 42                   │                      ║
+║ bin.k                                    │ _bin                 │ Error: _bin (bi...   │ Error - _bin (b...   ║
+║ lsq.k                                    │ _lsq                 │ Error: _lsq (le...   │ Error - _lsq (l...   ║
+║ do.k                                     │ _do                  │ Error: Undefine...   │ Error - _do (co...   ║
 ║ format_float_precision_vector_simple.k   │ 10.1$(1.5;2.5)       │ ("       1.5";"...   │                      ║
 ║ format_float_precision_mixed_vector.k    │ 7.2$(1.5;2.7;3.14159;4.2) │ ("   1.50";"   ...   │                      ║
 ║ format_pad_mixed_vector.k                │ 10$(1;2;3)           │ ("         1";"...   │                      ║
 ║ format_pad_negative_mixed_vector.k       │ -10$(1;2;3)          │ ("1         ";"...   │                      ║
 ║ vector_notation_empty.k                  │ ()                   │ ()                   │                      ║
-║ vector_notation_functions.k              │ double: {[x] x * 2}  │ 10 20 30             │                      ║
+║ vector_notation_functions.k              │ double: {[x] x * 2}  │ Error: Undefine...   │ 10 20 30             ║
 ║ vector_notation_mixed_types.k            │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
 ║ vector_notation_nested.k                 │ ((1 + 2); (3 + 4); (5 + 6)) │ 3 7 11               │                      ║
 ║ vector_notation_semicolon.k              │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
 ║ vector_notation_single_group.k           │ (42)                 │ 42                   │                      ║
 ║ vector_notation_space.k                  │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
-║ vector_notation_variables.k              │ a: 10                │ 30 200 -10           │                      ║
+║ vector_notation_variables.k              │ a: 10                │ Error: Undefine...   │ 30 200 -10           ║
 ║ vector_notation_semicolon.k              │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
 ║ vector_notation_single_group.k           │ (42)                 │ 42                   │                      ║
 ║ vector_notation_space.k                  │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
-║ vector_notation_variables.k              │ a: 10                │ 30 200 -10           │                      ║
+║ vector_notation_variables.k              │ a: 10                │ Error: Undefine...   │ 30 200 -10           ║
 ║ vector_addition.k                        │ 1 2 + 3 4            │ 4 6                  │                      ║
 ║ vector_division.k                        │ 1 2 % 3 4            │ 0.3333333 0.5        │                      ║
 ║ vector_index_duplicate.k                 │ 5 8 4 9 @ 0 0        │ 5 5                  │                      ║
@@ -336,20 +348,160 @@
 ║ where_vector_counts.k                    │ & (3 2 1)            │ 0 0 0 1 1 2          │                      ║
 ║ floor_operator.k                         │ _3.7                 │ 3.0                  │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 327/332 tests passed (98.5%)                                                                     ║
+║ SUMMARY: 288/344 tests passed (83.7%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
+Test: plus_over_empty.k
+Input: +/!0
+Expected: 0
+Actual: Error: ! operator requires 2 arguments
+──────────────────────────────────────────────────────────────────────────
+Test: multiply_over_empty.k
+Input: */!0
+Expected: 1
+Actual: Error: ! operator requires 2 arguments
+──────────────────────────────────────────────────────────────────────────
+Test: complex_function.k
+Input: distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2}
+Expected: 205
+Actual: Error: Undefined variable: distance
+──────────────────────────────────────────────────────────────────────────
+Test: function_add7.k
+Input: add7:{[arg1] arg1+7}
+Expected: 12
+Actual: Error: Undefined variable: add7
+──────────────────────────────────────────────────────────────────────────
+Test: function_call_chain.k
+Input: mul:{[op1;op2] op1 * op2}
+Expected: 20
+Actual: Error: Undefined variable: mul
+──────────────────────────────────────────────────────────────────────────
+Test: function_call_double.k
+Input: mul:{[op1;op2] op1 * op2}
+Expected: 32
+Actual: Error: Undefined variable: mul
+──────────────────────────────────────────────────────────────────────────
+Test: function_call_simple.k
+Input: add7:{[arg1] arg1+7}
+Expected: 12
+Actual: Error: Undefined variable: add7
+──────────────────────────────────────────────────────────────────────────
+Test: function_foo_chain.k
+Input: mul:{[op1;op2] op1 * op2}
+Expected: 20
+Actual: Error: Undefined variable: mul
+──────────────────────────────────────────────────────────────────────────
+Test: function_mul.k
+Input: mul:{[op1;op2] op1 * op2}
+Expected: 32
+Actual: Error: Undefined variable: mul
+──────────────────────────────────────────────────────────────────────────
+Test: divide_float.k
+Input: a:1.5
+Expected: 0.6
+Actual: Error: Undefined variable: a
+──────────────────────────────────────────────────────────────────────────
+Test: divide_integer.k
+Input: a:5
+Expected: 2.5
+Actual: Error: Undefined variable: a
+──────────────────────────────────────────────────────────────────────────
+Test: minus_integer.k
+Input: a:5
+Expected: 2
+Actual: Error: Undefined variable: a
+──────────────────────────────────────────────────────────────────────────
+Test: square_bracket_function.k
+Input: div:{[op1;op2] op1%op2}
+Expected: 2
+Actual: Error: Undefined variable: div
+──────────────────────────────────────────────────────────────────────────
+Test: square_bracket_vector_multiple.k
+Input: v:10 11 12 13 14 15 16
+Expected: 14 16
+Actual: Error: Undefined variable: v
+──────────────────────────────────────────────────────────────────────────
+Test: square_bracket_vector_single.k
+Input: v:10 11 12 13 14 15 16
+Expected: 14
+Actual: Error: Undefined variable: v
+──────────────────────────────────────────────────────────────────────────
+Test: multiline_function_single.k
+Input: test: {[x] a:x*2; a+10}
+Expected: 20
+Actual: Error: Undefined variable: test
+──────────────────────────────────────────────────────────────────────────
+Test: scoping_single.k
+Input: globalVar: 100
+Expected: 60
+Actual: Error: Undefined variable: globalVar
+──────────────────────────────────────────────────────────────────────────
+Test: semicolon_vars.k
+Input: a: 10
+Expected: 30 200 -10
+Actual: Error: Undefined variable: a
+──────────────────────────────────────────────────────────────────────────
+Test: semicolon_vector.k
+Input: a: 1 2
+Expected: (7;3 4;-20.45)
+Actual: Error: Undefined variable: a
+──────────────────────────────────────────────────────────────────────────
+Test: variable_assignment.k
+Input: foo:7
+Expected: 7
+Actual: Error: Undefined variable: foo
+──────────────────────────────────────────────────────────────────────────
+Test: variable_reassignment.k
+Input: foo:7
+Expected: 7.2 4.5
+Actual: Error: Undefined variable: foo
+──────────────────────────────────────────────────────────────────────────
+Test: variable_scoping_global_access.k
+Input: // Test function accessing global variable
+Expected: 150
+Actual: Error: Undefined variable: globalVar
+──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: // Test global assignment from nested function
 Expected: 10
-Actual: Error: Undefined variable: test5
+Actual: Error: Undefined variable: globalVar
+──────────────────────────────────────────────────────────────────────────
+Test: variable_scoping_global_unchanged.k
+Input: // Test verify global variable unchanged
+Expected: 100
+Actual: Error: Undefined variable: globalVar
+──────────────────────────────────────────────────────────────────────────
+Test: variable_scoping_local_hiding.k
+Input: // Test function with local variable hiding global
+Expected: 60
+Actual: Error: Undefined variable: globalVar
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_nested_functions.k
 Input: // Test nested functions
 Expected: 25
-Actual: Error: Dot-apply operator requires a function on the left side
+Actual: Error: Undefined variable: globalVar
+──────────────────────────────────────────────────────────────────────────
+Test: variable_usage.k
+Input: x:10
+Expected: 30
+Actual: Error: Undefined variable: x
+──────────────────────────────────────────────────────────────────────────
+Test: dot_execute_context.k
+Input: foo:7
+Expected: 8
+Actual: Error: Undefined variable: foo
+──────────────────────────────────────────────────────────────────────────
+Test: dictionary_enumerate.k
+Input: d: .((`a;1);(`b;2))
+Expected: `a`b
+Actual: Error: Undefined variable: d
+──────────────────────────────────────────────────────────────────────────
+Test: dictionary_dot_apply.k
+Input: d: .((`a;1;.());(`b;2;.()))
+Expected: 1
+Actual: Error: Undefined variable: d
 ──────────────────────────────────────────────────────────────────────────
 Test: format_float_numeric.k
 Input: 0.0$1
@@ -365,4 +517,119 @@ Test: form_character_charvector.k
 Input: " "$"aaa"
 Expected: "aaa"
 Actual: ""aaa""
+──────────────────────────────────────────────────────────────────────────
+Test: nested_debug_modulo.k
+Input: a:5
+Expected: 2.5
+Actual: Error: Undefined variable: a
+──────────────────────────────────────────────────────────────────────────
+Test: dot_execute_variables.k
+Input: a:1.5
+Expected: 0.6
+Actual: Error: Undefined variable: a
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_expressions.k
+Input: a:5
+Expected: 8 15 2
+Actual: Error: Undefined variable: a
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_nested_expr.k
+Input: x:10
+Expected: (12 20;(7;3.333333))
+Actual: Error: Undefined variable: x
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_complex.k
+Input: a:1.5
+Expected: 8.25 12.0 9.0
+Actual: Error: Undefined variable: a
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_string.k
+Input: name:"John"
+Expected: ("John";"is";25;"years old")
+Actual: Error: Undefined variable: name
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_mixed_type.k
+Input: num:42
+Expected: (42;"hello";`test;47;"helloworld")
+Actual: Error: Undefined variable: num
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_simple.k
+Input: a:5
+Expected: 8
+Actual: Error: Undefined variable: a
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_arith.k
+Input: a:5
+Expected: 8 15 2 12 20 5
+Actual: Error: Undefined variable: a
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_nested_arith.k
+Input: a:5
+Expected: (7 10;(2;2.5);5 -1)
+Actual: Error: Undefined variable: a
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_float.k
+Input: a:1.5
+Expected: 4.0 3.75 0.6 -1.0
+Actual: Error: Undefined variable: a
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_mixed_arith.k
+Input: x:10
+Expected: 17.5 32.5 4.5
+Actual: Error: Undefined variable: x
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_example.k
+Input: a:5
+Expected: 8 9
+Actual: Error: Undefined variable: a
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_function_calls.k
+Input: sum:{[a;b] a+b}
+Expected: 5 20 12
+Actual: Error: Undefined variable: sum
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_nested_function_calls.k
+Input: sum:{[a;b] a+b}
+Expected: 5 8 25
+Actual: Error: Undefined variable: sum
+──────────────────────────────────────────────────────────────────────────
+Test: time.k
+Input: _t
+Expected: Error - _t (current time) operation reserved for future use
+Actual: Error: _t (current time) operation reserved for future use
+──────────────────────────────────────────────────────────────────────────
+Test: draw.k
+Input: _draw
+Expected: Error - _draw (random number generation) operation reserved for future use
+Actual: Error: _draw (random number generation) operation reserved for future use
+──────────────────────────────────────────────────────────────────────────
+Test: bin.k
+Input: _bin
+Expected: Error - _bin (binary search) operation reserved for future use
+Actual: Error: _bin (binary search) operation reserved for future use
+──────────────────────────────────────────────────────────────────────────
+Test: lsq.k
+Input: _lsq
+Expected: Error - _lsq (least squares) operation reserved for future use
+Actual: Error: _lsq (least squares) operation reserved for future use
+──────────────────────────────────────────────────────────────────────────
+Test: do.k
+Input: _do
+Expected: Error - _do (control flow) operation reserved for future use
+Actual: Error: Undefined variable: do
+──────────────────────────────────────────────────────────────────────────
+Test: vector_notation_functions.k
+Input: double: {[x] x * 2}
+Expected: 10 20 30
+Actual: Error: Undefined variable: double
+──────────────────────────────────────────────────────────────────────────
+Test: vector_notation_variables.k
+Input: a: 10
+Expected: 30 200 -10
+Actual: Error: Undefined variable: a
+──────────────────────────────────────────────────────────────────────────
+Test: vector_notation_variables.k
+Input: a: 10
+Expected: 30 200 -10
+Actual: Error: Undefined variable: a
 ──────────────────────────────────────────────────────────────────────────

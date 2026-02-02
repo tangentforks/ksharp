@@ -288,7 +288,7 @@ namespace K3CSharp
                     }
                     else
                     {
-                        tokens.Add(new Token(TokenType.ASSIGNMENT, ":", position));
+                        tokens.Add(new Token(TokenType.COLON, ":", position));
                         Advance();
                     }
                 }
@@ -428,7 +428,18 @@ namespace K3CSharp
                 Advance();
             }
             
-            return new Token(TokenType.IDENTIFIER, value, start);
+            // Check for control flow keywords
+            switch (value)
+            {
+                case "do":
+                    return new Token(TokenType.DO, value, start);
+                case "if":
+                    return new Token(TokenType.IF_FUNC, value, start);
+                case "while":
+                    return new Token(TokenType.WHILE, value, start);
+                default:
+                    return new Token(TokenType.IDENTIFIER, value, start);
+            }
         }
 
         private Token ReadNumber()
@@ -597,6 +608,31 @@ namespace K3CSharp
                 "_dot" => new Token(TokenType.DOT, opName, start),
                 "_mul" => new Token(TokenType.MUL, opName, start),
                 "_inv" => new Token(TokenType.INV, opName, start),
+                
+                // System functions (missing from current implementation)
+                "_t" => new Token(TokenType.TIME, opName, start),
+                "_draw" => new Token(TokenType.DRAW, opName, start),
+                "_in" => new Token(TokenType.IN, opName, start),
+                "_bin" => new Token(TokenType.BIN, opName, start),
+                "_binl" => new Token(TokenType.BINL, opName, start),
+                "_lsq" => new Token(TokenType.LSQ, opName, start),
+                "_gtime" => new Token(TokenType.GTIME, opName, start),
+                "_ltime" => new Token(TokenType.LTIME, opName, start),
+                "_vs" => new Token(TokenType.VS, opName, start),
+                "_sv" => new Token(TokenType.SV, opName, start),
+                "_ss" => new Token(TokenType.SS, opName, start),
+                "_ci" => new Token(TokenType.CI, opName, start),
+                "_ic" => new Token(TokenType.IC, opName, start),
+                "_do" => new Token(TokenType.DO, opName, start),
+                "_while" => new Token(TokenType.WHILE, opName, start),
+                "_if" => new Token(TokenType.IF_FUNC, opName, start),
+                "_goto" => new Token(TokenType.GOTO, opName, start),
+                "_exit" => new Token(TokenType.EXIT, opName, start),
+                
+                // Control flow functions without underscores (K3 syntax)
+                "do" => new Token(TokenType.DO, opName, start),
+                "while" => new Token(TokenType.WHILE, opName, start),
+                "if" => new Token(TokenType.IF_FUNC, opName, start),
                 
                 _ => null
             };

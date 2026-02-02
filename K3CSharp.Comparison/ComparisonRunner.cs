@@ -101,7 +101,7 @@ namespace K3CSharp.Comparison
             Console.WriteLine("============================================");
             
             var wrapper = new KInterpreterWrapper();
-            var testScriptsPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "K3CSharp.Tests", "TestScripts");
+            var testScriptsPath = @"T:\_src\github.com\ERufian\ksharp\K3CSharp.Tests\TestScripts";
             var reportPath = "comparison_table.txt";
             var knownDifferencesPath = "known_differences.txt";
             

@@ -373,11 +373,12 @@ namespace K3CSharp
                     
                 case "\\":
                     // Display top level help message
-                    Console.WriteLine("\\  help");
+                    Console.WriteLine("\\  help (this page)");
                     Console.WriteLine("\\0 data types");
-                    Console.WriteLine("\\+ verbs");
+                    Console.WriteLine("\\+ arithmetic and basic verbs");
                     Console.WriteLine("\\' adverbs");
-                    Console.WriteLine("\\. assignment");
+                    Console.WriteLine("\\. control flow, assignment and debug");
+                    Console.WriteLine("\\_ underscore verbs (math, linear, etc.)");
                     Console.WriteLine("\\p precision");
                     Console.WriteLine("\\\\ exit");
                     break;
@@ -390,16 +391,14 @@ namespace K3CSharp
                     break;
                     
                 case "\\+":
-                    // Display verbs information
+                    // Display arithmetic and basic verbs information
                     Console.WriteLine("arithmetic: + - * % < > = & | ^");
                     Console.WriteLine("unary: - + * % & | < > ^ ! , # _ ? ~ @ . = $");
                     Console.WriteLine("binary: ! _ @ . :: $");
                     Console.WriteLine("indexing: @_n []");
                     Console.WriteLine("dict: !dict .dict");
-                    Console.WriteLine("math: _log _exp _abs _sqrt _sin _cos _tan");
-                    Console.WriteLine("linear: _dot _mul _inv");
-                    Console.WriteLine("group: =");
                     Console.WriteLine("format: $value format${}expr");
+                    Console.WriteLine("see \\_ for math, linear algebra, and other underscore verbs");
                     break;
                     
                 case "\\'":
@@ -413,10 +412,44 @@ namespace K3CSharp
                     break;
                     
                 case "\\.":
-                    // Display assignment information
-                    Console.WriteLine("name: value");
-                    Console.WriteLine("name:: value (global)");
-                    Console.WriteLine("{[x;y] x+y} function");
+                    // Display control flow, assignment and debug information
+                    Console.WriteLine("assignment:");
+                    Console.WriteLine("  name: value        // local assignment");
+                    Console.WriteLine("  name:: value       // global assignment");
+                    Console.WriteLine("  {[x;y] x+y}        // function definition");
+                    Console.WriteLine();
+                    Console.WriteLine("control flow (bracket notation):");
+                    Console.WriteLine("  if[condition; expr]     // conditional execution");
+                    Console.WriteLine("  while[condition; expr]   // loop while condition true");
+                    Console.WriteLine("  do[count; expr]          // repeat count times");
+                    Console.WriteLine("  :[cond; true; false]     // conditional evaluation");
+                    Console.WriteLine();
+                    Console.WriteLine("control flow (apply notation):");
+                    Console.WriteLine("  if . (condition; expr)   // equivalent to bracket notation");
+                    Console.WriteLine("  while . (condition; expr)");
+                    Console.WriteLine("  do . (count; expr)");
+                    Console.WriteLine("  : . (cond; true; false)");
+                    Console.WriteLine();
+                    Console.WriteLine("debug:");
+                    Console.WriteLine("  \\p [number]  // set precision");
+                    Console.WriteLine("  \\help        // show this help");
+                    break;
+                    
+                case "\\_":
+                    // Display underscore verbs information
+                    Console.WriteLine("math functions:");
+                    Console.WriteLine("  _log   _exp   _abs   _sqrt");
+                    Console.WriteLine("  _sin   _cos   _tan");
+                    Console.WriteLine();
+                    Console.WriteLine("linear algebra:");
+                    Console.WriteLine("  _dot   _mul   _inv");
+                    Console.WriteLine();
+                    Console.WriteLine("group:");
+                    Console.WriteLine("  =      // group/ungroup");
+                    Console.WriteLine();
+                    Console.WriteLine("other underscore verbs:");
+                    Console.WriteLine("  _do    _while _if    // internal control flow");
+                    Console.WriteLine("see \\+ for basic arithmetic and binary verbs");
                     break;
                     
                 default:

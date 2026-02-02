@@ -181,6 +181,27 @@ namespace K3CSharp
                     "_dot" => MathDot(operand),
                     "_mul" => MathMul(operand),
                     "_inv" => MathInv(operand),
+                    "_t" => TimeFunction(operand),
+                    "_draw" => DrawFunction(operand),
+                    "_in" => InFunction(operand),
+                    "_bin" => BinFunction(operand),
+                    "_binl" => BinlFunction(operand),
+                    "_lsq" => LsqFunction(operand),
+                    "_gtime" => GtimeFunction(operand),
+                    "_ltime" => LtimeFunction(operand),
+                    "_vs" => VsFunction(operand),
+                    "_sv" => SvFunction(operand),
+                    "_ss" => SsFunction(operand),
+                    "_ci" => CiFunction(operand),
+                    "_ic" => IcFunction(operand),
+                    "_do" => DoFunction(operand),
+                    "_while" => WhileFunction(operand),
+                    "_if" => IfFunction(operand),
+                    "do" => DoFunction(operand),
+                    "while" => WhileFunction(operand),
+                    "if" => IfFunction(operand),
+                    "_goto" => GotoFunction(operand),
+                    "_exit" => ExitFunction(operand),
                     "MIN" => operand, // Identity operation for unary min
                     "MAX" => operand, // Identity operation for unary max
                     "ADVERB_SLASH" => operand, // Return operand as-is for now
@@ -219,6 +240,9 @@ namespace K3CSharp
                         "ADVERB_SLASH" => Over(new SymbolValue("+"), left, right),
                         "ADVERB_BACKSLASH" => Scan(new SymbolValue("+"), left, right),
                         "ADVERB_TICK" => Each(left, right),
+                        "_in" => In(left, right),
+                        "?" => Find(left, right),
+                        ":" => ColonOperator(left, right),
                         "TYPE" => GetType(left, right),
                         _ => throw new Exception($"Unknown binary operator: {op.Value}")
                     };
@@ -289,6 +313,14 @@ namespace K3CSharp
                 arguments.Add(Evaluate(node.Children[i]));
             }
 
+            // Handle variable function calls first (to avoid evaluating built-in functions as variables)
+            if (functionNode.Type == ASTNodeType.Variable)
+            {
+                // Variable function call: functionName[args]
+                var functionName = functionNode.Value is SymbolValue symbol ? symbol.Value : functionNode.Value.ToString();
+                return CallVariableFunction(functionName, arguments);
+            }
+
             // First evaluate the left side to see if it's a vector or dictionary
             var leftValue = Evaluate(functionNode);
             
@@ -308,12 +340,6 @@ namespace K3CSharp
             {
                 // Direct function call: {[params] body}[args]
                 return CallDirectFunction(functionNode, arguments);
-            }
-            else if (functionNode.Type == ASTNodeType.Variable)
-            {
-                // Variable function call: functionName[args]
-                var functionName = functionNode.Value is SymbolValue symbol ? symbol.Value : functionNode.Value.ToString();
-                return CallVariableFunction(functionName, arguments);
             }
             else
             {
@@ -825,6 +851,54 @@ namespace K3CSharp
 
         private K3Value CallVariableFunction(string functionName, List<K3Value> arguments)
         {
+            // Check if it's a built-in function first
+            switch (functionName)
+            {
+                case "do":
+                case "_do":
+                    return DoFunction(arguments.Count > 0 ? new VectorValue(arguments) : new NullValue());
+                case "while":
+                case "_while":
+                    return WhileFunction(arguments.Count > 0 ? new VectorValue(arguments) : new NullValue());
+                case "if":
+                case "_if":
+                    return IfFunction(arguments.Count > 0 ? new VectorValue(arguments) : new NullValue());
+                case ":":
+                    return ColonOperator(arguments.Count > 1 ? arguments[0] : new NullValue(), 
+                                        arguments.Count > 1 ? arguments[1] : new NullValue());
+                // Dyadic operators
+                case "+":
+                    if (arguments.Count >= 2) return Plus(arguments[0], arguments[1]);
+                    throw new Exception("+ operator requires 2 arguments");
+                case "-":
+                    if (arguments.Count >= 2) return Minus(arguments[0], arguments[1]);
+                    throw new Exception("- operator requires 2 arguments");
+                case "*":
+                    if (arguments.Count >= 2) return Times(arguments[0], arguments[1]);
+                    throw new Exception("* operator requires 2 arguments");
+                case "/":
+                    if (arguments.Count >= 2) return Divide(arguments[0], arguments[1]);
+                    throw new Exception("/ operator requires 2 arguments");
+                case "^":
+                    if (arguments.Count >= 2) return Power(arguments[0], arguments[1]);
+                    throw new Exception("^ operator requires 2 arguments");
+                case "!":
+                    if (arguments.Count >= 2) return ModRotate(arguments[0], arguments[1]);
+                    throw new Exception("! operator requires 2 arguments");
+                case "<":
+                    if (arguments.Count >= 2) return LessThan(arguments[0], arguments[1]);
+                    throw new Exception("< operator requires 2 arguments");
+                case ">":
+                    if (arguments.Count >= 2) return GreaterThan(arguments[0], arguments[1]);
+                    throw new Exception("> operator requires 2 arguments");
+                case "=":
+                    if (arguments.Count >= 2) return ColonOperator(arguments[0], arguments[1]);
+                    throw new Exception("= operator requires 2 arguments");
+                case ",":
+                    if (arguments.Count >= 2) return Join(arguments[0], arguments[1]);
+                    throw new Exception(", operator requires 2 arguments");
+            }
+            
             // Check if it's a user-defined function stored in a variable
             var functionValue = GetVariable(functionName);
             
@@ -853,6 +927,190 @@ namespace K3CSharp
             }
             
             return lastResult;
+        }
+
+        private K3Value In(K3Value left, K3Value right)
+        {
+            // _in (Find) function - searches for left argument in right argument
+            // Returns position (1-based) or 0 if not found
+            // Uses tolerant comparison for floating-point numbers
+            
+            if (right is VectorValue rightVec)
+            {
+                // Search for left in right vector
+                for (int i = 0; i < rightVec.Elements.Count; i++)
+                {
+                    var matchResult = Match(left, rightVec.Elements[i]);
+                    if (matchResult is IntegerValue intVal && intVal.Value == 1)
+                    {
+                        return new IntegerValue(i + 1); // 1-based indexing
+                    }
+                }
+                return new IntegerValue(0); // Not found
+            }
+            else
+            {
+                // Search for left in right scalar
+                var matchResult = Match(left, right);
+                if (matchResult is IntegerValue intVal2 && intVal2.Value == 1)
+                {
+                    return new IntegerValue(1); // Found at position 1
+                }
+                return new IntegerValue(0); // Not found
+            }
+        }
+
+        private K3Value Find(K3Value left, K3Value right)
+        {
+            // Find operator: d ? y
+            // If y occurs among the items of d then d?y is the smallest index of all occurrences
+            // Otherwise, d?y is #d (the smallest nonnegative integer that is not a valid index of d)
+            // When d is nil, the result is y
+            // Uses Match for comparing items (tolerant comparison)
+            
+            // Handle nil case: when d is nil, result is y
+            if (left is NullValue)
+            {
+                return right;
+            }
+            
+            // Handle list case: d is a list
+            if (left is VectorValue leftVec)
+            {
+                // Search for right in left vector
+                for (int i = 0; i < leftVec.Elements.Count; i++)
+                {
+                    var matchResult = Match(leftVec.Elements[i], right);
+                    if (matchResult is IntegerValue intVal && intVal.Value == 1)
+                    {
+                        return new IntegerValue(i); // 0-based indexing (K3 standard)
+                    }
+                }
+                // Not found, return #d (count of d)
+                return new IntegerValue(leftVec.Elements.Count);
+            }
+            else
+            {
+                // Handle scalar case: d is an atom
+                var matchResult = Match(left, right);
+                if (matchResult is IntegerValue intVal2 && intVal2.Value == 1)
+                {
+                    return new IntegerValue(0); // Found at index 0 (K3 0-based)
+                }
+                // Not found, return #d (count of scalar is 1)
+                return new IntegerValue(1);
+            }
+        }
+
+        private K3Value Assignment(string variableName, K3Value value)
+        {
+            // Assignment: variable : value
+            // Uses local variable assignment
+            SetVariable(variableName, value);
+            return value;
+        }
+
+        private K3Value ColonOperator(K3Value left, K3Value right)
+        {
+            // Colon operator: left : right
+            // Can be either:
+            // 1. Assignment: variable : value (when left is a variable name symbol)
+            // 2. Conditional evaluation: :[cond; true; false] (when left is null from bracket parsing)
+            
+            // Check if this is conditional evaluation (left is null from bracket parsing)
+            if (left is NullValue)
+            {
+                // This is conditional evaluation: right should be a vector of arguments
+                if (right is VectorValue args)
+                {
+                    return ConditionalEvaluation(args.Elements);
+                }
+                else
+                {
+                    throw new Exception("Conditional evaluation requires a list of arguments");
+                }
+            }
+            else
+            {
+                // This is assignment: left : right
+                if (left is SymbolValue variableName)
+                {
+                    return Assignment(variableName.Value, right);
+                }
+                else
+                {
+                    throw new Exception("Assignment requires a variable name on the left side");
+                }
+            }
+        }
+
+        private K3Value ConditionalEvaluation(List<K3Value> arguments)
+        {
+            // Conditional evaluation: [cond; true; false] or [cond1;true1; cond2;true2; ; condN;trueN; false]
+            // Arguments alternate between conditions and expressions to execute
+            // Returns the result of the first true expression, or nil if all conditions are false
+            
+            if (arguments.Count < 3)
+            {
+                throw new Exception("Conditional evaluation requires at least 3 arguments");
+            }
+            
+            // Process arguments in pairs: (condition, expression)
+            for (int i = 0; i < arguments.Count - 1; i += 2)
+            {
+                var condition = arguments[i];
+                var expression = arguments[i + 1];
+                
+                // Check if this is the final "else" case (no condition)
+                if (i == arguments.Count - 2 && arguments.Count % 2 == 1)
+                {
+                    // This is the default case - execute it
+                    return EvaluateExpression(expression);
+                }
+                
+                // Evaluate condition
+                var conditionResult = EvaluateExpression(condition);
+                
+                // Check if condition is a non-zero integer
+                if (IsNonZeroInteger(conditionResult))
+                {
+                    // Condition is true, execute the expression
+                    return EvaluateExpression(expression);
+                }
+            }
+            
+            // All conditions were false, return nil
+            return new NullValue();
+        }
+        
+        private bool IsNonZeroInteger(K3Value value)
+        {
+            if (value is IntegerValue intValue)
+            {
+                return intValue.Value != 0;
+            }
+            else if (value is LongValue longValue)
+            {
+                return longValue.Value != 0;
+            }
+            else
+            {
+                throw new Exception("Condition must be an integer atom");
+            }
+        }
+        
+        private K3Value EvaluateExpression(K3Value expression)
+        {
+            // If the expression is already evaluated, return it
+            if (!(expression is FunctionValue))
+            {
+                return expression;
+            }
+            
+            // If it's a function value, we need to evaluate it
+            // For now, this is a simplified implementation
+            // In a full implementation, we'd need to handle function evaluation properly
+            return expression;
         }
 
         private K3Value Plus(K3Value a, K3Value b)
@@ -3508,6 +3766,14 @@ namespace K3CSharp
         
         private K3Value DotApply(K3Value left, K3Value right)
         {
+            // Check if this is Amend operation: .[d; i; f; y] or .[d; i; f]
+            // This happens when left is null (from bracket notation) or when left is the dot symbol
+            if ((left is NullValue || (left is SymbolValue sym && sym.Value == ".")) && 
+                right is VectorValue args && args.Elements.Count >= 3)
+            {
+                return AmendFunction(args.Elements);
+            }
+            
             // Dot-apply operator: function . argument
             // Similar to function application but with different precedence
             // If left is null, return the right (spec: _n . x returns x)
@@ -3561,6 +3827,188 @@ namespace K3CSharp
             else
             {
                 throw new Exception("Dot-apply operator requires a function on the left side");
+            }
+        }
+        
+        private K3Value AmendFunction(List<K3Value> arguments)
+        {
+            // Amend operation: .[d; i; f; y] or .[d; i; f]
+            // d: data structure to amend (list, dictionary, or atom)
+            // i: indices or paths to amend
+            // f: function to apply (monadic or dyadic)
+            // y: optional value for dyadic function
+            
+            if (arguments.Count < 3)
+            {
+                throw new Exception("Amend operation requires at least 3 arguments: data, indices, function");
+            }
+            
+            var data = arguments[0];
+            var indices = arguments[1];
+            var function = arguments[2];
+            var value = arguments.Count > 3 ? arguments[3] : null;
+            
+            // Handle different data types
+            if (data is VectorValue list)
+            {
+                return AmendList(list, indices, function, value);
+            }
+            else if (data is DictionaryValue dict)
+            {
+                return AmendDictionary(dict, indices, function, value);
+            }
+            else if (data is CharacterValue || data is IntegerValue || data is FloatValue)
+            {
+                // For atoms, indices must be empty list
+                if (!(indices is VectorValue indexVec && indexVec.Elements.Count == 0))
+                {
+                    throw new Exception("For atomic data, indices must be empty list");
+                }
+                return AmendAtom(data, function, value);
+            }
+            else
+            {
+                throw new Exception("Amend operation not supported for this data type");
+            }
+        }
+        
+        private K3Value AmendList(VectorValue list, K3Value indices, K3Value function, K3Value value)
+        {
+            // Create a copy of the list to modify
+            var result = new List<K3Value>(list.Elements);
+            
+            if (indices is VectorValue indexVec)
+            {
+                for (int i = 0; i < indexVec.Elements.Count; i++)
+                {
+                    var index = indexVec.Elements[i];
+                    if (index is IntegerValue intIndex)
+                    {
+                        int idx = (int)intIndex.Value;
+                        if (idx < 0 || idx >= result.Count)
+                        {
+                            throw new Exception($"Index {idx} out of bounds for list of length {result.Count}");
+                        }
+                        
+                        // Apply function to current value
+                        var currentValue = result[idx];
+                        var newValue = ApplyAmendFunction(currentValue, function, value);
+                        result[idx] = newValue;
+                    }
+                    else
+                    {
+                        throw new Exception("List indices must be integers");
+                    }
+                }
+            }
+            else if (indices is NullValue)
+            {
+                // Amend all items in the list
+                for (int i = 0; i < result.Count; i++)
+                {
+                    var currentValue = result[i];
+                    var newValue = ApplyAmendFunction(currentValue, function, value);
+                    result[i] = newValue;
+                }
+            }
+            else
+            {
+                throw new Exception("Indices must be a vector or null");
+            }
+            
+            return new VectorValue(result);
+        }
+        
+        private K3Value AmendDictionary(DictionaryValue dict, K3Value indices, K3Value function, K3Value value)
+        {
+            // Create a copy of the dictionary to modify
+            var result = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue Attribute)>(dict.Entries);
+            
+            if (indices is SymbolValue symbol)
+            {
+                // Single key amendment
+                if (result.ContainsKey(symbol))
+                {
+                    var currentValue = result[symbol].Value;
+                    var newValue = ApplyAmendFunction(currentValue, function, value);
+                    result[symbol] = (newValue, result[symbol].Attribute);
+                }
+                else
+                {
+                    throw new Exception($"Key '{symbol.Value}' not found in dictionary");
+                }
+            }
+            else if (indices is VectorValue indexVec)
+            {
+                // Multiple key amendments
+                for (int i = 0; i < indexVec.Elements.Count; i++)
+                {
+                    var index = indexVec.Elements[i];
+                    if (index is SymbolValue keySymbol)
+                    {
+                        if (result.ContainsKey(keySymbol))
+                        {
+                            var currentValue = result[keySymbol].Value;
+                            var newValue = ApplyAmendFunction(currentValue, function, value);
+                            result[keySymbol] = (newValue, result[keySymbol].Attribute);
+                        }
+                        else
+                        {
+                            throw new Exception($"Key '{keySymbol.Value}' not found in dictionary");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Dictionary indices must be symbols");
+                    }
+                }
+            }
+            else
+            {
+                throw new Exception("Dictionary indices must be symbols or vector of symbols");
+            }
+            
+            return new DictionaryValue(result);
+        }
+        
+        private K3Value AmendAtom(K3Value atom, K3Value function, K3Value value)
+        {
+            // For atoms, just apply the function directly
+            return ApplyAmendFunction(atom, function, value);
+        }
+        
+        private K3Value ApplyAmendFunction(K3Value currentValue, K3Value function, K3Value value)
+        {
+            // Apply function to current value
+            if (value != null)
+            {
+                // Dyadic function: f[currentValue; value]
+                var arguments = new List<K3Value> { currentValue, value };
+                return CallFunction(function, arguments);
+            }
+            else
+            {
+                // Monadic function: f[currentValue]
+                var arguments = new List<K3Value> { currentValue };
+                return CallFunction(function, arguments);
+            }
+        }
+        
+        private K3Value CallFunction(K3Value function, List<K3Value> arguments)
+        {
+            if (function is FunctionValue func)
+            {
+                var tempFunctionNode = new ASTNode(ASTNodeType.Function);
+                tempFunctionNode.Value = func;
+                return CallDirectFunction(tempFunctionNode, arguments);
+            }
+            else if (function is SymbolValue symbol)
+            {
+                return CallVariableFunction(symbol.Value, arguments);
+            }
+            else
+            {
+                throw new Exception("Function must be a FunctionValue or SymbolValue");
             }
         }
         
@@ -4262,6 +4710,221 @@ namespace K3CSharp
             {
                 return new SymbolValue(value.ToString());
             }
+        }
+
+        // Placeholder functions for missing underscore functions
+        private K3Value TimeFunction(K3Value operand)
+        {
+            throw new Exception("_t (current time) operation reserved for future use");
+        }
+
+        private K3Value DrawFunction(K3Value operand)
+        {
+            throw new Exception("_draw (random number generation) operation reserved for future use");
+        }
+
+        private K3Value InFunction(K3Value operand)
+        {
+            // _in (Find) function - searches for left argument in right argument
+            // Returns position (1-based) or 0 if not found
+            // Uses tolerant comparison for floating-point numbers
+            throw new Exception("_in (Find) function requires two arguments - use infix notation: x _in y");
+        }
+
+        private K3Value BinFunction(K3Value operand)
+        {
+            throw new Exception("_bin (binary search) operation reserved for future use");
+        }
+
+        private K3Value BinlFunction(K3Value operand)
+        {
+            throw new Exception("_binl (binary search each-left) operation reserved for future use");
+        }
+
+        private K3Value LsqFunction(K3Value operand)
+        {
+            throw new Exception("_lsq (least squares) operation reserved for future use");
+        }
+
+        private K3Value GtimeFunction(K3Value operand)
+        {
+            throw new Exception("_gtime (GMT time conversion) operation reserved for future use");
+        }
+
+        private K3Value LtimeFunction(K3Value operand)
+        {
+            throw new Exception("_ltime (local time conversion) operation reserved for future use");
+        }
+
+        private K3Value VsFunction(K3Value operand)
+        {
+            throw new Exception("_vs (database) operation reserved for future use");
+        }
+
+        private K3Value SvFunction(K3Value operand)
+        {
+            throw new Exception("_sv (database) operation reserved for future use");
+        }
+
+        private K3Value SsFunction(K3Value operand)
+        {
+            throw new Exception("_ss (database) operation reserved for future use");
+        }
+
+        private K3Value CiFunction(K3Value operand)
+        {
+            throw new Exception("_ci (database) operation reserved for future use");
+        }
+
+        private K3Value IcFunction(K3Value operand)
+        {
+            throw new Exception("_ic (database) operation reserved for future use");
+        }
+
+        private int ToInteger(K3Value value)
+        {
+            if (value is IntegerValue intValue)
+            {
+                return intValue.Value;
+            }
+            else if (value is LongValue longValue)
+            {
+                return (int)longValue.Value;
+            }
+            else if (value is FloatValue floatValue)
+            {
+                return (int)floatValue.Value;
+            }
+            else
+            {
+                throw new Exception("Cannot convert to integer");
+            }
+        }
+
+        private K3Value DoFunction(K3Value operand)
+        {
+            // Do function: do[count; expression] or do[count; expression1; ; expressionN]
+            // Execute expressions count times, return result of last expression
+            
+            if (operand is VectorValue args && args.Elements.Count >= 2)
+            {
+                var countValue = args.Elements[0] is FunctionValue countFunc 
+                    ? Evaluate(new Parser(countFunc.PreParsedTokens ?? new List<Token>()).Parse())
+                    : EvaluateExpression(args.Elements[0]);
+                var count = ToInteger(countValue);
+                
+                if (count < 0)
+                {
+                    throw new Exception("Do count must be non-negative");
+                }
+                
+                var expressions = args.Elements.Skip(1).ToList();
+                K3Value result = new NullValue();
+                
+                for (int i = 0; i < count; i++)
+                {
+                    foreach (var expr in expressions)
+                    {
+                        // Handle FunctionValue (contains AST to evaluate) vs regular K3Value
+                        if (expr is FunctionValue func)
+                        {
+                            // Parse and evaluate the function body
+                            var parser = new Parser(func.PreParsedTokens ?? new List<Token>());
+                            var ast = parser.Parse();
+                            result = Evaluate(ast);
+                        }
+                        else
+                        {
+                            result = EvaluateExpression(expr);
+                        }
+                    }
+                }
+                
+                return result;
+            }
+            else
+            {
+                throw new Exception("Do function requires at least 2 arguments: count and expression(s)");
+            }
+        }
+
+        private K3Value WhileFunction(K3Value operand)
+        {
+            // While function: while[condition; expression] or while[condition; expression1; ; expressionN]
+            // Execute expressions while condition is not equal to 0
+            
+            if (operand is VectorValue args && args.Elements.Count >= 2)
+            {
+                var condition = args.Elements[0];
+                var expressions = args.Elements.Skip(1).ToList();
+                K3Value result = new NullValue();
+                
+                while (true)
+                {
+                    // Evaluate condition
+                    var conditionResult = EvaluateExpression(condition);
+                    
+                    // Check if condition is zero (false)
+                    if (!IsNonZeroInteger(conditionResult))
+                    {
+                        break;
+                    }
+                    
+                    // Execute all expressions
+                    foreach (var expr in expressions)
+                    {
+                        result = EvaluateExpression(expr);
+                    }
+                }
+                
+                return result;
+            }
+            else
+            {
+                throw new Exception("While function requires at least 2 arguments: condition and expression(s)");
+            }
+        }
+
+        private K3Value IfFunction(K3Value operand)
+        {
+            // If function: if[condition; expression] or if[condition; expression1; ; expressionN]
+            // Execute expressions if condition is not equal to 0
+            
+            if (operand is VectorValue args && args.Elements.Count >= 2)
+            {
+                var condition = args.Elements[0];
+                var expressions = args.Elements.Skip(1).ToList();
+                K3Value result = new NullValue();
+                
+                // Evaluate condition
+                var conditionResult = EvaluateExpression(condition);
+                
+                // Check if condition is non-zero (true)
+                if (IsNonZeroInteger(conditionResult))
+                {
+                    // Execute all expressions
+                    foreach (var expr in expressions)
+                    {
+                        result = EvaluateExpression(expr);
+                    }
+                }
+                
+                return result;
+            }
+            else
+            {
+                throw new Exception("If function requires at least 2 arguments: condition and expression(s)");
+            }
+        }
+
+        private K3Value GotoFunction(K3Value operand)
+        {
+            throw new Exception("_goto (control flow) operation reserved for future use");
+        }
+
+        private K3Value ExitFunction(K3Value operand)
+        {
+            throw new Exception("_exit (control flow) operation reserved for future use");
         }
     }
 }

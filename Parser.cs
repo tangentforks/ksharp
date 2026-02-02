@@ -62,9 +62,11 @@ namespace K3CSharp
                 TokenType.LESS => "<",
                 TokenType.GREATER => ">",
                 TokenType.EQUAL => "=",
+                TokenType.IN => "_in",
                 TokenType.POWER => "^",
                 TokenType.MODULUS => "!",
                 TokenType.JOIN => ",",
+                TokenType.COLON => ":",
                 TokenType.HASH => "#",
                 TokenType.UNDERSCORE => "_",
                 TokenType.QUESTION => "?",
@@ -263,7 +265,7 @@ namespace K3CSharp
                    type == TokenType.DIVIDE || type == TokenType.MIN || type == TokenType.MAX || 
                    type == TokenType.LESS || type == TokenType.GREATER || type == TokenType.EQUAL || 
                    type == TokenType.POWER || type == TokenType.MODULUS || type == TokenType.JOIN ||
-                   type == TokenType.HASH || type == TokenType.UNDERSCORE || type == TokenType.QUESTION || 
+                   type == TokenType.COLON || type == TokenType.HASH || type == TokenType.UNDERSCORE || type == TokenType.QUESTION || 
                    type == TokenType.NEGATE || type == TokenType.DOLLAR;
         }
 
@@ -273,11 +275,14 @@ namespace K3CSharp
         
         private static readonly TokenType[] DefaultStopTokens = {
             TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.MIN, TokenType.MAX,
-            TokenType.LESS, TokenType.GREATER, TokenType.EQUAL, TokenType.POWER, TokenType.MODULUS, TokenType.JOIN,
-            TokenType.HASH, TokenType.UNDERSCORE, TokenType.QUESTION, TokenType.NEGATE, TokenType.DOLLAR, TokenType.RIGHT_PAREN,
+            TokenType.LESS, TokenType.GREATER, TokenType.EQUAL, TokenType.IN, TokenType.POWER, TokenType.MODULUS, TokenType.JOIN,
+            TokenType.COLON, TokenType.HASH, TokenType.UNDERSCORE, TokenType.QUESTION, TokenType.NEGATE, TokenType.DOLLAR, TokenType.RIGHT_PAREN,
             TokenType.RIGHT_BRACE, TokenType.SEMICOLON, TokenType.NEWLINE, TokenType.ASSIGNMENT, TokenType.GLOBAL_ASSIGNMENT,
             TokenType.LEFT_BRACKET, TokenType.APPLY, TokenType.DOT_APPLY, TokenType.TYPE, TokenType.STRING_REPRESENTATION,
-            TokenType.ADVERB_SLASH, TokenType.ADVERB_BACKSLASH, TokenType.ADVERB_TICK, TokenType.EOF
+            TokenType.ADVERB_SLASH, TokenType.ADVERB_BACKSLASH, TokenType.ADVERB_TICK,
+            TokenType.TIME, TokenType.DRAW, TokenType.IN, TokenType.BIN, TokenType.BINL, TokenType.LSQ,
+            TokenType.GTIME, TokenType.LTIME, TokenType.VS, TokenType.SV, TokenType.SS, TokenType.CI, TokenType.IC,
+            TokenType.DO, TokenType.WHILE, TokenType.IF_FUNC, TokenType.GOTO, TokenType.EXIT, TokenType.EOF
         };
         
         private bool ShouldStopParsing(TokenType[] stopTokens)
@@ -458,8 +463,8 @@ namespace K3CSharp
                 {
                     // Look ahead to see if this is part of an adverb operation
                     if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                      CurrentToken().Type == TokenType.ADVERB_TICK))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("+"));
@@ -548,8 +553,8 @@ namespace K3CSharp
                 {
                     // Look ahead to see if this is part of an adverb operation
                     if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                      CurrentToken().Type == TokenType.ADVERB_TICK))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("%"));
@@ -577,8 +582,8 @@ namespace K3CSharp
                 {
                     // Look ahead to see if this is part of an adverb operation
                     if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                      CurrentToken().Type == TokenType.ADVERB_TICK))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("*"));
@@ -606,8 +611,8 @@ namespace K3CSharp
                 {
                     // Look ahead to see if this is part of an adverb operation
                     if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                      CurrentToken().Type == TokenType.ADVERB_TICK))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("&"));
@@ -635,8 +640,8 @@ namespace K3CSharp
                 {
                     // Look ahead to see if this is part of an adverb operation
                     if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                      CurrentToken().Type == TokenType.ADVERB_TICK))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("|"));
@@ -664,8 +669,8 @@ namespace K3CSharp
                 {
                     // Look ahead to see if this is part of an adverb operation
                     if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                      CurrentToken().Type == TokenType.ADVERB_TICK))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("<"));
@@ -693,8 +698,8 @@ namespace K3CSharp
                 {
                     // Look ahead to see if this is part of an adverb operation
                     if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                      CurrentToken().Type == TokenType.ADVERB_TICK))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue(">"));
@@ -722,8 +727,8 @@ namespace K3CSharp
                 {
                     // Look ahead to see if this is part of an adverb operation
                     if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                      CurrentToken().Type == TokenType.ADVERB_TICK))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("^"));
@@ -751,8 +756,8 @@ namespace K3CSharp
                 {
                     // Look ahead to see if this is part of an adverb operation
                     if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                      CurrentToken().Type == TokenType.ADVERB_TICK))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue(","));
@@ -777,6 +782,59 @@ namespace K3CSharp
             {
                 var identifier = PreviousToken().Lexeme;
                 result = ASTNode.MakeVariable(identifier);
+            }
+            else if (Match(TokenType.DO))
+            {
+                result = ASTNode.MakeVariable("do");
+            }
+            else if (Match(TokenType.WHILE))
+            {
+                result = ASTNode.MakeVariable("while");
+            }
+            else if (Match(TokenType.IF_FUNC))
+            {
+                result = ASTNode.MakeVariable("if");
+            }
+            // Dyadic operators as primary expressions for bracket notation
+            else if (Match(TokenType.PLUS))
+            {
+                result = ASTNode.MakeVariable("+");
+            }
+            else if (Match(TokenType.MINUS))
+            {
+                result = ASTNode.MakeVariable("-");
+            }
+            else if (Match(TokenType.MULTIPLY))
+            {
+                result = ASTNode.MakeVariable("*");
+            }
+            else if (Match(TokenType.DIVIDE))
+            {
+                result = ASTNode.MakeVariable("/");
+            }
+            else if (Match(TokenType.POWER))
+            {
+                result = ASTNode.MakeVariable("*");
+            }
+            else if (Match(TokenType.MODULUS))
+            {
+                result = ASTNode.MakeVariable("!");
+            }
+            else if (Match(TokenType.LESS))
+            {
+                result = ASTNode.MakeVariable("<");
+            }
+            else if (Match(TokenType.GREATER))
+            {
+                result = ASTNode.MakeVariable(">");
+            }
+            else if (Match(TokenType.EQUAL))
+            {
+                result = ASTNode.MakeVariable("=");
+            }
+            else if (Match(TokenType.JOIN))
+            {
+                result = ASTNode.MakeVariable(",");
             }
             else if (Match(TokenType.LEFT_PAREN))
             {
@@ -909,8 +967,8 @@ namespace K3CSharp
                 {
                     // Look ahead to see if this is part of an adverb operation
                     if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                      CurrentToken().Type == TokenType.ADVERB_TICK))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("~"));
@@ -938,8 +996,8 @@ namespace K3CSharp
                 {
                     // Look ahead to see if this is part of an adverb operation
                     if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                      CurrentToken().Type == TokenType.ADVERB_TICK))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("$"));
@@ -967,8 +1025,8 @@ namespace K3CSharp
                 {
                     // Look ahead to see if this is part of an adverb operation
                     if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                      CurrentToken().Type == TokenType.ADVERB_TICK))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("#"));
@@ -996,8 +1054,8 @@ namespace K3CSharp
                 {
                     // Look ahead to see if this is part of an adverb operation
                     if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                      CurrentToken().Type == TokenType.ADVERB_TICK))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("_"));
@@ -1025,8 +1083,8 @@ namespace K3CSharp
                 {
                     // Look ahead to see if this is part of an adverb operation
                     if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                      CurrentToken().Type == TokenType.ADVERB_TICK))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("?"));
@@ -1054,8 +1112,8 @@ namespace K3CSharp
                 {
                     // Look ahead to see if this is part of an adverb operation
                     if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK))
+                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                      CurrentToken().Type == TokenType.ADVERB_TICK))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("!"));
@@ -1080,7 +1138,17 @@ namespace K3CSharp
             {
                 // Standalone adverb slash - this should not happen in valid K3
                 // According to spec, slash must be preceded by a verb without spaces
-                throw new Exception("Adverb slash must follow a verb without spaces");
+                throw new Exception("Adverb slash must be preceded by a verb");
+            }
+            else if (Match(TokenType.ADVERB_BACKSLASH))
+            {
+                // Standalone adverb backslash - this should not happen in valid K3
+                throw new Exception("Adverb backslash must be preceded by a verb");
+            }
+            else if (Match(TokenType.ADVERB_TICK))
+            {
+                // Standalone adverb tick - this should not happen in valid K3
+                throw new Exception("Adverb tick must be preceded by a verb");
             }
             else if (Match(TokenType.LOG))
             {
@@ -1243,6 +1311,137 @@ namespace K3CSharp
                 node.Value = new SymbolValue("_tanh");
                 node.Children.Add(operand);
                 return node;
+            }
+            else if (Match(TokenType.TIME))
+            {
+                // Current time function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_t");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.DRAW))
+            {
+                // Random number generation function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_draw");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.BIN))
+            {
+                // Binary search function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_bin");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.BINL))
+            {
+                // Binary search each-left function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_binl");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.LSQ))
+            {
+                // Least squares function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_lsq");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.GTIME))
+            {
+                // GMT time conversion function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_gtime");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.LTIME))
+            {
+                // Local time conversion function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_ltime");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.VS))
+            {
+                // Database function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_vs");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.SV))
+            {
+                // Database function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_sv");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.SS))
+            {
+                // Database function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_ss");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.CI))
+            {
+                // Database function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_ci");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.IC))
+            {
+                // Database function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_ic");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.GOTO))
+            {
+                // Control flow function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_goto");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.EXIT))
+            {
+                // Control flow function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_exit");
+                node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.COLON))
+            {
+                // Regular colon symbol - bracket notation will be handled by general apply logic
+                result = ASTNode.MakeLiteral(new SymbolValue(":"));
             }
             else if (Match(TokenType.LEFT_BRACE))
             {
@@ -1676,15 +1875,32 @@ namespace K3CSharp
                 {
                     arguments.Add(ParseExpression());
                 }
-                // For . operator: parse space-separated arguments
+                // For . operator: parse space-separated arguments, but also handle semicolon separators (function call style)
                 else if (op == TokenType.DOT_APPLY)
                 {
-                    arguments.Add(ParseExpression());
+                    // Parse first argument
+                    arguments.Add(ParsePrimary());
+                    
+                    // Look for semicolon separators first (function call style)
+                    while (Match(TokenType.SEMICOLON))
+                    {
+                        if (Match(TokenType.RIGHT_PAREN) || Match(TokenType.RIGHT_BRACE) || Match(TokenType.RIGHT_BRACKET)) break;
+                        arguments.Add(ParsePrimary());
+                    }
+                    
+                    // Then look for space-separated arguments
                     while (!IsAtEnd() && CurrentToken().Type != TokenType.SEMICOLON && 
                            CurrentToken().Type != TokenType.NEWLINE && CurrentToken().Type != TokenType.RIGHT_PAREN &&
                            CurrentToken().Type != TokenType.RIGHT_BRACE && CurrentToken().Type != TokenType.RIGHT_BRACKET)
                     {
-                        arguments.Add(ParseExpression());
+                        arguments.Add(ParsePrimary());
+                    }
+                    
+                    // Handle any remaining semicolons
+                    while (Match(TokenType.SEMICOLON))
+                    {
+                        if (Match(TokenType.RIGHT_PAREN) || Match(TokenType.RIGHT_BRACE) || Match(TokenType.RIGHT_BRACKET)) break;
+                        arguments.Add(ParsePrimary());
                     }
                 }
                 
@@ -1708,6 +1924,7 @@ namespace K3CSharp
             if (Match(TokenType.LEFT_BRACKET))
             {
                 var arguments = new List<ASTNode>();
+                var foundSemicolons = false;
                 
                 // Parse arguments inside brackets (handle both semicolon and space separated)
                 if (!Match(TokenType.RIGHT_BRACKET))
@@ -1718,6 +1935,7 @@ namespace K3CSharp
                     // Look for semicolon separators first (function call style)
                     while (Match(TokenType.SEMICOLON))
                     {
+                        foundSemicolons = true;
                         arguments.Add(ParsePrimary());
                     }
                     
@@ -1731,6 +1949,7 @@ namespace K3CSharp
                     // Handle any remaining semicolons
                     while (Match(TokenType.SEMICOLON))
                     {
+                        foundSemicolons = true;
                         arguments.Add(ParsePrimary());
                     }
                     
@@ -1749,8 +1968,7 @@ namespace K3CSharp
                 
                 // If we have multiple space-separated arguments (no semicolons), 
                 // this might be vector indexing - wrap them in a vector
-                if (arguments.Count > 1 && !arguments.Any(arg => 
-                    arg.Children.Any(child => child.Type == ASTNodeType.Variable && child.Value?.ToString() == ";")))
+                if (arguments.Count > 1 && !foundSemicolons)
                 {
                     // Check if this looks like vector indexing (multiple simple arguments)
                     var allSimple = arguments.All(arg => 
@@ -1771,9 +1989,8 @@ namespace K3CSharp
             }
 
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
-                   Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
-                   Match(TokenType.EQUAL) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
-                   Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.DOLLAR) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION))
+                   Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) || Match(TokenType.EQUAL) || Match(TokenType.IN) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
+                   Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || Match(TokenType.DOLLAR) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION))
             {
                 var op = PreviousToken().Type;
                 
