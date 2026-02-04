@@ -1,2 +1,1 @@
-// Test while function with bracket notation
-while[i < 3; i+: 1]
+i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation

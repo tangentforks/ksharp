@@ -80,10 +80,10 @@ namespace K3CSharp
                         input[position + 1] == '0' && 
                         (input[position + 2] == 'I' || input[position + 2] == 'i'))
                     {
-                        if (position + 3 < input.Length && input[position + 3] == 'L')
+                        if (position + 3 < input.Length && input[position + 3] == 'j')
                         {
-                            // -0IL
-                            tokens.Add(new Token(TokenType.LONG, "-0IL", position));
+                            // -0Ij
+                            tokens.Add(new Token(TokenType.LONG, "-0Ij", position));
                             position += 4;
                         }
                         else
@@ -501,11 +501,11 @@ namespace K3CSharp
                 input[position + 1] == '0' && 
                 (input[position + 2] == 'I' || input[position + 2] == 'i'))
             {
-                if (position + 3 < input.Length && input[position + 3] == 'L')
+                if (position + 3 < input.Length && input[position + 3] == 'j')
                 {
-                    // -0IL
+                    // -0Ij
                     position += 4;
-                    var token = new Token(TokenType.LONG, "-0IL", start);
+                    var token = new Token(TokenType.LONG, "-0Ij", start);
                     return token;
                 }
                 else
@@ -533,9 +533,9 @@ namespace K3CSharp
                 if (nextChar == 'I' || nextChar == 'N' || nextChar == 'i' || nextChar == 'n')
                 {
                     // Handle special values
-                    if (position + 2 < input.Length && input[position + 2] == 'L')
+                    if (position + 2 < input.Length && input[position + 2] == 'j')
                     {
-                        // Long special values: 0IL, 0NL, -0IL
+                        // Long special values: 0Ij, 0Nj, -0Ij
                         string special = input.Substring(position, 3);
                         position += 3;
                         return new Token(TokenType.LONG, special, start);
@@ -578,8 +578,8 @@ namespace K3CSharp
                 Advance();
             }
             
-            // Check for L suffix for long integers
-            if (currentChar == 'L' && !hasDecimal && !hasExponent)
+            // Check for j suffix for long integers
+            if (currentChar == 'j' && !hasDecimal && !hasExponent)
             {
                 number += currentChar;
                 Advance();

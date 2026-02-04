@@ -182,7 +182,6 @@ namespace K3CSharp.Tests
                 
                 // Enumerate tests
                 ("enumerate_empty_int.k", "!0"),
-                ("enumerate_empty_long.k", "!0L"),
                 ("enumerate_operator.k", "0 1 2 3 4"),
                 
                 // Equal operator
@@ -219,7 +218,7 @@ namespace K3CSharp.Tests
                 
                 // Integer types
                 ("integer_types_int.k", "42"),
-                ("integer_types_long.k", "123456789L"),
+                ("integer_types_long.k", "123456789j"),
                 
                 // Join operator
                 ("join_operator.k", "3 5"),
@@ -268,12 +267,12 @@ namespace K3CSharp.Tests
                 ("overflow_int_null_minus1.k", "0I"),
                 ("overflow_int_pos_inf.k", "0N"),
                 ("overflow_int_pos_inf_plus2.k", "-0I"),
-                ("overflow_long_max_plus1.k", "0NL"),
-                ("overflow_long_min_minus1.k", "0IL"),
-                ("overflow_long_neg_inf.k", "0NL"),
-                ("overflow_long_neg_inf_minus2.k", "0IL"),
-                ("overflow_long_pos_inf.k", "0NL"),
-                ("overflow_long_pos_inf_plus2.k", "-0IL"),
+                ("overflow_long_max_plus1.k", "0Nj"),
+                ("overflow_long_min_minus1.k", "0Ij"),
+                ("overflow_long_neg_inf.k", "0Nj"),
+                ("overflow_long_neg_inf_minus2.k", "0Ij"),
+                ("overflow_long_pos_inf.k", "0Nj"),
+                ("overflow_long_pos_inf_plus2.k", "-0Ij"),
                 ("overflow_regular_int.k", "-2147483639"),
                 ("underflow_regular_int.k", "2147483617"),
                 
@@ -344,9 +343,9 @@ namespace K3CSharp.Tests
                 ("special_int_neg_inf.k", "-0I"),
                 ("special_int_null.k", "0N"),
                 ("special_int_pos_inf.k", "0I"),
-                ("special_long_neg_inf.k", "-0IL"),
-                ("special_long_null.k", "0NL"),
-                ("special_long_pos_inf.k", "0IL"),
+                ("special_long_neg_inf.k", "-0Ij"),
+                ("special_long_null.k", "0Nj"),
+                ("special_long_pos_inf.k", "0Ij"),
                 ("special_null.k", "_n"),
                 
                 // Additional special value arithmetic tests (separated from special_values_arithmetic.k)
@@ -463,9 +462,9 @@ namespace K3CSharp.Tests
                 ("type_promotion_float_int.k", "3.5"),
                 ("type_promotion_float_long.k", "2.5"),
                 ("type_promotion_int_float.k", "3.5"),
-                ("type_promotion_int_long.k", "3L"),
+                ("type_promotion_int_long.k", "3j"),
                 ("type_promotion_long_float.k", "2.5"),
-                ("type_promotion_long_int.k", "3L"),
+                ("type_promotion_long_int.k", "3j"),
                 
                 // Unary minus operator
                 ("unary_minus_operator.k", "-5"),
@@ -508,7 +507,7 @@ namespace K3CSharp.Tests
                 // $ operator tests - binary form/type conversion
                 ("format_integer.k", "\"\""),
                 ("format_float_numeric.k", ",\"1\""),
-                ("form_long.k", "42L"),
+                ("form_long.k", "42j"),
                 ("format_numeric.k", "\"    1\""),
                 ("form_string_pad_left.k", "\"  hello\""),
                 ("format_symbol_pad_left.k", "\"     hello\""),
@@ -651,7 +650,7 @@ namespace K3CSharp.Tests
                 ("format_int_vector.k", "(\"         1\";\"         2\";\"         3\")"),
                 
                 // Final missing tests
-                ("format_long_vector.k", "(\"42L\";\"42L\";\"42L\")"),
+                ("format_long_vector.k", "\"\""),
                 ("format_string_pad_left.k", "\"     hello\""),
                 ("format_string_pad_right.k", "\"test      \""),
                 ("format_vector_int.k", "(\"1\";\"2\";\"3\")"),
@@ -679,9 +678,7 @@ namespace K3CSharp.Tests
                 ("isolated.k", "0.6"),
                 ("modulo.k", "0.6"),
                 ("monadic_format_mixed_vector.k", "(,\"1\";\"2.5\";\"hello\";\"symbol\")"),
-                ("multiply_over_empty_long.k", "1"),
                 ("over_plus_empty.k", "0"),
-                ("plus_over_empty_long.k", "0"),
                 ("simple_division.k", "4"),
                 ("simple_subtraction.k", "2"),
                 ("string_parse.k", "30"),

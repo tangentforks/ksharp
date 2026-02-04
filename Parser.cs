@@ -563,7 +563,7 @@ namespace K3CSharp
             {
                 var lexeme = PreviousToken().Lexeme;
                 // Check if it's a special long value
-                if (lexeme == "0IL" || lexeme == "0NL" || lexeme == "-0IL")
+                if (lexeme == "0Ij" || lexeme == "0Nj" || lexeme == "-0Ij")
                     result = ASTNode.MakeLiteral(new LongValue(lexeme));
                 else
                     result = ASTNode.MakeLiteral(new LongValue(long.Parse(lexeme.Substring(0, lexeme.Length - 1))));
@@ -653,7 +653,7 @@ namespace K3CSharp
                     Advance(); // Consume the LONG token
                     var lexeme = longToken.Lexeme;
                     // Check if it's a special negative long value
-                    if (lexeme == "0IL" || lexeme == "0NL" || lexeme == "-0IL")
+                    if (lexeme == "0Ij" || lexeme == "0Nj" || lexeme == "-0Ij")
                         result = ASTNode.MakeLiteral(new LongValue(lexeme));
                     else
                     {

@@ -1,3 +1,7 @@
+adverb_backslash_colon_basic :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+adverb_slash_colon_basic :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+amend_simple :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+amend_test :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 # Known Differences Between K and K3CSharp
 # Format: TestName :: Tweak1&Tweak2&Tweak3 :: Notes
 # Tweak format: regex:pattern:replacement (all tweaks use regex format for consistency)

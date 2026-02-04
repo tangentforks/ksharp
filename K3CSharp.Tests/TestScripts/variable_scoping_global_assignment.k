@@ -1,5 +1,4 @@
-// Test global assignment from nested function
-globalVar: 100
+globalVar: 100  // Test global assignment from nested function
 test5: {[x]
     inner: {[y] globalVar :: x + y}
     inner . x * 2

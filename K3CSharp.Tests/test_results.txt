@@ -1,0 +1,487 @@
+Test File Validation:
+  Expected tests: 412
+  Actual .k files: 393
+  ✅ Test counts match perfectly!
+=========================
+Running K3CSharp Tests...
+Total tests: 412
+=========================
+✓ adverb_each_vector_minus.k: 9 18 27
+✓ adverb_each_vector_multiply.k: 4 10 18
+✓ adverb_each_vector_plus.k: 6 8 10 12
+✓ adverb_over_divide.k: 10
+✓ adverb_over_max.k: 5
+✓ adverb_over_min.k: 1
+✓ adverb_over_minus.k: 4
+✓ adverb_over_multiply.k: 24
+✓ adverb_over_plus.k: 15
+✓ plus_over_empty.k: 0
+✓ multiply_over_empty.k: 1
+✓ adverb_over_power.k: 64
+✓ adverb_over_with_initialization_1.k: 15
+✓ adverb_over_with_initialization_2.k: 12
+✓ adverb_scan_divide.k: 100 50 10
+✓ adverb_scan_max.k: 1 3 3 5 5
+✓ adverb_scan_min.k: 5 3 3 1 1
+✓ adverb_scan_minus.k: 10 8 5 4
+✓ adverb_scan_multiply.k: 1 2 6 24
+✓ adverb_scan_plus.k: 1 3 6 10 15
+✓ adverb_scan_power.k: 2 8 64
+✓ adverb_scan_with_initialization_1.k: 1 3 6 10 15
+✓ adverb_scan_with_initialization_2.k: 2 3 5 8 12
+✗ adverb_scan_with_initialization_divide.k: Error - Unknown operator: /
+✓ adverb_scan_with_initialization_minus.k: 2 1 -1 -4 -8
+✓ adverb_scan_with_initialization.k: 2 2 4 12
+✓ anonymous_function_double_param.k: {[op1;op2] op1*op2}
+✓ anonymous_function_empty.k: {}
+✓ anonymous_function_simple.k: {4+5}
+✓ anonymous_function_single_param.k: {[arg1] arg1+6}
+✓ atom_scalar.k: 1
+✓ atom_vector.k: 0
+✓ attribute_handle_symbol.k: `a.
+✓ attribute_handle_vector.k: `a.`b.`c.
+✓ character_single.k: "f"
+✓ character_vector.k: "hello"
+✗ complex_function.k: Expected '205', got '{[d0;v;a;t] d1 : v*t ; d2 : a*t*t % 2 ; d0+d1+d2}'
+✓ count_operator.k: 3
+✓ cut_vector.k: (0 1;2 3;4 5 6 7)
+✓ dictionary_empty.k: .()
+✓ dictionary_index.k: 1
+✓ dictionary_index_attr.k: .((`c;3;);(`d;4;))
+✓ dictionary_index_value.k: 1
+✓ dictionary_index_value2.k: 2
+✓ dictionary_multiple.k: .((`a;1;);(`b;2;))
+✓ dictionary_null_attributes.k: .((`a;1;);(`b;2;))
+✓ dictionary_single.k: .,(`a;`b;)
+✓ dictionary_type.k: 5
+✓ dictionary_with_null_value.k: .((`a;1;);(`b;;);(`c;3;))
+✓ drop_negative.k: 0 1 2 3
+✓ drop_positive.k: 4 5 6 7
+✓ empty_mixed_vector.k: ()
+✓ enlist_operator.k: ,5
+✓ enumerate_empty_int.k: !0
+✓ enumerate_operator.k: 0 1 2 3 4
+✓ equal_operator.k: 0
+✓ first_operator.k: 1
+✓ float_decimal_point.k: 10.0
+✓ float_exponential.k: 170.0
+✓ float_exponential_large.k: 1e+015
+✓ float_exponential_small.k: 1e-020
+✓ float_types.k: 3.14
+✗ function_add7.k: Expected '12', got '{[arg1] arg1+7}'
+✗ function_call_anonymous.k: Expected '13', got '{[arg1] arg1+6}'
+✗ function_call_chain.k: Expected '20', got '{[op1;op2] op1*op2}'
+✗ function_call_double.k: Expected '32', got '{[op1;op2] op1*op2}'
+✗ function_call_simple.k: Expected '12', got '{[arg1] arg1+7}'
+✗ function_foo_chain.k: Expected '20', got '{[op1;op2] op1*op2}'
+✗ function_mul.k: Expected '32', got '{[op1;op2] op1*op2}'
+✓ generate_operator.k: 0 0 0 0
+✓ grade_down_operator.k: 1 2 3 4 0
+✓ grade_up_operator.k: 0 4 2 3 1
+✓ greater_than_operator.k: 0
+✓ integer_types_int.k: 42
+✓ integer_types_long.k: 123456789j
+✓ join_operator.k: 3 5
+✓ less_than_operator.k: 1
+✓ math_abs.k: 5.0
+✓ math_exp.k: 7.389056
+✓ math_log.k: 2.302585
+✓ math_sin.k: 0.0
+✓ math_sqrt.k: 4.0
+✓ math_vector.k: 0.841471 0.9092974 0.14112
+✓ maximum_operator.k: 5
+✓ minimum_operator.k: 3
+✓ mixed_list_with_null.k: (1;;`test;42.5)
+✓ mixed_vector_empty_position.k: (1;;2)
+✓ mixed_vector_multiple_empty.k: (1;;;3)
+✓ mixed_vector_whitespace_position.k: (1;;2)
+✓ mod_integer.k: 1
+✓ mod_rotate.k: 3 4 1 2
+✓ mod_vector.k: 1 0 1 0
+✓ modulus_operator.k: 1
+✓ negate_operator.k: 1
+✓ nested_vector_test.k: (1 2 3;4 5 6)
+✓ overflow_int_max_plus1.k: 0N
+✓ overflow_int_neg_inf.k: 0N
+✓ overflow_int_neg_inf_minus2.k: 0I
+✓ overflow_int_null_minus1.k: 0I
+✓ overflow_int_pos_inf.k: 0N
+✓ overflow_int_pos_inf_plus2.k: -0I
+✓ overflow_long_max_plus1.k: 0Nj
+✓ overflow_long_min_minus1.k: 0Ij
+✓ overflow_long_neg_inf.k: 0Nj
+✓ overflow_long_neg_inf_minus2.k: 0Ij
+✓ overflow_long_pos_inf.k: 0Nj
+✓ overflow_long_pos_inf_plus2.k: -0Ij
+✓ overflow_regular_int.k: -2147483639
+✓ underflow_regular_int.k: 2147483617
+✓ parentheses_basic.k: 7
+✓ parentheses_grouping.k: 9
+✓ parentheses_nested.k: 7
+✓ parentheses_nested1.k: 21
+✓ parentheses_nested2.k: 0.7142857
+✓ parentheses_nested3.k: 24
+✓ parentheses_nested4.k: 15
+✓ parentheses_nested5.k: 29
+✓ parentheses_precedence.k: 7
+✓ parenthesized_vector.k: 1 2 3 4
+✓ power_operator.k: 8
+✓ precedence_chain1.k: 1410
+✓ precedence_chain2.k: 0.07092199
+✓ precedence_complex1.k: 0.7142857
+✓ precedence_complex2.k: 10.01667
+✓ precedence_mixed1.k: 0
+✓ precedence_mixed2.k: 25
+✓ precedence_mixed3.k: 11
+✓ precedence_power1.k: 128
+✓ precedence_power2.k: 83
+✓ precedence_spec1.k: 11.57143
+✓ precedence_spec2.k: 6
+✓ reciprocal_operator.k: 0.25
+✓ reverse_operator.k: 3 2 1
+✓ scalar_vector_addition.k: 4 5
+✓ scalar_vector_multiplication.k: 3 6
+✓ shape_operator.k: ,3
+✓ shape_operator_empty_vector.k: ,0
+✓ shape_operator_jagged.k: ,3
+✓ shape_operator_jagged_3d.k: 2 2
+✓ shape_operator_jagged_matrix.k: ,3
+✓ shape_operator_matrix.k: 3 3
+✓ shape_operator_matrix_2x3.k: 2 3
+✓ shape_operator_matrix_3x3.k: 3 3
+✓ shape_operator_scalar.k: !0
+✓ shape_operator_tensor_2x2x3.k: 2 2 3
+✓ shape_operator_tensor_3d.k: 3 2 2
+✓ shape_operator_vector.k: ,5
+✓ simple_addition.k: 3
+✓ divide_float.k: 0.6
+✓ divide_integer.k: 2.5
+✓ simple_multiplication.k: 12
+✓ simple_nested_test.k: 1 2 3
+✓ minus_integer.k: 2
+✓ special_float_neg_inf.k: -0i
+✓ special_float_null.k: 0n
+✓ special_float_pos_inf.k: 0i
+✓ special_int_neg_inf.k: -0I
+✓ special_int_null.k: 0N
+✓ special_int_pos_inf.k: 0I
+✓ special_long_neg_inf.k: -0Ij
+✓ special_long_null.k: 0Nj
+✓ special_long_pos_inf.k: 0Ij
+✓ special_null.k: _n
+✓ special_int_pos_inf_plus_1.k: 0N
+✓ special_int_null_plus_1.k: -0I
+✓ special_int_neg_inf_plus_1.k: -2147483646
+✓ special_float_null_plus_1.k: 0n
+✓ special_1_plus_int_pos_inf.k: 0N
+✓ special_1_plus_int_null.k: -0I
+✓ special_int_vector.k: 0I 0N -0I
+✓ special_float_vector.k: 0i 0n -0i
+DEBUG: ParseTerm bracket handling loop reached
+✓ square_bracket_function.k: 2
+DEBUG: ParseTerm bracket handling loop reached
+✓ square_bracket_vector_multiple.k: 14 16
+DEBUG: ParseTerm bracket handling loop reached
+✓ square_bracket_vector_single.k: 14
+✓ string_representation_int.k: "42"
+✓ string_representation_mixed.k: "(1;2.5;\"a\")"
+✓ string_representation_symbol.k: "`symbol"
+✓ string_representation_vector.k: "1 2 3"
+✓ symbol_quoted.k: `"a symbol"
+✓ symbol_simple.k: `foo
+✓ symbol_vector_compact.k: `a`b`c
+✓ symbol_vector_spaces.k: `a`b`c
+✓ take_operator_basic.k: 1 2 3
+✓ take_operator_empty_float.k: 0#0.0
+✓ take_operator_empty_symbol.k: 0#`
+✓ take_operator_overflow.k: 1 2 3 1 2 3 1 2 3 1
+✓ take_operator_scalar.k: 42 42 42
+✓ division_float_4_2.0.k: 2.0
+✓ division_float_5_2.5.k: 2.0
+✓ division_int_4_2.k: 2
+✓ division_int_5_2.k: 2.5
+✓ division_rules_10_3.k: 3.333333
+✓ division_rules_12_4.k: 3
+✓ division_rules_4_2.k: 2
+✓ division_rules_5_2.k: 2.5
+✓ enumerate.k: 0 1
+✓ grade_down_no_parens.k: 1 2 3 4 0
+✓ grade_up_no_parens.k: 0 4 2 3 1
+✓ mixed_types.k: (42;3.14;"hello";`symbol)
+✗ multiline_function_single.k: Expected '20', got '{[x] a : x*2 ; a+10}'
+✓ null_vector.k: (;1;2)
+✗ scoping_single.k: Expected '60', got '{[x] globalVar : x*2 ; globalVar+10}'
+✗ semicolon_simple.k: Expected '(7;11;-20.45)', got '(7;14;-17.45)'
+✗ semicolon_vars.k: Expected '30 200 -10', got '30 210 0'
+✗ semicolon_vector.k: Expected '(7;3 4;-20.45)', got '(7;6 7;-17.45)'
+✓ simple_scalar_div.k: 2.5
+✓ single_no_semicolon.k: 42
+✓ smart_division1.k: 2.5 5.0
+✓ smart_division2.k: 2 4
+✓ smart_division3.k: 2 4 6
+✓ special_0i_plus_1.k: 0N
+✓ special_0n_plus_1.k: -0I
+✓ special_1_plus_neg0i.k: -2147483646
+✓ special_neg0i_plus_1.k: -2147483646
+✓ special_underflow.k: 2147483622
+✓ special_underflow_2.k: 2147483549
+✓ special_underflow_3.k: 2147482649
+✓ type_char.k: 3
+✓ type_float.k: 2
+✓ type_null.k: 6
+✓ type_space.k: 3
+✓ type_symbol.k: 4
+✓ type_vector.k: -1
+✓ vector.k: 1 2 3
+✓ type_operator_char.k: 3
+✓ type_operator_float.k: 2
+✓ type_operator_null.k: 6
+✓ type_operator_symbol.k: 4
+✓ type_operator_vector_char.k: -3
+✓ type_operator_vector_float.k: -2
+✓ type_operator_vector_int.k: -1
+✓ type_operator_vector_mixed.k: 0
+✓ type_operator_vector_symbol.k: -3
+✓ type_promotion_float_int.k: 3.5
+✓ type_promotion_float_long.k: 2.5
+✓ type_promotion_int_float.k: 3.5
+✓ type_promotion_int_long.k: 3j
+✓ type_promotion_long_float.k: 2.5
+✓ type_promotion_long_int.k: 3j
+✓ unary_minus_operator.k: -5
+✓ unique_operator.k: 1 2 3
+✓ amend_item_simple_no_semicolon.k: 1 12 3
+✓ variable_assignment.k: 7
+✓ variable_reassignment.k: 7.2 4.5
+✗ variable_scoping_global_access.k: Expected '150', got '{[x] globalVar+x}'
+✗ variable_scoping_global_assignment.k: Error - Unexpected token: GLOBAL_ASSIGNMENT(::)
+✗ variable_scoping_global_unchanged.k: Error - Unexpected token: RIGHT_BRACE(})
+✗ variable_scoping_local_hiding.k: Expected '60', got '{[x] 
+ globalVar : x*2 
+ globalVar+10}'
+✗ variable_scoping_nested_functions.k: Expected '25', got '7'
+✓ variable_usage.k: 30
+✓ dot_execute.k: 4
+✓ dot_execute_context.k: 8
+✓ dictionary_enumerate.k: `a`b
+✓ null_operations.k: 7
+✓ dictionary_dot_apply.k: 1
+✓ monadic_format_basic.k: ,"1"
+✓ monadic_format_types.k: "42.5"
+✓ monadic_format_vector.k: (,"1";,"2";,"3")
+✓ monadic_format_string_hello.k: "hello"
+✓ monadic_format_string_a.k: ,"a"
+✓ monadic_format_symbol_hello.k: "hello"
+✓ monadic_format_symbol_simple.k: "test"
+✓ monadic_format_dictionary.k: ".((`a;1;);(`b;2;);(`c;3;))"
+✓ monadic_format_nested_list.k: ((,"1";,"2";,"3");(,"4";,"5";,"6"))
+✓ monadic_format_integer.k: "42"
+✓ monadic_format_float.k: "3.14"
+✓ monadic_format_vector_simple.k: (,"1";,"2";,"3")
+✓ format_integer.k: ""
+✗ format_float_numeric.k: Expected ',"1"', got '""'
+✓ form_long.k: 42j
+✓ format_numeric.k: "    1"
+✓ form_string_pad_left.k: "  hello"
+✓ format_symbol_pad_left.k: "     hello"
+✓ format_symbol_pad_left_8.k: "   hello"
+✓ format_pad_left.k: "   42"
+✓ format_pad_right.k: "42   "
+✓ format_float_width_precision.k: "      3.14"
+✓ format_float_precision.k: "    3.14"
+✓ format_0_1.k: ""
+✗ format_1_1.k: Expected ',"1"', got ',"*"'
+✓ format_symbol_string_mixed_vector.k: `hello`world`test
+✓ form_integer_charvector.k: 42
+✗ form_character_charvector.k: Expected '"aaa"', got '""aaa""'
+✓ dot_execute_variables.k: 0.6
+✓ form_braces_expressions.k: 8 15 2
+✗ form_braces_nested_expr.k: Expected '(12 20;(7;3.333333))', got '(12 30;(7;6.666667))'
+✓ form_braces_complex.k: 8.25 12.0 9.0
+✓ form_braces_string.k: ("John";"is";25;"years old")
+✓ form_braces_mixed_type.k: (42;"hello";`test;47;"helloworld")
+✓ form_braces_simple.k: 8
+✓ form_braces_arith.k: 8 15 2 12 20 5
+✗ form_braces_nested_arith.k: Expected '(7 10;(2;2.5);5 -1)', got '(7 15;(2;2.5);5 1)'
+✓ form_braces_float.k: 4.0 3.75 0.6 -1.0
+✓ form_braces_mixed_arith.k: 17.5 32.5 4.5
+✓ form_braces_example.k: 8 9
+DEBUG: ParseTerm bracket handling loop reached
+DEBUG: ParseTerm bracket handling loop reached
+DEBUG: ParseTerm bracket handling loop reached
+✓ form_braces_function_calls.k: 5 20 12
+DEBUG: ParseTerm bracket handling loop reached
+DEBUG: ParseTerm bracket handling loop reached
+DEBUG: ParseTerm bracket handling loop reached
+✓ form_braces_nested_function_calls.k: 5 8 25
+✓ log.k: 2.302585
+✗ time.k: Error - _t (current time) operation reserved for future use
+✗ draw.k: Error - _draw (random number generation) operation reserved for future use
+✓ in.k: 4
+✓ search_in_basic.k: 4
+✓ search_in_notfound.k: 0
+✗ search_bin_basic.k: Expected '4', got '1 2 3 4 5'
+✗ search_binl_eachleft.k: Expected '1 0 1', got '1 3 5'
+✗ search_lin_intersection.k: Expected '1 0 1 0 1', got '1 3 5 7 9'
+DEBUG: About to ParseExpression inside brackets
+DEBUG: ParseExpression returned: Block
+DEBUG: About to Match RIGHT_BRACKET
+✗ amend_item_basic.k: Expected '1 12 3', got '1'
+DEBUG: About to ParseExpression inside brackets
+DEBUG: ParseExpression returned: Block
+DEBUG: About to Match RIGHT_BRACKET
+✗ amend_item_multiple.k: Expected '11 2 13', got '1'
+DEBUG: About to ParseExpression inside brackets
+DEBUG: ParseExpression returned: Block
+DEBUG: About to Match RIGHT_BRACKET
+✗ amend_item_monadic.k: Expected '1 4 3', got '1'
+✗ amend_test.k: Expected '1 12 3 4 5', got '`.'
+✓ amend_simple.k: 1 12 3 4 5
+✓ find_basic.k: 2
+✓ find_notfound.k: 7
+✗ bin.k: Error - Unexpected token: BIN(_bin)
+✗ lsq.k: Error - _lsq (least squares) operation reserved for future use
+✓ format_float_precision_vector_simple.k: ("       1.5";"       2.5")
+✓ format_float_precision_mixed_vector.k: ("   1.50";"   2.70";"   3.14";"   4.20")
+✓ format_pad_mixed_vector.k: ("         1";"         2";"         3")
+✓ format_pad_negative_mixed_vector.k: ("1         ";"2         ";"3         ")
+✓ vector_notation_empty.k: ()
+✓ vector_notation_functions.k: 10 20 30
+✓ vector_notation_mixed_types.k: (42;3.14;"hello";`symbol)
+✓ vector_notation_nested.k: 3 7 11
+✗ vector_notation_semicolon.k: Expected '(7;11;-20.45)', got '(7;14;-17.45)'
+✓ vector_notation_single_group.k: 42
+✓ vector_notation_space.k: 1 2 3 4 5
+✗ vector_notation_variables.k: Expected '30 200 -10', got '30 210 0'
+✗ vector_notation_semicolon.k: Expected '(7;11;-20.45)', got '(7;14;-17.45)'
+✓ vector_notation_single_group.k: 42
+✓ vector_notation_space.k: 1 2 3 4 5
+✗ vector_notation_variables.k: Expected '30 200 -10', got '30 210 0'
+✓ vector_addition.k: 4 6
+✓ vector_division.k: 0.3333333 0.5
+✓ vector_index_duplicate.k: 5 5
+✓ vector_index_first.k: 5
+✓ vector_index_multiple.k: 8 9
+✓ vector_index_reverse.k: 9 8
+✓ vector_index_single.k: 4
+✓ vector_multiplication.k: 3 8
+✓ vector_subtraction.k: -2 -2
+✓ vector_with_null.k: (;1;2)
+✓ vector_with_null_middle.k: (1;;3)
+✓ where_operator.k: 0 2 3
+✓ where_vector_counts.k: 0 0 0 1 1 2
+✓ floor_operator.k: 3.0
+✓ adverb_backslash_colon_basic.k: (5 6 7;6 7 8;7 8 9)
+✓ adverb_slash_colon_basic.k: (5 6 7;6 7 8;7 8 9)
+✓ adverb_tick_colon_basic.k: 4 1 3 8
+✗ amend_apply.k: Expected '(1 2 13 4 5
+6 7 8 9 10)', got '`.'
+✗ amend_dot_test.k: Error - Dictionary entry must be a tuple (2 elements) or triplet (3 elements)
+DEBUG: About to ParseExpression inside brackets
+DEBUG: ParseExpression returned: Vector
+DEBUG: About to Match RIGHT_BRACKET
+✗ amend_item_simple.k: Expected '@[1 2 3]', got '0'
+DEBUG: About to ParseExpression inside brackets
+DEBUG: ParseExpression returned: Literal
+DEBUG: About to Match RIGHT_BRACKET
+✗ amend_item_single.k: Expected '@[1 2 3]', got '1'
+✗ amend_minimal.k: Expected '@[1 2 3]', got '`.'
+✗ amend_parenthesized.k: Expected '@[1 2 3]', got '`.'
+✗ amend_test_anonymous_func.k: Expected '1 12 3 4 5', got '`.'
+✗ amend_test_func_var.k: Expected '11 2 3', got '`.'
+DEBUG: About to ParseExpression inside brackets
+DEBUG: ParseExpression returned: Block
+DEBUG: About to Match RIGHT_BRACKET
+✗ conditional_bracket_test.k: Error - Undefined variable: :
+DEBUG: About to ParseExpression inside brackets
+DEBUG: ParseExpression returned: Block
+DEBUG: About to Match RIGHT_BRACKET
+✗ conditional_false.k: Error - Undefined variable: :
+DEBUG: About to ParseExpression inside brackets
+DEBUG: ParseExpression returned: Block
+DEBUG: About to Match RIGHT_BRACKET
+✗ conditional_simple_test.k: Error - Undefined variable: :
+DEBUG: About to ParseExpression inside brackets
+DEBUG: ParseExpression returned: Block
+DEBUG: About to Match RIGHT_BRACKET
+✗ conditional_true.k: Error - Undefined variable: :
+✓ dictionary_null_index.k: 1 2
+✓ dictionary_unmake.k: ((`a;1;);(`b;2;))
+DEBUG: ParseTerm bracket handling loop reached
+✗ do_bracket_test.k: Error - Do function requires at least 2 arguments: count and expression(s)
+DEBUG: ParseTerm bracket handling loop reached
+✗ do_loop.k: Error - Expected ']' after arguments expression
+DEBUG: ParseTerm bracket handling loop reached
+✗ do_simple.k: Error - Do function requires at least 2 arguments: count and expression(s)
+✗ dyadic_divide_bracket.k: Expected '2.5', got '_n'
+DEBUG: About to ParseExpression inside brackets
+DEBUG: ParseExpression returned: Block
+DEBUG: About to Match RIGHT_BRACKET
+✗ dyadic_minus_bracket.k: Error - - operator requires 2 arguments
+DEBUG: About to ParseExpression inside brackets
+DEBUG: ParseExpression returned: Block
+DEBUG: About to Match RIGHT_BRACKET
+✗ dyadic_multiply_bracket.k: Error - * operator requires 2 arguments
+DEBUG: About to ParseExpression inside brackets
+DEBUG: ParseExpression returned: Block
+DEBUG: About to Match RIGHT_BRACKET
+✓ dyadic_plus_bracket.k: 5
+DEBUG: ParseTerm bracket handling loop reached
+✗ empty_brackets_dictionary.k: Error - Unexpected token: RIGHT_BRACKET(])
+DEBUG: ParseTerm bracket handling loop reached
+✗ empty_brackets_vector.k: Error - Unexpected token: RIGHT_BRACKET(])
+DEBUG: ParseTerm bracket handling loop reached
+DEBUG: ParseTerm bracket handling loop reached
+DEBUG: ParseTerm bracket handling loop reached
+DEBUG: ParseTerm bracket handling loop reached
+DEBUG: ParseTerm bracket handling loop reached
+✓ form_braces_complex_expressions.k: 14 20 10
+✗ format_float_precision_complex_mixed.k: Expected '("   1.50";"   2.70";"   3.14";"   4.20")', got '("     1.234";"     2.567";"     3.890";"     4.123")'
+✗ format_float_vector.k: Expected '("       1.5";"       2.5")', got '""'
+✗ format_int_vector.k: Expected '("         1";"         2";"         3")', got '""'
+✓ format_long_vector.k: ""
+✓ format_string_pad_left.k: "     hello"
+✓ format_string_pad_right.k: "test      "
+✗ format_vector_int.k: Expected '("1";"2";"3")', got '""'
+✓ group_operator.k: (0 1 6;2 7 16;3 5 12 15 17;,4;8 9;,10;,11;,13;14 18;,19)
+DEBUG: ParseTerm bracket handling loop reached
+✗ if_bracket_test.k: Error - Cannot compare Integer and Vector with <
+DEBUG: ParseTerm bracket handling loop reached
+✗ if_simple_test.k: Error - If function requires at least 2 arguments: condition and expression(s)
+DEBUG: ParseTerm bracket handling loop reached
+✗ if_true.k: Error - Cannot compare Integer and Vector with <
+✓ in_basic.k: 4
+✓ in_notfound.k: 0
+✓ monadic_format_basic.k: ,"1"
+✓ monadic_format_types.k: "42.5"
+✓ monadic_format_vector.k: (,"1";,"2";,"3")
+✓ monadic_format_string_hello.k: "hello"
+✓ monadic_format_string_a.k: ,"a"
+✓ monadic_format_symbol_hello.k: "hello"
+✓ monadic_format_symbol_simple.k: "test"
+✗ monadic_format_dictionary.k: Expected '.((`a;1;);(`b;2;);(`c;3;))', got '".((`a;1;);(`b;2;);(`c;3;))"'
+✓ monadic_format_nested_list.k: ((,"1";,"2";,"3");(,"4";,"5";,"6"))
+✓ monadic_format_integer.k: "42"
+✓ monadic_format_float.k: "3.14"
+✓ monadic_format_vector_simple.k: (,"1";,"2";,"3")
+✓ in_simple.k: 0
+✓ isolated.k: 0.6
+✓ modulo.k: 0.6
+✓ monadic_format_mixed_vector.k: (,"1";"2.5";"hello";"symbol")
+✓ over_plus_empty.k: 0
+✓ simple_division.k: 4
+✓ simple_subtraction.k: 2
+✓ string_parse.k: 30
+✓ take_operator_empty_float.k: 0#0.0
+✓ take_operator_empty_symbol.k: 0#`
+✓ take_operator_overflow.k: 1 2 3 1 2 3 1 2 3 1
+✓ vector_null_index.k: 1 2 3 4
+DEBUG: ParseTerm bracket handling loop reached
+✗ while_bracket_test.k: Error - Expected ']' after arguments expression
+DEBUG: ParseTerm bracket handling loop reached
+✗ while_safe_test.k: Error - Cannot compare Integer and Vector with <
+DEBUG: ParseTerm bracket handling loop reached
+✗ while_simple_test.k: Error - While function requires at least 2 arguments: condition and expression(s)
+
+Test Results: 342/412 passed (83.0%)
+Detailed results table written to: T:\_src\github.com\ERufian\ksharp\K3CSharp.Tests\results_table.txt

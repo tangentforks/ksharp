@@ -1,5 +1,4 @@
-// Test function accessing global variable
-globalVar: 100
+globalVar: 100  // Test function accessing global variable
 test1: {[x] globalVar + x}
 result1: test1 . 50
 result1

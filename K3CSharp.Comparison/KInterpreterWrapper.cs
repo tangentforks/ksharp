@@ -16,6 +16,10 @@ namespace K3CSharp
 
         public KInterpreterWrapper(string kExePath = @"c:\k\e.exe", int timeoutMs = 10000)
         {
+            if (!File.Exists(kExePath))
+            {
+                kExePath = @"c:\k\k.exe";
+            }
             this.kExePath = kExePath;
             this.timeoutMs = timeoutMs;
             this.runId = $"{DateTime.Now:yyyyMMdd_HHmmss}_{Environment.ProcessId}_{Guid.NewGuid():N}";
@@ -31,7 +35,7 @@ namespace K3CSharp
         public string ExecuteScript(string scriptContent)
         {
             // Check for unsupported long integers (32-bit k.exe limitation)
-            if (ContainsLongInteger(scriptContent))
+            if (this.kExePath.Contains("k.exe") && this.ContainsLongInteger(scriptContent))
             {
                 return "UNSUPPORTED: Script contains long integers (64-bit) - k.exe 32-bit does not support them";
             }
@@ -56,16 +60,21 @@ namespace K3CSharp
 
         public bool ContainsLongInteger(string scriptContent)
         {
-            // Pattern 1: Regular long integers: digits followed by 'L' (case insensitive)
-            // This matches K long integer notation like 123L, 456l, etc.
-            var regularLongPattern = @"\b\d+[Ll]\b";
+            // Pattern 1: Regular long integers: digits followed by 'j' (case insensitive)
+            // This matches K long integer notation like 123j, 456j, etc.
+            var regularLongPattern = @"\b\d+[Jj]\b";
             
-            // Pattern 2: Special K long integers: 0IL (integer long) and 0NL (null long)
-            var specialLongPattern = @"\b0[ILN][Ll]\b";
+            // Pattern 2: Special K long integers: 0Ij (integer long) and 0Nj (null long)
+            var specialLongPattern = @"\b0[ILN][Jj]\b";
             
             // Combine both patterns
             var combinedPattern = $"({regularLongPattern}|{specialLongPattern})";
             return System.Text.RegularExpressions.Regex.IsMatch(scriptContent, combinedPattern);
+        }
+        
+        public bool IsUsingKExe()
+        {
+            return this.kExePath.Contains("k.exe");
         }
 
         private string CreateTempScriptWithExit(string scriptContent)
@@ -164,13 +173,17 @@ namespace K3CSharp
                             var trimmedLine = line.Trim();
                             
                             // Skip licensing information lines that start with WIN32 and end with EVAL
-                            if (trimmedLine.StartsWith("w64") && trimmedLine.Contains("PROD"))
+                            if (trimmedLine.StartsWith("WIN32") && trimmedLine.Contains("EVAL"))
+                            {
+                                continue;
+                            }
+                            if ((trimmedLine.StartsWith("w64") || trimmedLine.StartsWith("WIN32")) && trimmedLine.Contains("PROD"))
                             {
                                 continue;
                             }
                             
                             // Skip copyright header
-                            if (trimmedLine.StartsWith("K 3.3") && trimmedLine.Contains("Copyright"))
+                            if (trimmedLine.StartsWith("K 3.") && trimmedLine.Contains("Copyright"))
                             {
                                 continue;
                             }

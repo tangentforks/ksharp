@@ -1,5 +1,4 @@
-// Test function with local variable hiding global
-globalVar: 100
+globalVar: 100  // Test function with local variable hiding global
 test2: {[x]
     globalVar: x * 2
     globalVar + 10}

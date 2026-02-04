@@ -160,17 +160,17 @@ namespace K3CSharp
             if (value == long.MaxValue)
             {
                 IsSpecial = true;
-                SpecialName = "0IL";
+                SpecialName = "0Ij";
             }
             else if (value == long.MinValue)
             {
                 IsSpecial = true;
-                SpecialName = "0NL";
+                SpecialName = "0Nj";
             }
             else if (value == long.MinValue + 1)
             {
                 IsSpecial = true;
-                SpecialName = "-0IL";
+                SpecialName = "-0Ij";
             }
             else
             {
@@ -188,9 +188,9 @@ namespace K3CSharp
             // Set the actual long values for special cases
             switch (specialName)
             {
-                case "0IL": Value = long.MaxValue; break;
-                case "0NL": Value = long.MinValue; break;
-                case "-0IL": Value = long.MinValue + 1; break;
+                case "0Ij": Value = long.MaxValue; break;
+                case "0Nj": Value = long.MinValue; break;
+                case "-0Ij": Value = long.MinValue + 1; break;
                 default: throw new ArgumentException($"Unknown special long: {specialName}");
             }
         }
@@ -283,7 +283,7 @@ namespace K3CSharp
         {
             if (IsSpecial)
                 return SpecialName;
-            return Value.ToString() + "L";
+            return Value.ToString() + "j";
         }
     }
 
@@ -598,6 +598,12 @@ namespace K3CSharp
 
         public override string ToString()
         {
+            // Check if the symbol is empty - in K, empty symbols display as nothing
+            if (string.IsNullOrEmpty(Value))
+            {
+                return "";
+            }
+            
             // Check if the symbol contains spaces or special characters
             if (ContainsSpecialCharacters(Value))
             {
@@ -954,7 +960,7 @@ namespace K3CSharp
                 if (CreationMethod == "enumerate_int")
                     return "!0";
                 else if (CreationMethod == "enumerate_long")
-                    return "!0L";
+                    return "!0j";
                 else if (CreationMethod == "take_float")
                     return "0#0.0";
                 else if (CreationMethod == "take_symbol")

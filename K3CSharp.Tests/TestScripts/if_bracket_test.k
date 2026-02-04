@@ -1,2 +1,1 @@
-// Test if function with bracket notation
-if[1 < 2; a: 20]
+if[1 < 2; a: 20]  // Test if function with bracket notation

@@ -100,15 +100,61 @@ namespace K3CSharp.Comparison
             Console.WriteLine("K3Sharp vs k.exe Comparison Report Generator");
             Console.WriteLine("============================================");
             
-            var wrapper = new KInterpreterWrapper();
+            // Parse command line arguments
+            bool forceKExe = false;
+            bool showHelp = false;
+            string singleTest = null;
+            
+            for (int i = 0; i < args.Length; i++)
+            {
+                switch (args[i].ToLower())
+                {
+                    case "--32bit":
+                    case "--kexe":
+                        forceKExe = true;
+                        break;
+                    case "--64bit":
+                    case "--k":
+                        forceKExe = false;
+                        break;
+                    case "--help":
+                    case "-h":
+                        showHelp = true;
+                        break;
+                    default:
+                        // Treat as single test name
+                        singleTest = args[i];
+                        break;
+                }
+            }
+            
+            if (showHelp)
+            {
+                ShowHelp();
+                return;
+            }
+            
+            // Create wrapper with appropriate executable
+            KInterpreterWrapper wrapper;
+            if (forceKExe)
+            {
+                Console.WriteLine("🔧 Running 32-bit k.exe");
+                wrapper = new KInterpreterWrapper(@"c:\k\k.exe");
+            }
+            else
+            {
+                Console.WriteLine("🔧 Running 64-bit K (e.exe with k.exe fallback)");
+                wrapper = new KInterpreterWrapper();
+            }
+            
             var testScriptsPath = @"T:\_src\github.com\ERufian\ksharp\K3CSharp.Tests\TestScripts";
             var reportPath = "comparison_table.txt";
             var knownDifferencesPath = "known_differences.txt";
             
             // Check if single test mode
-            if (args.Length > 0)
+            if (singleTest != null)
             {
-                RunSingleTest(args[0], wrapper, testScriptsPath, knownDifferencesPath);
+                RunSingleTest(singleTest, wrapper, testScriptsPath, knownDifferencesPath);
                 return;
             }
             
@@ -157,12 +203,12 @@ namespace K3CSharp.Comparison
                     
                     // Save progress after each batch
                     Console.WriteLine("Saving progress...");
-                    GenerateComparisonReport(results, reportPath, false);
+                    GenerateComparisonReport(results, reportPath, false, testScriptsPath);
                 }
                 
                 // Generate final complete report
                 Console.WriteLine("\nGenerating final report...");
-                GenerateComparisonReport(results, reportPath, true);
+                GenerateComparisonReport(results, reportPath, true, testScriptsPath);
                 
                 // Print summary
                 var summary = results.GroupBy(r => r.Status).ToDictionary(g => g.Key, g => g.Count());
@@ -253,7 +299,8 @@ namespace K3CSharp.Comparison
                 var scriptContent = File.ReadAllText(Path.Combine(testScriptsPath, fileName));
                 
                 // Check for unsupported long integers (32-bit k.exe limitation)
-                if (wrapper.ContainsLongInteger(scriptContent))
+                // Only skip if using k.exe, not e.exe
+                if (wrapper.ContainsLongInteger(scriptContent) && wrapper.IsUsingKExe())
                 {
                     comparison.Status = ComparisonStatus.Skipped;
                     comparison.Message = "Contains long integers";
@@ -360,7 +407,7 @@ namespace K3CSharp.Comparison
             return new Evaluator().Evaluate(parser.Parse()).ToString();
         }
         
-        private static void GenerateComparisonReport(List<TestComparison> results, string reportPath, bool isFinal)
+        private static void GenerateComparisonReport(List<TestComparison> results, string reportPath, bool isFinal, string testScriptsPath)
         {
             using (var writer = new StreamWriter(reportPath, append: !isFinal))
             {
@@ -455,6 +502,42 @@ namespace K3CSharp.Comparison
                     {
                         writer.WriteLine("No error tests found!");
                     }
+                    
+                    writer.WriteLine();
+                    writer.WriteLine("K.EXE FAILING TESTS:");
+                    writer.WriteLine("--------------------");
+                    
+                    var kFailingTests = results.Where(r => 
+                        r.Status == ComparisonStatus.Error && (
+                            r.Notes.Contains("Both K3Sharp and k.exe errors") ||
+                            r.Notes.Contains("k.exe error only") ||
+                            r.Notes.Contains("k.exe timeout")
+                        )
+                    ).ToList();
+                    
+                    if (kFailingTests.Any())
+                    {
+                        foreach (var test in kFailingTests)
+                        {
+                            writer.WriteLine($"Test: {test.FileName}");
+                            try
+                            {
+                                var testFilePath = Path.Combine(testScriptsPath, test.FileName);
+                                var testInput = File.ReadAllText(testFilePath).Trim();
+                                writer.WriteLine($"Input: {testInput}");
+                            }
+                            catch (Exception ex)
+                            {
+                                writer.WriteLine($"Input: [Error reading file: {ex.Message}]");
+                            }
+                            writer.WriteLine($"Error: {test.Message}");
+                            writer.WriteLine();
+                        }
+                    }
+                    else
+                    {
+                        writer.WriteLine("No tests failing in k.exe found!");
+                    }
                 }
                 else
                 {
@@ -468,6 +551,34 @@ namespace K3CSharp.Comparison
         {
             if (string.IsNullOrEmpty(s)) return "";
             return s.Length > maxLength ? s.Substring(0, maxLength - 3) + "..." : s;
+        }
+        
+        private static void ShowHelp()
+        {
+            Console.WriteLine("K3Sharp vs K Comparison Tool - Usage Guide");
+            Console.WriteLine("==========================================");
+            Console.WriteLine();
+            Console.WriteLine("OPTIONS:");
+            Console.WriteLine("  --32bit, --kexe    Run with 32-bit k.exe (skips long integer tests)");
+            Console.WriteLine("  --64bit, --k       Run with 64-bit K (e.exe) - default behavior");
+            Console.WriteLine("  --help, -h         Show this help message");
+            Console.WriteLine();
+            Console.WriteLine("SINGLE TEST MODE:");
+            Console.WriteLine("  [test_name]        Run a single test comparison");
+            Console.WriteLine("  --32bit [test]    Run single test with 32-bit k.exe");
+            Console.WriteLine("  --64bit [test]     Run single test with 64-bit K (e.exe)");
+            Console.WriteLine();
+            Console.WriteLine("EXAMPLES:");
+            Console.WriteLine("  dotnet run                                          # Run all tests with default (e.exe)");
+            Console.WriteLine("  dotnet run --32bit                                  # Run all tests with 32-bit k.exe");
+            Console.WriteLine("  dotnet run integer_types_long.k                    # Run single test with default");
+            Console.WriteLine("  dotnet run --32bit integer_types_long.k            # Run single test with k.exe");
+            Console.WriteLine("  dotnet run --help                                   # Show help");
+            Console.WriteLine();
+            Console.WriteLine("NOTES:");
+            Console.WriteLine("  - Default behavior: Uses e.exe if available, falls back to k.exe");
+            Console.WriteLine("  - Long integer tests are automatically skipped when using k.exe");
+            Console.WriteLine("  - When using e.exe, long integer tests run and compare results");
         }
     }
     

@@ -1,2 +1,1 @@
-// Test conditional evaluation with bracket notation
-:[1 < 2; "true"; "false"]
+:[1 < 2; "true"; "false"]  // Test conditional evaluation with bracket notation

@@ -1,5 +1,4 @@
-// Test nested functions
-globalVar: 100
+globalVar: 100  // Test nested functions
 outer: {[x]
     inner: {[y] globalVar + x + y}
     inner . x}

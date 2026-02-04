@@ -4616,6 +4616,15 @@ namespace K3CSharp
                 }
                 return FormatWithSpecifier(intFormat.Value, right);
             }
+            else if (left is LongValue longFormat)
+            {
+                // Special case: k.exe treats format specifier 0j as always returning empty string
+                if (longFormat.Value == 0)
+                {
+                    return new CharacterValue("");
+                }
+                return FormatWithSpecifier((int)longFormat.Value, right);
+            }
             else if (left is FloatValue floatFormat)
             {
                 // Special case: k.exe treats format specifier 0.0 as always returning empty string
