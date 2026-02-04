@@ -133,6 +133,13 @@ namespace K3CSharp
                             Advance();
                         }
                     }
+                    else if (position + 1 < input.Length && input[position + 1] == ':')
+                    {
+                        // /: adverb (each-right)
+                        tokens.Add(new Token(TokenType.ADVERB_SLASH_COLON, "/:", position));
+                        Advance(); // Skip /
+                        Advance(); // Skip :
+                    }
                     else
                     {
                         tokens.Add(new Token(TokenType.ADVERB_SLASH, "/", position));
@@ -141,13 +148,33 @@ namespace K3CSharp
                 }
                 else if (c == '\\')
                 {
-                    tokens.Add(new Token(TokenType.ADVERB_BACKSLASH, "\\", position));
-                    Advance();
+                    if (position + 1 < input.Length && input[position + 1] == ':')
+                    {
+                        // \: adverb (each-left)
+                        tokens.Add(new Token(TokenType.ADVERB_BACKSLASH_COLON, "\\:", position));
+                        Advance(); // Skip \
+                        Advance(); // Skip :
+                    }
+                    else
+                    {
+                        tokens.Add(new Token(TokenType.ADVERB_BACKSLASH, "\\", position));
+                        Advance();
+                    }
                 }
                 else if (c == '\'')
                 {
-                    tokens.Add(new Token(TokenType.ADVERB_TICK, "'", position));
-                    Advance();
+                    if (position + 1 < input.Length && input[position + 1] == ':')
+                    {
+                        // ': adverb (each-prior)
+                        tokens.Add(new Token(TokenType.ADVERB_TICK_COLON, "':", position));
+                        Advance(); // Skip '
+                        Advance(); // Skip :
+                    }
+                    else
+                    {
+                        tokens.Add(new Token(TokenType.ADVERB_TICK, "'", position));
+                        Advance();
+                    }
                 }
                 else if (c == '&')
                 {
@@ -284,6 +311,19 @@ namespace K3CSharp
                     {
                         tokens.Add(new Token(TokenType.GLOBAL_ASSIGNMENT, "::", position));
                         Advance();
+                        Advance();
+                    }
+                    // Check for modified assignment operators (e.g., +:, -:, *:, etc.)
+                    else if (position > 0 && IsOperatorChar(input[position - 1]) && input[position] == ':')
+                    {
+                        // Replace the previous token with modified assignment operator
+                        var opChar = input[position - 1];
+                        var opToken = tokens[tokens.Count - 1];
+                        tokens.RemoveAt(tokens.Count - 1);
+                        
+                        // Create modified assignment token
+                        var modifiedOp = $"{opChar}:";
+                        tokens.Add(new Token(TokenType.ASSIGNMENT, modifiedOp, position - 1));
                         Advance();
                     }
                     else
@@ -440,6 +480,13 @@ namespace K3CSharp
                 default:
                     return new Token(TokenType.IDENTIFIER, value, start);
             }
+        }
+
+        private bool IsOperatorChar(char c)
+        {
+            return c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '^' || c == '!' || 
+                   c == '<' || c == '>' || c == '=' || c == ',' || c == '&' || c == '|' || c == '#' || 
+                   c == '_' || c == '?' || c == '$' || c == '@';
         }
 
         private Token ReadNumber()
@@ -616,6 +663,7 @@ namespace K3CSharp
                 "_bin" => new Token(TokenType.BIN, opName, start),
                 "_binl" => new Token(TokenType.BINL, opName, start),
                 "_lsq" => new Token(TokenType.LSQ, opName, start),
+                "_lin" => new Token(TokenType.LIN, opName, start),
                 "_gtime" => new Token(TokenType.GTIME, opName, start),
                 "_ltime" => new Token(TokenType.LTIME, opName, start),
                 "_vs" => new Token(TokenType.VS, opName, start),

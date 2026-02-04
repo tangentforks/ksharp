@@ -14,7 +14,7 @@ namespace K3CSharp
         private readonly int timeoutMs;
         private readonly string runId;
 
-        public KInterpreterWrapper(string kExePath = @"c:\k\k.exe", int timeoutMs = 10000)
+        public KInterpreterWrapper(string kExePath = @"c:\k\e.exe", int timeoutMs = 10000)
         {
             this.kExePath = kExePath;
             this.timeoutMs = timeoutMs;
@@ -164,13 +164,13 @@ namespace K3CSharp
                             var trimmedLine = line.Trim();
                             
                             // Skip licensing information lines that start with WIN32 and end with EVAL
-                            if (trimmedLine.StartsWith("WIN32") && trimmedLine.EndsWith("EVAL"))
+                            if (trimmedLine.StartsWith("w64") && trimmedLine.Contains("PROD"))
                             {
                                 continue;
                             }
                             
                             // Skip copyright header
-                            if (trimmedLine.StartsWith("K 3.2") && trimmedLine.Contains("Copyright"))
+                            if (trimmedLine.StartsWith("K 3.3") && trimmedLine.Contains("Copyright"))
                             {
                                 continue;
                             }

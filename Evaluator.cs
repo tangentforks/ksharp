@@ -77,6 +77,21 @@ namespace K3CSharp
             }
         }
 
+        private bool IsBuiltInOperator(string operatorName)
+        {
+            // List of built-in operators that can be used as functions
+            return operatorName == "+" || operatorName == "-" || operatorName == "*" || operatorName == "/" ||
+                   operatorName == "^" || operatorName == "<" || operatorName == ">" || operatorName == "=" ||
+                   operatorName == "," || operatorName == "." || operatorName == "!" || operatorName == "@" ||
+                   operatorName == "#" || operatorName == "_" || operatorName == "?" || operatorName == "$";
+        }
+
+        private bool IsColon(K3Value value)
+        {
+            // Check if the value represents a colon (:)
+            return value is SymbolValue symbol && symbol.Value == ":";
+        }
+        
         private K3Value GetVariable(string variableName)
         {
             // Check local scope first
@@ -89,6 +104,12 @@ namespace K3CSharp
             if (globalVariables.TryGetValue(variableName, out var globalValue))
             {
                 return globalValue;
+            }
+            
+            // Check if this is a built-in operator that can be used as a function
+            if (IsBuiltInOperator(variableName))
+            {
+                return new SymbolValue(variableName);
             }
             
             // Check parent evaluator (for nested function calls)
@@ -186,6 +207,7 @@ namespace K3CSharp
                     "_in" => InFunction(operand),
                     "_bin" => BinFunction(operand),
                     "_binl" => BinlFunction(operand),
+                    "_lin" => LinFunction(operand),
                     "_lsq" => LsqFunction(operand),
                     "_gtime" => GtimeFunction(operand),
                     "_ltime" => LtimeFunction(operand),
@@ -214,6 +236,26 @@ namespace K3CSharp
             // Handle binary operators
             if (node.Children.Count == 2)
             {
+                // Special handling for colon operator to avoid evaluating left side as variable lookup
+                if (op.Value.ToString() == ":")
+                {
+                    var leftNode = node.Children[0];
+                    var rightValue = Evaluate(node.Children[1]);
+                    
+                    // For assignment, the left side should be treated as a variable name, not evaluated
+                    if (leftNode.Type == ASTNodeType.Variable)
+                    {
+                        var variableName = leftNode.Value is SymbolValue symbol ? symbol.Value : leftNode.Value.ToString();
+                        return Assignment(variableName, rightValue);
+                    }
+                    else
+                    {
+                        // If left side is not a variable, evaluate it normally
+                        var leftValue = Evaluate(leftNode);
+                        return ColonOperator(leftValue, rightValue);
+                    }
+                }
+                
                 var left = Evaluate(node.Children[0]);
                 var right = Evaluate(node.Children[1]);
 
@@ -241,15 +283,18 @@ namespace K3CSharp
                         "ADVERB_BACKSLASH" => Scan(new SymbolValue("+"), left, right),
                         "ADVERB_TICK" => Each(left, right),
                         "_in" => In(left, right),
+                        "_bin" => Bin(left, right),
+                        "_binl" => Binl(left, right),
+                        "_lin" => Lin(left, right),
                         "?" => Find(left, right),
-                        ":" => ColonOperator(left, right),
                         "TYPE" => GetType(left, right),
                         _ => throw new Exception($"Unknown binary operator: {op.Value}")
                     };
             }
             // Handle 3-argument adverb structure: ADVERB(verb, left, right)
             else if (node.Children.Count == 3 && 
-                    (op.Value.ToString() == "ADVERB_SLASH" || op.Value.ToString() == "ADVERB_BACKSLASH" || op.Value.ToString() == "ADVERB_TICK"))
+                    (op.Value.ToString() == "ADVERB_SLASH" || op.Value.ToString() == "ADVERB_BACKSLASH" || op.Value.ToString() == "ADVERB_TICK" ||
+                     op.Value.ToString() == "ADVERB_SLASH_COLON" || op.Value.ToString() == "ADVERB_BACKSLASH_COLON" || op.Value.ToString() == "ADVERB_TICK_COLON"))
             {
                 var verb = Evaluate(node.Children[0]);
                 var left = Evaluate(node.Children[1]);
@@ -260,6 +305,9 @@ namespace K3CSharp
                     "ADVERB_SLASH" => Over(verb, left, right),
                     "ADVERB_BACKSLASH" => Scan(verb, left, right),
                     "ADVERB_TICK" => Each(verb, left, right),
+                    "ADVERB_SLASH_COLON" => EachRight(verb, left, right),
+                    "ADVERB_BACKSLASH_COLON" => EachLeft(verb, left, right),
+                    "ADVERB_TICK_COLON" => EachPrior(verb, left, right),
                     _ => throw new Exception($"Unknown adverb: {op.Value}")
                 };
             }
@@ -854,6 +902,17 @@ namespace K3CSharp
             // Check if it's a built-in function first
             switch (functionName)
             {
+                case "!":
+                    // Handle unary enumerate operator
+                    if (arguments.Count == 1)
+                    {
+                        return Enumerate(arguments[0]);
+                    }
+                    else if (arguments.Count >= 2)
+                    {
+                        return ModRotate(arguments[0], arguments[1]);
+                    }
+                    throw new Exception("! operator requires at least 1 argument");
                 case "do":
                 case "_do":
                     return DoFunction(arguments.Count > 0 ? new VectorValue(arguments) : new NullValue());
@@ -864,12 +923,120 @@ namespace K3CSharp
                 case "_if":
                     return IfFunction(arguments.Count > 0 ? new VectorValue(arguments) : new NullValue());
                 case ":":
-                    return ColonOperator(arguments.Count > 1 ? arguments[0] : new NullValue(), 
-                                        arguments.Count > 1 ? arguments[1] : new NullValue());
+                    // Check if this is conditional evaluation (3+ arguments) or regular assignment
+                    if (arguments.Count >= 3)
+                    {
+                        // Conditional evaluation: :[cond; true; false]
+                        return ConditionalEvaluation(arguments);
+                    }
+                    else if (arguments.Count == 2)
+                    {
+                        // Assignment: variable : value
+                        if (arguments[0] is SymbolValue variableName)
+                        {
+                            return Assignment(variableName.Value, arguments[1]);
+                        }
+                        else
+                        {
+                            throw new Exception("Assignment requires a variable name on the left side");
+                        }
+                    }
+                    else if (arguments.Count == 1)
+                    {
+                        // Monadic colon - return value from function (not implemented yet)
+                        throw new Exception("Monadic colon (return from function) is not yet implemented");
+                    }
+                    else
+                    {
+                        throw new Exception("Colon operator requires at least 1 argument");
+                    }
+                case "@":
+                    // Check if this is amend-item (3+ arguments) or regular @ operator
+                    if (arguments.Count >= 3)
+                    {
+                        // Check for special case: triadic @ with colon (trapped apply to enlisted argument)
+                        if (arguments.Count == 3 && IsColon(arguments[1]))
+                        {
+                            // Trapped apply to enlisted argument: (d; :; y) -> trapped apply with enlisted y
+                            var enlistedArgument = Enlist(arguments[2]);
+                            return TrappedApply(arguments[0], enlistedArgument);
+                        }
+                        else
+                        {
+                            // Regular amend-item operation with enlisted second argument
+                            var enlistedArguments = new List<K3Value> { arguments[0] };
+                            enlistedArguments.Add(Enlist(arguments[1]));
+                            for (int i = 2; i < arguments.Count; i++)
+                            {
+                                enlistedArguments.Add(arguments[i]);
+                            }
+                            return AmendItemFunction(enlistedArguments);
+                        }
+                    }
+                    else
+                    {
+                        // Regular @ operator - handle based on argument count
+                        if (arguments.Count == 1)
+                        {
+                            // Monadic @ is ATOM
+                            return Atom(arguments[0]);
+                        }
+                        else if (arguments.Count == 2)
+                        {
+                            // Dyadic @ is AT - use AtIndex
+                            return AtIndex(arguments[0], arguments[1]);
+                        }
+                        else
+                        {
+                            throw new Exception("@ operator with invalid number of arguments");
+                        }
+                    }
+                case ".":
+                    // Check if this is amend (3+ arguments) or regular . operator
+                    if (arguments.Count >= 3)
+                    {
+                        // Check for special case: triadic dot with colon (trapped apply)
+                        if (arguments.Count == 3 && IsColon(arguments[1]))
+                        {
+                            // Trapped apply: (d; :; y) - behave like dyadic dot apply but never throw exceptions
+                            return TrappedApply(arguments[0], arguments[2]);
+                        }
+                        else
+                        {
+                            // Regular amend operation
+                            return AmendFunction(arguments);
+                        }
+                    }
+                    else
+                    {
+                        // Regular . operator - handle based on argument count
+                        if (arguments.Count == 1)
+                        {
+                            // Monadic . is MAKE - use Make function
+                            return Make(arguments[0]);
+                        }
+                        else if (arguments.Count == 2)
+                        {
+                            // Dyadic . is APPLY - use DotApply
+                            return DotApply(arguments[0], arguments[1]);
+                        }
+                        else
+                        {
+                            throw new Exception(". operator with 2+ arguments is not supported (use .[...] for amend)");
+                        }
+                    }
                 // Dyadic operators
                 case "+":
-                    if (arguments.Count >= 2) return Plus(arguments[0], arguments[1]);
-                    throw new Exception("+ operator requires 2 arguments");
+                    if (arguments.Count == 1)
+                    {
+                        // Plus as a function (transpose)
+                        return Transpose(arguments[0]);
+                    }
+                    else if (arguments.Count >= 2) 
+                    {
+                        return Plus(arguments[0], arguments[1]);
+                    }
+                    throw new Exception("+ operator requires 1 or 2 arguments");
                 case "-":
                     if (arguments.Count >= 2) return Minus(arguments[0], arguments[1]);
                     throw new Exception("- operator requires 2 arguments");
@@ -882,9 +1049,6 @@ namespace K3CSharp
                 case "^":
                     if (arguments.Count >= 2) return Power(arguments[0], arguments[1]);
                     throw new Exception("^ operator requires 2 arguments");
-                case "!":
-                    if (arguments.Count >= 2) return ModRotate(arguments[0], arguments[1]);
-                    throw new Exception("! operator requires 2 arguments");
                 case "<":
                     if (arguments.Count >= 2) return LessThan(arguments[0], arguments[1]);
                     throw new Exception("< operator requires 2 arguments");
@@ -892,8 +1056,9 @@ namespace K3CSharp
                     if (arguments.Count >= 2) return GreaterThan(arguments[0], arguments[1]);
                     throw new Exception("> operator requires 2 arguments");
                 case "=":
-                    if (arguments.Count >= 2) return ColonOperator(arguments[0], arguments[1]);
-                    throw new Exception("= operator requires 2 arguments");
+                    if (arguments.Count >= 2) return Match(arguments[0], arguments[1]);
+                    if (arguments.Count == 1) return Group(arguments[0]);
+                    throw new Exception("= operator requires 1 or 2 arguments");
                 case ",":
                     if (arguments.Count >= 2) return Join(arguments[0], arguments[1]);
                     throw new Exception(", operator requires 2 arguments");
@@ -957,6 +1122,170 @@ namespace K3CSharp
                     return new IntegerValue(1); // Found at position 1
                 }
                 return new IntegerValue(0); // Not found
+            }
+        }
+
+        private K3Value Bin(K3Value left, K3Value right)
+        {
+            // _bin (Binary Search) function - performs binary search on sorted list
+            // Returns position (1-based) or 0 if not found
+            // Assumes right argument is sorted in ascending order
+            
+            if (right is VectorValue rightVec)
+            {
+                int low = 0;
+                int high = rightVec.Elements.Count - 1;
+                
+                while (low <= high)
+                {
+                    int mid = (low + high) / 2;
+                    var midValue = rightVec.Elements[mid];
+                    var comparison = CompareValues(left, midValue);
+                    
+                    if (comparison == 0)
+                    {
+                        return new IntegerValue(mid + 1); // 1-based indexing
+                    }
+                    else if (comparison < 0)
+                    {
+                        high = mid - 1;
+                    }
+                    else
+                    {
+                        low = mid + 1;
+                    }
+                }
+                return new IntegerValue(0); // Not found
+            }
+            else
+            {
+                // Search for left in right scalar
+                var comparison = CompareValues(left, right);
+                if (comparison == 0)
+                {
+                    return new IntegerValue(1); // Found at position 1
+                }
+                return new IntegerValue(0); // Not found
+            }
+        }
+
+        private K3Value Binl(K3Value left, K3Value right)
+        {
+            // _binl (Binary Search Each-Left) function
+            // Returns 1 for each element of left that is found in right, 0 otherwise
+            // Equivalent to left _in\: right but optimized
+            
+            if (left is VectorValue leftVec)
+            {
+                var results = new List<K3Value>();
+                
+                // For binary search each-left, we need to search each element of left in right
+                foreach (var leftElement in leftVec.Elements)
+                {
+                    var result = Bin(leftElement, right);
+                    // Convert position result to 1/0 (found/not found)
+                    var found = result is IntegerValue intVal && intVal.Value != 0;
+                    results.Add(new IntegerValue(found ? 1 : 0));
+                }
+                
+                return new VectorValue(results);
+            }
+            else
+            {
+                // Single element case
+                var result = Bin(left, right);
+                var found = result is IntegerValue intVal && intVal.Value != 0;
+                return new IntegerValue(found ? 1 : 0);
+            }
+        }
+
+        private K3Value Lin(K3Value left, K3Value right)
+        {
+            // _lin (List Intersection) function
+            // Returns 1 for each element of left that is in right, 0 otherwise
+            // Equivalent to left _in\: right but optimized using HashSet
+            
+            if (left is VectorValue leftVec)
+            {
+                var results = new List<K3Value>();
+                
+                // Create a HashSet for efficient O(1) lookups of right argument elements
+                var rightSet = CreateHashSet(right);
+                
+                foreach (var leftElement in leftVec.Elements)
+                {
+                    bool found = false;
+                    
+                    // Check if leftElement exists in rightSet
+                    if (rightSet != null)
+                    {
+                        found = rightSet.Contains(leftElement);
+                    }
+                    else
+                    {
+                        // Fallback to linear search if HashSet creation failed
+                        found = LinearSearchInRight(leftElement, right);
+                    }
+                    
+                    results.Add(new IntegerValue(found ? 1 : 0));
+                }
+                
+                return new VectorValue(results);
+            }
+            else
+            {
+                // Single element case - return 1 if found, 0 otherwise
+                bool found = LinearSearchInRight(left, right);
+                return new IntegerValue(found ? 1 : 0);
+            }
+        }
+
+        private HashSet<K3Value> CreateHashSet(K3Value value)
+        {
+            // Create a HashSet from a K3Value for efficient lookups
+            try
+            {
+                var set = new HashSet<K3Value>(new K3ValueComparer());
+                
+                if (value is VectorValue vec)
+                {
+                    foreach (var element in vec.Elements)
+                    {
+                        set.Add(element);
+                    }
+                }
+                else
+                {
+                    set.Add(value);
+                }
+                
+                return set;
+            }
+            catch
+            {
+                return null; // Return null if HashSet creation fails
+            }
+        }
+
+        private bool LinearSearchInRight(K3Value leftElement, K3Value right)
+        {
+            // Linear search for leftElement in right
+            if (right is VectorValue rightVec)
+            {
+                foreach (var rightElement in rightVec.Elements)
+                {
+                    var matchResult = Match(leftElement, rightElement);
+                    if (matchResult is IntegerValue intVal && intVal.Value == 1)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            else
+            {
+                var matchResult = Match(leftElement, right);
+                return matchResult is IntegerValue intVal && intVal.Value == 1;
             }
         }
 
@@ -1039,7 +1368,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    throw new Exception("Assignment requires a variable name on the left side");
+                    throw new Exception($"Assignment requires a variable name on the left side, but got {left.GetType().Name} with value {left}");
                 }
             }
         }
@@ -1519,7 +1848,7 @@ namespace K3CSharp
             throw new Exception($"Cannot compare {a.Type} and {b.Type} with >");
         }
 
-        private K3Value Match(K3Value a, K3Value b)
+        public K3Value Match(K3Value a, K3Value b)
         {
             // For match comparison (~ operator)
             if (a is FloatValue floatA && b is FloatValue floatB)
@@ -2591,6 +2920,81 @@ namespace K3CSharp
             throw new Exception($"Each not implemented for types: {verb.Type}, {left.Type}, {right.Type}");
         }
 
+        private K3Value EachRight(K3Value verb, K3Value left, K3Value right)
+        {
+            // Each-Right (/:): Apply verb to each element of left with entire right
+            if (verb is SymbolValue verbSymbol)
+            {
+                if (left is VectorValue leftVec)
+                {
+                    var result = new List<K3Value>();
+                    foreach (var element in leftVec.Elements)
+                    {
+                        result.Add(ApplyVerb(verbSymbol.Value, element, right));
+                    }
+                    return new VectorValue(result);
+                }
+                else if (IsScalar(left))
+                {
+                    return ApplyVerb(verbSymbol.Value, left, right);
+                }
+            }
+            
+            throw new Exception($"EachRight not implemented for types: {verb.Type}, {left.Type}, {right.Type}");
+        }
+
+        private K3Value EachLeft(K3Value verb, K3Value left, K3Value right)
+        {
+            // Each-Left (\:): Apply verb to entire left with each element of right
+            if (verb is SymbolValue verbSymbol)
+            {
+                if (right is VectorValue rightVec)
+                {
+                    var result = new List<K3Value>();
+                    foreach (var element in rightVec.Elements)
+                    {
+                        result.Add(ApplyVerb(verbSymbol.Value, left, element));
+                    }
+                    return new VectorValue(result);
+                }
+                else if (IsScalar(right))
+                {
+                    return ApplyVerb(verbSymbol.Value, left, right);
+                }
+            }
+            
+            throw new Exception($"EachLeft not implemented for types: {verb.Type}, {left.Type}, {right.Type}");
+        }
+
+        private K3Value EachPrior(K3Value verb, K3Value left, K3Value right)
+        {
+            // Each-Prior (':): Apply verb to each element with previous element
+            if (verb is SymbolValue verbSymbol)
+            {
+                if (right is VectorValue rightVec)
+                {
+                    var result = new List<K3Value>();
+                    for (int i = 0; i < rightVec.Elements.Count; i++)
+                    {
+                        var current = rightVec.Elements[i];
+                        var prior = i > 0 ? rightVec.Elements[i - 1] : left;
+                        // Only add to result if i > 0 (skip first element)
+                        if (i > 0)
+                        {
+                            result.Add(ApplyVerb(verbSymbol.Value, current, prior));
+                        }
+                    }
+                    return new VectorValue(result);
+                }
+                else if (IsScalar(right))
+                {
+                    return ApplyVerb(verbSymbol.Value, right, left);
+                }
+            }
+            
+            throw new Exception($"EachPrior not implemented for types: {verb.Type}, {left.Type}, {right.Type}");
+        }
+
         private K3Value Each(K3Value verb, K3Value data)
         {
             // Legacy 2-argument call for backward compatibility
@@ -3070,15 +3474,29 @@ namespace K3CSharp
             }
         }
 
-        private K3Value AtIndex(K3Value data, K3Value index)
+        private K3Value AtIndex(K3Value left, K3Value right)
         {
-            // @ operator for indexing: data @ index
-            // If data is null, return the index (spec: _n@x returns x)
-            if (data is NullValue)
+            // Check if this is Amend Item operation: @[d; i; f; y] or @[d; i; f]
+            // This happens when left is null (from bracket notation) or when left is the at symbol
+            if ((left is NullValue || (left is SymbolValue sym && sym.Value == "@")) && 
+                right is VectorValue args && args.Elements.Count >= 3)
             {
-                return index;
+                return AmendItemFunction(args.Elements);
             }
             
+            // @ operator for indexing: data @ index
+            // If data is null, return the index (spec: _n@x returns x)
+            if (left is NullValue)
+            {
+                return right;
+            }
+            
+            // Regular indexing operation
+            return AtIndexOperation(left, right);
+        }
+
+        private K3Value AtIndexOperation(K3Value data, K3Value index)
+        {
             // Handle dictionary indexing
             if (data is DictionaryValue dict)
             {
@@ -3813,6 +4231,11 @@ namespace K3CSharp
                 
                 return CallDirectFunction(tempFunctionNode, arguments);
             }
+            else if (left is VectorValue vector)
+            {
+                // Vector indexing: vector . indices
+                return VectorIndex(vector, right);
+            }
             else if (left.Type == ValueType.Symbol)
             {
                 var functionName = (left as SymbolValue)?.Value;
@@ -3826,7 +4249,7 @@ namespace K3CSharp
             }
             else
             {
-                throw new Exception("Dot-apply operator requires a function on the left side");
+                throw new Exception("Dot-apply operator requires a function, vector, or dictionary on the left side");
             }
         }
         
@@ -3860,7 +4283,7 @@ namespace K3CSharp
             else if (data is CharacterValue || data is IntegerValue || data is FloatValue)
             {
                 // For atoms, indices must be empty list
-                if (!(indices is VectorValue indexVec && indexVec.Elements.Count == 0))
+                if (!(indices is NullValue || (indices is VectorValue idxVec && idxVec.Elements.Count == 0)))
                 {
                     throw new Exception("For atomic data, indices must be empty list");
                 }
@@ -3871,7 +4294,53 @@ namespace K3CSharp
                 throw new Exception("Amend operation not supported for this data type");
             }
         }
-        
+
+        private K3Value AmendItemFunction(List<K3Value> arguments)
+        {
+            // Amend Item operation: @[d; i; f; y] or @[d; i; f]
+            // Equivalent to .[d; ,i; f; y] - note the enlist (,) applied to indices
+            // d: data structure to amend (list, dictionary, or atom)
+            // i: indices or paths to amend (will be enlisted)
+            // f: function to apply (monadic or dyadic)
+            // y: optional value for dyadic function
+            
+            if (arguments.Count < 3)
+            {
+                throw new Exception("Amend Item operation requires at least 3 arguments: data, indices, function");
+            }
+            
+            var data = arguments[0];
+            var indices = arguments[1];
+            var function = arguments[2];
+            var value = arguments.Count > 3 ? arguments[3] : null;
+            
+            // Apply enlist to indices (equivalent to ,i)
+            var enlistedIndices = Enlist(indices);
+            
+            // Handle different data types
+            if (data is VectorValue list)
+            {
+                return AmendList(list, enlistedIndices, function, value);
+            }
+            else if (data is DictionaryValue dict)
+            {
+                return AmendDictionary(dict, enlistedIndices, function, value);
+            }
+            else if (data is CharacterValue || data is IntegerValue || data is FloatValue)
+            {
+                // Handle atomic data
+                if (!(enlistedIndices is NullValue || (enlistedIndices is VectorValue idxVec && idxVec.Elements.Count == 0)))
+                {
+                    throw new Exception("For atomic data, indices must be empty list");
+                }
+                return AmendAtom(data, function, value);
+            }
+            else
+            {
+                throw new Exception("Amend Item operation not supported for this data type");
+            }
+        }
+
         private K3Value AmendList(VectorValue list, K3Value indices, K3Value function, K3Value value)
         {
             // Create a copy of the list to modify
@@ -4725,9 +5194,8 @@ namespace K3CSharp
 
         private K3Value InFunction(K3Value operand)
         {
-            // _in (Find) function - searches for left argument in right argument
-            // Returns position (1-based) or 0 if not found
-            // Uses tolerant comparison for floating-point numbers
+            // _in function should be handled as dyadic in binary operations
+            // This unary case should not be reached in normal operation
             throw new Exception("_in (Find) function requires two arguments - use infix notation: x _in y");
         }
 
@@ -4738,7 +5206,16 @@ namespace K3CSharp
 
         private K3Value BinlFunction(K3Value operand)
         {
-            throw new Exception("_binl (binary search each-left) operation reserved for future use");
+            // _binl function should be handled as dyadic in binary operations
+            // This unary case should not be reached in normal operation
+            throw new Exception("_binl (binary search each-left) function requires two arguments - use infix notation: x _binl y");
+        }
+
+        private K3Value LinFunction(K3Value operand)
+        {
+            // _lin function should be handled as dyadic in binary operations
+            // This unary case should not be reached in normal operation
+            throw new Exception("_lin (list intersection) function requires two arguments - use infix notation: x _lin y");
         }
 
         private K3Value LsqFunction(K3Value operand)
@@ -4804,7 +5281,7 @@ namespace K3CSharp
         private K3Value DoFunction(K3Value operand)
         {
             // Do function: do[count; expression] or do[count; expression1; ; expressionN]
-            // Execute expressions count times, return result of last expression
+            // Execute expressions count times, return empty string (matching k.exe behavior)
             
             if (operand is VectorValue args && args.Elements.Count >= 2)
             {
@@ -4819,7 +5296,6 @@ namespace K3CSharp
                 }
                 
                 var expressions = args.Elements.Skip(1).ToList();
-                K3Value result = new NullValue();
                 
                 for (int i = 0; i < count; i++)
                 {
@@ -4831,16 +5307,17 @@ namespace K3CSharp
                             // Parse and evaluate the function body
                             var parser = new Parser(func.PreParsedTokens ?? new List<Token>());
                             var ast = parser.Parse();
-                            result = Evaluate(ast);
+                            Evaluate(ast); // Execute but don't store result
                         }
                         else
                         {
-                            result = EvaluateExpression(expr);
+                            EvaluateExpression(expr); // Execute but don't store result
                         }
                     }
                 }
                 
-                return result;
+                // Return empty string to match k.exe behavior
+                return new SymbolValue("");
             }
             else
             {
@@ -4857,7 +5334,7 @@ namespace K3CSharp
             {
                 var condition = args.Elements[0];
                 var expressions = args.Elements.Skip(1).ToList();
-                K3Value result = new NullValue();
+                K3Value result = new SymbolValue(""); // Empty symbol for when loop doesn't execute
                 
                 while (true)
                 {
@@ -4888,13 +5365,12 @@ namespace K3CSharp
         private K3Value IfFunction(K3Value operand)
         {
             // If function: if[condition; expression] or if[condition; expression1; ; expressionN]
-            // Execute expressions if condition is not equal to 0
+            // Execute expressions if condition is not equal to 0, return empty string (matching k.exe behavior)
             
             if (operand is VectorValue args && args.Elements.Count >= 2)
             {
                 var condition = args.Elements[0];
                 var expressions = args.Elements.Skip(1).ToList();
-                K3Value result = new NullValue();
                 
                 // Evaluate condition
                 var conditionResult = EvaluateExpression(condition);
@@ -4902,14 +5378,15 @@ namespace K3CSharp
                 // Check if condition is non-zero (true)
                 if (IsNonZeroInteger(conditionResult))
                 {
-                    // Execute all expressions
+                    // Execute all expressions but don't store result
                     foreach (var expr in expressions)
                     {
-                        result = EvaluateExpression(expr);
+                        EvaluateExpression(expr);
                     }
                 }
                 
-                return result;
+                // Return empty string to match k.exe behavior
+                return new SymbolValue("");
             }
             else
             {
@@ -4925,6 +5402,68 @@ namespace K3CSharp
         private K3Value ExitFunction(K3Value operand)
         {
             throw new Exception("_exit (control flow) operation reserved for future use");
+        }
+
+        private K3Value TrappedApply(K3Value data, K3Value argument)
+        {
+            // Trapped apply: behave like dyadic dot apply but never throw exceptions
+            // Always return a 2-item vector: [success_flag; result_or_error]
+            try
+            {
+                // Try to perform the regular dot apply operation
+                var result = DotApply(data, argument);
+                
+                // Success: return (0; result)
+                var successFlag = new IntegerValue(0);
+                var resultVector = new VectorValue(new List<K3Value> { successFlag, result });
+                return resultVector;
+            }
+            catch (Exception ex)
+            {
+                // Error: return (1; error_message)
+                var errorFlag = new IntegerValue(1);
+                var errorMessage = new CharacterValue(ex.Message);
+                var errorVector = new VectorValue(new List<K3Value> { errorFlag, errorMessage });
+                return errorVector;
+            }
+        }
+    }
+    
+    // Custom comparer for K3Value to use in HashSet operations
+    public class K3ValueComparer : IEqualityComparer<K3Value>
+    {
+        public bool Equals(K3Value x, K3Value y)
+        {
+            if (ReferenceEquals(x, y)) return true;
+            if (x is null || y is null) return false;
+            
+            // Use Match function for comparison (same as _in uses)
+            var evaluator = new Evaluator();
+            var matchResult = evaluator.Match(x, y);
+            
+            if (matchResult is IntegerValue intVal)
+            {
+                return intVal.Value == 1;
+            }
+            
+            return false;
+        }
+
+        public int GetHashCode(K3Value obj)
+        {
+            if (obj is null) return 0;
+            
+            // Generate hash code based on type and value
+            return obj.Type switch
+            {
+                ValueType.Integer => obj is IntegerValue iv ? iv.Value.GetHashCode() : 0,
+                ValueType.Long => obj is LongValue lv ? lv.Value.GetHashCode() : 0,
+                ValueType.Float => obj is FloatValue fv ? fv.Value.GetHashCode() : 0,
+                ValueType.Character => obj is CharacterValue cv ? cv.Value.GetHashCode() : 0,
+                ValueType.Symbol => obj is SymbolValue sv ? sv.Value.GetHashCode() : 0,
+                ValueType.Vector => obj is VectorValue vv ? vv.Elements.Count.GetHashCode() : 0,
+                _ => obj.ToString().GetHashCode()
+            };
         }
     }
 }

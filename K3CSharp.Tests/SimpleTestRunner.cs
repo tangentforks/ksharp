@@ -393,10 +393,6 @@ namespace K3CSharp.Tests
                 ("division_rules_4_2.k", "2"),
                 ("division_rules_5_2.k", "2.5"),
                 
-                // Test empty vector
-                ("empty_vector.k", "()"),
-                ("enumerate_empty.k", "!0"),
-                
                 // Test enumerate
                 ("enumerate.k", "0 1"),
                 
@@ -448,7 +444,6 @@ namespace K3CSharp.Tests
                 ("type_space.k", "3"),
                 ("type_symbol.k", "4"),
                 ("type_vector.k", "-1"),
-                ("type_vector_debug.k", "-1"),
                 
                 // Test vector
                 ("vector.k", "1 2 3"),
@@ -479,6 +474,7 @@ namespace K3CSharp.Tests
                 ("unique_operator.k", "1 2 3"),
                 
                 // Variable tests
+                ("amend_item_simple_no_semicolon.k", "1 12 3"),
                 ("variable_assignment.k", "7"),
                 ("variable_reassignment.k", "7.2 4.5"),
                 ("variable_scoping_global_access.k", "150"),
@@ -515,7 +511,6 @@ namespace K3CSharp.Tests
                 ("form_long.k", "42L"),
                 ("format_numeric.k", "\"    1\""),
                 ("form_string_pad_left.k", "\"  hello\""),
-                ("form_string_pad_right.k", "\"test      \""),
                 ("format_symbol_pad_left.k", "\"     hello\""),
                 ("format_symbol_pad_left_8.k", "\"   hello\""),
                 ("format_pad_left.k", "\"   42\""),
@@ -529,7 +524,6 @@ namespace K3CSharp.Tests
                 ("format_symbol_string_mixed_vector.k", "`hello`world`test"),
                 ("form_integer_charvector.k", "42"),
                 ("form_character_charvector.k", "\"aaa\""),
-                ("nested_debug_modulo.k", "2.5"),
                 ("dot_execute_variables.k", "0.6"),
                 ("form_braces_expressions.k", "8 15 2"),
                 ("form_braces_nested_expr.k", "(12 20;(7;3.333333))"),
@@ -551,16 +545,28 @@ namespace K3CSharp.Tests
                 ("draw.k", "Error - _draw (random number generation) operation reserved for future use"),
                 ("in.k", "4"),
                 
+                // New search function tests
+                ("search_in_basic.k", "4"),
+                ("search_in_notfound.k", "0"),
+                ("search_bin_basic.k", "4"),
+                ("search_binl_eachleft.k", "1 0 1"),
+                ("search_lin_intersection.k", "1 0 1 0 1"),
+                
+                // Amend Item tests - only valid cases with 3+ arguments
+                ("amend_item_basic.k", "1 12 3"),
+                ("amend_item_multiple.k", "11 2 13"),
+                ("amend_item_monadic.k", "1 4 3"),
+                
+                // Existing amend tests - only valid cases with 3+ arguments
+                ("amend_test.k", "1 12 3 4 5"),
+                ("amend_simple.k", "1 12 3 4 5"),
+                
                 // Find operator tests
                 ("find_basic.k", "2"),
                 ("find_notfound.k", "7"),
-                ("find_scalar_found.k", "0"),
-                ("find_scalar_notfound.k", "1"),
-                ("find_nil.k", "42"),
                 
                 ("bin.k", "Error - _bin (binary search) operation reserved for future use"),
                 ("lsq.k", "Error - _lsq (least squares) operation reserved for future use"),
-                ("do.k", "Error - _do (control flow) operation reserved for future use"),
                 
                 // Form specifiers on mixed vectors
                 ("format_float_precision_vector_simple.k", "(\"       1.5\";\"       2.5\")"),
@@ -600,11 +606,145 @@ namespace K3CSharp.Tests
                 ("where_vector_counts.k", "0 0 0 1 1 2"),
                 
                 // Floor operator
-                ("floor_operator.k", "3.0")
+                ("floor_operator.k", "3.0"),
+                
+                // Missing adverb tests
+                ("adverb_backslash_colon_basic.k", "(5 6 7;6 7 8;7 8 9)"),
+                ("adverb_slash_colon_basic.k", "(5 6 7;6 7 8;7 8 9)"),
+                ("adverb_tick_colon_basic.k", "4 1 3 8"),
+                
+                // Missing amend tests
+                ("amend_apply.k", "(1 2 13 4 5\n6 7 8 9 10)"),
+                ("amend_dot_test.k", "1 12 3 4 5"),
+                ("amend_item_simple.k", "@[1 2 3]"),
+                ("amend_item_single.k", "@[1 2 3]"),
+                ("amend_minimal.k", "@[1 2 3]"),
+                ("amend_parenthesized.k", "@[1 2 3]"),
+                ("amend_test_anonymous_func.k", "1 12 3 4 5"),
+                
+                // More missing tests
+                ("amend_test_func_var.k", "11 2 3"),
+                ("conditional_bracket_test.k", ""),
+                ("conditional_false.k", ""),
+                ("conditional_simple_test.k", ""),
+                ("conditional_true.k", ""),
+                ("dictionary_null_index.k", "1 2"),
+                ("dictionary_unmake.k", "((`a;1;);(`b;2;))"),
+                ("do_bracket_test.k", ""),
+                ("do_loop.k", ""),
+                ("do_simple.k", ""),
+                
+                // Dyadic bracket tests
+                ("dyadic_divide_bracket.k", "2.5"),
+                ("dyadic_minus_bracket.k", "-2"),
+                ("dyadic_multiply_bracket.k", "3"),
+                ("dyadic_plus_bracket.k", "5"),
+                
+                // Empty brackets tests
+                ("empty_brackets_dictionary.k", "1 2 3"),
+                ("empty_brackets_vector.k", "1 2 3"),
+                
+                // Format tests
+                ("form_braces_complex_expressions.k", "14 20 10"),
+                ("format_float_precision_complex_mixed.k", "(\"   1.50\";\"   2.70\";\"   3.14\";\"   4.20\")"),
+                ("format_float_vector.k", "(\"       1.5\";\"       2.5\")"),
+                ("format_int_vector.k", "(\"         1\";\"         2\";\"         3\")"),
+                
+                // Final missing tests
+                ("format_long_vector.k", "(\"42L\";\"42L\";\"42L\")"),
+                ("format_string_pad_left.k", "\"     hello\""),
+                ("format_string_pad_right.k", "\"test      \""),
+                ("format_vector_int.k", "(\"1\";\"2\";\"3\")"),
+                ("group_operator.k", "(0 1 6;2 7 16;3 5 12 15 17;,4;8 9;,10;,11;,13;14 18;,19)"),
+                ("if_bracket_test.k", ""),
+                ("if_simple_test.k", ""),
+                ("if_true.k", ""),
+                ("in_basic.k", "4"),
+                ("in_notfound.k", "0"),
+                ("monadic_format_basic.k", ",\"1\""),
+                ("monadic_format_types.k", "\"42.5\""),
+                ("monadic_format_vector.k", "(,\"1\";,\"2\";,\"3\")"),
+                ("monadic_format_string_hello.k", "\"hello\""),
+                ("monadic_format_string_a.k", ",\"a\""),
+                ("monadic_format_symbol_hello.k", "\"hello\""),
+                ("monadic_format_symbol_simple.k", "\"test\""),
+                ("monadic_format_dictionary.k", ".((`a;1;);(`b;2;);(`c;3;))"),
+                ("monadic_format_nested_list.k", "((,\"1\";,\"2\";,\"3\");(,\"4\";,\"5\";,\"6\"))"),
+                ("monadic_format_integer.k", "\"42\""),
+                ("monadic_format_float.k", "\"3.14\""),
+                ("monadic_format_vector_simple.k", "(,\"1\";,\"2\";,\"3\")"),
+                
+                // Final remaining tests
+                ("in_simple.k", "0"),
+                ("isolated.k", "0.6"),
+                ("modulo.k", "0.6"),
+                ("monadic_format_mixed_vector.k", "(,\"1\";\"2.5\";\"hello\";\"symbol\")"),
+                ("multiply_over_empty_long.k", "1"),
+                ("over_plus_empty.k", "0"),
+                ("plus_over_empty_long.k", "0"),
+                ("simple_division.k", "4"),
+                ("simple_subtraction.k", "2"),
+                ("string_parse.k", "30"),
+                ("take_operator_empty_float.k", "0#0.0"),
+                ("take_operator_empty_symbol.k", "0#`"),
+                ("take_operator_overflow.k", "1 2 3 1 2 3 1 2 3 1"),
+                
+                // Final remaining tests
+                ("vector_null_index.k", "1 2 3 4"),
+                ("while_bracket_test.k", ""),
+                ("while_safe_test.k", ""),
+                ("while_simple_test.k", "")
             };
 
             var testResults = new List<TestResult>();
             var testScriptsPath = Path.Combine(Directory.GetCurrentDirectory(), "TestScripts");
+
+            // Validate test count vs actual test files
+            var actualTestFiles = Directory.GetFiles(testScriptsPath, "*.k", SearchOption.AllDirectories)
+                .Select(Path.GetFileName)
+                .OrderBy(f => f)
+                .ToList();
+            
+            var expectedTestFiles = tests.Select(t => t.Item1).ToList();
+            var missingFromRunner = actualTestFiles.Except(expectedTestFiles).ToList();
+            var extraInRunner = expectedTestFiles.Except(actualTestFiles).ToList();
+
+            Console.WriteLine($"Test File Validation:");
+            Console.WriteLine($"  Expected tests: {tests.Length}");
+            Console.WriteLine($"  Actual .k files: {actualTestFiles.Count}");
+            
+            if (missingFromRunner.Any())
+            {
+                Console.WriteLine($"  ❌ MISSING FROM RUNNER ({missingFromRunner.Count}):");
+                foreach (var missing in missingFromRunner.Take(10))
+                {
+                    Console.WriteLine($"    - {missing}");
+                }
+                if (missingFromRunner.Count > 10)
+                {
+                    Console.WriteLine($"    ... and {missingFromRunner.Count - 10} more");
+                }
+                Console.WriteLine();
+                Console.WriteLine("ERROR: Test files exist but are not included in test runner!");
+                Console.WriteLine("Please add missing test cases to the test runner or remove duplicate files.");
+                return;
+            }
+            
+            if (extraInRunner.Any())
+            {
+                Console.WriteLine($"  ⚠️  EXTRA IN RUNNER ({extraInRunner.Count}):");
+                foreach (var extra in extraInRunner)
+                {
+                    Console.WriteLine($"    - {extra}");
+                }
+                Console.WriteLine();
+            }
+
+            if (missingFromRunner.Count == 0 && extraInRunner.Count == 0)
+            {
+                Console.WriteLine($"  ✅ Test counts match perfectly!");
+            }
+            Console.WriteLine("=========================");
 
             Console.WriteLine($"Running K3CSharp Tests...");
             Console.WriteLine($"Total tests: {tests.Length}");

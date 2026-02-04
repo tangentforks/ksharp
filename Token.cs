@@ -47,6 +47,9 @@ namespace K3CSharp
         ADVERB_SLASH,   // / adverb
         ADVERB_BACKSLASH, // \ adverb  
         ADVERB_TICK,    // ' adverb
+        ADVERB_SLASH_COLON,   // /: adverb (each-right)
+        ADVERB_BACKSLASH_COLON, // \: adverb (each-left)
+        ADVERB_TICK_COLON,    // ': adverb (each-prior)
         NULL,           // _n null value
         TYPE,           // 4: type operator
         STRING_REPRESENTATION, // :: string representation operator
@@ -82,6 +85,7 @@ namespace K3CSharp
         BIN,            // _bin binary search
         BINL,           // _binl binary search each-left
         LSQ,            // _lsq least squares
+        LIN,            // _lin list intersection
         GTIME,          // _gtime GMT time conversion
         LTIME,          // _ltime local time conversion
         VS,             // _vs database function
