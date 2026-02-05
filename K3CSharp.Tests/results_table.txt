@@ -27,6 +27,7 @@
 ║ adverb_scan_with_initialization_1.k      │ 1 +\ 2 3 4 5         │ 1 3 6 10 15          │                      ║
 ║ adverb_scan_with_initialization_2.k      │ 2 +\ 1 2 3 4         │ 2 3 5 8 12           │                      ║
 ║ adverb_scan_with_initialization_divide.k │ 2 %\ 1 2 3 4         │ Error: Unknown ...   │ (2;2;1;0.333333...   ║
+║ debug_test.k                             │ [File not found]     │ File not found       │ 2                    ║
 ║ adverb_scan_with_initialization_minus.k  │ 2 -\ 1 2 3 4         │ 2 1 -1 -4 -8         │                      ║
 ║ adverb_scan_with_initialization.k        │ 2 *\ 1 2 3           │ 2 2 4 12             │                      ║
 ║ anonymous_function_double_param.k        │ {[op1;op2] op1 * op2} │ {[op1;op2] op1*...   │                      ║
@@ -44,7 +45,7 @@
 ║ cut_vector.k                             │ (0 2 4) _ (0 1 2 3 4 5 6 7) │ (0 1;2 3;4 5 6 7)    │                      ║
 ║ dictionary_empty.k                       │ .()                  │ .()                  │                      ║
 ║ dictionary_index.k                       │ (.((`a;1);(`b;2))) @ `a │ 1                    │                      ║
-║ dictionary_index_attr.k                  │ (.((`a;1);(`b;2;.((`c;3);(`d;4))))) @ `b. │ .((`c;3;);(`d;4;))   │                      ║
+║ dictionary_index_attr.k                  │ (.((`a;1);(`b;2;.((`c;3);(`d;4))))) @ `b. │ Error: Undefine...   │ .((`c;3;);(`d;4;))   ║
 ║ dictionary_index_value.k                 │ (.((`a;1);(`b;2))) @ `a │ 1                    │                      ║
 ║ dictionary_index_value2.k                │ (.((`a;1);(`b;2))) @ `b │ 2                    │                      ║
 ║ dictionary_multiple.k                    │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
@@ -165,7 +166,7 @@
 ║ special_long_neg_inf.k                   │ -0Ij                 │ -0Ij                 │                      ║
 ║ special_long_null.k                      │ 0Nj                  │ 0Nj                  │                      ║
 ║ special_long_pos_inf.k                   │ 0Ij                  │ 0Ij                  │                      ║
-║ special_null.k                           │ _n                   │ _n                   │                      ║
+║ special_null.k                           │ _n                   │                      │ _n                   ║
 ║ special_int_pos_inf_plus_1.k             │ 0I + 1               │ 0N                   │                      ║
 ║ special_int_null_plus_1.k                │ 0N + 1               │ -0I                  │                      ║
 ║ special_int_neg_inf_plus_1.k             │ -0I + 1              │ -2147483646          │                      ║
@@ -366,11 +367,11 @@
 ║ conditional_simple_test.k                │ :[1; "true"; "false"] │ Error: Undefine...   │                      ║
 ║ conditional_true.k                       │ :[1; "true"; "false"]  // Conditional evaluation - condition true │ Error: Undefine...   │                      ║
 ║ dictionary_null_index.k                  │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
-║ dictionary_unmake.k                      │ d: .((`a;1);(`b;2))  │ ((`a;1;);(`b;2;))    │                      ║
+║ dictionary_unmake.k                      │ d: .((`a;1);(`b;2))  │ Error: Undefine...   │ ((`a;1;);(`b;2;))    ║
 ║ do_bracket_test.k                        │ do[3; 42]  // Do function with bracket notation │ Error: Do funct...   │                      ║
 ║ do_loop.k                                │ i: 0; do[3; i+: 1]  // Do loop - increment i 3 times │ Error: Expected...   │                      ║
 ║ do_simple.k                              │ do[3; 42]  // Do loop - simple test │ Error: Do funct...   │                      ║
-║ dyadic_divide_bracket.k                  │ /[20; 4]  // Dyadic division with bracket notation │ _n                   │ 2.5                  ║
+║ dyadic_divide_bracket.k                  │ /[20; 4]  // Dyadic division with bracket notation │                      │ 2.5                  ║
 ║ dyadic_minus_bracket.k                   │ -[10; 3]  // Dyadic subtraction with bracket notation │ Error: - operat...   │ -2                   ║
 ║ dyadic_multiply_bracket.k                │ *[4; 6]  // Dyadic multiplication with bracket notation │ Error: * operat...   │ 3                    ║
 ║ dyadic_plus_bracket.k                    │ +[3; 5]  // Dyadic addition with bracket notation │ 5                    │                      ║
@@ -413,12 +414,25 @@
 ║ take_operator_empty_float.k              │ 0#0.0                │ 0#0.0                │                      ║
 ║ take_operator_empty_symbol.k             │ 0#``                 │ 0#`                  │                      ║
 ║ take_operator_overflow.k                 │ 10#1 2 3             │ 1 2 3 1 2 3 1 2...   │                      ║
+║ k_tree_assignment_absolute_foo.k         │ .k.foo: 42           │ 42                   │                      ║
+║ k_tree_retrieve_absolute_foo.k           │ .k.foo: 42           │ 42                   │                      ║
+║ k_tree_retrieval_relative.k              │ .k.foo: 42           │ 42                   │                      ║
+║ k_tree_enumerate.k                       │ !`                   │ `k`t                 │                      ║
+║ k_tree_current_branch.k                  │ _d                   │ `.k                  │                      ║
+║ k_tree_dictionary_indexing.k             │ .k.foo: 42           │ 42                   │                      ║
+║ k_tree_nested_indexing.k                 │ .k.dd: .((`a;1);(`b;2);(`c;3)) │ 2                    │                      ║
+║ k_tree_verify_root.k                     │ .k                   │                      │                      ║
+║ k_tree_flip_dictionary.k                 │ .+(`a`b`c;1 2 3)     │ .((`a;1;);(`b;2...   │                      ║
+║ k_tree_null_to_dict_conversion.k         │ .k.foo: 42           │ .,(`foo;42;)         │                      ║
+║ k_tree_dictionary_assignment.k           │ .k.dd: .((`a;1);(`b;2);(`c;3)) │ .((`a;1;);(`b;2...   │                      ║
+║ k_tree_test_bracket_indexing.k           │ d: .((`a;1);(`b;2);(`c;3)) │ 2                    │                      ║
+║ k_tree_flip_test.k                       │ +(`a`b`c;1 2 3)      │ ((`a;1);(`b;2);...   │                      ║
 ║ vector_null_index.k                      │ v: 1 2 3 4           │ 1 2 3 4              │                      ║
 ║ while_bracket_test.k                     │ i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation │ Error: Expected...   │                      ║
 ║ while_safe_test.k                        │ i: 0                 │ Error: Cannot c...   │                      ║
 ║ while_simple_test.k                      │ while[0; 42]         │ Error: While fu...   │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 342/412 tests passed (83.0%)                                                                     ║
+║ SUMMARY: 352/426 tests passed (82.6%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -428,10 +442,20 @@ Input: 2 %\ 1 2 3 4
 Expected: (2;2;1;0.3333333;0.08333333)
 Actual: Error: Unknown operator: /
 ──────────────────────────────────────────────────────────────────────────
+Test: debug_test.k
+Input: [File not found]
+Expected: 2
+Actual: File not found
+──────────────────────────────────────────────────────────────────────────
 Test: complex_function.k
 Input: distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2}
 Expected: 205
 Actual: {[d0;v;a;t] d1 : v*t ; d2 : a*t*t % 2 ; d0+d1+d2}
+──────────────────────────────────────────────────────────────────────────
+Test: dictionary_index_attr.k
+Input: (.((`a;1);(`b;2;.((`c;3);(`d;4))))) @ `b.
+Expected: .((`c;3;);(`d;4;))
+Actual: Error: Undefined variable: b.
 ──────────────────────────────────────────────────────────────────────────
 Test: function_add7.k
 Input: add7:{[arg1] arg1+7}
@@ -467,6 +491,11 @@ Test: function_mul.k
 Input: mul:{[op1;op2] op1 * op2}
 Expected: 32
 Actual: {[op1;op2] op1*op2}
+──────────────────────────────────────────────────────────────────────────
+Test: special_null.k
+Input: _n
+Expected: _n
+Actual: 
 ──────────────────────────────────────────────────────────────────────────
 Test: multiline_function_single.k
 Input: test: {[x] a:x*2; a+10}
@@ -681,6 +710,11 @@ Input: :[1; "true"; "false"]  // Conditional evaluation - condition true
 Expected: 
 Actual: Error: Undefined variable: :
 ──────────────────────────────────────────────────────────────────────────
+Test: dictionary_unmake.k
+Input: d: .((`a;1);(`b;2))
+Expected: ((`a;1;);(`b;2;))
+Actual: Error: Undefined variable: .d
+──────────────────────────────────────────────────────────────────────────
 Test: do_bracket_test.k
 Input: do[3; 42]  // Do function with bracket notation
 Expected: 
@@ -699,7 +733,7 @@ Actual: Error: Do function requires at least 2 arguments: count and expression(s
 Test: dyadic_divide_bracket.k
 Input: /[20; 4]  // Dyadic division with bracket notation
 Expected: 2.5
-Actual: _n
+Actual: 
 ──────────────────────────────────────────────────────────────────────────
 Test: dyadic_minus_bracket.k
 Input: -[10; 3]  // Dyadic subtraction with bracket notation

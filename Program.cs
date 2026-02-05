@@ -345,6 +345,52 @@ namespace K3CSharp
             
             switch (parts[0])
             {
+                case "\\d":
+                    if (parts.Length == 1)
+                    {
+                        // Display current branch
+                        var currentBranch = evaluator.GetCurrentBranch();
+                        if (currentBranch is SymbolValue sym && !string.IsNullOrEmpty(sym.Value))
+                        {
+                            Console.WriteLine(sym.Value);
+                        }
+                        else
+                        {
+                            // Root branch - display nothing per spec
+                        }
+                    }
+                    else if (parts.Length == 2)
+                    {
+                        // Set current branch
+                        evaluator.SetCurrentBranch(parts[1]);
+                        Console.WriteLine($"Current branch set to: {parts[1]}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Usage: \\d [branch_path]");
+                    }
+                    return new NullValue();
+                    
+                case "\\9":
+                    // Reset K tree to default state (for testing purposes)
+                    evaluator.ResetKTree();
+                    Console.WriteLine("K tree reset to default state");
+                    return new NullValue();
+                    
+                case "\\^":
+                    // Set current branch to parent
+                    evaluator.SetParentBranch();
+                    var parentBranch = evaluator.GetCurrentBranch();
+                    if (parentBranch is SymbolValue parentSym && !string.IsNullOrEmpty(parentSym.Value))
+                    {
+                        Console.WriteLine($"Current branch set to: {parentSym.Value}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Current branch set to root");
+                    }
+                    return new NullValue();
+                    
                 case "\\p":
                     if (parts.Length == 1)
                     {
@@ -380,6 +426,7 @@ namespace K3CSharp
                     Console.WriteLine("\\. control flow, assignment and debug");
                     Console.WriteLine("\\_ underscore verbs (math, linear, etc.)");
                     Console.WriteLine("\\p precision");
+                    Console.WriteLine("\\9 reset K tree (testing)");
                     Console.WriteLine("\\\\ exit");
                     break;
                     

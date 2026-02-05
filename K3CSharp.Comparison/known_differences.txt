@@ -2,6 +2,27 @@ adverb_backslash_colon_basic :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact represent
 adverb_slash_colon_basic :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 amend_simple :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 amend_test :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+
+# K Tree tests - Compact representation for dictionaries, nested vectors, and symbol vectors
+k_tree_assignment_absolute_foo :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_retrieve_absolute_foo :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_assignment_absolute_23 :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_retrieve_absolute_23 :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_enumerate :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_current_branch :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_dictionary_indexing :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_nested_indexing :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_debug :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_simple_test :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_debug_assignment :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_verify_root :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_assignment_absolute :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_retrieval_relative :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_debug_dd :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_test_bracket_indexing :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_flip_test :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_flip_dictionary :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+k_tree_null_to_dict_conversion :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 # Known Differences Between K and K3CSharp
 # Format: TestName :: Tweak1&Tweak2&Tweak3 :: Notes
 # Tweak format: regex:pattern:replacement (all tweaks use regex format for consistency)

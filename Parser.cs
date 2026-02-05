@@ -339,7 +339,7 @@ namespace K3CSharp
             TokenType.ADVERB_SLASH_COLON, TokenType.ADVERB_BACKSLASH_COLON, TokenType.ADVERB_TICK_COLON,
             TokenType.TIME, TokenType.DRAW, TokenType.IN, TokenType.BIN, TokenType.BINL, TokenType.LSQ, TokenType.LIN,
             TokenType.GTIME, TokenType.LTIME, TokenType.VS, TokenType.SV, TokenType.SS, TokenType.CI, TokenType.IC,
-            TokenType.DO, TokenType.WHILE, TokenType.IF_FUNC, TokenType.GOTO, TokenType.EXIT, TokenType.EOF
+            TokenType.DIRECTORY, TokenType.DO, TokenType.WHILE, TokenType.IF_FUNC, TokenType.GOTO, TokenType.EXIT, TokenType.EOF
         };
         
         private bool ShouldStopParsing(TokenType[] stopTokens)
@@ -599,7 +599,19 @@ namespace K3CSharp
             }
             else if (Match(TokenType.SYMBOL))
             {
-                result = ASTNode.MakeLiteral(new SymbolValue(PreviousToken().Lexeme));
+                var symbol = PreviousToken().Lexeme;
+                
+                // Check if this is a dotted notation for K tree access
+                if (symbol.Contains("."))
+                {
+                    // This is a K tree dotted notation variable
+                    result = ASTNode.MakeVariable(symbol);
+                }
+                else
+                {
+                    // Regular symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue(symbol));
+                }
             }
             else if (Match(TokenType.PLUS))
             {
@@ -967,7 +979,18 @@ namespace K3CSharp
             else if (Match(TokenType.IDENTIFIER))
             {
                 var identifier = PreviousToken().Lexeme;
-                result = ASTNode.MakeVariable(identifier);
+                
+                // Check if this is a dotted notation for K tree access
+                if (identifier.Contains("."))
+                {
+                    // This is a K tree dotted notation variable
+                    result = ASTNode.MakeVariable(identifier);
+                }
+                else
+                {
+                    // Regular identifier
+                    result = ASTNode.MakeVariable(identifier);
+                }
             }
             else if (Match(TokenType.DO))
             {
@@ -996,7 +1019,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.DIVIDE))
             {
-                result = ASTNode.MakeVariable("/");
+                result = ASTNode.MakeVariable("%");
             }
             else if (Match(TokenType.POWER))
             {
@@ -1419,6 +1442,15 @@ namespace K3CSharp
                 node.Children.Add(operand);
                 return node;
             }
+            else if (Match(TokenType.DIRECTORY))
+            {
+                // Directory operations function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_d");
+                node.Children.Add(operand);
+                return node;
+            }
             else if (Match(TokenType.LSQ))
             {
                 // Least squares function
@@ -1794,6 +1826,25 @@ namespace K3CSharp
                     
                     dotApplyNode.Children.Add(commaNode);
                     result = dotApplyNode;
+                }
+                else if (!IsAtEnd() && (CurrentToken().Type == TokenType.IDENTIFIER || CurrentToken().Type == TokenType.SYMBOL))
+                {
+                    // This is K tree dotted notation: .k, .k.foo, etc.
+                    var identifier = CurrentToken().Lexeme;
+                    Advance(); // Consume the identifier/symbol
+                    
+                    // Construct the dotted notation variable name
+                    var dottedVariable = "." + identifier;
+                    
+                    // Check if there are more dotted parts
+                    while (Match(TokenType.DOT_APPLY) && !IsAtEnd() && 
+                           (CurrentToken().Type == TokenType.IDENTIFIER || CurrentToken().Type == TokenType.SYMBOL))
+                    {
+                        dottedVariable += "." + CurrentToken().Lexeme;
+                        Advance(); // Consume the identifier/symbol
+                    }
+                    
+                    result = ASTNode.MakeVariable(dottedVariable);
                 }
                 else
                 {

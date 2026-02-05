@@ -127,7 +127,8 @@ namespace K3CSharp.Tests
                 ("adverb_scan_power.k", "2 8 64"),
                 ("adverb_scan_with_initialization_1.k", "1 3 6 10 15"),
                 ("adverb_scan_with_initialization_2.k", "2 3 5 8 12"),
-                ("adverb_scan_with_initialization_divide.k", "(2;2;1;0.3333333;0.08333333)"),
+                ("adverb_scan_with_initialization_divide.k", "(2;2;1;0.3333333;0.08333333)"), // Test %\ scan with divide
+                ("debug_test.k", "2"), // Debug %\ 
                 ("adverb_scan_with_initialization_minus.k", "2 1 -1 -4 -8"),
                 ("adverb_scan_with_initialization.k", "2 2 4 12"),
                 
@@ -686,6 +687,23 @@ namespace K3CSharp.Tests
                 ("take_operator_empty_symbol.k", "0#`"),
                 ("take_operator_overflow.k", "1 2 3 1 2 3 1 2 3 1"),
                 
+                // K Tree tests - Following One Test Per File principle
+                ("k_tree_assignment_absolute_foo.k", "42"), // Absolute path assignment to foo
+                ("k_tree_retrieve_absolute_foo.k", "42"),  // Absolute path retrieval from foo
+                ("k_tree_retrieval_relative.k", "42"),         // Relative path retrieval only
+                ("k_tree_enumerate.k", "`k`t"),     // Root enumeration - compact symbol vector format
+                ("k_tree_current_branch.k", "`.k"),           // Current branch command
+                ("k_tree_dictionary_indexing.k", "42"),       // Dictionary indexing
+                ("k_tree_nested_indexing.k", "2"),          // Nested indexing
+                ("k_tree_verify_root.k", ""),               // Root verification - null displays as empty string
+                ("k_tree_flip_dictionary.k", ".((`a;1;);(`b;2;);(`c;3;))"), // Test flip + make dictionary - matches k.exe
+                
+                // Proper single-test files following BEST.md principles
+                ("k_tree_null_to_dict_conversion.k", ".,(`foo;42;)"), // Test .k converts from null to dict (single-item dict list)
+                ("k_tree_dictionary_assignment.k", ".((`a;1;);(`b;2;);(`c;3;))"), // Test dictionary assignment in K tree (triplets format)
+                ("k_tree_test_bracket_indexing.k", "2"),   // Test bracket indexing with regular dictionary
+                ("k_tree_flip_test.k", "((`a;1);(`b;2);(`c;3))"), // Test flip operation - matches k.exe
+                
                 // Final remaining tests
                 ("vector_null_index.k", "1 2 3 4"),
                 ("while_bracket_test.k", ""),
@@ -764,7 +782,12 @@ namespace K3CSharp.Tests
                     var tokens = lexer.Tokenize();
                     var parser = new Parser(tokens);
                     var ast = parser.Parse();
+                    
                     var evaluator = new Evaluator();
+                    
+                    // Reset K tree before each test to ensure isolation
+                    evaluator.ResetKTree();
+                    
                     var actualOutput = evaluator.Evaluate(ast).ToString().Trim();
                     var passed = actualOutput == expected;
 

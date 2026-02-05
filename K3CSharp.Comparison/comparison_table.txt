@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-02-04 02:17:05
+Generated: 2026-02-05 00:08:42
 
 SUMMARY:
 --------
-Total Tests:     393
-✅ Matched:       299
-❌ Differed:      53
+Total Tests:     406
+✅ Matched:       309
+❌ Differed:      54
 ⚠️  Skipped:       16
-💥 Errors:        25
-Success Rate:    79.3%
+💥 Errors:        27
+Success Rate:    79.2%
 
 DETAILED RESULTS:
 -----------------
@@ -78,7 +78,8 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   dictionary_dot_apply.k                             1                              1                                                                                
 ✅ PASS   dictionary_empty.k                                 .()                            .()                                                                              
 ✅ PASS   dictionary_enumerate.k                             `a`b                           `a`b                           Compact representation                            
-✅ PASS   dictionary_index_attr.k                            .((`c;3;);(`d;4;))             .((`c;3;);(`d;4;))             Compact representation                            
+💥 ERROR dictionary_index_attr.k                                                           .((`c;3;)
+  (`d;4;))           K3Sharp error, k.exe succeeded                    
 ✅ PASS   dictionary_index_value.k                           1                              1                                                                                
 ✅ PASS   dictionary_index_value2.k                          2                              2                                                                                
 ✅ PASS   dictionary_index.k                                 1                              1                                                                                
@@ -87,7 +88,8 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   dictionary_null_index.k                            1 2                            1 2                                                                              
 ✅ PASS   dictionary_single.k                                .,(`a;`b;)                     .,(`a;`b;)                                                                       
 ✅ PASS   dictionary_type.k                                  5                              5                                                                                
-✅ PASS   dictionary_unmake.k                                ((`a;1;);(`b;2;))              ((`a;1;);(`b;2;))              Compact representation                            
+💥 ERROR dictionary_unmake.k                                                               ((`a;1;)
+ (`b;2;))             K3Sharp error, k.exe succeeded                    
 ✅ PASS   dictionary_with_null_value.k                       .((`a;1;);(`b;;);(`c;3;))      .((`a;1;);(`b;;);(`c;3;))      Compact representation                            
 ✅ PASS   divide_float.k                                     0.6                            0.6                                                                              
 ✅ PASS   divide_integer.k                                   2.5                            2.5                                                                              
@@ -108,7 +110,7 @@ Status   Test File                                          K3Sharp Output      
 💥 ERROR draw.k                                                                            _draw                          K3Sharp error, k.exe succeeded                    
 ✅ PASS   drop_negative.k                                    0 1 2 3                        0 1 2 3                                                                          
 ✅ PASS   drop_positive.k                                    4 5 6 7                        4 5 6 7                                                                          
-❌ FAIL   dyadic_divide_bracket.k                            _n                                                                                                              
+✅ PASS   dyadic_divide_bracket.k                                                                                                                                            
 💥 ERROR dyadic_minus_bracket.k                                                            7                              K3Sharp error, k.exe succeeded                    
 💥 ERROR dyadic_multiply_bracket.k                                                         24                             K3Sharp error, k.exe succeeded                    
 ❌ FAIL   dyadic_plus_bracket.k                              5                              8                                                                                
@@ -201,6 +203,21 @@ Status   Test File                                          K3Sharp Output      
 ⚠️  SKIP integer_types_long.k                                                                                             k.exe 32-bit limitation                           
 ✅ PASS   isolated.k                                         0.6                            0.6                                                                              
 ✅ PASS   join_operator.k                                    3 5                            3 5                                                                              
+❌ FAIL   k_tree_assignment_absolute_foo.k                   42                                                            Compact representation                            
+✅ PASS   k_tree_current_branch.k                            `.k                            `.k                            Compact representation                            
+❌ FAIL   k_tree_dictionary_assignment.k                     .((`a;1;);(`b;2;);(`c;3;))     .((`a;1;)
+  (`b;2;)
+  (`c...                                                     
+✅ PASS   k_tree_dictionary_indexing.k                       42                             42                             Compact representation                            
+❌ FAIL   k_tree_enumerate.k                                 `k`t                           ,`k                            Compact representation                            
+✅ PASS   k_tree_flip_dictionary.k                           .((`a;1;);(`b;2;);(`c;3;))     .((`a;1;);(`b;2;);(`c;3;))     Compact representation                            
+✅ PASS   k_tree_flip_test.k                                 ((`a;1);(`b;2);(`c;3))         ((`a;1);(`b;2);(`c;3))         Compact representation                            
+✅ PASS   k_tree_nested_indexing.k                           2                              2                              Compact representation                            
+✅ PASS   k_tree_null_to_dict_conversion.k                   .,(`foo;42;)                   .,(`foo;42;)                   Compact representation                            
+✅ PASS   k_tree_retrieval_relative.k                        42                             42                             Compact representation                            
+✅ PASS   k_tree_retrieve_absolute_foo.k                     42                             42                             Compact representation                            
+✅ PASS   k_tree_test_bracket_indexing.k                     2                              2                              Compact representation                            
+✅ PASS   k_tree_verify_root.k                                                                                             Compact representation                            
 ✅ PASS   less_than_operator.k                               1                              1                                                                                
 ✅ PASS   log.k                                              2.302585                       2.302585                                                                         
 💥 ERROR lsq.k                                                                             _lsq                           K3Sharp error, k.exe succeeded                    
@@ -335,7 +352,7 @@ Status   Test File                                          K3Sharp Output      
 ⚠️  SKIP special_long_null.k                                                                                              k.exe 32-bit limitation                           
 ⚠️  SKIP special_long_pos_inf.k                                                                                           k.exe 32-bit limitation                           
 ✅ PASS   special_neg0i_plus_1.k                             -2147483646                    -2147483646                                                                      
-❌ FAIL   special_null.k                                     _n                                                                                                              
+✅ PASS   special_null.k                                                                                                                                                     
 ✅ PASS   special_underflow_2.k                              2147483549                     2147483549                                                                       
 ✅ PASS   special_underflow_3.k                              2147482649                     2147482649                                                                       
 ✅ PASS   special_underflow.k                                2147483622                     2147483622                                                                       
@@ -356,7 +373,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   take_operator_empty_symbol.k                       0#`                            0#`                                                                              
 ✅ PASS   take_operator_overflow.k                           1 2 3 1 2 3 1 2 3 1            1 2 3 1 2 3 1 2 3 1                                                              
 ✅ PASS   take_operator_scalar.k                             42 42 42                       42 42 42                                                                         
-💥 ERROR time.k                                                                            -281032985                     K3Sharp error, k.exe succeeded                    
+💥 ERROR time.k                                                                            -280954287                     K3Sharp error, k.exe succeeded                    
 ✅ PASS   type_char.k                                        3                              3                                                                                
 ✅ PASS   type_float.k                                       2                              2                                                                                
 ✅ PASS   type_null.k                                        6                              6                                                                                
@@ -462,7 +479,7 @@ File: amend_test_func_var.k
 K3Sharp: `.
 k.exe:   11 2 3
 
-... and 43 more failed tests
+... and 44 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------
@@ -487,16 +504,16 @@ Error: K3Sharp Error: Undefined variable: :
 File: conditional_true.k
 Error: K3Sharp Error: Undefined variable: :
 
+File: dictionary_index_attr.k
+Error: K3Sharp Error: Undefined variable: b.
+
+File: dictionary_unmake.k
+Error: K3Sharp Error: Undefined variable: .d
+
 File: do_bracket_test.k
 Error: K3Sharp Error: Do function requires at least 2 arguments: count and expression(s)
 
-File: do_loop.k
-Error: K3Sharp Error: Expected ']' after arguments expression
-
-File: do_simple.k
-Error: K3Sharp Error: Do function requires at least 2 arguments: count and expression(s)
-
-... and 15 more error tests
+... and 17 more error tests
 
 K.EXE FAILING TESTS:
 --------------------

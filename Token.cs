@@ -93,6 +93,7 @@ namespace K3CSharp
         SS,             // _ss database function
         CI,             // _ci database function
         IC,             // _ic database function
+        DIRECTORY,      // _d directory operations
         DO,             // _do control flow
         WHILE,          // _while control flow
         IF_FUNC,        // _if control flow

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace K3CSharp
 {
@@ -1074,13 +1076,17 @@ namespace K3CSharp
         private ASTNode _cachedAst;
         private readonly object _astCacheLock = new object();
 
-        public FunctionValue(string bodyText, List<string> parameters, List<Token> preParsedTokens = null)
+        // Associated K tree for anonymous functions
+        public KTree AssociatedKTree { get; private set; }
+        
+        public FunctionValue(string bodyText, List<string> parameters, List<Token> preParsedTokens = null!)
         {
             BodyText = bodyText;
             Parameters = parameters;
             Type = ValueType.Function;
             Valence = parameters.Count;
             PreParsedTokens = preParsedTokens;
+            AssociatedKTree = new KTree(); // Create associated K tree for anonymous functions
         }
         
         // Get or create cached AST (thread-safe)
@@ -1176,7 +1182,7 @@ namespace K3CSharp
 
         public override string ToString()
         {
-            return "_n";
+            return ""; // For display purposes, _n is displayed as nothing (empty string) per spec
         }
     }
 

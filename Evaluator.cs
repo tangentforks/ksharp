@@ -12,11 +12,38 @@ namespace K3CSharp
         public bool isInFunctionCall = false; // Track if we're evaluating a function call
         public static int floatPrecision = 7; // Default precision for floating point display
         
+        // K Tree for global namespace management
+        private KTree kTree = new KTree();
+        
         // Reference to the current function being executed (for AST caching)
         public FunctionValue currentFunctionValue = null;
 
         // Reference to parent evaluator for global scope access
         private Evaluator parentEvaluator = null;
+
+        // Public methods for K tree operations
+        public K3Value GetCurrentBranch()
+        {
+            return kTree.CurrentBranch;
+        }
+        
+        public void SetCurrentBranch(string branchPath)
+        {
+            kTree.CurrentBranch = new SymbolValue(branchPath);
+        }
+        
+        public void SetParentBranch()
+        {
+            kTree.CurrentBranch = kTree.GetParentBranch();
+        }
+        
+        /// <summary>
+        /// Resets the K tree to its default state (for testing purposes)
+        /// </summary>
+        public void ResetKTree()
+        {
+            kTree = new KTree();
+        }
 
         public K3Value Evaluate(ASTNode node)
         {
@@ -80,7 +107,7 @@ namespace K3CSharp
         private bool IsBuiltInOperator(string operatorName)
         {
             // List of built-in operators that can be used as functions
-            return operatorName == "+" || operatorName == "-" || operatorName == "*" || operatorName == "/" ||
+            return operatorName == "+" || operatorName == "-" || operatorName == "*" || operatorName == "%" ||
                    operatorName == "^" || operatorName == "<" || operatorName == ">" || operatorName == "=" ||
                    operatorName == "," || operatorName == "." || operatorName == "!" || operatorName == "@" ||
                    operatorName == "#" || operatorName == "_" || operatorName == "?" || operatorName == "$";
@@ -94,6 +121,47 @@ namespace K3CSharp
         
         private K3Value GetVariable(string variableName)
         {
+            // Check if this is a K tree dotted notation variable
+            if (variableName.Contains("."))
+            {
+                var kTreeValue = kTree.GetValue(variableName);
+                if (kTreeValue != null)
+                {
+                    return kTreeValue;
+                }
+            }
+            
+            // Check if this is a relative path in the current K tree branch
+            if (!variableName.Contains("."))
+            {
+                var currentBranch = kTree.CurrentBranch.Value;
+                if (!string.IsNullOrEmpty(currentBranch))
+                {
+                    // Try relative path from current branch
+                    var relativePath = currentBranch + "." + variableName;
+                    var kTreeValue = kTree.GetValue(relativePath);
+                    if (kTreeValue != null)
+                    {
+                        return kTreeValue;
+                    }
+                }
+                else
+                {
+                    // Debug: current branch is empty (root), so no relative resolution
+                    // This means we should fall back to regular variable lookup
+                }
+                
+                // Also check function's associated K tree for relative paths
+                if (string.IsNullOrEmpty(currentBranch) && currentFunctionValue != null && currentFunctionValue.AssociatedKTree != null)
+                {
+                    var functionKTreeValue = currentFunctionValue.AssociatedKTree.GetValue(variableName);
+                    if (functionKTreeValue != null)
+                    {
+                        return functionKTreeValue;
+                    }
+                }
+            }
+            
             // Check local scope first
             if (localVariables.TryGetValue(variableName, out var localValue))
             {
@@ -123,6 +191,16 @@ namespace K3CSharp
         
         private K3Value SetVariable(string variableName, K3Value value)
         {
+            // Check if this is a K tree dotted notation variable
+            if (variableName.Contains("."))
+            {
+                if (kTree.SetValue(variableName, value))
+                {
+                    return value;
+                }
+                // If K tree assignment fails, fall back to local assignment
+            }
+            
             // Local assignment - always set in local scope
             localVariables[variableName] = value;
             return value;
@@ -130,6 +208,16 @@ namespace K3CSharp
 
         private K3Value SetGlobalVariable(string variableName, K3Value value)
         {
+            // Check if this is a K tree dotted notation variable
+            if (variableName.Contains("."))
+            {
+                if (kTree.SetValue(variableName, value))
+                {
+                    return value;
+                }
+                // If K tree assignment fails, fall back to global assignment
+            }
+            
             // Global assignment - always set in global scope
             if (parentEvaluator != null)
             {
@@ -179,6 +267,7 @@ namespace K3CSharp
                     "?" => Unique(operand),
                     "=" => Group(operand),
                     "$" => Format(operand),
+                    "DIRECTORY" => GetCurrentBranch(),
                     "NEGATE" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue))
                     ? AttributeHandle(operand)
                     : LogicalNegate(operand),
@@ -219,6 +308,7 @@ namespace K3CSharp
                     "_do" => DoFunction(operand),
                     "_while" => WhileFunction(operand),
                     "_if" => IfFunction(operand),
+                    "_d" => GetCurrentBranch(),
                     "do" => DoFunction(operand),
                     "while" => WhileFunction(operand),
                     "if" => IfFunction(operand),
@@ -572,6 +662,15 @@ namespace K3CSharp
                 functionEvaluator.SetVariable(parameters[i], arguments[i]);
             }
             
+            // Set the associated K tree for anonymous functions
+            functionEvaluator.kTree = functionValue.AssociatedKTree; // Pass the associated K tree
+            
+            // Bind parameters to arguments (in local scope)
+            for (int i = 0; i < parameters.Count; i++)
+            {
+                functionEvaluator.SetVariable(parameters[i], arguments[i]);
+            }
+            
             // Set the current function value for AST caching optimization
             functionEvaluator.currentFunctionValue = functionValue;
             
@@ -906,6 +1005,11 @@ namespace K3CSharp
                     // Handle unary enumerate operator
                     if (arguments.Count == 1)
                     {
+                        // Special case: !` enumerates keys in root dictionary
+                        if (arguments[0] is SymbolValue sym && sym.Value == "")
+                        {
+                            return kTree.GetRootKeys();
+                        }
                         return Enumerate(arguments[0]);
                     }
                     else if (arguments.Count >= 2)
@@ -1045,6 +1149,7 @@ namespace K3CSharp
                     throw new Exception("* operator requires 2 arguments");
                 case "/":
                     if (arguments.Count >= 2) return Divide(arguments[0], arguments[1]);
+                    Console.WriteLine($"DEBUG: Divide operator called with symbol: {arguments[0]}"); // Debug output
                     throw new Exception("/ operator requires 2 arguments");
                 case "^":
                     if (arguments.Count >= 2) return Power(arguments[0], arguments[1]);
@@ -2007,7 +2112,33 @@ namespace K3CSharp
 
         private K3Value Transpose(K3Value a)
         {
-            // For now, just return the argument (transpose for matrices not implemented)
+            // Flip/transpose operation: +(`a`b`c;1 2 3) -> ((`a;1);(`b;2);(`c;3))
+            if (a is VectorValue vec && vec.Elements.Count == 2)
+            {
+                var first = vec.Elements[0];
+                var second = vec.Elements[1];
+                
+                if (first is VectorValue firstVec && second is VectorValue secondVec)
+                {
+                    // Check if both vectors have the same length
+                    if (firstVec.Elements.Count != secondVec.Elements.Count)
+                    {
+                        throw new Exception("Flip requires vectors of equal length");
+                    }
+                    
+                    // Create the flipped structure: ((first[i];second[i]);...)
+                    var result = new List<K3Value>();
+                    for (int i = 0; i < firstVec.Elements.Count; i++)
+                    {
+                        var pair = new List<K3Value> { firstVec.Elements[i], secondVec.Elements[i] };
+                        result.Add(new VectorValue(pair));
+                    }
+                    
+                    return new VectorValue(result);
+                }
+            }
+            
+            // For other cases, return as-is (matrix transpose not implemented)
             return a;
         }
 

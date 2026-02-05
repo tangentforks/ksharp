@@ -671,6 +671,7 @@ namespace K3CSharp
                 "_ss" => new Token(TokenType.SS, opName, start),
                 "_ci" => new Token(TokenType.CI, opName, start),
                 "_ic" => new Token(TokenType.IC, opName, start),
+                "_d" => new Token(TokenType.DIRECTORY, opName, start),
                 "_do" => new Token(TokenType.DO, opName, start),
                 "_while" => new Token(TokenType.WHILE, opName, start),
                 "_if" => new Token(TokenType.IF_FUNC, opName, start),
