@@ -594,7 +594,7 @@ namespace K3CSharp
             return new Token(TokenType.INTEGER, number, start);
         }
 
-        private Token ReadMathOperation()
+        private Token? ReadMathOperation()
         {
             int start = position;
             
@@ -632,7 +632,7 @@ namespace K3CSharp
             }
             
             // Map operation names to tokens
-            Token result = opName switch
+            Token? result = opName switch
             {
                 // Mathematical floating point operations
                 "_log" => new Token(TokenType.LOG, opName, start),

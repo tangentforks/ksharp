@@ -51,13 +51,14 @@ namespace K3CSharp.Comparison
         
         public bool HasDifference(string testName) => _differences.ContainsKey(testName);
         
-        public KnownDifference GetDifference(string testName) => _differences.GetValueOrDefault(testName);
+        public KnownDifference? GetDifference(string testName) => _differences.GetValueOrDefault(testName);
         
         public string ApplyTweaks(string input, string testName)
         {
             if (!HasDifference(testName)) return input;
             
             var difference = GetDifference(testName);
+            if (difference == null) return input;
             var result = input;
             
             foreach (var tweak in difference.Tweaks)
@@ -68,7 +69,7 @@ namespace K3CSharp.Comparison
             return result;
         }
         
-        private string ApplyTweak(string input, string tweak)
+        private static string ApplyTweak(string input, string tweak)
         {
             var parts = tweak.Split(':');
             if (parts.Length < 2) return input;
@@ -103,7 +104,7 @@ namespace K3CSharp.Comparison
             // Parse command line arguments
             bool forceKExe = false;
             bool showHelp = false;
-            string singleTest = null;
+            string? singleTest = null;
             
             for (int i = 0; i < args.Length; i++)
             {
@@ -187,7 +188,7 @@ namespace K3CSharp.Comparison
                         processed++;
                         Console.Write($"{processed:D3}. {fileName,-50} ");
                         
-                        var result = CompareTestFile(wrapper, fileName, testScriptsPath, knownDifferences);
+                        var result = CompareTestFile(wrapper, fileName ?? "", testScriptsPath, knownDifferences);
                         results.Add(result);
                         
                         var statusSymbol = result.Status switch
@@ -300,7 +301,7 @@ namespace K3CSharp.Comparison
                 
                 // Check for unsupported long integers (32-bit k.exe limitation)
                 // Only skip if using k.exe, not e.exe
-                if (wrapper.ContainsLongInteger(scriptContent) && wrapper.IsUsingKExe())
+                if (KInterpreterWrapper.ContainsLongInteger(scriptContent) && wrapper.IsUsingKExe())
                 {
                     comparison.Status = ComparisonStatus.Skipped;
                     comparison.Message = "Contains long integers";
@@ -337,7 +338,7 @@ namespace K3CSharp.Comparison
                     {
                         comparison.Notes = "K3Sharp error, k.exe timeout";
                     }
-                    catch (Exception kEx)
+                    catch (Exception)
                     {
                         comparison.Notes = "Both K3Sharp and k.exe errors";
                     }
@@ -382,10 +383,14 @@ namespace K3CSharp.Comparison
                 // Store notes if we applied known differences
                 if (knownDifferences.HasDifference(testNameWithoutExtension))
                 {
-                    var existingNotes = knownDifferences.GetDifference(testNameWithoutExtension).Notes;
-                    comparison.Notes = string.IsNullOrEmpty(existingNotes) ? "Known difference" : existingNotes;
-                    // Store the adjusted output for reporting
-                    comparison.KOutput = adjustedKOutput;
+                    var difference = knownDifferences.GetDifference(testNameWithoutExtension);
+                    if (difference != null)
+                    {
+                        var existingNotes = difference.Notes;
+                        comparison.Notes = string.IsNullOrEmpty(existingNotes) ? "Known difference" : existingNotes;
+                        // Store the adjusted output for reporting
+                        comparison.KOutput = adjustedKOutput;
+                    }
                 }
                 
                 // Strict comparison - no format relaxation
@@ -404,153 +409,157 @@ namespace K3CSharp.Comparison
         {
             var lexer = new Lexer(scriptContent);
             var parser = new Parser(lexer.Tokenize(), scriptContent);
-            return new Evaluator().Evaluate(parser.Parse()).ToString();
+            var ast = parser.Parse();
+            if (ast == null)
+            {
+                return new NullValue().ToString();
+            }
+            return new Evaluator().Evaluate(ast).ToString();
         }
         
         private static void GenerateComparisonReport(List<TestComparison> results, string reportPath, bool isFinal, string testScriptsPath)
         {
-            using (var writer = new StreamWriter(reportPath, append: !isFinal))
+            using var writer = new StreamWriter(reportPath, append: !isFinal);
+            
+            if (isFinal)
             {
-                if (isFinal)
+                writer.WriteLine("K3Sharp vs k.exe Comparison Report");
+                writer.WriteLine("=================================");
+                writer.WriteLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                writer.WriteLine();
+                
+                // Summary table
+                var summary = results.GroupBy(r => r.Status).ToDictionary(g => g.Key, g => g.Count());
+                writer.WriteLine("SUMMARY:");
+                writer.WriteLine("--------");
+                writer.WriteLine($"Total Tests:     {results.Count}");
+                writer.WriteLine($"✅ Matched:       {summary.GetValueOrDefault(ComparisonStatus.Matched, 0)}");
+                writer.WriteLine($"❌ Differed:      {summary.GetValueOrDefault(ComparisonStatus.Differed, 0)}");
+                writer.WriteLine($"⚠️  Skipped:       {summary.GetValueOrDefault(ComparisonStatus.Skipped, 0)}");
+                writer.WriteLine($"💥 Errors:        {summary.GetValueOrDefault(ComparisonStatus.Error, 0)}");
+                
+                var successRate = summary.GetValueOrDefault(ComparisonStatus.Matched, 0) * 100.0 / (results.Count - summary.GetValueOrDefault(ComparisonStatus.Skipped, 0));
+                writer.WriteLine($"Success Rate:    {successRate:F1}%");
+                writer.WriteLine();
+                
+                // Detailed results table
+                writer.WriteLine("DETAILED RESULTS:");
+                writer.WriteLine("-----------------");
+                writer.WriteLine("Status".PadRight(8) + " " + "Test File".PadRight(50) + " " + "K3Sharp Output".PadRight(30) + " " + "k.exe Output".PadRight(30) + " " + "Notes".PadRight(50));
+                writer.WriteLine(new string('-', 170));
+                
+                foreach (var result in results.OrderBy(r => r.FileName))
                 {
-                    writer.WriteLine("K3Sharp vs k.exe Comparison Report");
-                    writer.WriteLine("=================================");
-                    writer.WriteLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                    writer.WriteLine();
-                    
-                    // Summary table
-                    var summary = results.GroupBy(r => r.Status).ToDictionary(g => g.Key, g => g.Count());
-                    writer.WriteLine("SUMMARY:");
-                    writer.WriteLine("--------");
-                    writer.WriteLine($"Total Tests:     {results.Count}");
-                    writer.WriteLine($"✅ Matched:       {summary.GetValueOrDefault(ComparisonStatus.Matched, 0)}");
-                    writer.WriteLine($"❌ Differed:      {summary.GetValueOrDefault(ComparisonStatus.Differed, 0)}");
-                    writer.WriteLine($"⚠️  Skipped:       {summary.GetValueOrDefault(ComparisonStatus.Skipped, 0)}");
-                    writer.WriteLine($"💥 Errors:        {summary.GetValueOrDefault(ComparisonStatus.Error, 0)}");
-                    
-                    var successRate = summary.GetValueOrDefault(ComparisonStatus.Matched, 0) * 100.0 / (results.Count - summary.GetValueOrDefault(ComparisonStatus.Skipped, 0));
-                    writer.WriteLine($"Success Rate:    {successRate:F1}%");
-                    writer.WriteLine();
-                    
-                    // Detailed results table
-                    writer.WriteLine("DETAILED RESULTS:");
-                    writer.WriteLine("-----------------");
-                    writer.WriteLine("Status".PadRight(8) + " " + "Test File".PadRight(50) + " " + "K3Sharp Output".PadRight(30) + " " + "k.exe Output".PadRight(30) + " " + "Notes".PadRight(50));
-                    writer.WriteLine(new string('-', 170));
-                    
-                    foreach (var result in results.OrderBy(r => r.FileName))
+                    var status = result.Status switch
                     {
-                        var status = result.Status switch
-                        {
-                            ComparisonStatus.Matched => "✅ PASS",
-                            ComparisonStatus.Differed => "❌ FAIL", 
-                            ComparisonStatus.Skipped => "⚠️  SKIP",
-                            ComparisonStatus.Error => "💥 ERROR",
-                            _ => "❓ UNKNOWN"
-                        };
-                        
-                        var k3SharpOutput = TruncateString(result.K3SharpOutput, 28);
-                        var kOutput = TruncateString(result.KOutput, 28);
-                        var notes = TruncateString(result.Notes, 48);
-                        
-                        writer.WriteLine($"{status.PadRight(8)} {result.FileName.PadRight(50)} {k3SharpOutput.PadRight(30)} {kOutput.PadRight(30)} {notes.PadRight(50)}");
+                        ComparisonStatus.Matched => "✅ PASS",
+                        ComparisonStatus.Differed => "❌ FAIL", 
+                        ComparisonStatus.Skipped => "⚠️  SKIP",
+                        ComparisonStatus.Error => "💥 ERROR",
+                        _ => "❓ UNKNOWN"
+                    };
+                    
+                    var k3SharpOutput = TruncateString(result.K3SharpOutput, 28);
+                    var kOutput = TruncateString(result.KOutput, 28);
+                    var notes = TruncateString(result.Notes, 48);
+                    
+                    writer.WriteLine($"{status.PadRight(8)} {result.FileName.PadRight(50)} {k3SharpOutput.PadRight(30)} {kOutput.PadRight(30)} {notes.PadRight(50)}");
+                }
+                
+                writer.WriteLine();
+                writer.WriteLine("FAILED TESTS DETAILS:");
+                writer.WriteLine("--------------------");
+                
+                var failedTests = results.Where(r => r.Status == ComparisonStatus.Differed).ToList();
+                if (failedTests.Any())
+                {
+                    foreach (var test in failedTests.Take(10)) // Limit to first 10 failed tests
+                    {
+                        writer.WriteLine($"File: {test.FileName}");
+                        writer.WriteLine($"K3Sharp: {test.K3SharpOutput}");
+                        writer.WriteLine($"k.exe:   {test.KOutput}");
+                        writer.WriteLine();
                     }
-                    
-                    writer.WriteLine();
-                    writer.WriteLine("FAILED TESTS DETAILS:");
-                    writer.WriteLine("--------------------");
-                    
-                    var failedTests = results.Where(r => r.Status == ComparisonStatus.Differed).ToList();
-                    if (failedTests.Any())
+                    if (failedTests.Count > 10)
                     {
-                        foreach (var test in failedTests.Take(10)) // Limit to first 10 failed tests
-                        {
-                            writer.WriteLine($"File: {test.FileName}");
-                            writer.WriteLine($"K3Sharp: {test.K3SharpOutput}");
-                            writer.WriteLine($"k.exe:   {test.KOutput}");
-                            writer.WriteLine();
-                        }
-                        if (failedTests.Count > 10)
-                        {
-                            writer.WriteLine($"... and {failedTests.Count - 10} more failed tests");
-                        }
-                    }
-                    else
-                    {
-                        writer.WriteLine("No failed tests found!");
-                    }
-                    
-                    writer.WriteLine();
-                    writer.WriteLine("ERROR TESTS DETAILS:");
-                    writer.WriteLine("-------------------");
-                    
-                    var errorTests = results.Where(r => r.Status == ComparisonStatus.Error).ToList();
-                    if (errorTests.Any())
-                    {
-                        foreach (var test in errorTests.Take(10)) // Limit to first 10 error tests
-                        {
-                            writer.WriteLine($"File: {test.FileName}");
-                            writer.WriteLine($"Error: {test.Message}");
-                            writer.WriteLine();
-                        }
-                        if (errorTests.Count > 10)
-                        {
-                            writer.WriteLine($"... and {errorTests.Count - 10} more error tests");
-                        }
-                    }
-                    else
-                    {
-                        writer.WriteLine("No error tests found!");
-                    }
-                    
-                    writer.WriteLine();
-                    writer.WriteLine("K.EXE FAILING TESTS:");
-                    writer.WriteLine("--------------------");
-                    
-                    var kFailingTests = results.Where(r => 
-                        r.Status == ComparisonStatus.Error && (
-                            r.Notes.Contains("Both K3Sharp and k.exe errors") ||
-                            r.Notes.Contains("k.exe error only") ||
-                            r.Notes.Contains("k.exe timeout")
-                        )
-                    ).ToList();
-                    
-                    if (kFailingTests.Any())
-                    {
-                        foreach (var test in kFailingTests)
-                        {
-                            writer.WriteLine($"Test: {test.FileName}");
-                            try
-                            {
-                                var testFilePath = Path.Combine(testScriptsPath, test.FileName);
-                                var testInput = File.ReadAllText(testFilePath).Trim();
-                                writer.WriteLine($"Input: {testInput}");
-                            }
-                            catch (Exception ex)
-                            {
-                                writer.WriteLine($"Input: [Error reading file: {ex.Message}]");
-                            }
-                            writer.WriteLine($"Error: {test.Message}");
-                            writer.WriteLine();
-                        }
-                    }
-                    else
-                    {
-                        writer.WriteLine("No tests failing in k.exe found!");
+                        writer.WriteLine($"... and {failedTests.Count - 10} more failed tests");
                     }
                 }
                 else
                 {
-                    // Progress update
-                    writer.WriteLine($"Progress update: {results.Count} tests processed at {DateTime.Now:HH:mm:ss}");
+                    writer.WriteLine("No failed tests found!");
                 }
+                
+                writer.WriteLine();
+                writer.WriteLine("ERROR TESTS DETAILS:");
+                writer.WriteLine("-------------------");
+                
+                var errorTests = results.Where(r => r.Status == ComparisonStatus.Error).ToList();
+                if (errorTests.Any())
+                {
+                    foreach (var test in errorTests.Take(10)) // Limit to first 10 error tests
+                    {
+                        writer.WriteLine($"File: {test.FileName}");
+                        writer.WriteLine($"Error: {test.Message}");
+                        writer.WriteLine();
+                    }
+                    if (errorTests.Count > 10)
+                    {
+                        writer.WriteLine($"... and {errorTests.Count - 10} more error tests");
+                    }
+                }
+                else
+                {
+                    writer.WriteLine("No error tests found!");
+                }
+                
+                writer.WriteLine();
+                writer.WriteLine("K.EXE FAILING TESTS:");
+                writer.WriteLine("--------------------");
+                
+                var kFailingTests = results.Where(r => 
+                    r.Status == ComparisonStatus.Error && (
+                        r.Notes.Contains("Both K3Sharp and k.exe errors") ||
+                        r.Notes.Contains("k.exe error only") ||
+                        r.Notes.Contains("k.exe timeout")
+                        )
+                    ).ToList();
+                
+                if (kFailingTests.Any())
+                {
+                    foreach (var test in kFailingTests)
+                    {
+                        writer.WriteLine($"Test: {test.FileName}");
+                        try
+                        {
+                            var testFilePath = Path.Combine(testScriptsPath, test.FileName);
+                            var testInput = File.ReadAllText(testFilePath).Trim();
+                            writer.WriteLine($"Input: {testInput}");
+                        }
+                        catch (Exception ex)
+                        {
+                            writer.WriteLine($"Input: [Error reading file: {ex.Message}]");
+                        }
+                        writer.WriteLine($"Error: {test.Message}");
+                        writer.WriteLine();
+                    }
+                }
+                else
+                {
+                    writer.WriteLine("No tests failing in k.exe found!");
+                }
+            }
+            else
+            {
+                    // Progress update
+                writer.WriteLine($"Progress update: {results.Count} tests processed at {DateTime.Now:HH:mm:ss}");
             }
         }
         
         private static string TruncateString(string s, int maxLength)
         {
             if (string.IsNullOrEmpty(s)) return "";
-            return s.Length > maxLength ? s.Substring(0, maxLength - 3) + "..." : s;
+            return s.Length > maxLength ? s.AsSpan(0, maxLength - 3).ToString() + "..." : s;
         }
         
         private static void ShowHelp()

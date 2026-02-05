@@ -6,9 +6,9 @@ namespace K3CSharp
 {
     public class Evaluator
     {
-        private Dictionary<string, K3Value> globalVariables = new Dictionary<string, K3Value>();
-        private Dictionary<string, K3Value> localVariables = new Dictionary<string, K3Value>();
-        private Dictionary<string, int> symbolTable = new Dictionary<string, int>();
+        private readonly Dictionary<string, K3Value> globalVariables = new Dictionary<string, K3Value>();
+        private readonly Dictionary<string, K3Value> localVariables = new Dictionary<string, K3Value>();
+        private readonly Dictionary<string, int> symbolTable = new Dictionary<string, int>();
         public bool isInFunctionCall = false; // Track if we're evaluating a function call
         public static int floatPrecision = 7; // Default precision for floating point display
         
@@ -16,13 +16,13 @@ namespace K3CSharp
         private KTree kTree = new KTree();
         
         // Reference to the current function being executed (for AST caching)
-        public FunctionValue currentFunctionValue = null;
+        public FunctionValue? currentFunctionValue = null;
 
         // Reference to parent evaluator for global scope access
-        private Evaluator parentEvaluator = null;
+        private Evaluator? parentEvaluator = null;
 
         // Public methods for K tree operations
-        public K3Value GetCurrentBranch()
+        public K3Value? GetCurrentBranch()
         {
             return kTree.CurrentBranch;
         }
@@ -45,28 +45,31 @@ namespace K3CSharp
             kTree = new KTree();
         }
 
-        public K3Value Evaluate(ASTNode node)
+        public K3Value Evaluate(ASTNode? node)
         {
             if (node == null)
                 return new NullValue();
                 
-            return EvaluateNode(node);
+            return EvaluateNode(node) ?? new NullValue();
         }
 
-        private K3Value EvaluateNode(ASTNode node)
+        private K3Value? EvaluateNode(ASTNode? node)
         {
+            if (node == null)
+                return new NullValue();
+            
             switch (node.Type)
             {
                 case ASTNodeType.Literal:
                     return node.Value;
 
                 case ASTNodeType.Variable:
-                    var name = node.Value is SymbolValue symbol ? symbol.Value : node.Value.ToString();
+                    var name = node.Value is SymbolValue symbol ? symbol.Value : node.Value?.ToString() ?? "";
                     return GetVariable(name);
 
                 case ASTNodeType.Assignment:
                     {
-                        var assignName = node.Value is SymbolValue assignmentSym ? assignmentSym.Value : node.Value.ToString();
+                        var assignName = node.Value is SymbolValue assignmentSym ? assignmentSym.Value : node.Value?.ToString() ?? "";
                         var value = Evaluate(node.Children[0]);
                         SetVariable(assignName, value); // Use local variables for regular assignments
                         return value; // Return the assigned value
@@ -74,7 +77,7 @@ namespace K3CSharp
 
                 case ASTNodeType.GlobalAssignment:
                     {
-                        var globalAssignName = node.Value is SymbolValue globalAssignmentSym ? globalAssignmentSym.Value : node.Value.ToString();
+                        var globalAssignName = node.Value is SymbolValue globalAssignmentSym ? globalAssignmentSym.Value : node.Value?.ToString() ?? "";
                         var globalValue = Evaluate(node.Children[0]);
                         SetGlobalVariable(globalAssignName, globalValue);
                         return globalValue; // Return the assigned value
@@ -104,7 +107,7 @@ namespace K3CSharp
             }
         }
 
-        private bool IsBuiltInOperator(string operatorName)
+        private static bool IsBuiltInOperator(string operatorName)
         {
             // List of built-in operators that can be used as functions
             return operatorName == "+" || operatorName == "-" || operatorName == "*" || operatorName == "%" ||
@@ -113,7 +116,7 @@ namespace K3CSharp
                    operatorName == "#" || operatorName == "_" || operatorName == "?" || operatorName == "$";
         }
 
-        private bool IsColon(K3Value value)
+        private static bool IsColon(K3Value value)
         {
             // Check if the value represents a colon (:)
             return value is SymbolValue symbol && symbol.Value == ":";
@@ -122,7 +125,7 @@ namespace K3CSharp
         private K3Value GetVariable(string variableName)
         {
             // Check if this is a K tree dotted notation variable
-            if (variableName.Contains("."))
+            if (variableName.Contains('.'))
             {
                 var kTreeValue = kTree.GetValue(variableName);
                 if (kTreeValue != null)
@@ -132,9 +135,9 @@ namespace K3CSharp
             }
             
             // Check if this is a relative path in the current K tree branch
-            if (!variableName.Contains("."))
+            if (!variableName.Contains('.'))
             {
-                var currentBranch = kTree.CurrentBranch.Value;
+                var currentBranch = kTree.CurrentBranch?.Value ?? "";
                 if (!string.IsNullOrEmpty(currentBranch))
                 {
                     // Try relative path from current branch
@@ -192,7 +195,7 @@ namespace K3CSharp
         private K3Value SetVariable(string variableName, K3Value value)
         {
             // Check if this is a K tree dotted notation variable
-            if (variableName.Contains("."))
+            if (variableName.Contains('.'))
             {
                 if (kTree.SetValue(variableName, value))
                 {
@@ -209,7 +212,7 @@ namespace K3CSharp
         private K3Value SetGlobalVariable(string variableName, K3Value value)
         {
             // Check if this is a K tree dotted notation variable
-            if (variableName.Contains("."))
+            if (variableName.Contains('.'))
             {
                 if (kTree.SetValue(variableName, value))
                 {
@@ -232,7 +235,7 @@ namespace K3CSharp
             }
         }
 
-        private K3Value EvaluateLiteral(ASTNode node)
+        private K3Value? EvaluateLiteral(ASTNode node)
         {
             return node.Value;
         }
@@ -267,7 +270,7 @@ namespace K3CSharp
                     "?" => Unique(operand),
                     "=" => Group(operand),
                     "$" => Format(operand),
-                    "DIRECTORY" => GetCurrentBranch(),
+                    "DIRECTORY" => GetCurrentBranch() ?? new NullValue(),
                     "NEGATE" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue))
                     ? AttributeHandle(operand)
                     : LogicalNegate(operand),
@@ -308,7 +311,7 @@ namespace K3CSharp
                     "_do" => DoFunction(operand),
                     "_while" => WhileFunction(operand),
                     "_if" => IfFunction(operand),
-                    "_d" => GetCurrentBranch(),
+                    "_d" => GetCurrentBranch() ?? new NullValue(),
                     "do" => DoFunction(operand),
                     "while" => WhileFunction(operand),
                     "if" => IfFunction(operand),
@@ -335,7 +338,7 @@ namespace K3CSharp
                     // For assignment, the left side should be treated as a variable name, not evaluated
                     if (leftNode.Type == ASTNodeType.Variable)
                     {
-                        var variableName = leftNode.Value is SymbolValue symbol ? symbol.Value : leftNode.Value.ToString();
+                        var variableName = leftNode.Value is SymbolValue symbol ? symbol.Value : leftNode.Value?.ToString() ?? "";
                         return Assignment(variableName, rightValue);
                     }
                     else
@@ -455,7 +458,7 @@ namespace K3CSharp
             if (functionNode.Type == ASTNodeType.Variable)
             {
                 // Variable function call: functionName[args]
-                var functionName = functionNode.Value is SymbolValue symbol ? symbol.Value : functionNode.Value.ToString();
+                var functionName = functionNode.Value is SymbolValue symbol ? symbol.Value : functionNode.Value?.ToString() ?? "";
                 return CallVariableFunction(functionName, arguments);
             }
 
@@ -678,7 +681,7 @@ namespace K3CSharp
             return ExecuteFunctionBody(bodyText, functionEvaluator, functionValue.PreParsedTokens);
         }
 
-        private K3Value ExecuteFunctionBody(string bodyText, Evaluator functionEvaluator, List<Token> preParsedTokens = null)
+        private K3Value ExecuteFunctionBody(string bodyText, Evaluator functionEvaluator, List<Token>? preParsedTokens = null)
         {
             if (string.IsNullOrWhiteSpace(bodyText))
             {
@@ -687,7 +690,7 @@ namespace K3CSharp
             
             try
             {
-                ASTNode ast;
+                ASTNode? ast;
                 
                 // Try to get cached AST from the function value if available
                 // This is a performance optimization to avoid re-parsing the same function
@@ -736,16 +739,23 @@ namespace K3CSharp
                     }
                 }
                 
-                return functionEvaluator.Evaluate(ast);
+                if (ast != null)
+                    {
+                        return functionEvaluator.Evaluate(ast) ?? new NullValue();
+                    }
+                    else
+                    {
+                        return new NullValue();
+                    }
             }
             catch (Exception ex)
             {
                 // Runtime validation - function body errors are caught here (per spec)
-                throw new Exception($"Function execution error: {ex.Message}", ex);
+                throw new Exception($"Function execution error: {ex.Message}");
             }
         }
         
-        private ASTNode ParseFunctionBodyStatements(Parser parser, string bodyText)
+        private ASTNode? ParseFunctionBodyStatements(Parser parser, string bodyText)
         {
             // For function bodies, we need to handle multiple statements separated by semicolons or newlines
             // The main parser.Parse() method should handle this correctly for function bodies
@@ -753,7 +763,7 @@ namespace K3CSharp
             {
                 return parser.Parse();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // If parsing fails, it might be due to nested function definitions
                 // Let's try a more robust approach by parsing the function body manually
@@ -761,7 +771,7 @@ namespace K3CSharp
             }
         }
         
-        private ASTNode ParseFunctionBodyManually(string bodyText)
+        private ASTNode? ParseFunctionBodyManually(string bodyText)
         {
             // Manual parsing for function bodies with nested functions
             // This is a simplified version that focuses on the core issue
@@ -813,7 +823,7 @@ namespace K3CSharp
             return block;
         }
         
-        private ASTNode ParseRightSide(List<Token> tokens, ref int current)
+        private ASTNode? ParseRightSide(List<Token> tokens, ref int current)
         {
             if (current >= tokens.Count) return null;
             
@@ -829,7 +839,7 @@ namespace K3CSharp
             return ParseExpressionFromTokens(tokens, ref current);
         }
         
-        private ASTNode ParseFunctionDefinitionFromTokens(List<Token> tokens, ref int current)
+        private ASTNode? ParseFunctionDefinitionFromTokens(List<Token> tokens, ref int current)
         {
             // Parse function definition: {[params] body}
             if (current >= tokens.Count || tokens[current].Type != TokenType.LEFT_BRACE)
@@ -911,7 +921,7 @@ namespace K3CSharp
             return null;
         }
         
-        private ASTNode ParseExpressionFromTokens(List<Token> tokens, ref int current)
+        private ASTNode? ParseExpressionFromTokens(List<Token> tokens, ref int current)
         {
             // Simple expression parsing - this is a simplified version
             // In a full implementation, this would be more sophisticated
@@ -1187,9 +1197,9 @@ namespace K3CSharp
             throw new Exception($"Variable '{functionName}' is not a function");
         }
 
-        private K3Value EvaluateBlock(ASTNode node)
+        private K3Value? EvaluateBlock(ASTNode node)
         {
-            K3Value lastResult = null;
+            K3Value? lastResult = null;
             
             foreach (var child in node.Children)
             {
@@ -1345,7 +1355,7 @@ namespace K3CSharp
             }
         }
 
-        private HashSet<K3Value> CreateHashSet(K3Value value)
+        private HashSet<K3Value>? CreateHashSet(K3Value value)
         {
             // Create a HashSet from a K3Value for efficient lookups
             try
@@ -3179,7 +3189,7 @@ namespace K3CSharp
                         }
                         else
                         {
-                            result.Add(ApplyVerbWithOperator(verb, element, null));
+                            result.Add(ApplyVerbWithOperator(verb, element, new NullValue()));
                         }
                     }
                 }
@@ -3446,7 +3456,11 @@ namespace K3CSharp
                 {
                     var ast = parser.Parse();
                     // Use current evaluator (this) to maintain variable context
-                    return Evaluate(ast);
+                    if (ast != null)
+                    {
+                        return Evaluate(ast) ?? new NullValue();
+                    }
+                    return new NullValue();
                 }
                 catch (Exception ex)
                 {
@@ -3496,7 +3510,7 @@ namespace K3CSharp
                             // Tuple (key; value) - attribute is null
                             if (entryVec.Elements[0] is SymbolValue key)
                             {
-                                newDict[key] = (entryVec.Elements[1], null);
+                                newDict[key] = (entryVec.Elements[1], new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue Attribute)>()));
                             }
                             else
                             {
@@ -3509,7 +3523,7 @@ namespace K3CSharp
                             if (entryVec.Elements[0] is SymbolValue key)
                             {
                                 var attribute = entryVec.Elements[2] as DictionaryValue;
-                                newDict[key] = (entryVec.Elements[1], attribute);
+                                newDict[key] = (entryVec.Elements[1], attribute ?? new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue Attribute)>()));
                             }
                             else
                             {
@@ -4405,11 +4419,11 @@ namespace K3CSharp
             // Handle different data types
             if (data is VectorValue list)
             {
-                return AmendList(list, indices, function, value);
+                return AmendList(list, indices, function, value ?? new NullValue());
             }
             else if (data is DictionaryValue dict)
             {
-                return AmendDictionary(dict, indices, function, value);
+                return AmendDictionary(dict, indices, function, value ?? new NullValue());
             }
             else if (data is CharacterValue || data is IntegerValue || data is FloatValue)
             {
@@ -4418,7 +4432,7 @@ namespace K3CSharp
                 {
                     throw new Exception("For atomic data, indices must be empty list");
                 }
-                return AmendAtom(data, function, value);
+                return AmendAtom(data, function, value ?? new NullValue());
             }
             else
             {
@@ -4451,11 +4465,11 @@ namespace K3CSharp
             // Handle different data types
             if (data is VectorValue list)
             {
-                return AmendList(list, enlistedIndices, function, value);
+                return AmendList(list, enlistedIndices, function, value ?? new NullValue());
             }
             else if (data is DictionaryValue dict)
             {
-                return AmendDictionary(dict, enlistedIndices, function, value);
+                return AmendDictionary(dict, enlistedIndices, function, value ?? new NullValue());
             }
             else if (data is CharacterValue || data is IntegerValue || data is FloatValue)
             {
@@ -4464,7 +4478,7 @@ namespace K3CSharp
                 {
                     throw new Exception("For atomic data, indices must be empty list");
                 }
-                return AmendAtom(data, function, value);
+                return AmendAtom(data, function, value ?? new NullValue());
             }
             else
             {
@@ -4868,7 +4882,11 @@ namespace K3CSharp
                 var tokens = lexer.Tokenize();
                 var parser = new Parser(tokens, expression);
                 var ast = parser.Parse();
-                return Evaluate(ast);
+                if (ast != null)
+                {
+                    return Evaluate(ast) ?? new NullValue();
+                }
+                return new NullValue();
             }
             catch (Exception ex)
             {
@@ -5101,7 +5119,11 @@ namespace K3CSharp
                     var tokens = lexer.Tokenize();
                     var parser = new Parser(tokens, code);
                     var ast = parser.Parse();
-                    return Evaluate(ast);
+                    if (ast != null)
+                    {
+                        return Evaluate(ast) ?? new NullValue();
+                    }
+                    return new NullValue();
                 }
                 
                 // Regular vector - recurse on elements
@@ -5126,7 +5148,11 @@ namespace K3CSharp
                 var tokens = lexer.Tokenize();
                 var parser = new Parser(tokens, code);
                 var ast = parser.Parse();
-                return Evaluate(ast);
+                if (ast != null)
+                {
+                    return Evaluate(ast) ?? new NullValue();
+                }
+                return new NullValue();
             }
             else
             {
@@ -5426,7 +5452,7 @@ namespace K3CSharp
             if (operand is VectorValue args && args.Elements.Count >= 2)
             {
                 var countValue = args.Elements[0] is FunctionValue countFunc 
-                    ? Evaluate(new Parser(countFunc.PreParsedTokens ?? new List<Token>()).Parse())
+                    ? Evaluate(new Parser(countFunc.PreParsedTokens ?? new List<Token>()).Parse() ?? new ASTNode(ASTNodeType.Literal, new NullValue()))
                     : EvaluateExpression(args.Elements[0]);
                 var count = ToInteger(countValue);
                 
@@ -5447,7 +5473,7 @@ namespace K3CSharp
                             // Parse and evaluate the function body
                             var parser = new Parser(func.PreParsedTokens ?? new List<Token>());
                             var ast = parser.Parse();
-                            Evaluate(ast); // Execute but don't store result
+                            if (ast != null) Evaluate(ast); // Execute but don't store result
                         }
                         else
                         {
@@ -5572,7 +5598,7 @@ namespace K3CSharp
     // Custom comparer for K3Value to use in HashSet operations
     public class K3ValueComparer : IEqualityComparer<K3Value>
     {
-        public bool Equals(K3Value x, K3Value y)
+        public bool Equals(K3Value? x, K3Value? y)
         {
             if (ReferenceEquals(x, y)) return true;
             if (x is null || y is null) return false;

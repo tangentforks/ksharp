@@ -788,7 +788,7 @@ namespace K3CSharp.Tests
                     // Reset K tree before each test to ensure isolation
                     evaluator.ResetKTree();
                     
-                    var actualOutput = evaluator.Evaluate(ast).ToString().Trim();
+                    var actualOutput = (ast != null ? evaluator.Evaluate(ast) : new NullValue()).ToString().Trim();
                     var passed = actualOutput == expected;
 
                     if (passed)

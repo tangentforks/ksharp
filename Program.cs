@@ -7,9 +7,9 @@ namespace K3CSharp
 {
     class Program
     {
-        private static List<string> commandHistory = new List<string>();
+        private static readonly List<string> commandHistory = new List<string>();
         private static int historyIndex = -1;
-        private static StringBuilder currentLine = new StringBuilder();
+        private static readonly StringBuilder currentLine = new StringBuilder();
         private static int cursorPosition = 0;
         
         static void Main(string[] args)
@@ -55,7 +55,7 @@ namespace K3CSharp
                 if (string.IsNullOrWhiteSpace(input)) continue;
 
                 // Add to history if not empty and not duplicate of last
-                if (commandHistory.Count == 0 || commandHistory[commandHistory.Count - 1] != input)
+                if (commandHistory.Count == 0 || commandHistory[^1] != input)
                 {
                     commandHistory.Add(input);
                     if (commandHistory.Count > 100) // Keep last 100 commands
@@ -77,7 +77,7 @@ namespace K3CSharp
             }
         }
 
-        static string ReadMultiLineInput()
+        static string? ReadMultiLineInput()
         {
             var lines = new List<string>();
             int nestingLevel = 0;
@@ -85,7 +85,7 @@ namespace K3CSharp
             while (true)
             {
                 // Build prompt based on nesting level
-                string prompt = "  " + new string('>', nestingLevel);
+                string prompt = $"  {new string('>', nestingLevel)}";
                 Console.Write(prompt);
                 
                 var line = ReadLineWithHistory();
@@ -256,7 +256,7 @@ namespace K3CSharp
                         {
                             cursorPosition--;
                             currentLine.Remove(cursorPosition, 1);
-                            Console.Write("\b" + currentLine.ToString().Substring(cursorPosition) + " ");
+                            Console.Write("\b" + currentLine.ToString().AsSpan(cursorPosition).ToString() + " ");
                             Console.Write($"\rK3> {currentLine}");
                             for (int i = 0; i < cursorPosition; i++)
                                 Console.Write(new string('\b', 1));
@@ -267,7 +267,7 @@ namespace K3CSharp
                         if (cursorPosition < currentLine.Length)
                         {
                             currentLine.Remove(cursorPosition, 1);
-                            Console.Write(currentLine.ToString().Substring(cursorPosition) + " ");
+                            Console.Write(currentLine.ToString().AsSpan(cursorPosition).ToString() + " ");
                             Console.Write($"\rK3> {currentLine}");
                             for (int i = 0; i < cursorPosition; i++)
                                 Console.Write(new string('\b', 1));
@@ -302,7 +302,7 @@ namespace K3CSharp
                         if (!char.IsControl(key.KeyChar))
                         {
                             currentLine.Insert(cursorPosition, key.KeyChar);
-                            Console.Write(currentLine.ToString().Substring(cursorPosition));
+                            Console.Write(currentLine.ToString().AsSpan(cursorPosition).ToString());
                             cursorPosition++;
                             
                             // Move cursor back to correct position
@@ -336,7 +336,7 @@ namespace K3CSharp
             var tokens = lexer.Tokenize();
             var parser = new Parser(tokens, input);
             var ast = parser.Parse();
-            return evaluator.Evaluate(ast);
+            return evaluator.Evaluate(ast) ?? new NullValue();
         }
 
         static K3Value HandleReplCommand(string command, Evaluator evaluator)

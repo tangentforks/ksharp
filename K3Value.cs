@@ -293,7 +293,7 @@ namespace K3CSharp
     {
         public double Value { get; }
         public bool IsSpecial { get; }
-        public string SpecialName { get; }
+        public string? SpecialName { get; }
 
         public FloatValue(double value)
         {
@@ -386,7 +386,7 @@ namespace K3CSharp
         public override string ToString()
         {
             if (IsSpecial)
-                return SpecialName;
+                return SpecialName ?? "";
             
             // Use exponential notation for very large or very small numbers
             var absValue = Math.Abs(Value);
@@ -607,7 +607,7 @@ namespace K3CSharp
             }
             
             // Check if the symbol contains spaces or special characters
-            if (ContainsSpecialCharacters(Value))
+            if (SymbolValue.ContainsSpecialCharacters(Value))
             {
                 return $"`\"{Value}\"";
             }
@@ -623,7 +623,7 @@ namespace K3CSharp
             return $"\"{Value}\"";
         }
         
-        private bool ContainsSpecialCharacters(string value)
+        private static bool ContainsSpecialCharacters(string value)
         {
             if (string.IsNullOrEmpty(value))
                 return false;
@@ -639,7 +639,7 @@ namespace K3CSharp
             return false;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is SymbolValue other)
             {
@@ -1073,7 +1073,7 @@ namespace K3CSharp
         public List<Token> PreParsedTokens { get; }
         
         // AST cache for performance optimization
-        private ASTNode _cachedAst;
+        private ASTNode? _cachedAst;
         private readonly object _astCacheLock = new object();
 
         // Associated K tree for anonymous functions
@@ -1090,7 +1090,7 @@ namespace K3CSharp
         }
         
         // Get or create cached AST (thread-safe)
-        public ASTNode GetCachedAst()
+        public ASTNode? GetCachedAst()
         {
             if (_cachedAst != null)
             {
@@ -1106,7 +1106,7 @@ namespace K3CSharp
                 }
                 
                 // Parse and cache the AST
-                ASTNode ast;
+                ASTNode? ast;
                 if (PreParsedTokens != null && PreParsedTokens.Count > 0)
                 {
                     var parser = new Parser(PreParsedTokens, BodyText);

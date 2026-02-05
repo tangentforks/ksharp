@@ -135,7 +135,7 @@
 ║ precedence_power2.k                      │ 2 + 3 ^ 4            │ 83                   │                      ║
 ║ precedence_spec1.k                       │ 81 % 1 + 2 * 3       │ 11.57143             │                      ║
 ║ precedence_spec2.k                       │ 120 % 4 * 2 + 3      │ 6                    │                      ║
-║ reciprocal_operator.k                    │ %4                   │ 0.25                 │                      ║
+║ reciprocal_operator.k                    │ %4                   │ 1                    │ 0.25                 ║
 ║ reverse_operator.k                       │ | (1 2 3)            │ 3 2 1                │                      ║
 ║ scalar_vector_addition.k                 │ 1 2 + 3              │ 4 5                  │                      ║
 ║ scalar_vector_multiplication.k           │ 1 2 * 3              │ 3 6                  │                      ║
@@ -303,8 +303,8 @@
 ║ form_braces_function_calls.k             │ sum:{[a;b] a+b}      │ 5 20 12              │                      ║
 ║ form_braces_nested_function_calls.k      │ sum:{[a;b] a+b}      │ 5 8 25               │                      ║
 ║ log.k                                    │ _log 10              │ 2.302585             │                      ║
-║ time.k                                   │ _t                   │ Error: _t (curr...   │ Error - _t (cur...   ║
-║ draw.k                                   │ _draw                │ Error: _draw (r...   │ Error - _draw (...   ║
+║ time.k                                   │ _t                   │ Error: Binary o...   │ Error - _t (cur...   ║
+║ draw.k                                   │ _draw                │ Error: Binary o...   │ Error - _draw (...   ║
 ║ in.k                                     │ 4 _in 1 7 2 4 6 3    │ 4                    │                      ║
 ║ search_in_basic.k                        │ 4 _in 1 2 3 4 5      │ 4                    │                      ║
 ║ search_in_notfound.k                     │ 6 _in 1 2 3 4 5      │ 0                    │                      ║
@@ -319,7 +319,7 @@
 ║ find_basic.k                             │ 9 8 7 6 5 4 3 ? 7  // Find operator - basic functionality │ 2                    │                      ║
 ║ find_notfound.k                          │ 9 8 7 6 5 4 3 ? 1  // Find operator - not found case │ 7                    │                      ║
 ║ bin.k                                    │ _bin                 │ Error: Unexpect...   │ Error - _bin (b...   ║
-║ lsq.k                                    │ _lsq                 │ Error: _lsq (le...   │ Error - _lsq (l...   ║
+║ lsq.k                                    │ _lsq                 │ Error: Binary o...   │ Error - _lsq (l...   ║
 ║ format_float_precision_vector_simple.k   │ 10.1$(1.5;2.5)       │ ("       1.5";"...   │                      ║
 ║ format_float_precision_mixed_vector.k    │ 7.2$(1.5;2.7;3.14159;4.2) │ ("   1.50";"   ...   │                      ║
 ║ format_pad_mixed_vector.k                │ 10$(1;2;3)           │ ("         1";"...   │                      ║
@@ -418,7 +418,7 @@
 ║ k_tree_retrieve_absolute_foo.k           │ .k.foo: 42           │ 42                   │                      ║
 ║ k_tree_retrieval_relative.k              │ .k.foo: 42           │ 42                   │                      ║
 ║ k_tree_enumerate.k                       │ !`                   │ `k`t                 │                      ║
-║ k_tree_current_branch.k                  │ _d                   │ `.k                  │                      ║
+║ k_tree_current_branch.k                  │ _d                   │ Error: Binary o...   │ `.k                  ║
 ║ k_tree_dictionary_indexing.k             │ .k.foo: 42           │ 42                   │                      ║
 ║ k_tree_nested_indexing.k                 │ .k.dd: .((`a;1);(`b;2);(`c;3)) │ 2                    │                      ║
 ║ k_tree_verify_root.k                     │ .k                   │                      │                      ║
@@ -432,7 +432,7 @@
 ║ while_safe_test.k                        │ i: 0                 │ Error: Cannot c...   │                      ║
 ║ while_simple_test.k                      │ while[0; 42]         │ Error: While fu...   │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 352/426 tests passed (82.6%)                                                                     ║
+║ SUMMARY: 350/426 tests passed (82.2%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -491,6 +491,11 @@ Test: function_mul.k
 Input: mul:{[op1;op2] op1 * op2}
 Expected: 32
 Actual: {[op1;op2] op1*op2}
+──────────────────────────────────────────────────────────────────────────
+Test: reciprocal_operator.k
+Input: %4
+Expected: 0.25
+Actual: 1
 ──────────────────────────────────────────────────────────────────────────
 Test: special_null.k
 Input: _n
@@ -577,12 +582,12 @@ Actual: (7 15;(2;2.5);5 1)
 Test: time.k
 Input: _t
 Expected: Error - _t (current time) operation reserved for future use
-Actual: Error: _t (current time) operation reserved for future use
+Actual: Error: Binary operator must have exactly 2 children, got 0
 ──────────────────────────────────────────────────────────────────────────
 Test: draw.k
 Input: _draw
 Expected: Error - _draw (random number generation) operation reserved for future use
-Actual: Error: _draw (random number generation) operation reserved for future use
+Actual: Error: Binary operator must have exactly 2 children, got 0
 ──────────────────────────────────────────────────────────────────────────
 Test: search_bin_basic.k
 Input: (1 2 3 4 5) _bin 4
@@ -627,7 +632,7 @@ Actual: Error: Unexpected token: BIN(_bin)
 Test: lsq.k
 Input: _lsq
 Expected: Error - _lsq (least squares) operation reserved for future use
-Actual: Error: _lsq (least squares) operation reserved for future use
+Actual: Error: Binary operator must have exactly 2 children, got 0
 ──────────────────────────────────────────────────────────────────────────
 Test: vector_notation_semicolon.k
 Input: (3 + 4; 5 + 6; -20.45)
@@ -794,6 +799,11 @@ Test: monadic_format_dictionary.k
 Input: $.((`a;1);(`b;2);(`c;3))
 Expected: .((`a;1;);(`b;2;);(`c;3;))
 Actual: ".((`a;1;);(`b;2;);(`c;3;))"
+──────────────────────────────────────────────────────────────────────────
+Test: k_tree_current_branch.k
+Input: _d
+Expected: `.k
+Actual: Error: Binary operator must have exactly 2 children, got 0
 ──────────────────────────────────────────────────────────────────────────
 Test: while_bracket_test.k
 Input: i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation

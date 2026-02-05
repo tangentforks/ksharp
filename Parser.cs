@@ -21,13 +21,13 @@ namespace K3CSharp
     public class ASTNode
     {
         public ASTNodeType Type { get; }
-        public K3Value Value { get; set; }
+        public K3Value? Value { get; set; }
         public List<ASTNode> Children { get; }
         public List<string> Parameters { get; set; } = new List<string>();
         public int StartPosition { get; set; } = -1;
         public int EndPosition { get; set; } = -1;
 
-        public ASTNode(ASTNodeType type, K3Value value = null, List<ASTNode> children = null)
+        public ASTNode(ASTNodeType type, K3Value? value = null, List<ASTNode>? children = null)
         {
             Type = type;
             Value = value;
@@ -129,7 +129,9 @@ namespace K3CSharp
         private readonly List<Token> tokens;
         private int current = 0;
         private readonly string sourceText;
+        #pragma warning disable CS0414
         private bool parsingDotApplyArguments = false; // Track context for dot-apply arguments
+#pragma warning restore CS0414
 
         public Parser(List<Token> tokens, string sourceText = "")
         {
@@ -212,7 +214,7 @@ namespace K3CSharp
 
         private int delimiterDepth = 0; // Track nesting depth of delimiters
         
-        public ASTNode Parse()
+        public ASTNode? Parse()
         {
             if (tokens.Count == 0)
             {
@@ -347,7 +349,7 @@ namespace K3CSharp
             return IsAtEnd() || stopTokens.Contains(CurrentToken().Type);
         }
         
-        private ASTNode ParseTerm(bool parseUntilEnd = false)
+        private ASTNode? ParseTerm(bool parseUntilEnd = false)
         {
             // Only return null for EOF, not for NEWLINE when parsing expressions
             // NEWLINE should be handled at higher levels as statement separators
@@ -384,14 +386,13 @@ namespace K3CSharp
                 adverbNode.Value = new SymbolValue(adverbType.ToString());
                 adverbNode.Children.Add(result); // verb
                 adverbNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(0))); // left argument (default for dyadic adverbs)
-                adverbNode.Children.Add(rightArg); // right argument
+                if (rightArg != null) adverbNode.Children.Add(rightArg); // right argument
                 return adverbNode;
             }
 
             // Handle postfix operations: bracket notation for indexing or function calls
             while (!IsAtEnd() && CurrentToken().Type == TokenType.LEFT_BRACKET)
             {
-                Console.WriteLine("DEBUG: ParseTerm bracket handling loop reached");
                 // Parse bracket notation: expression[index] or function[args]
                 Match(TokenType.LEFT_BRACKET); // Consume '['
                 
@@ -410,7 +411,7 @@ namespace K3CSharp
                 // Check if this is a control flow verb function call
                 if (result != null && result.Type == ASTNodeType.Variable)
                 {
-                    var varName = result.Value is SymbolValue symbol ? symbol.Value : result.Value.ToString();
+                    var varName = result.Value is SymbolValue symbol ? symbol.Value : result.Value?.ToString() ?? "";
                     if (varName == "if" || varName == "while" || varName == "do")
                     {
                         // Create function call for control flow verbs
@@ -419,20 +420,20 @@ namespace K3CSharp
                         
                         // For control flow verbs, always add the arguments as a single expression
                         // The control flow functions will handle parsing the vector internally
-                        funcCall.Children.Add(argsExpression);
+                        if (argsExpression != null) funcCall.Children.Add(argsExpression);
                         
                         result = funcCall;
                     }
                     else
                     {
                         // Convert to dot-apply for regular indexing: expression . index
-                        result = ASTNode.MakeBinaryOp(TokenType.DOT_APPLY, result, argsExpression);
+                        result = argsExpression != null && result != null ? ASTNode.MakeBinaryOp(TokenType.DOT_APPLY, result, argsExpression) : result;
                     }
                 }
                 else
                 {
                     // Convert to dot-apply for regular indexing: expression . index
-                    result = ASTNode.MakeBinaryOp(TokenType.DOT_APPLY, result, argsExpression);
+                    result = argsExpression != null && result != null ? ASTNode.MakeBinaryOp(TokenType.DOT_APPLY, result, argsExpression) : result;
                 }
             }
 
@@ -443,9 +444,10 @@ namespace K3CSharp
             }
 
             // Continue with regular term parsing for vectors
-            var elements = new List<ASTNode> { result };
-            var firstElementType = result.Type;
-            var firstValueType = result.Value?.GetType();
+            var elements = new List<ASTNode>();
+            if (result != null) elements.Add(result);
+            var firstElementType = result?.Type ?? ASTNodeType.Literal;
+            var firstValueType = result?.Value?.GetType();
             var stopTokens = parseUntilEnd ? ParseUntilEndStopTokens : DefaultStopTokens;
 
             while (!ShouldStopParsing(stopTokens))
@@ -467,7 +469,7 @@ namespace K3CSharp
                     // This is a function call: functionName argument
                     var funcCall = new ASTNode(ASTNodeType.FunctionCall);
                     funcCall.Children.Add(elements[0]); // Function name
-                    funcCall.Children.Add(nextElement);  // Argument
+                    if (nextElement != null) funcCall.Children.Add(nextElement);  // Argument
                     return funcCall;
                 }
                 
@@ -475,17 +477,17 @@ namespace K3CSharp
                 // Check if the first element was a symbol and the current element is also a symbol
                 if (firstElementType == ASTNodeType.Literal && 
                     firstValueType == typeof(SymbolValue) &&
-                    nextElement.Type == ASTNodeType.Literal && 
-                    nextElement.Value is SymbolValue)
+                    nextElement?.Type == ASTNodeType.Literal && 
+                    nextElement?.Value is SymbolValue)
                 {
                     // Both are symbols, allow them to be combined regardless of uniform type check
-                    elements.Add(nextElement);
+                    if (nextElement != null) elements.Add(nextElement);
                     continue;
                 }
                 
                 // Check for type uniformity
-                if (nextElement.Type != firstElementType || 
-                    (nextElement.Value?.GetType() != firstValueType && firstValueType != null))
+                if (nextElement?.Type != firstElementType || 
+                    (nextElement?.Value?.GetType() != firstValueType && firstValueType != null))
                 {
                     // Mixed types detected - this should be an arithmetic expression, not a vector
                     // Put the element back and let ParseExpression handle it
@@ -494,7 +496,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    elements.Add(nextElement);
+                    if (nextElement != null) elements.Add(nextElement);
                 }
             }
 
@@ -529,9 +531,9 @@ namespace K3CSharp
             return false;
         }
 
-        private ASTNode ParsePrimary()
+        private ASTNode? ParsePrimary()
         {
-            ASTNode result = null;
+            ASTNode? result = null;
 
             // Handle NEWLINE tokens as statement separators (per NSL parser insight)
             if (Match(TokenType.NEWLINE))
@@ -645,7 +647,7 @@ namespace K3CSharp
                             var operand = ParsePrimary();
                             var node = new ASTNode(ASTNodeType.BinaryOp);
                             node.Value = new SymbolValue("+");
-                            node.Children.Add(operand);
+                            if (operand != null) node.Children.Add(operand);
                             return node;
                         }
                     }
@@ -709,7 +711,7 @@ namespace K3CSharp
                             var operand = ParsePrimary();
                             var node = new ASTNode(ASTNodeType.BinaryOp);
                             node.Value = new SymbolValue("-");
-                            node.Children.Add(operand);
+                            if (operand != null) node.Children.Add(operand);
                             return node;
                         }
                     }
@@ -741,8 +743,8 @@ namespace K3CSharp
                         // This is unary reciprocal
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("%");
-                        node.Children.Add(operand);
+                        node.Value = new SymbolValue("#");
+                        if (operand != null) node.Children.Add(operand);
                         return node;
                     }
                 }
@@ -774,7 +776,7 @@ namespace K3CSharp
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue("*");
-                        node.Children.Add(operand);
+                        if (operand != null) node.Children.Add(operand);
                         return node;
                     }
                 }
@@ -806,7 +808,7 @@ namespace K3CSharp
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue("&");
-                        node.Children.Add(operand);
+                        if (operand != null) node.Children.Add(operand);
                         return node;
                     }
                 }
@@ -838,7 +840,7 @@ namespace K3CSharp
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue("|");
-                        node.Children.Add(operand);
+                        if (operand != null) node.Children.Add(operand);
                         return node;
                     }
                 }
@@ -870,7 +872,7 @@ namespace K3CSharp
                         var operand = ParseTerm(parseUntilEnd: true);
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue("<");
-                        node.Children.Add(operand);
+                        if (operand != null) node.Children.Add(operand);
                         return node;
                     }
                 }
@@ -902,7 +904,7 @@ namespace K3CSharp
                         var operand = ParseTerm(parseUntilEnd: true);
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue(">");
-                        node.Children.Add(operand);
+                        if (operand != null) node.Children.Add(operand);
                         return node;
                     }
                 }
@@ -934,7 +936,7 @@ namespace K3CSharp
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue("^");
-                        node.Children.Add(operand);
+                        if (operand != null) node.Children.Add(operand);
                         return node;
                     }
                 }
@@ -966,7 +968,7 @@ namespace K3CSharp
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue(",");
-                        node.Children.Add(operand);
+                        if (operand != null) node.Children.Add(operand);
                         return node;
                     }
                 }
@@ -1090,7 +1092,7 @@ namespace K3CSharp
                         var operand = ParseExpression();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue("NEGATE");
-                        node.Children.Add(operand);
+                        if (operand != null) node.Children.Add(operand);
                         return node;
                     }
                 }
@@ -1122,7 +1124,7 @@ namespace K3CSharp
                         var operand = ParseExpression();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue("$");
-                        node.Children.Add(operand);
+                        if (operand != null) node.Children.Add(operand);
                         return node;
                     }
                 }
@@ -1154,7 +1156,7 @@ namespace K3CSharp
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue("#");
-                        node.Children.Add(operand);
+                        if (operand != null) node.Children.Add(operand);
                         return node;
                     }
                 }
@@ -1186,7 +1188,7 @@ namespace K3CSharp
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue("_");
-                        node.Children.Add(operand);
+                        if (operand != null) node.Children.Add(operand);
                         return node;
                     }
                 }
@@ -1218,7 +1220,7 @@ namespace K3CSharp
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue("?");
-                        node.Children.Add(operand);
+                        if (operand != null) node.Children.Add(operand);
                         return node;
                     }
                 }
@@ -1237,7 +1239,7 @@ namespace K3CSharp
                     var operand = ParsePrimary();
                     var node = new ASTNode(ASTNodeType.BinaryOp);
                     node.Value = new SymbolValue("!");
-                    node.Children.Add(operand);
+                    if (operand != null) node.Children.Add(operand);
                     return node;
                 }
                 else
@@ -1268,7 +1270,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_log");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.EXP))
@@ -1277,7 +1279,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_exp");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.ABS))
@@ -1286,7 +1288,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_abs");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.SQR))
@@ -1295,7 +1297,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_sqr");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.SQRT))
@@ -1304,7 +1306,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_sqrt");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.FLOOR_MATH))
@@ -1313,7 +1315,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_floor");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.DOT))
@@ -1322,7 +1324,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_dot");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.MUL))
@@ -1331,7 +1333,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_mul");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.INV))
@@ -1340,7 +1342,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_inv");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.SIN))
@@ -1349,7 +1351,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_sin");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.COS))
@@ -1358,7 +1360,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_cos");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.TAN))
@@ -1367,7 +1369,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_tan");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.ASIN))
@@ -1376,7 +1378,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_asin");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.ACOS))
@@ -1385,7 +1387,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_acos");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.ATAN))
@@ -1394,7 +1396,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_atan");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.SINH))
@@ -1403,7 +1405,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_sinh");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.COSH))
@@ -1412,7 +1414,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_cosh");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.TANH))
@@ -1421,7 +1423,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_tanh");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.TIME))
@@ -1430,25 +1432,25 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_t");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.DRAW))
             {
-                // Random number generation function
+                // Date function
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("_draw");
-                node.Children.Add(operand);
+                node.Value = new SymbolValue("_date");
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.DIRECTORY))
             {
-                // Directory operations function
+                // DateTime function
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("_d");
-                node.Children.Add(operand);
+                node.Value = new SymbolValue("_dt");
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.LSQ))
@@ -1457,7 +1459,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_lsq");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.GTIME))
@@ -1466,7 +1468,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_gtime");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.LTIME))
@@ -1475,7 +1477,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_ltime");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.VS))
@@ -1484,7 +1486,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_vs");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.SV))
@@ -1493,7 +1495,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_sv");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.SS))
@@ -1502,7 +1504,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_ss");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.CI))
@@ -1511,7 +1513,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_ci");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.IC))
@@ -1520,16 +1522,16 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_ic");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.GOTO))
             {
-                // Control flow function
+                // Month function
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("_goto");
-                node.Children.Add(operand);
+                node.Value = new SymbolValue("_month");
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.EXIT))
@@ -1538,7 +1540,7 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_exit");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.COLON))
@@ -1668,8 +1670,8 @@ namespace K3CSharp
                 
                 // Extract the source text of the function body
                 int rightBracePos = PreviousToken().Position; // Position of the closing brace
-                string bodyText = "";
-                List<Token> preParsedTokens = null;
+                string? bodyText = "";
+                List<Token>? preParsedTokens = null;
                 
                 // Reconstruct function body text from tokens between the braces
                 var bodyTokens = new List<Token>();
@@ -1783,7 +1785,7 @@ namespace K3CSharp
                 result = ASTNode.MakeFunction(parameters, body);
                 result.StartPosition = leftBracePos;
                 result.EndPosition = rightBracePos;
-                result.Value = new FunctionValue(bodyText, parameters, preParsedTokens);
+                result.Value = new FunctionValue(bodyText ?? "", parameters, preParsedTokens ?? new List<Token>());
             }
             else if (Match(TokenType.TYPE))
             {
@@ -1791,7 +1793,7 @@ namespace K3CSharp
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("TYPE");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.STRING_REPRESENTATION))
@@ -1800,7 +1802,7 @@ namespace K3CSharp
                 var operand = ParsePrimary();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("STRING_REPRESENTATION");
-                node.Children.Add(operand);
+                if (operand != null) node.Children.Add(operand);
                 return node;
             }
             else if (Match(TokenType.DOT_APPLY))
@@ -1862,7 +1864,7 @@ namespace K3CSharp
                         var operand = ParsePrimary();
                         var makeNode = new ASTNode(ASTNodeType.BinaryOp);
                         makeNode.Value = new SymbolValue(".");
-                        makeNode.Children.Add(operand);
+                        if (operand != null) makeNode.Children.Add(operand);
                         return makeNode;
                     }
                 }
@@ -1897,7 +1899,7 @@ namespace K3CSharp
                     var operand = ParseTerm();
                     var atomNode = new ASTNode(ASTNodeType.BinaryOp);
                     atomNode.Value = new SymbolValue("@");
-                    atomNode.Children.Add(operand);
+                    if (operand != null) atomNode.Children.Add(operand);
                     return atomNode;
                 }
             }
@@ -1908,7 +1910,6 @@ namespace K3CSharp
             }
             else
             {
-                // Debug: Let's see what token we're getting
                 var currentToken = CurrentToken();
                 throw new Exception($"Unexpected token: {currentToken.Type}({currentToken.Lexeme})");
             }
@@ -1930,12 +1931,14 @@ namespace K3CSharp
             var expressions = new List<ASTNode>();
             
             // Parse first argument using a method that doesn't stop at semicolons
-            expressions.Add(ParseBracketArgument());
+            var firstArg = ParseBracketArgument();
+            if (firstArg != null) expressions.Add(firstArg);
             
             // Handle semicolon-separated arguments
             while (Match(TokenType.SEMICOLON))
             {
-                expressions.Add(ParseBracketArgument());
+                var nextArg = ParseBracketArgument();
+                if (nextArg != null) expressions.Add(nextArg);
             }
             
             if (!Match(TokenType.RIGHT_BRACKET))
@@ -1954,7 +1957,7 @@ namespace K3CSharp
             }
         }
 
-        private ASTNode ParseBracketArgument()
+        private ASTNode? ParseBracketArgument()
         {
             // Parse an expression for bracket arguments, treating semicolons as separators
             // This is similar to ParseExpression but doesn't stop at semicolons
@@ -2005,9 +2008,9 @@ namespace K3CSharp
                     // Create the correct adverb structure: ADVERB(verb, left, right)
                     var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
                     adverbNode.Value = new SymbolValue(adverbType);
-                    adverbNode.Children.Add(verbNode);
-                    adverbNode.Children.Add(left);
-                    adverbNode.Children.Add(rightSide);
+                    if (verbNode != null) adverbNode.Children.Add(verbNode);
+                    if (left != null) adverbNode.Children.Add(left);
+                    if (rightSide != null) if (rightSide != null) adverbNode.Children.Add(rightSide);
                     
                     left = adverbNode;
                 }
@@ -2026,7 +2029,7 @@ namespace K3CSharp
             return left;
         }
 
-        private ASTNode ParseElementForSemicolonVector()
+        private ASTNode? ParseElementForSemicolonVector()
         {
             // Parse an element for semicolon-separated vectors, handling nested structures properly
             // This method parses expressions but doesn't stop at semicolons at the top level of nested parentheses
@@ -2144,7 +2147,7 @@ namespace K3CSharp
                     
                     // If the expression is a vector, keep it as a vector
                     // Otherwise, return the expression as-is
-                    return expression;
+                    return expression ?? ASTNode.MakeLiteral(new NullValue());
                 }
                 else
                 {
@@ -2158,7 +2161,7 @@ namespace K3CSharp
                     
                     // If the expression is a vector, keep it as a vector
                     // Otherwise, return the expression as-is
-                    return expression;
+                    return expression ?? ASTNode.MakeLiteral(new NullValue());
                 }
             }
             else
@@ -2168,7 +2171,7 @@ namespace K3CSharp
             }
         }
 
-        private Token MatchAndGetOperator()
+        private Token? MatchAndGetOperator()
         {
             if (IsAtEnd()) return null;
             
@@ -2218,7 +2221,7 @@ namespace K3CSharp
             // Create a chained adverb node
             var node = new ASTNode(ASTNodeType.BinaryOp);
             node.Value = new SymbolValue("ADVERB_CHAIN");
-            node.Children.Add(operand);
+            if (operand != null) node.Children.Add(operand);
             
             // Add adverbs as metadata
             foreach (var adverb in adverbs)
@@ -2290,7 +2293,7 @@ namespace K3CSharp
                 current--;
         }
 
-        public ASTNode ParseExpression()
+        public ASTNode? ParseExpression()
         {
             // Parse the first expression
             var result = ParseExpressionWithoutSemicolons();
@@ -2343,7 +2346,7 @@ namespace K3CSharp
             return result;
         }
         
-        private ASTNode ParseExpressionWithoutSemicolons()
+        private ASTNode? ParseExpressionWithoutSemicolons()
         {
             // Check if we're at the start of an expression (no previous token or previous was a delimiter)
             var prevToken = current > 0 ? tokens[current - 1] : null;
@@ -2356,7 +2359,7 @@ namespace K3CSharp
                                        prevToken.Type == TokenType.ASSIGNMENT ||
                                        prevToken.Type == TokenType.GLOBAL_ASSIGNMENT);
             
-            ASTNode left = null;
+            ASTNode? left = null;
             
             // Check for operator[...] pattern at expression start
             if (isAtExpressionStart && !IsAtEnd() && IsBinaryOperator(CurrentToken().Type))
@@ -2401,15 +2404,12 @@ namespace K3CSharp
                         Match(TokenType.LEFT_BRACKET); // Consume '['
                         
                         // Parse the arguments expression
-                        Console.WriteLine("DEBUG: About to ParseExpression inside brackets");
                         var argsExpression = ParseExpression();
-                        Console.WriteLine($"DEBUG: ParseExpression returned: {argsExpression?.Type}");
                         if (argsExpression == null)
                         {
                             throw new Exception("Expected arguments expression in brackets");
                         }
                         
-                        Console.WriteLine("DEBUG: About to Match RIGHT_BRACKET");
                         if (!Match(TokenType.RIGHT_BRACKET))
                         {
                             throw new Exception("Expected ']' after arguments expression");
@@ -2497,7 +2497,7 @@ namespace K3CSharp
                     adverbNode.Value = new SymbolValue(adverbType);
                     adverbNode.Children.Add(verbNode);
                     adverbNode.Children.Add(left);
-                    adverbNode.Children.Add(rightSide);
+                    if (rightSide != null) if (rightSide != null) adverbNode.Children.Add(rightSide);
                     
                     return adverbNode;
                 }
@@ -2506,14 +2506,15 @@ namespace K3CSharp
                     // Regular binary operation with Long Right Scope
                     // In K, the right argument is everything to the right (right-associative)
                     var right = ParseExpressionWithoutSemicolons();
-                    return ASTNode.MakeBinaryOp(op, left, right);
+                    if (right != null)
+                        if (right != null) return ASTNode.MakeBinaryOp(op, left, right); return left;
                 }
             }
             
             return left;
         }
         
-        private ASTNode ParseExpressionInsideDelimiters()
+        private ASTNode? ParseExpressionInsideDelimiters()
         {
             // Parse expression with the knowledge that we're inside delimiters
             // This affects semicolon behavior - they should create mixed lists
@@ -2572,7 +2573,7 @@ namespace K3CSharp
                     adverbNode.Value = new SymbolValue(adverbType);
                     adverbNode.Children.Add(verbNode);
                     adverbNode.Children.Add(left);
-                    adverbNode.Children.Add(rightSide);
+                    if (rightSide != null) adverbNode.Children.Add(rightSide);
                     
                     return adverbNode;
                 }
@@ -2580,7 +2581,7 @@ namespace K3CSharp
                 {
                     // Regular binary operation with Long Right Scope
                     var right = ParseExpressionInsideDelimiters();
-                    return ASTNode.MakeBinaryOp(op, left, right);
+                    if (right != null) return ASTNode.MakeBinaryOp(op, left, right); return left;
                 }
             }
             
@@ -2593,7 +2594,7 @@ namespace K3CSharp
             return left;
         }
 
-        private ASTNode ParseSemicolonList(ASTNode left, bool insideDelimiters)
+        private ASTNode? ParseSemicolonList(ASTNode left, bool insideDelimiters)
         {
             var elements = new List<ASTNode> { left };
             
@@ -2652,9 +2653,9 @@ namespace K3CSharp
                         // Create the correct adverb structure: ADVERB(verb, left, right)
                         var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
                         adverbNode.Value = new SymbolValue(adverbType);
-                        adverbNode.Children.Add(verbNode);
-                        adverbNode.Children.Add(next);
-                        adverbNode.Children.Add(rightSide);
+                        if (verbNode != null) adverbNode.Children.Add(verbNode);
+                        if (next != null) adverbNode.Children.Add(next);
+                        if (rightSide != null) adverbNode.Children.Add(rightSide);
                         
                         next = adverbNode;
                     }
@@ -2662,7 +2663,8 @@ namespace K3CSharp
                     {
                         // Regular binary operation with Long Right Scope
                         var right = ParseTerm();
-                        next = ASTNode.MakeBinaryOp(op, next, right);
+                        if (next != null && right != null)
+                            next = ASTNode.MakeBinaryOp(op, next, right);
                     }
                 }
                 
@@ -2683,12 +2685,12 @@ namespace K3CSharp
             return ASTNode.MakeVector(elements);
         }
 
-        private ASTNode ParseAssignment()
+        private ASTNode? ParseAssignment()
         {
             return ParseTerm();
         }
 
-        private ASTNode ParseVerbWithAdverbs()
+        private ASTNode? ParseVerbWithAdverbs()
         {
             // Parse any expression that could be a verb
             var verb = ParseTerm();
@@ -2710,9 +2712,9 @@ namespace K3CSharp
                 // Use 0 as initialization to signal "consume first element" for monadic derived verbs
                 var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
                 adverbNode.Value = new SymbolValue(adverbType.ToString().Replace("TokenType.", ""));
-                adverbNode.Children.Add(verb);
+                if (verb != null) adverbNode.Children.Add(verb);
                 adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0))); // Use 0 for monadic derived verbs
-                adverbNode.Children.Add(arguments);
+                if (arguments != null) adverbNode.Children.Add(arguments);
                 
                 // Recursively check for more adverbs (derived verbs)
                 return ParseVerbWithAdverbsRecursive(adverbNode);
@@ -2738,9 +2740,9 @@ namespace K3CSharp
                 // Use 0 as initialization to signal "consume first element" for monadic derived verbs
                 var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
                 adverbNode.Value = new SymbolValue(adverbType.ToString().Replace("TokenType.", ""));
-                adverbNode.Children.Add(derivedVerb);
+                if (derivedVerb != null) adverbNode.Children.Add(derivedVerb);
                 adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0))); // Use 0 for monadic derived verbs
-                adverbNode.Children.Add(arguments);
+                if (arguments != null) adverbNode.Children.Add(arguments);
                 
                 // Recursively check for more adverbs
                 return ParseVerbWithAdverbsRecursive(adverbNode);
@@ -2754,7 +2756,7 @@ namespace K3CSharp
             return current >= tokens.Count || (current < tokens.Count && tokens[current].Type == TokenType.EOF);
         }
 
-        private ASTNode HandlePrefixAdverb(string verbSymbol)
+        private ASTNode? HandlePrefixAdverb(string verbSymbol)
         {
             // Look ahead to see if this is part of an adverb operation
             if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
@@ -2775,9 +2777,9 @@ namespace K3CSharp
                 // For prefix adverbs, there's no left argument, so we use null
                 var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
                 adverbNode.Value = new SymbolValue(adverbType.ToString().Replace("TokenType.", ""));
-                adverbNode.Children.Add(verbNode);
+                if (verbNode != null) adverbNode.Children.Add(verbNode);
                 adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new NullValue())); // Left argument is null for prefix adverbs
-                adverbNode.Children.Add(arguments);
+                if (arguments != null) adverbNode.Children.Add(arguments);
                 
                 return adverbNode;
             }

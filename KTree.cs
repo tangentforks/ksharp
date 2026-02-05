@@ -20,7 +20,7 @@ namespace K3CSharp
         /// <summary>
         /// Gets or sets the current branch (absolute path)
         /// </summary>
-        public SymbolValue CurrentBranch 
+        public SymbolValue? CurrentBranch 
         { 
             get => currentBranch;
             set => currentBranch = value ?? new SymbolValue(""); // Default to empty symbol for root
@@ -55,7 +55,7 @@ namespace K3CSharp
             bool isAbsolute = path.StartsWith(".");
             string[] parts = path.Split('.', StringSplitOptions.RemoveEmptyEntries);
             
-            DictionaryValue currentDict;
+            DictionaryValue? currentDict;
             int startIndex = 0;
             
             if (isAbsolute)
@@ -67,7 +67,7 @@ namespace K3CSharp
             else
             {
                 // Start from current branch
-                currentDict = GetDictionaryFromPath(CurrentBranch.Value);
+                currentDict = GetDictionaryFromPath(CurrentBranch?.Value ?? "");
                 if (currentDict == null)
                     currentDict = root;
                 startIndex = 0;
@@ -155,7 +155,7 @@ namespace K3CSharp
         /// <returns>The parent branch symbol, or root if already at root</returns>
         public SymbolValue GetParentBranch()
         {
-            string current = CurrentBranch.Value;
+            string current = CurrentBranch?.Value ?? "";
             if (string.IsNullOrEmpty(current) || current == ".")
             {
                 return new SymbolValue(""); // Root

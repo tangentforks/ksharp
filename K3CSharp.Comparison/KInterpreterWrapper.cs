@@ -35,13 +35,13 @@ namespace K3CSharp
         public string ExecuteScript(string scriptContent)
         {
             // Check for unsupported long integers (32-bit k.exe limitation)
-            if (this.kExePath.Contains("k.exe") && this.ContainsLongInteger(scriptContent))
+            if (this.kExePath.Contains("k.exe") && KInterpreterWrapper.ContainsLongInteger(scriptContent))
             {
                 return "UNSUPPORTED: Script contains long integers (64-bit) - k.exe 32-bit does not support them";
             }
             
-            string tempScriptPath = null;
-            string outputPath = null;
+            string? tempScriptPath = null;
+            string? outputPath = null;
             
             try
             {
@@ -49,16 +49,16 @@ namespace K3CSharp
                 outputPath = Path.Combine(tempDirectory, $"k_output_{Guid.NewGuid():N}_{DateTime.Now.Ticks}.txt");
                 
                 ExecuteKProcess(tempScriptPath, outputPath);
-                return ReadAndCleanOutput(outputPath);
+                return KInterpreterWrapper.ReadAndCleanOutput(outputPath);
             }
             finally
             {
                 // Cleanup with retry mechanism
-                CleanupTempFilesWithRetry(tempScriptPath, outputPath);
+                CleanupTempFilesWithRetry(tempScriptPath ?? "", outputPath ?? "");
             }
         }
 
-        public bool ContainsLongInteger(string scriptContent)
+        public static bool ContainsLongInteger(string scriptContent)
         {
             // Pattern 1: Regular long integers: digits followed by 'j' (case insensitive)
             // This matches K long integer notation like 123j, 456j, etc.
@@ -147,7 +147,7 @@ namespace K3CSharp
             }
         }
 
-        private string ReadAndCleanOutput(string outputPath)
+        public static string ReadAndCleanOutput(string outputPath)
         {
             if (!File.Exists(outputPath))
             {
@@ -162,49 +162,48 @@ namespace K3CSharp
             {
                 try
                 {
-                    using (var fileStream = new FileStream(outputPath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, FileOptions.SequentialScan))
-                    using (var reader = new StreamReader(fileStream, Encoding.UTF8))
+                    using var fileStream = new FileStream(outputPath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, FileOptions.SequentialScan);
+                    using var reader = new StreamReader(fileStream, Encoding.UTF8);
+                    
+                    var lines = new List<string>();
+                    string? line;
+                    
+                    while ((line = reader.ReadLine()) != null)
                     {
-                        var lines = new List<string>();
-                        string line;
+                        var trimmedLine = line.Trim();
                         
-                        while ((line = reader.ReadLine()) != null)
+                        // Skip licensing information lines that start with WIN32 and end with EVAL
+                        if (trimmedLine.StartsWith("WIN32") && trimmedLine.Contains("EVAL"))
                         {
-                            var trimmedLine = line.Trim();
-                            
-                            // Skip licensing information lines that start with WIN32 and end with EVAL
-                            if (trimmedLine.StartsWith("WIN32") && trimmedLine.Contains("EVAL"))
-                            {
-                                continue;
-                            }
+                            continue;
+                        }
                             if ((trimmedLine.StartsWith("w64") || trimmedLine.StartsWith("WIN32")) && trimmedLine.Contains("PROD"))
-                            {
-                                continue;
-                            }
-                            
-                            // Skip copyright header
-                            if (trimmedLine.StartsWith("K 3.") && trimmedLine.Contains("Copyright"))
-                            {
-                                continue;
-                            }
-                            
-                            // Skip stderr markers
-                            if (trimmedLine.StartsWith("STDERR:"))
-                            {
-                                continue;
-                            }
-                            
-                            // Add the cleaned line
-                            lines.Add(line);
+                        {
+                            continue;
                         }
                         
-                        // Filter out empty lines at the start
-                        var filteredLines = lines.SkipWhile(string.IsNullOrWhiteSpace).ToList();
+                        // Skip copyright header
+                        if (trimmedLine.StartsWith("K 3.") && trimmedLine.Contains("Copyright"))
+                        {
+                            continue;
+                        }
                         
-                        return string.Join("\n", filteredLines).TrimEnd();
+                        // Skip stderr markers
+                        if (trimmedLine.StartsWith("STDERR:"))
+                        {
+                            continue;
+                        }
+                        
+                        // Add the cleaned line
+                        lines.Add(line);
                     }
+                    
+                    // Filter out empty lines at the start
+                    var filteredLines = lines.SkipWhile(string.IsNullOrWhiteSpace).ToList();
+                    
+                    return string.Join("\n", filteredLines).TrimEnd();
                 }
-                catch (IOException ex) when (attempt < maxRetries - 1)
+                catch (IOException) when (attempt < maxRetries - 1)
                 {
                     // File might be locked, wait and retry
                     System.Threading.Thread.Sleep(retryDelayMs);

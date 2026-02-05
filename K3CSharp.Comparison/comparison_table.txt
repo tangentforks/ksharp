@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-02-05 00:08:42
+Generated: 2026-02-05 16:30:52
 
 SUMMARY:
 --------
 Total Tests:     406
-✅ Matched:       309
-❌ Differed:      54
+✅ Matched:       307
+❌ Differed:      55
 ⚠️  Skipped:       16
-💥 Errors:        27
-Success Rate:    79.2%
+💥 Errors:        28
+Success Rate:    78.7%
 
 DETAILED RESULTS:
 -----------------
@@ -204,7 +204,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   isolated.k                                         0.6                            0.6                                                                              
 ✅ PASS   join_operator.k                                    3 5                            3 5                                                                              
 ❌ FAIL   k_tree_assignment_absolute_foo.k                   42                                                            Compact representation                            
-✅ PASS   k_tree_current_branch.k                            `.k                            `.k                            Compact representation                            
+💥 ERROR k_tree_current_branch.k                                                           `.k                            K3Sharp error, k.exe succeeded                    
 ❌ FAIL   k_tree_dictionary_assignment.k                     .((`a;1;);(`b;2;);(`c;3;))     .((`a;1;)
   (`b;2;)
   (`c...                                                     
@@ -296,7 +296,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   precedence_power2.k                                83                             83                             smart integer division, inverse and exponenti...  
 ✅ PASS   precedence_spec1.k                                 11.57143                       11.57143                                                                         
 ✅ PASS   precedence_spec2.k                                 6                              6                              smart integer division, inverse and exponenti...  
-✅ PASS   reciprocal_operator.k                              0.25                           0.25                                                                             
+❌ FAIL   reciprocal_operator.k                              1                              0.25                                                                             
 ✅ PASS   reverse_operator.k                                 3 2 1                          3 2 1                                                                            
 ✅ PASS   scalar_vector_addition.k                           4 5                            4 5                                                                              
 ✅ PASS   scalar_vector_multiplication.k                     3 6                            3 6                                                                              
@@ -373,7 +373,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   take_operator_empty_symbol.k                       0#`                            0#`                                                                              
 ✅ PASS   take_operator_overflow.k                           1 2 3 1 2 3 1 2 3 1            1 2 3 1 2 3 1 2 3 1                                                              
 ✅ PASS   take_operator_scalar.k                             42 42 42                       42 42 42                                                                         
-💥 ERROR time.k                                                                            -280954287                     K3Sharp error, k.exe succeeded                    
+💥 ERROR time.k                                                                            -280895358                     K3Sharp error, k.exe succeeded                    
 ✅ PASS   type_char.k                                        3                              3                                                                                
 ✅ PASS   type_float.k                                       2                              2                                                                                
 ✅ PASS   type_null.k                                        6                              6                                                                                
@@ -479,7 +479,7 @@ File: amend_test_func_var.k
 K3Sharp: `.
 k.exe:   11 2 3
 
-... and 44 more failed tests
+... and 45 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------
@@ -513,7 +513,7 @@ Error: K3Sharp Error: Undefined variable: .d
 File: do_bracket_test.k
 Error: K3Sharp Error: Do function requires at least 2 arguments: count and expression(s)
 
-... and 17 more error tests
+... and 18 more error tests
 
 K.EXE FAILING TESTS:
 --------------------
