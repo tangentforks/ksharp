@@ -302,7 +302,7 @@ namespace K3CSharp
                     "_lin" => LinFunction(operand),
                     "_lsq" => LsqFunction(operand),
                     "_gtime" => GtimeFunction(operand),
-                    "_ltime" => LtimeFunction(operand),
+                    "_lt" => LtFunction(operand),
                     "_vs" => VsFunction(operand),
                     "_sv" => SvFunction(operand),
                     "_ss" => SsFunction(operand),
@@ -1481,38 +1481,6 @@ namespace K3CSharp
             return expression;
         }
 
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        // New unary operator implementations
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         private K3Value VectorIndex(K3Value vector, K3Value index)
         {
             // Handle vector indexing: vector @ index
@@ -2135,25 +2103,6 @@ namespace K3CSharp
             }
         }
 
-        // Mathematical floating point operations
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
-
-
-
-        
         private K3Value DotApply(K3Value left, K3Value right)
         {
             // Check if this is Amend operation: .[d; i; f; y] or .[d; i; f]
@@ -2224,13 +2173,7 @@ namespace K3CSharp
                 throw new Exception("Dot-apply operator requires a function, vector, or dictionary on the left side");
             }
         }
-        
-        
-        
-                
-                
-                
-                
+
         private K3Value GlobalAssignment(K3Value left, K3Value right)
         {
             // Global assignment operator: variable :: value
@@ -2371,18 +2314,6 @@ namespace K3CSharp
             }
         }
 
-                
-        
-        
-        
-        
-        
-        // Placeholder functions for missing underscore functions
-        private K3Value TimeFunction(K3Value operand)
-        {
-            throw new Exception("_t (current time) operation reserved for future use");
-        }
-
         
         private K3Value InFunction(K3Value operand)
         {
@@ -2415,16 +2346,7 @@ namespace K3CSharp
             throw new Exception("_lsq (least squares) operation reserved for future use");
         }
 
-        private K3Value GtimeFunction(K3Value operand)
-        {
-            throw new Exception("_gtime (GMT time conversion) operation reserved for future use");
-        }
-
-        private K3Value LtimeFunction(K3Value operand)
-        {
-            throw new Exception("_ltime (local time conversion) operation reserved for future use");
-        }
-
+        
         private K3Value VsFunction(K3Value operand)
         {
             throw new Exception("_vs (database) operation reserved for future use");
