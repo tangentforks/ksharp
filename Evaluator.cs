@@ -300,7 +300,6 @@ namespace K3CSharp
                     "_bin" => BinFunction(operand),
                     "_binl" => BinlFunction(operand),
                     "_lin" => LinFunction(operand),
-                    "_lsq" => LsqFunction(operand),
                     "_gtime" => GtimeFunction(operand),
                     "_lt" => LtFunction(operand),
                     "_vs" => VsFunction(operand),
@@ -1148,201 +1147,8 @@ namespace K3CSharp
             return lastResult;
         }
 
-        private K3Value In(K3Value left, K3Value right)
-        {
-            // _in (Find) function - searches for left argument in right argument
-            // Returns position (1-based) or 0 if not found
-            // Uses tolerant comparison for floating-point numbers
-            
-            if (right is VectorValue rightVec)
-            {
-                // Search for left in right vector
-                for (int i = 0; i < rightVec.Elements.Count; i++)
-                {
-                    var matchResult = Match(left, rightVec.Elements[i]);
-                    if (matchResult is IntegerValue intVal && intVal.Value == 1)
-                    {
-                        return new IntegerValue(i + 1); // 1-based indexing
-                    }
-                }
-                return new IntegerValue(0); // Not found
-            }
-            else
-            {
-                // Search for left in right scalar
-                var matchResult = Match(left, right);
-                if (matchResult is IntegerValue intVal2 && intVal2.Value == 1)
-                {
-                    return new IntegerValue(1); // Found at position 1
-                }
-                return new IntegerValue(0); // Not found
-            }
-        }
-
-        private K3Value Bin(K3Value left, K3Value right)
-        {
-            // _bin (Binary Search) function - performs binary search on sorted list
-            // Returns position (1-based) or 0 if not found
-            // Assumes right argument is sorted in ascending order
-            
-            if (right is VectorValue rightVec)
-            {
-                int low = 0;
-                int high = rightVec.Elements.Count - 1;
-                
-                while (low <= high)
-                {
-                    int mid = (low + high) / 2;
-                    var midValue = rightVec.Elements[mid];
-                    var comparison = CompareValues(left, midValue);
-                    
-                    if (comparison == 0)
-                    {
-                        return new IntegerValue(mid + 1); // 1-based indexing
-                    }
-                    else if (comparison < 0)
-                    {
-                        high = mid - 1;
-                    }
-                    else
-                    {
-                        low = mid + 1;
-                    }
-                }
-                return new IntegerValue(0); // Not found
-            }
-            else
-            {
-                // Search for left in right scalar
-                var comparison = CompareValues(left, right);
-                if (comparison == 0)
-                {
-                    return new IntegerValue(1); // Found at position 1
-                }
-                return new IntegerValue(0); // Not found
-            }
-        }
-
-        private K3Value Binl(K3Value left, K3Value right)
-        {
-            // _binl (Binary Search Each-Left) function
-            // Returns 1 for each element of left that is found in right, 0 otherwise
-            // Equivalent to left _in\: right but optimized
-            
-            if (left is VectorValue leftVec)
-            {
-                var results = new List<K3Value>();
-                
-                // For binary search each-left, we need to search each element of left in right
-                foreach (var leftElement in leftVec.Elements)
-                {
-                    var result = Bin(leftElement, right);
-                    // Convert position result to 1/0 (found/not found)
-                    var found = result is IntegerValue intVal && intVal.Value != 0;
-                    results.Add(new IntegerValue(found ? 1 : 0));
-                }
-                
-                return new VectorValue(results);
-            }
-            else
-            {
-                // Single element case
-                var result = Bin(left, right);
-                var found = result is IntegerValue intVal && intVal.Value != 0;
-                return new IntegerValue(found ? 1 : 0);
-            }
-        }
-
-        private K3Value Lin(K3Value left, K3Value right)
-        {
-            // _lin (List Intersection) function
-            // Returns 1 for each element of left that is in right, 0 otherwise
-            // Equivalent to left _in\: right but optimized using HashSet
-            
-            if (left is VectorValue leftVec)
-            {
-                var results = new List<K3Value>();
-                
-                // Create a HashSet for efficient O(1) lookups of right argument elements
-                var rightSet = CreateHashSet(right);
-                
-                foreach (var leftElement in leftVec.Elements)
-                {
-                    bool found = false;
-                    
-                    // Check if leftElement exists in rightSet
-                    if (rightSet != null)
-                    {
-                        found = rightSet.Contains(leftElement);
-                    }
-                    else
-                    {
-                        // Fallback to linear search if HashSet creation failed
-                        found = LinearSearchInRight(leftElement, right);
-                    }
-                    
-                    results.Add(new IntegerValue(found ? 1 : 0));
-                }
-                
-                return new VectorValue(results);
-            }
-            else
-            {
-                // Single element case - return 1 if found, 0 otherwise
-                bool found = LinearSearchInRight(left, right);
-                return new IntegerValue(found ? 1 : 0);
-            }
-        }
-
-        private HashSet<K3Value>? CreateHashSet(K3Value value)
-        {
-            // Create a HashSet from a K3Value for efficient lookups
-            try
-            {
-                var set = new HashSet<K3Value>(new K3ValueComparer());
-                
-                if (value is VectorValue vec)
-                {
-                    foreach (var element in vec.Elements)
-                    {
-                        set.Add(element);
-                    }
-                }
-                else
-                {
-                    set.Add(value);
-                }
-                
-                return set;
-            }
-            catch
-            {
-                return null; // Return null if HashSet creation fails
-            }
-        }
-
-        private bool LinearSearchInRight(K3Value leftElement, K3Value right)
-        {
-            // Linear search for leftElement in right
-            if (right is VectorValue rightVec)
-            {
-                foreach (var rightElement in rightVec.Elements)
-                {
-                    var matchResult = Match(leftElement, rightElement);
-                    if (matchResult is IntegerValue intVal && intVal.Value == 1)
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            else
-            {
-                var matchResult = Match(leftElement, right);
-                return matchResult is IntegerValue intVal && intVal.Value == 1;
-            }
-        }
-
+        
+        
         private K3Value Find(K3Value left, K3Value right)
         {
             // Find operator: d ? y
@@ -2315,63 +2121,7 @@ namespace K3CSharp
         }
 
         
-        private K3Value InFunction(K3Value operand)
-        {
-            // _in function should be handled as dyadic in binary operations
-            // This unary case should not be reached in normal operation
-            throw new Exception("_in (Find) function requires two arguments - use infix notation: x _in y");
-        }
-
-        private K3Value BinFunction(K3Value operand)
-        {
-            throw new Exception("_bin (binary search) operation reserved for future use");
-        }
-
-        private K3Value BinlFunction(K3Value operand)
-        {
-            // _binl function should be handled as dyadic in binary operations
-            // This unary case should not be reached in normal operation
-            throw new Exception("_binl (binary search each-left) function requires two arguments - use infix notation: x _binl y");
-        }
-
-        private K3Value LinFunction(K3Value operand)
-        {
-            // _lin function should be handled as dyadic in binary operations
-            // This unary case should not be reached in normal operation
-            throw new Exception("_lin (list intersection) function requires two arguments - use infix notation: x _lin y");
-        }
-
-        private K3Value LsqFunction(K3Value operand)
-        {
-            throw new Exception("_lsq (least squares) operation reserved for future use");
-        }
-
         
-        private K3Value VsFunction(K3Value operand)
-        {
-            throw new Exception("_vs (database) operation reserved for future use");
-        }
-
-        private K3Value SvFunction(K3Value operand)
-        {
-            throw new Exception("_sv (database) operation reserved for future use");
-        }
-
-        private K3Value SsFunction(K3Value operand)
-        {
-            throw new Exception("_ss (database) operation reserved for future use");
-        }
-
-        private K3Value CiFunction(K3Value operand)
-        {
-            throw new Exception("_ci (database) operation reserved for future use");
-        }
-
-        private K3Value IcFunction(K3Value operand)
-        {
-            throw new Exception("_ic (database) operation reserved for future use");
-        }
-
         private int ToInteger(K3Value value)
         {
             if (value is IntegerValue intValue)
@@ -2513,11 +2263,7 @@ namespace K3CSharp
             throw new Exception("_goto (control flow) operation reserved for future use");
         }
 
-        private K3Value ExitFunction(K3Value operand)
-        {
-            throw new Exception("_exit (control flow) operation reserved for future use");
-        }
-
+        
         private K3Value TrappedApply(K3Value data, K3Value argument)
         {
             // Trapped apply: behave like dyadic dot apply but never throw exceptions
