@@ -21,12 +21,7 @@ namespace K3CSharp
         // Reference to parent evaluator for global scope access
         private Evaluator? parentEvaluator = null;
 
-        // Public methods for K tree operations
-        public K3Value? GetCurrentBranch()
-        {
-            return kTree.CurrentBranch;
-        }
-        
+                
         public void SetCurrentBranch(string branchPath)
         {
             kTree.CurrentBranch = new SymbolValue(branchPath);
@@ -270,7 +265,7 @@ namespace K3CSharp
                     "?" => Unique(operand),
                     "=" => Group(operand),
                     "$" => Format(operand),
-                    "DIRECTORY" => GetCurrentBranch() ?? new NullValue(),
+                    "DIRECTORY" => DirFunction(operand),
                     "NEGATE" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue))
                     ? AttributeHandle(operand)
                     : LogicalNegate(operand),
@@ -310,7 +305,7 @@ namespace K3CSharp
                     "_do" => DoFunction(operand),
                     "_while" => WhileFunction(operand),
                     "_if" => IfFunction(operand),
-                    "_d" => GetCurrentBranch() ?? new NullValue(),
+                    "_d" => DirFunction(operand),
                     "do" => DoFunction(operand),
                     "while" => WhileFunction(operand),
                     "if" => IfFunction(operand),

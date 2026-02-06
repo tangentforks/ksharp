@@ -349,7 +349,7 @@ namespace K3CSharp
                     if (parts.Length == 1)
                     {
                         // Display current branch
-                        var currentBranch = evaluator.GetCurrentBranch();
+                        var currentBranch = evaluator.DirFunction(new NullValue());
                         if (currentBranch is SymbolValue sym && !string.IsNullOrEmpty(sym.Value))
                         {
                             Console.WriteLine(sym.Value);
@@ -380,7 +380,7 @@ namespace K3CSharp
                 case "\\^":
                     // Set current branch to parent
                     evaluator.SetParentBranch();
-                    var parentBranch = evaluator.GetCurrentBranch();
+                    var parentBranch = evaluator.DirFunction(new NullValue());
                     if (parentBranch is SymbolValue parentSym && !string.IsNullOrEmpty(parentSym.Value))
                     {
                         Console.WriteLine($"Current branch set to: {parentSym.Value}");
