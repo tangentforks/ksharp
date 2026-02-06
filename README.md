@@ -196,19 +196,19 @@ cd K3CSharp.Comparison && dotnet run
 ### **Core Data Types** ✅
 - **Atomic Types**: Integer, Float, Character, Symbol, Timestamp, Function, Dictionary
 - **Collections**: Lists (vectors), mixed-type lists, nested lists
-- **Special Values**: Null (`0n`), infinity (`0w`), negative infinity (`-0w`)
+- **Special Values**: Null (`0n`), infinity (`0i`), negative infinity (`-0i`)
 - **Type System**: Dynamic typing with automatic promotion
 - **Null Handling**: IEEE 754 compliant null propagation
 
 ### **Core Operator System** ✅
 - **Arithmetic**: `+` (Plus), `-` (Minus/Negate), `*` (Times), `%` (Divide/Reciprocal)
-- **Comparison**: `<` (Less), `>` (More), `=` (Equal), `<>` (Not Equal)
+- **Comparison**: `<` (Less), `>` (More), `=` (Equal)
 - **Logical**: `&` (Min/And), `|` (Max/Or), `~` (Not/Attribute)
-- **Other**: `^` (Shape/Except), `!` (Enumerate/Key), `#` (Count/Take), `_` (Floor/Underscore)
-- **Advanced**: `?` (Find/Random), `@` (Atom/Index), `.` (Apply/Dot), `,` (Enlist/Join)
+- **Other**: `^` (Shape), `!` (Enumerate/Key), `#` (Count/Take), `_` (Floor)
+- **Advanced**: `?` (Find/Random), `@` (Atom/Index), `.` (Apply/Execute), `,` (Enlist/Join)
 
 ### **Form/Format Operators** ✅
-- **Form Operations**: `0$"abc"` (char→int), `0j$"42"` (char→long), `0.0$"3.14"` (char→float)
+- **Form Operations**: `0$"123"` (char→int), `0j$"42"` (char→long), `0.0$"3.14"` (char→float)
 - **Format Operations**: `"    1"$42` (width padding), `"*"$1` (character fill), `"3.2"$3.14159` (precision)
 - **Identity Form**: `" "$"abc"` (character vector identity), `` ` `$symbol `` (symbol identity)
 - **Expression Form**: `{"x+y"}[2;3]` (dynamic expression evaluation)
@@ -409,9 +409,9 @@ dotnet run
    - **Expected**: `10`, **Actual**: `Error`
    - **Status**: Related to nested function limitation (known limitation)
 
-#### **Comparison Tests: 311/393 tests matching e.exe (79.1% success rate)  - Good Results**
+#### **Comparison Tests: 311/393 tests matching k.exe (79.1% success rate)  - Good Results**
 - **Validation Coverage**: 393/393 scenarios (100% coverage)
-- **64-bit K Compatibility**: Full long integer support with e.exe
+- **64-bit K Compatibility**: Full long integer support if e.exe is available
 
 #### **Passing Comparison Tests (307/346)**
 - ** Exact Matches**: 307 scenarios (perfect compatibility)
