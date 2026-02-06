@@ -264,7 +264,7 @@
 ║ monadic_format_types.k                   │ $42.5                │ "42.5"               │                      ║
 ║ monadic_format_vector.k                  │ $1 2 3               │ (,"1";,"2";,"3")     │                      ║
 ║ monadic_format_string_hello.k            │ $"hello"             │ "hello"              │                      ║
-║ monadic_format_string_a.k                │ $"a"                 │ ,"a"                 │                      ║
+║ monadic_format_string_a.k                │ $"a"                 │ ""a""                │ ,"a"                 ║
 ║ monadic_format_symbol_hello.k            │ $`hello              │ "hello"              │                      ║
 ║ monadic_format_symbol_simple.k           │ $`test               │ "test"               │                      ║
 ║ monadic_format_dictionary.k              │ $.((`a;1);(`b;2);(`c;3)) │ ".((`a;1;);(`b;...   │                      ║
@@ -395,7 +395,7 @@
 ║ monadic_format_types.k                   │ $42.5                │ "42.5"               │                      ║
 ║ monadic_format_vector.k                  │ $1 2 3               │ (,"1";,"2";,"3")     │                      ║
 ║ monadic_format_string_hello.k            │ $"hello"             │ "hello"              │                      ║
-║ monadic_format_string_a.k                │ $"a"                 │ ,"a"                 │                      ║
+║ monadic_format_string_a.k                │ $"a"                 │ ""a""                │ ,"a"                 ║
 ║ monadic_format_symbol_hello.k            │ $`hello              │ "hello"              │                      ║
 ║ monadic_format_symbol_simple.k           │ $`test               │ "test"               │                      ║
 ║ monadic_format_dictionary.k              │ $.((`a;1);(`b;2);(`c;3)) │ ".((`a;1;);(`b;...   │ .((`a;1;);(`b;2...   ║
@@ -432,7 +432,7 @@
 ║ while_safe_test.k                        │ i: 0                 │ Error: Cannot c...   │                      ║
 ║ while_simple_test.k                      │ while[0; 42]         │ Error: While fu...   │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 350/426 tests passed (82.2%)                                                                     ║
+║ SUMMARY: 348/426 tests passed (81.7%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -553,6 +553,11 @@ Test: variable_scoping_nested_functions.k
 Input: globalVar: 100  // Test nested functions
 Expected: 25
 Actual: 7
+──────────────────────────────────────────────────────────────────────────
+Test: monadic_format_string_a.k
+Input: $"a"
+Expected: ,"a"
+Actual: ""a""
 ──────────────────────────────────────────────────────────────────────────
 Test: format_float_numeric.k
 Input: 0.0$1
@@ -794,6 +799,11 @@ Test: if_true.k
 Input: a: 10; if[1 < 2; a: 20]  // If statement - condition true
 Expected: 
 Actual: Error: Cannot compare Integer and Vector with <
+──────────────────────────────────────────────────────────────────────────
+Test: monadic_format_string_a.k
+Input: $"a"
+Expected: ,"a"
+Actual: ""a""
 ──────────────────────────────────────────────────────────────────────────
 Test: monadic_format_dictionary.k
 Input: $.((`a;1);(`b;2);(`c;3))
