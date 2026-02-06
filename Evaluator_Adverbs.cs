@@ -74,12 +74,7 @@ namespace K3CSharp
             }
         }
 
-        private bool IsScalar(K3Value value)
-        {
-            return value is IntegerValue || value is LongValue || value is FloatValue || 
-                   value is CharacterValue || value is SymbolValue || value is NullValue;
-        }
-        private K3Value EvaluateAdverbChain(ASTNode node)
+                private K3Value EvaluateAdverbChain(ASTNode node)
         {
             if (node.Children.Count < 2)
             {
