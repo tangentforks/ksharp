@@ -247,11 +247,6 @@ namespace K3CSharp
             throw new Exception("_setenv (set environment variable) operation reserved for future use");
         }
 
-        private K3Value HostFunction(K3Value operand)
-        {
-            throw new Exception("_host (host information) operation reserved for future use");
-        }
-
         private K3Value SizeFunction(K3Value operand)
         {
             throw new Exception("_size (size information) operation reserved for future use");

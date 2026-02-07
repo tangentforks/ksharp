@@ -34,10 +34,12 @@ namespace K3CSharp
         
         /// <summary>
         /// Resets the K tree to its default state (for testing purposes)
+        /// Also resets random seed to -314159 for reproducible tests
         /// </summary>
         public void ResetKTree()
         {
             kTree = new KTree();
+            Evaluator.RandomSeed = -314159;
         }
 
         public K3Value Evaluate(ASTNode? node)
@@ -290,6 +292,7 @@ namespace K3CSharp
                     "_mul" => MathMul(operand),
                     "_inv" => MathInv(operand),
                     "_t" => TimeFunction(operand),
+                    "_T" => TFunction(operand),
                     "_draw" => DrawFunction(operand),
                     "_in" => InFunction(operand),
                     "_bin" => BinFunction(operand),
@@ -297,12 +300,29 @@ namespace K3CSharp
                     "_lin" => LinFunction(operand),
                     "_gtime" => GtimeFunction(operand),
                     "_lt" => LtFunction(operand),
+                    "_ltime" => LtimeFunction(operand),
                     "_vs" => VsFunction(operand),
                     "_sv" => SvFunction(operand),
                     "_ss" => SsFunction(operand),
                     "_ci" => CiFunction(operand),
                     "_ic" => IcFunction(operand),
-                    "_do" => DoFunction(operand),
+                    "_v" => VarFunction(operand),
+                    "_i" => IndexFunction(operand),
+                    "_f" => FunctionFunction(operand),
+                    "_n" => NullFunction(operand),
+                    "_s" => SpaceFunction(operand),
+                    "_h" => HostFunction(operand),
+                    "_p" => PortFunction(operand),
+                    "_P" => ProcessIdFunction(operand),
+                    "_w" => WhoFunction(operand),
+                    "_u" => UserFunction(operand),
+                    "_a" => AddressFunction(operand),
+                    "_k" => VersionFunction(operand),
+                    "_o" => OsFunction(operand),
+                    "_c" => CoresFunction(operand),
+                    "_r" => RamFunction(operand),
+                    "_m" => MachineIdFunction(operand),
+                    "_y" => StackFunction(operand),
                     "_while" => WhileFunction(operand),
                     "_if" => IfFunction(operand),
                     "_d" => DirFunction(operand),
@@ -373,6 +393,7 @@ namespace K3CSharp
                         "_bin" => Bin(left, right),
                         "_binl" => Binl(left, right),
                         "_lin" => Lin(left, right),
+                        "_draw" => Draw(left, right),
                         "?" => Find(left, right),
                         "TYPE" => GetTypeCode(left),
                         _ => throw new Exception($"Unknown binary operator: {op.Value}")

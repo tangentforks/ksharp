@@ -323,7 +323,7 @@ namespace K3CSharp
             cursorPosition = currentLine.Length;
         }
 
-        static K3Value ExecuteLine(string input, Evaluator evaluator)
+        public static K3Value ExecuteLine(string input, Evaluator evaluator)
         {
             // Handle REPL commands (prefixed with backslash)
             var trimmedInput = input.Trim().Trim('\uFEFF', '\u200B'); // Remove BOM and zero-width spaces
@@ -339,7 +339,7 @@ namespace K3CSharp
             return evaluator.Evaluate(ast) ?? new NullValue();
         }
 
-        static K3Value HandleReplCommand(string command, Evaluator evaluator)
+        public static K3Value HandleReplCommand(string command, Evaluator evaluator)
         {
             var parts = command.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             
@@ -373,7 +373,9 @@ namespace K3CSharp
                     
                 case "\\9":
                     // Reset K tree to default state (for testing purposes)
+                    // Also reset random seed to -314159 for reproducible tests
                     evaluator.ResetKTree();
+                    Evaluator.RandomSeed = -314159;
                     Console.WriteLine("K tree reset to default state");
                     return new NullValue();
                     
@@ -417,6 +419,31 @@ namespace K3CSharp
                     }
                     return new NullValue();
                     
+                case "\\r":
+                    // Handle random seed get/set
+                    if (parts.Length == 1)
+                    {
+                        // Display current random seed
+                        Console.WriteLine(Evaluator.RandomSeed);
+                    }
+                    else if (parts.Length == 2)
+                    {
+                        // Set random seed
+                        if (int.TryParse(parts[1], out int newSeed))
+                        {
+                            Evaluator.RandomSeed = newSeed;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid seed value. Use: \\r <number>");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Usage: \\r [number]");
+                    }
+                    return new NullValue();
+                    
                 case "\\":
                     // Display top level help message
                     Console.WriteLine("\\  help (this page)");
@@ -426,7 +453,8 @@ namespace K3CSharp
                     Console.WriteLine("\\. control flow, assignment and debug");
                     Console.WriteLine("\\_ underscore verbs (math, linear, etc.)");
                     Console.WriteLine("\\p precision");
-                    Console.WriteLine("\\9 reset K tree (testing)");
+                    Console.WriteLine("\\r random seed");
+                    Console.WriteLine("\\9 reset K tree and random seed (testing)");
                     Console.WriteLine("\\\\ exit");
                     break;
                     
@@ -440,12 +468,13 @@ namespace K3CSharp
                 case "\\+":
                     // Display arithmetic and basic verbs information
                     Console.WriteLine("arithmetic: + - * % < > = & | ^");
-                    Console.WriteLine("unary: - + * % & | < > ^ ! , # _ ? ~ @ . = $");
-                    Console.WriteLine("binary: ! _ @ . :: $");
+                    Console.WriteLine("Monadic: - + * % & | < > ^ ! , # _ ? ~ @ . = $");
+                    Console.WriteLine("Dyadic: ! _ @ . :: $");
                     Console.WriteLine("indexing: @_n []");
                     Console.WriteLine("dict: !dict .dict");
                     Console.WriteLine("format: $value format${}expr");
-                    Console.WriteLine("see \\_ for math, linear algebra, and other underscore verbs");
+                    Console.WriteLine("assignment: =");
+                    Console.WriteLine("see \\_ for math, linear algebra, and system information verbs");
                     break;
                     
                 case "\\'":
@@ -479,11 +508,16 @@ namespace K3CSharp
                     Console.WriteLine();
                     Console.WriteLine("debug:");
                     Console.WriteLine("  \\p [number]  // set precision");
+                    Console.WriteLine("  \\r [number]  // set/get random seed");
+                    Console.WriteLine("  \\9            // reset K tree and random seed (testing)");
                     Console.WriteLine("  \\help        // show this help");
                     break;
                     
                 case "\\_":
                     // Display underscore verbs information
+                    Console.WriteLine("system information:");
+                    Console.WriteLine("  _d    _v    _i    _f    _n    _s    _h    _p    _P    _w    _u    _a    _k    _o    _c    _r    _m    _y");
+                    Console.WriteLine();
                     Console.WriteLine("math functions:");
                     Console.WriteLine("  _log   _exp   _abs   _sqrt");
                     Console.WriteLine("  _sin   _cos   _tan");
@@ -494,9 +528,9 @@ namespace K3CSharp
                     Console.WriteLine("group:");
                     Console.WriteLine("  =      // group/ungroup");
                     Console.WriteLine();
-                    Console.WriteLine("other underscore verbs:");
-                    Console.WriteLine("  _do    _while _if    // internal control flow");
-                    Console.WriteLine("see \\+ for basic arithmetic and binary verbs");
+                    Console.WriteLine("control flow:");
+                    Console.WriteLine("  =      // assignment");
+                    Console.WriteLine("see \\+ for arithmetic and binary verbs");
                     break;
                     
                 default:

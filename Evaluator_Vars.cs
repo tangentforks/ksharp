@@ -1,4 +1,8 @@
 using System;
+using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
+using System.Runtime.InteropServices;
 
 namespace K3CSharp
 {
@@ -11,51 +15,175 @@ namespace K3CSharp
             // _d (directory) function - returns current directory/branch
             return kTree.CurrentBranch != null ? kTree.CurrentBranch : new NullValue();
         }
-
+        
+        private K3Value NullFunction(K3Value operand)
+        {
+            // _n - null value
+            // Return singleton null value for optimization purposes
+            return new NullValue();
+        }
+        
         private K3Value VarFunction(K3Value operand)
         {
             throw new Exception("_v (variable) operation reserved for future use");
         }
-
+        
         private K3Value IndexFunction(K3Value operand)
         {
-            throw new Exception("_i (index) operation reserved for future use");
+            // _i (index) - return command line arguments
+            // When a script is called, _i will return a list of character vectors 
+            // that contain command line arguments passed after the script name.
+            // Otherwise it will return an empty list.
+            
+            // For now, return empty list since we don't have command line argument support
+            return new VectorValue(new List<K3Value>());
         }
-
+        
         private K3Value FunctionFunction(K3Value operand)
         {
-            throw new Exception("_f (function) operation reserved for future use");
+            // _f (function) - return an anonymous function that is a copy of the current function
+            // This can be used to call the function recursively.
+            // For now, return the operand as-is since we don't have function introspection
+            return operand;
         }
-
+        
         private K3Value SpaceFunction(K3Value operand)
         {
-            throw new Exception("_s (space) operation reserved for future use");
+            // _s - system memory information
+            // Return information about memory usage of the system
+            // For K# we will return information obtained by GC.GetTotalMemory
+            var memoryInfo = GC.GetTotalMemory(false);
+            var results = new List<K3Value>
+            {
+                new IntegerValue((int)(memoryInfo / (1024 * 1024))), // Convert bytes to MB
+                new IntegerValue(Environment.ProcessId),
+                new IntegerValue(0) // Pinned objects count (placeholder)
+            };
+            return new VectorValue(results);
         }
-
+        
+        private K3Value HostFunction(K3Value operand)
+        {
+            // _h - hostname
+            // Return hostname of the machine as a symbol
+            try
+            {
+                var hostName = Dns.GetHostName();
+                return new SymbolValue(hostName ?? "");
+            }
+            catch
+            {
+                return new SymbolValue("");
+            }
+        }
         
         private K3Value PortFunction(K3Value operand)
         {
-            throw new Exception("_p (port) operation reserved for future use");
+            // _p - port number
+            // Return port number that REPL is using for IPC, or 0 if not using IPC
+            // For now, return 0 since we don't have IPC support
+            return new IntegerValue(0);
         }
-
+        
+        private K3Value ProcessIdFunction(K3Value operand)
+        {
+            // _P - process ID
+            // Return process ID of the current process as an integer
+            return new IntegerValue(Environment.ProcessId);
+        }
+        
         private K3Value WhoFunction(K3Value operand)
         {
-            throw new Exception("_w (who) operation reserved for future use");
+            // _w - IPC port
+            // Return integer port number of calling machine when responding to an IPC call
+            // If not using IPC, return 0
+            return new IntegerValue(0);
         }
-
+        
         private K3Value UserFunction(K3Value operand)
         {
-            throw new Exception("_u (user) operation reserved for future use");
+            // _u - username
+            // Return username from calling process when responding to an IPC call
+            // If not using IPC, return username of user running REPL
+            return new SymbolValue(Environment.UserName ?? "");
         }
-
+        
         private K3Value AddressFunction(K3Value operand)
         {
-            throw new Exception("_a (address) operation reserved for future use");
+            // _a - IPv4 address
+            // Return integer ipv4 address (as a 32-bit value) of calling machine
+            // If not using IPC, return 0
+            return new IntegerValue(0);
         }
-
+        
         private K3Value VersionFunction(K3Value operand)
         {
-            throw new Exception("_k (version) operation reserved for future use");
+            // _k - version
+            // Return version of K# as a character vector
+            var version = typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown";
+            var chars = version.Split('.').Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
+            return new VectorValue(chars);
+        }
+        
+        private K3Value OsFunction(K3Value operand)
+        {
+            // _o - operating system
+            // Return name of operating system as a symbol
+            var os = Environment.OSVersion.Platform switch
+            {
+                PlatformID.Win32NT => "w64",
+                PlatformID.Win32S => "w32", 
+                PlatformID.WinCE => "w32",
+                PlatformID.Unix => "linux",
+                PlatformID.MacOSX => "osx",
+                _ => "unknown"
+            };
+            return new SymbolValue(os);
+        }
+        
+        private K3Value CoresFunction(K3Value operand)
+        {
+            // _c - number of cores
+            // Return number of cores of the machine as an integer
+            return new IntegerValue(Environment.ProcessorCount);
+        }
+        
+        private K3Value RamFunction(K3Value operand)
+        {
+            // _r - amount of RAM
+            // Return amount of RAM of the machine as an integer
+            // Using GC.GetTotalMemory for available memory
+            var totalMemory = GC.GetTotalMemory(false);
+            return new IntegerValue((int)(totalMemory / (1024 * 1024))); // Convert bytes to MB
+        }
+        
+        private K3Value MachineIdFunction(K3Value operand)
+        {
+            // _m - machine ID
+            // Return machine ID as a character vector
+            var machineId = Environment.MachineName ?? "";
+            var chars = machineId.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
+            return new VectorValue(chars);
+        }
+        
+        private K3Value StackFunction(K3Value operand)
+        {
+            // _y - stack trace
+            // Return stack trace of the current call stack and arguments as a list
+            var stackTrace = Environment.StackTrace ?? "";
+            var lines = stackTrace.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            var results = new List<K3Value>();
+            
+            foreach (var line in lines.Take(10)) // Limit to first 10 lines
+            {
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    var args = line.Split(' ').Select(arg => (K3Value)new SymbolValue(arg.Trim())).ToList();
+                    results.Add(new VectorValue(args));
+                }
+            }
+            
+            return new VectorValue(results);
         }
     }
 }

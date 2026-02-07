@@ -63,6 +63,7 @@ namespace K3CSharp
                 TokenType.GREATER => ">",
                 TokenType.EQUAL => "=",
                 TokenType.IN => "_in",
+                TokenType.DRAW => "_draw",
                 TokenType.POWER => "^",
                 TokenType.MODULUS => "!",
                 TokenType.JOIN => ",",
@@ -324,6 +325,7 @@ namespace K3CSharp
                    type == TokenType.COLON || type == TokenType.HASH || type == TokenType.UNDERSCORE || type == TokenType.QUESTION || 
                    type == TokenType.NEGATE || type == TokenType.DOLLAR || type == TokenType.IN ||
                    type == TokenType.BIN || type == TokenType.BINL || type == TokenType.LIN ||
+                   type == TokenType.DRAW ||
                    type == TokenType.APPLY;
         }
 
@@ -1437,12 +1439,13 @@ namespace K3CSharp
             }
             else if (Match(TokenType.DRAW))
             {
-                // Date function
-                var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("_date");
-                if (operand != null) node.Children.Add(operand);
-                return node;
+                // Draw function (random number generation) - dyadic operator
+                var left = result;
+                var right = ParseTerm();
+                if (left != null && right != null)
+                {
+                    result = ASTNode.MakeBinaryOp(TokenType.DRAW, left, right);
+                }
             }
             else if (Match(TokenType.DIRECTORY))
             {

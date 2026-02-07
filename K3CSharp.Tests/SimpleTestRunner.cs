@@ -541,8 +541,20 @@ namespace K3CSharp.Tests
                 
                 // Test underscore functions
                 ("log.k", "2.302585"),
-                ("time.k", "Error - _t (current time) operation reserved for future use"),
+                ("time_t.k", "-280816017"),
+                ("rand_draw_select.k", "3 0 2 0 3 1 2 1"),
+                ("rand_draw_deal.k", "0 4 5 2"),
+                ("rand_draw_probability.k", "0.03505812 0.7834427 0.7999031 0.9046515 0.2232866 0.9504653 0.4886304 0.2221393 0.536916 0.3432165"),
+                ("rand_draw_vector_select.k", "(2 0 3;1 2 1)"),
+                ("rand_draw_vector_deal.k", "(0 8 1;9 5 3)"),
+                ("rand_draw_vector_probability.k", "(0.03505812 0.7834427 0.7999031;0.9046515 0.2232866 0.9504653)"),
+                ("rand_draw_monadic_error.k", "Error - _draw requires dyadic call (left and right arguments)"),
                 ("draw.k", "Error - _draw (random number generation) operation reserved for future use"),
+                ("time_gtime.k", "20350101 0"),
+                ("time_lt.k", "-18000"),
+                ("time_jd.k", "0N"),
+                ("time_dj.k", "20350101"),
+                ("time_ltime.k", "20341231 190000"),
                 ("in.k", "4"),
                 
                 // New search function tests
@@ -778,17 +790,62 @@ namespace K3CSharp.Tests
                     }
 
                     var script = File.ReadAllText(scriptPath);
-                    var lexer = new Lexer(script);
-                    var tokens = lexer.Tokenize();
-                    var parser = new Parser(tokens);
-                    var ast = parser.Parse();
+                    var lines = script.Split('\n', StringSplitOptions.RemoveEmptyEntries);
                     
                     var evaluator = new Evaluator();
                     
                     // Reset K tree before each test to ensure isolation
                     evaluator.ResetKTree();
                     
-                    var actualOutput = (ast != null ? evaluator.Evaluate(ast) : new NullValue()).ToString().Trim();
+                    K3Value? lastResult = null;
+                    
+                    // Process each line in the script
+                    foreach (var line in lines)
+                    {
+                        var trimmedLine = line.Trim();
+                        if (string.IsNullOrEmpty(trimmedLine)) continue;
+                        
+                        // Handle REPL commands (starting with \)
+                        if (trimmedLine.StartsWith("\\"))
+                        {
+                            // Handle REPL command directly
+                            var parts = trimmedLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                            
+                            switch (parts[0])
+                            {
+                                case "\\r":
+                                    // Handle random seed get/set
+                                    if (parts.Length == 1)
+                                    {
+                                        // Display current random seed (no output for test)
+                                    }
+                                    else if (parts.Length == 2)
+                                    {
+                                        // Set random seed
+                                        if (int.TryParse(parts[1], out int newSeed))
+                                        {
+                                            Evaluator.RandomSeed = newSeed;
+                                        }
+                                    }
+                                    break;
+                                default:
+                                    // Ignore other REPL commands for now
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            // Handle regular K expressions
+                            var lexer = new Lexer(trimmedLine);
+                            var tokens = lexer.Tokenize();
+                            var parser = new Parser(tokens);
+                            var ast = parser.Parse();
+                            
+                            lastResult = evaluator.Evaluate(ast);
+                        }
+                    }
+                    
+                    var actualOutput = (lastResult ?? new NullValue()).ToString().Trim();
                     var passed = actualOutput == expected;
 
                     if (passed)

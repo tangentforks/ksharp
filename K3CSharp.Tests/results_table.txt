@@ -68,10 +68,10 @@
 ║ float_types.k                            │ 3.14                 │ 3.14                 │                      ║
 ║ function_add7.k                          │ add7:{[arg1] arg1+7} │ {[arg1] arg1+7}      │ 12                   ║
 ║ function_call_anonymous.k                │ {[arg1] arg1+6} . 7  │ {[arg1] arg1+6}      │ 13                   ║
-║ function_call_chain.k                    │ mul:{[op1;op2] op1 * op2} │ {[op1;op2] op1*...   │ 20                   ║
+║ function_call_chain.k                    │ mul:{[op1;op2] op1 * op2} │ Error: Cannot s...   │ 20                   ║
 ║ function_call_double.k                   │ mul:{[op1;op2] op1 * op2} │ {[op1;op2] op1*...   │ 32                   ║
 ║ function_call_simple.k                   │ add7:{[arg1] arg1+7} │ {[arg1] arg1+7}      │ 12                   ║
-║ function_foo_chain.k                     │ mul:{[op1;op2] op1 * op2} │ {[op1;op2] op1*...   │ 20                   ║
+║ function_foo_chain.k                     │ mul:{[op1;op2] op1 * op2} │ Error: Cannot s...   │ 20                   ║
 ║ function_mul.k                           │ mul:{[op1;op2] op1 * op2} │ {[op1;op2] op1*...   │ 32                   ║
 ║ generate_operator.k                      │ &4                   │ 0 0 0 0              │                      ║
 ║ grade_down_operator.k                    │ > (3 11 9 9 4)       │ 1 2 3 4 0            │                      ║
@@ -249,11 +249,10 @@
 ║ variable_assignment.k                    │ foo:7                │ 7                    │                      ║
 ║ variable_reassignment.k                  │ foo:7                │ 7.2 4.5              │                      ║
 ║ variable_scoping_global_access.k         │ globalVar: 100  // Test function accessing global variable │ {[x] globalVar+x}    │ 150                  ║
-║ variable_scoping_global_assignment.k     │ globalVar: 100  // Test global assignment from nested function │ Error: Unexpect...   │ 10                   ║
-║ variable_scoping_global_unchanged.k      │ globalVar: 100  // Test verify global variable unchanged │ Error: Unexpect...   │ 100                  ║
-║ variable_scoping_local_hiding.k          │ globalVar: 100  // Test function with local variable hiding global │ {[x] 
- globalVa...   │ 60                   ║
-║ variable_scoping_nested_functions.k      │ globalVar: 100  // Test nested functions │ 7                    │ 25                   ║
+║ variable_scoping_global_assignment.k     │ globalVar: 100  // Test global assignment from nested function │ Error: Expected...   │ 10                   ║
+║ variable_scoping_global_unchanged.k      │ globalVar: 100  // Test verify global variable unchanged │ Error: Expected...   │ 100                  ║
+║ variable_scoping_local_hiding.k          │ globalVar: 100  // Test function with local variable hiding global │ Error: Expected...   │ 60                   ║
+║ variable_scoping_nested_functions.k      │ globalVar: 100  // Test nested functions │ Error: Expected...   │ 25                   ║
 ║ variable_usage.k                         │ x:10                 │ 30                   │                      ║
 ║ dot_execute.k                            │ ."2+2"               │ 4                    │                      ║
 ║ dot_execute_context.k                    │ foo:7                │ 8                    │                      ║
@@ -303,8 +302,20 @@
 ║ form_braces_function_calls.k             │ sum:{[a;b] a+b}      │ 5 20 12              │                      ║
 ║ form_braces_nested_function_calls.k      │ sum:{[a;b] a+b}      │ 5 8 25               │                      ║
 ║ log.k                                    │ _log 10              │ 2.302585             │                      ║
-║ time.k                                   │ _t                   │ Error: Binary o...   │ Error - _t (cur...   ║
-║ draw.k                                   │ _draw                │ Error: Binary o...   │ Error - _draw (...   ║
+║ time_t.k                                 │ _t                   │ Error: Binary o...   │ -280816017           ║
+║ rand_draw_select.k                       │ 8 _draw 4            │ 8                    │ 3 0 2 0 3 1 2 1      ║
+║ rand_draw_deal.k                         │ 6 _draw -10          │ 6                    │ 0 4 5 2              ║
+║ rand_draw_probability.k                  │ 10 _draw 0           │ 10                   │ 0.03505812 0.78...   ║
+║ rand_draw_vector_select.k                │ 2 3 _draw 4          │ 2 3                  │ (2 0 3;1 2 1)        ║
+║ rand_draw_vector_deal.k                  │ 2 3 _draw -10        │ 2 3                  │ (0 8 1;9 5 3)        ║
+║ rand_draw_vector_probability.k           │ 2 3 _draw 0          │ 2 3                  │ (0.03505812 0.7...   ║
+║ rand_draw_monadic_error.k                │ _draw 4              │                      │ Error - _draw r...   ║
+║ draw.k                                   │ _draw                │                      │ Error - _draw (...   ║
+║ time_gtime.k                             │ _gtime 0             │ 20350101 0           │                      ║
+║ time_lt.k                                │ _lt 0                │ Error: Undefine...   │ -18000               ║
+║ time_jd.k                                │ _jd 20260206         │ Error: Undefine...   │ 0N                   ║
+║ time_dj.k                                │ _dj 0                │ Error: Undefine...   │ 20350101             ║
+║ time_ltime.k                             │ _ltime 0             │ 20341231 190000      │                      ║
 ║ in.k                                     │ 4 _in 1 7 2 4 6 3    │ 4                    │                      ║
 ║ search_in_basic.k                        │ 4 _in 1 2 3 4 5      │ 4                    │                      ║
 ║ search_in_notfound.k                     │ 6 _in 1 2 3 4 5      │ 0                    │                      ║
@@ -432,7 +443,7 @@
 ║ while_safe_test.k                        │ i: 0                 │ Error: Cannot c...   │                      ║
 ║ while_simple_test.k                      │ while[0; 42]         │ Error: While fu...   │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 348/426 tests passed (81.7%)                                                                     ║
+║ SUMMARY: 350/438 tests passed (79.9%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -470,7 +481,7 @@ Actual: {[arg1] arg1+6}
 Test: function_call_chain.k
 Input: mul:{[op1;op2] op1 * op2}
 Expected: 20
-Actual: {[op1;op2] op1*op2}
+Actual: Error: Cannot subtract Function and Integer
 ──────────────────────────────────────────────────────────────────────────
 Test: function_call_double.k
 Input: mul:{[op1;op2] op1 * op2}
@@ -485,7 +496,7 @@ Actual: {[arg1] arg1+7}
 Test: function_foo_chain.k
 Input: mul:{[op1;op2] op1 * op2}
 Expected: 20
-Actual: {[op1;op2] op1*op2}
+Actual: Error: Cannot subtract Function and Integer
 ──────────────────────────────────────────────────────────────────────────
 Test: function_mul.k
 Input: mul:{[op1;op2] op1 * op2}
@@ -535,24 +546,22 @@ Actual: {[x] globalVar+x}
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 10
-Actual: Error: Unexpected token: GLOBAL_ASSIGNMENT(::)
+Actual: Error: Expected '}' after function body
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_unchanged.k
 Input: globalVar: 100  // Test verify global variable unchanged
 Expected: 100
-Actual: Error: Unexpected token: RIGHT_BRACE(})
+Actual: Error: Expected '}' after function body
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_local_hiding.k
 Input: globalVar: 100  // Test function with local variable hiding global
 Expected: 60
-Actual: {[x] 
- globalVar : x*2 
- globalVar+10}
+Actual: Error: Expected '}' after function body
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_nested_functions.k
 Input: globalVar: 100  // Test nested functions
 Expected: 25
-Actual: 7
+Actual: Error: Expected '}' after function body
 ──────────────────────────────────────────────────────────────────────────
 Test: monadic_format_string_a.k
 Input: $"a"
@@ -584,15 +593,65 @@ Input: a:5
 Expected: (7 10;(2;2.5);5 -1)
 Actual: (7 15;(2;2.5);5 1)
 ──────────────────────────────────────────────────────────────────────────
-Test: time.k
+Test: time_t.k
 Input: _t
-Expected: Error - _t (current time) operation reserved for future use
+Expected: -280816017
 Actual: Error: Binary operator must have exactly 2 children, got 0
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_select.k
+Input: 8 _draw 4
+Expected: 3 0 2 0 3 1 2 1
+Actual: 8
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_deal.k
+Input: 6 _draw -10
+Expected: 0 4 5 2
+Actual: 6
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_probability.k
+Input: 10 _draw 0
+Expected: 0.03505812 0.7834427 0.7999031 0.9046515 0.2232866 0.9504653 0.4886304 0.2221393 0.536916 0.3432165
+Actual: 10
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_vector_select.k
+Input: 2 3 _draw 4
+Expected: (2 0 3;1 2 1)
+Actual: 2 3
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_vector_deal.k
+Input: 2 3 _draw -10
+Expected: (0 8 1;9 5 3)
+Actual: 2 3
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_vector_probability.k
+Input: 2 3 _draw 0
+Expected: (0.03505812 0.7834427 0.7999031;0.9046515 0.2232866 0.9504653)
+Actual: 2 3
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_monadic_error.k
+Input: _draw 4
+Expected: Error - _draw requires dyadic call (left and right arguments)
+Actual: 
 ──────────────────────────────────────────────────────────────────────────
 Test: draw.k
 Input: _draw
 Expected: Error - _draw (random number generation) operation reserved for future use
-Actual: Error: Binary operator must have exactly 2 children, got 0
+Actual: 
+──────────────────────────────────────────────────────────────────────────
+Test: time_lt.k
+Input: _lt 0
+Expected: -18000
+Actual: Error: Undefined variable: lt
+──────────────────────────────────────────────────────────────────────────
+Test: time_jd.k
+Input: _jd 20260206
+Expected: 0N
+Actual: Error: Undefined variable: jd
+──────────────────────────────────────────────────────────────────────────
+Test: time_dj.k
+Input: _dj 0
+Expected: 20350101
+Actual: Error: Undefined variable: dj
 ──────────────────────────────────────────────────────────────────────────
 Test: search_bin_basic.k
 Input: (1 2 3 4 5) _bin 4
