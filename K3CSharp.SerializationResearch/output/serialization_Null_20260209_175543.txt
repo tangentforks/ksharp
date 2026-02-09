@@ -1,0 +1,10 @@
+# Serialization Research: Null (edge cases)
+# Generated: 2026-02-09 17:55:43
+# Total examples: 1
+
+_bd _n → "\001\000\000\000\b\000\000\000\006\000\000\000\000\000\000\000"
+
+# Summary:
+# Successful examples: 1
+# Data type: Null
+# Mode: Edge cases

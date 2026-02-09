@@ -16,7 +16,10 @@ namespace K3CSharp
 
         public KInterpreterWrapper(string kExePath = @"c:\k\e.exe", int timeoutMs = 10000)
         {
-            // Don't do fallback - use the exact path provided
+            if (!File.Exists(kExePath))
+            {
+                kExePath = @"c:\k\k.exe";
+            }
             this.kExePath = kExePath;
             this.timeoutMs = timeoutMs;
             this.runId = $"{DateTime.Now:yyyyMMdd_HHmmss}_{Environment.ProcessId}_{Guid.NewGuid():N}";
@@ -37,12 +40,6 @@ namespace K3CSharp
                 return "UNSUPPORTED: Script contains long integers (64-bit) - k.exe 32-bit does not support them";
             }
             
-            // Check if k.exe exists, if not use mock mode for demonstration
-            if (!File.Exists(kExePath))
-            {
-                return GenerateMockResult(scriptContent);
-            }
-            
             string? tempScriptPath = null;
             string? outputPath = null;
             
@@ -53,8 +50,8 @@ namespace K3CSharp
                 
                 var processInfo = new ProcessStartInfo
                 {
-                    FileName = kExePath,
-                    Arguments = $"\"{tempScriptPath}\" > \"{outputPath}\"",
+                    FileName = "cmd.exe",
+                    Arguments = $"/c \"\"{kExePath}\" \"{tempScriptPath}\" > \"{outputPath}\"\"",
                     UseShellExecute = false,
                     RedirectStandardOutput = false,
                     RedirectStandardError = false,
@@ -140,125 +137,6 @@ namespace K3CSharp
             {
                 // Ignore cleanup errors
             }
-        }
-
-        private string GenerateMockResult(string scriptContent)
-        {
-            // Mock k.exe _bd results for demonstration purposes
-            // This simulates realistic K serialization patterns
-            
-            if (scriptContent.StartsWith("_bd "))
-            {
-                var input = scriptContent.Substring(4).Trim();
-                
-                // Mock serialization patterns based on input type
-                if (input == "_n")
-                {
-                    return "6"; // Null type (6) with no data
-                }
-                else if (input == "0")
-                {
-                    return "1 0 0 0 0 0 0 0"; // Integer type (1) + 4 bytes little-endian
-                }
-                else if (input == "1")
-                {
-                    return "1 1 0 0 0 0 0 0";
-                }
-                else if (input == "-1")
-                {
-                    return "1 255 255 255 255 255 255 255";
-                }
-                else if (input == "0N")
-                {
-                    return "1 128 0 0 0 0 0 128"; // Integer null
-                }
-                else if (input == "0I")
-                {
-                    return "1 127 255 255 255 255 255 255"; // Integer infinity
-                }
-                else if (input == "-0I")
-                {
-                    return "1 255 0 0 0 0 0 128"; // Integer negative infinity
-                }
-                else if (input == "\"a\"")
-                {
-                    return "3 97"; // Character type (3) + ASCII value
-                }
-                else if (input == "\"\\n\"")
-                {
-                    return "3 10"; // Character type (3) + newline ASCII
-                }
-                else if (input == "\"\\t\"")
-                {
-                    return "3 9"; // Character type (3) + tab ASCII
-                }
-                else if (input == "\"\\0\"")
-                {
-                    return "3 0"; // Character type (3) + null ASCII
-                }
-                else if (input.StartsWith("`") && !input.Contains("\""))
-                {
-                    // Unquoted symbol
-                    var symbolName = input.Substring(1);
-                    if (string.IsNullOrEmpty(symbolName))
-                    {
-                        return "4 0"; // Empty symbol
-                    }
-                    return $"4 {symbolName.Length} {string.Join(" ", Encoding.UTF8.GetBytes(symbolName))}";
-                }
-                else if (input.StartsWith("`\"") && input.EndsWith("\""))
-                {
-                    // Quoted symbol
-                    var symbolContent = input.Substring(2, input.Length - 3);
-                    return $"4 {symbolContent.Length} {string.Join(" ", Encoding.UTF8.GetBytes(symbolContent))}";
-                }
-                else if (input == "()")
-                {
-                    return "0"; // Empty list type (0) with no data
-                }
-                else if (input.StartsWith("(") && input.EndsWith(")"))
-                {
-                    // Mixed list - simplified mock
-                    return "0 3 1 0 0 0 0 0 0"; // List type with one integer
-                }
-                else if (input == "!0")
-                {
-                    return "255 1 0"; // Empty integer vector (type -1, length 0)
-                }
-                else if (input == "0#`")
-                {
-                    return "254 1 0"; // Empty symbol vector (type -4, length 0)
-                }
-                else if (input == "\"\"")
-                {
-                    return "253 1 0"; // Empty character vector (type -3, length 0)
-                }
-                else if (input == "0#0.0")
-                {
-                    return "254 2 0"; // Empty float vector (type -2, length 0)
-                }
-                else if (input.StartsWith("{") && input.EndsWith("}"))
-                {
-                    return "7 0"; // Anonymous function type (7) - simplified mock
-                }
-                else if (input.StartsWith(".(") && input.EndsWith(")"))
-                {
-                    return "5 0"; // Dictionary type (5) - simplified mock
-                }
-                else if (int.TryParse(input, out int intValue))
-                {
-                    // Generic integer
-                    var bytes = BitConverter.GetBytes(intValue);
-                    return $"1 {bytes[0]} {bytes[1]} {bytes[2]} {bytes[3]}";
-                }
-                else
-                {
-                    // Default mock for unknown inputs
-                    return "0"; // Empty list as fallback
-                }
-            }
-            
-            return string.Empty;
         }
 
         public static bool ContainsLongInteger(string script)

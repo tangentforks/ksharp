@@ -171,7 +171,7 @@ namespace K3CSharp.SerializationResearch
         public DataType? DataType { get; set; }
         public int Count { get; set; } = 100;
         public bool EdgeCasesOnly { get; set; } = false;
-        public string KExePath { get; set; } = @"c:\nonexistent\k.exe";
+        public string KExePath { get; set; } = @"c:\k\k.exe";
         public string OutputDir { get; set; } = "output";
     }
 }
