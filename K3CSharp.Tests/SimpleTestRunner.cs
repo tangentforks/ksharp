@@ -574,11 +574,6 @@ namespace K3CSharp.Tests
                 ("test_sm_basic.k", "1"),
                 ("test_sm_simple.k", "1"),
                 ("test_ss_basic.k", "7"),
-                ("debug_ss.k", "7"),
-                ("debug_string.k", "\"hello world\""),
-                ("debug_ss_detailed.k", "7"),
-                ("debug_index.k", "\"h\""),
-                ("debug_int.k", "6"),
                 ("test_semicolon.k", "1 2 3 4"),
                 
                 // New search function tests
