@@ -473,7 +473,7 @@ namespace K3CSharp
                     Console.WriteLine("indexing: @_n []");
                     Console.WriteLine("dict: !dict .dict");
                     Console.WriteLine("format: $value format${}expr");
-                    Console.WriteLine("assignment: =");
+                    Console.WriteLine("assignment: :");
                     Console.WriteLine("see \\_ for math, linear algebra, and system information verbs");
                     break;
                     
@@ -515,21 +515,25 @@ namespace K3CSharp
                     
                 case "\\_":
                     // Display underscore verbs information
-                    Console.WriteLine("system information:");
-                    Console.WriteLine("  _d    _v    _i    _f    _n    _s    _h    _p    _P    _w    _u    _a    _k    _o    _c    _r    _m    _y");
-                    Console.WriteLine();
-                    Console.WriteLine("math functions:");
+                    Console.WriteLine("Math:");
                     Console.WriteLine("  _log   _exp   _abs   _sqrt");
                     Console.WriteLine("  _sin   _cos   _tan");
-                    Console.WriteLine();
-                    Console.WriteLine("linear algebra:");
                     Console.WriteLine("  _dot   _mul   _inv");
                     Console.WriteLine();
-                    Console.WriteLine("group:");
-                    Console.WriteLine("  =      // group/ungroup");
+                    Console.WriteLine("Rand:");
+                    Console.WriteLine("  _draw");
                     Console.WriteLine();
-                    Console.WriteLine("control flow:");
-                    Console.WriteLine("  =      // assignment");
+                    Console.WriteLine("Time:");
+                    Console.WriteLine("  _t     _gtime  _ltime  _lt  _jd  _dj");
+                    Console.WriteLine();
+                    Console.WriteLine("List:");
+                    Console.WriteLine("  _sv    _vs    _ss     _dv    _di");
+                    Console.WriteLine("  _getenv _setenv _size   _exit");
+                    Console.WriteLine();
+                    Console.WriteLine("Vars:");
+                    Console.WriteLine("  _d    _v    _i    _f    _n    _s    _h    _p    _P");
+                    Console.WriteLine("  _w    _u    _a    _k    _o    _c    _r    _m    _y");
+                    Console.WriteLine();
                     Console.WriteLine("see \\+ for arithmetic and binary verbs");
                     break;
                     

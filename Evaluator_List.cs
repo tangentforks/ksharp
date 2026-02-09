@@ -882,22 +882,101 @@ namespace K3CSharp
 
         private K3Value GetenvFunction(K3Value operand)
         {
-            throw new Exception("_getenv (get environment variable) operation reserved for future use");
+            string varName = operand switch
+            {
+                SymbolValue sym => sym.Value,
+                VectorValue vec when vec.Elements.All(e => e is CharacterValue) => string.Concat(vec.Elements.Cast<CharacterValue>().Select(e => e.Value)),
+                CharacterValue ch => ch.Value.ToString(),
+                _ => throw new Exception("_getenv: argument must be a symbol or character vector")
+            };
+
+            string? value = Environment.GetEnvironmentVariable(varName);
+            if (value == null)
+                return new VectorValue(new List<K3Value>()); // Empty vector if not found
+            
+            return new VectorValue(value.Select(c => new CharacterValue(c.ToString())).Cast<K3Value>().ToList());
         }
 
         private K3Value SetenvFunction(K3Value operand)
         {
-            throw new Exception("_setenv (set environment variable) operation reserved for future use");
+            // _setenv is a dyadic verb, so operand should be a list with 2 elements
+            if (operand is not VectorValue vec || vec.Elements.Count != 2)
+                throw new Exception("_setenv: requires exactly 2 arguments (variable name and value)");
+            
+            var varNameArg = vec.Elements[0];
+            var valueArg = vec.Elements[1];
+            
+            string varName = varNameArg switch
+            {
+                SymbolValue sym => sym.Value,
+                VectorValue nameVec when nameVec.Elements.All(e => e is CharacterValue) => string.Concat(nameVec.Elements.Cast<CharacterValue>().Select(e => e.Value)),
+                CharacterValue ch => ch.Value.ToString(),
+                _ => throw new Exception("_setenv: first argument must be a symbol or character vector")
+            };
+            
+            string value = valueArg switch
+            {
+                VectorValue valVec when valVec.Elements.All(e => e is CharacterValue) => string.Concat(valVec.Elements.Cast<CharacterValue>().Select(e => e.Value)),
+                CharacterValue ch => ch.Value.ToString(),
+                _ => throw new Exception("_setenv: second argument must be a character vector")
+            };
+            
+            Environment.SetEnvironmentVariable(varName, value);
+            return new VectorValue(value.Select(c => new CharacterValue(c.ToString())).Cast<K3Value>().ToList());
         }
 
         private K3Value SizeFunction(K3Value operand)
         {
-            throw new Exception("_size (size information) operation reserved for future use");
+            string fileName = operand switch
+            {
+                SymbolValue sym => sym.Value,
+                VectorValue vec when vec.Elements.All(e => e is CharacterValue) => string.Concat(vec.Elements.Cast<CharacterValue>().Select(e => e.Value)),
+                CharacterValue ch => ch.Value.ToString(),
+                _ => throw new Exception("_size: argument must be a symbol or character vector")
+            };
+
+            try
+            {
+                if (File.Exists(fileName))
+                {
+                    var fileInfo = new FileInfo(fileName);
+                    return new FloatValue((float)fileInfo.Length);
+                }
+                else
+                {
+                    throw new Exception($"_size: file '{fileName}' not found");
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"_size: error accessing file '{fileName}': {ex.Message}");
+            }
         }
 
         private K3Value ExitFunction(K3Value operand)
         {
-            throw new Exception("_exit (control flow) operation reserved for future use");
+            // _exit is a monadic verb, but can also be used niladically
+            // According to speclet: if argument is _n (no argument provided, niladic usage), exit code will be 0
+            // If an integer argument is provided, use it as exit code
+            
+            int exitCode = 0; // Default for niladic case
+            
+            if (operand != null && !(operand is NullValue))
+            {
+                exitCode = operand switch
+                {
+                    IntegerValue iv => iv.Value,
+                    LongValue lv => (int)lv.Value,
+                    FloatValue fv => (int)fv.Value,
+                    _ => throw new Exception("_exit: argument must be an integer (or niladic for exit code 0)")
+                };
+            }
+            
+            // Exit the application with the specified code
+            Environment.Exit(exitCode);
+            
+            // This line will never be reached, but we need to return something for the type system
+            return new IntegerValue(exitCode);
         }
 
         // Helper methods for list operations

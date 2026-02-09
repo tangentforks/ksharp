@@ -324,8 +324,9 @@ namespace K3CSharp
                     "do" => DoFunction(operand),
                     "while" => WhileFunction(operand),
                     "if" => IfFunction(operand),
-                    "_goto" => GotoFunction(operand),
                     "_exit" => ExitFunction(operand),
+                    "_getenv" => GetenvFunction(operand),
+                    "_size" => SizeFunction(operand),
                     "MIN" => operand, // Identity operation for unary min
                     "MAX" => operand, // Identity operation for unary max
                     "ADVERB_SLASH" => operand, // Return operand as-is for now
@@ -397,6 +398,7 @@ namespace K3CSharp
                         "_sv" => Sv(left, right),
                         "_vs" => Vs(left, right),
                         "_ss" => SsFunction(left, right),
+                        "_setenv" => SetenvFunction(new VectorValue(new List<K3Value> { left, right })),
                         "?" => Find(left, right),
                         "TYPE" => GetTypeCode(left),
                         _ => throw new Exception($"Unknown binary operator: {op.Value}")
@@ -997,6 +999,12 @@ namespace K3CSharp
                     return TimeFunction(new NullValue());
                 case "_d":
                     return DirectoryFunction(new NullValue());
+                case "_getenv":
+                    return GetenvFunction(arguments.Count > 0 ? arguments[0] : new NullValue());
+                case "_size":
+                    return SizeFunction(arguments.Count > 0 ? arguments[0] : new NullValue());
+                case "_exit":
+                    return ExitFunction(arguments.Count > 0 ? arguments[0] : new NullValue());
                 case ":":
                     // Check if this is conditional evaluation (3+ arguments) or regular assignment
                     if (arguments.Count >= 3)
@@ -2301,11 +2309,7 @@ namespace K3CSharp
             }
         }
 
-        private K3Value GotoFunction(K3Value operand)
-        {
-            throw new Exception("_goto (control flow) operation reserved for future use");
-        }
-
+        
         
         private K3Value TrappedApply(K3Value data, K3Value argument)
         {

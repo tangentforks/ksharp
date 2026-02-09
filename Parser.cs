@@ -75,6 +75,9 @@ namespace K3CSharp
                 TokenType.CI => "_ci",
                 TokenType.IC => "_ic",
                 TokenType.DRAW => "_draw",
+                TokenType.GETENV => "_getenv",
+                TokenType.SETENV => "_setenv",
+                TokenType.SIZE => "_size",
                 TokenType.POWER => "^",
                 TokenType.MODULUS => "!",
                 TokenType.JOIN => ",",
@@ -336,7 +339,7 @@ namespace K3CSharp
                    type == TokenType.DV || type == TokenType.DI || type == TokenType.VS || type == TokenType.SV || type == TokenType.SS || type == TokenType.SM || type == TokenType.CI || type == TokenType.IC ||
                    type == TokenType.POWER || type == TokenType.MODULUS || type == TokenType.JOIN ||
                    type == TokenType.COLON || type == TokenType.HASH || type == TokenType.UNDERSCORE || type == TokenType.QUESTION || 
-                   type == TokenType.DOLLAR || type == TokenType.DRAW || type == TokenType.TYPE || type == TokenType.STRING_REPRESENTATION ||
+                   type == TokenType.DOLLAR || type == TokenType.DRAW || type == TokenType.GETENV || type == TokenType.SETENV || type == TokenType.SIZE || type == TokenType.STRING_REPRESENTATION ||
                    type == TokenType.APPLY;
         }
 
@@ -354,7 +357,7 @@ namespace K3CSharp
             TokenType.ADVERB_SLASH_COLON, TokenType.ADVERB_BACKSLASH_COLON, TokenType.ADVERB_TICK_COLON,
             TokenType.TIME, TokenType.IN, TokenType.BIN, TokenType.BINL, TokenType.LSQ, TokenType.LIN,
             TokenType.GTIME, TokenType.LTIME, TokenType.VS, TokenType.SV, TokenType.SS, TokenType.CI, TokenType.IC,
-            TokenType.DIRECTORY, TokenType.DO, TokenType.WHILE, TokenType.IF_FUNC, TokenType.GOTO, TokenType.EXIT, TokenType.EOF
+            TokenType.DIRECTORY, TokenType.DO, TokenType.WHILE, TokenType.IF_FUNC, TokenType.EXIT, TokenType.EOF
         };
         
         private bool ShouldStopParsing(TokenType[] stopTokens)
@@ -1507,6 +1510,28 @@ namespace K3CSharp
                 // _draw is dyadic, provide helpful error for monadic usage
                 throw new Exception("_draw requires dyadic call (left and right arguments)");
             }
+            else if (Match(TokenType.GETENV))
+            {
+                // _getenv is monadic, create function call
+                var functionNode = ASTNode.MakeVariable("_getenv");
+                var operand = ParseExpression();
+                var callNode = ASTNode.MakeFunctionCall(functionNode, new List<ASTNode>());
+                if (operand != null) callNode.Children.Add(operand);
+                return callNode;
+            }
+            else if (Match(TokenType.SETENV))
+            {
+                result = ASTNode.MakeVariable("_setenv");
+            }
+            else if (Match(TokenType.SIZE))
+            {
+                // _size is monadic, create function call
+                var functionNode = ASTNode.MakeVariable("_size");
+                var operand = ParseExpression();
+                var callNode = ASTNode.MakeFunctionCall(functionNode, new List<ASTNode>());
+                if (operand != null) callNode.Children.Add(operand);
+                return callNode;
+            }
             else if (Match(TokenType.SS))
             {
                 // Database function - dyadic, needs two operands
@@ -1538,17 +1563,9 @@ namespace K3CSharp
                 if (operand != null) node.Children.Add(operand);
                 return node;
             }
-            else if (Match(TokenType.GOTO))
-            {
-                // Month function
-                var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("_month");
-                if (operand != null) node.Children.Add(operand);
-                return node;
-            }
             else if (Match(TokenType.EXIT))
             {
+                // Exit function
                 // Control flow function
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
@@ -2855,6 +2872,9 @@ namespace K3CSharp
                    type == TokenType.WHILE || 
                    type == TokenType.IF_FUNC ||
                    type == TokenType.DRAW ||
+                   type == TokenType.GETENV ||
+                   type == TokenType.SETENV ||
+                   type == TokenType.SIZE ||
                    type == TokenType.IN ||
                    type == TokenType.BIN ||
                    type == TokenType.BINL ||

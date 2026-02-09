@@ -96,11 +96,13 @@ namespace K3CSharp
         IC,             // _ic database function
         DV,             // _dv delete by value
         DI,             // _di delete by index
+        GETENV,         // _getenv get environment variable
+        SETENV,         // _setenv set environment variable
+        SIZE,           // _size file size
         DIRECTORY,      // _d directory operations
         DO,             // _do control flow
         WHILE,          // _while control flow
         IF_FUNC,        // _if control flow
-        GOTO,           // _goto control flow
         EXIT,           // _exit control flow
         EOF,
         UNKNOWN

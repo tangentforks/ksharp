@@ -562,3 +562,12 @@ Test: test_vs_basic.k
 Input: _vs 1995
 Error: K3Sharp Error: _vs (vector from scalar) requires two arguments - use infix notation: base _vs scalar
 
+Progress update: 20 tests processed at 03:13:46
+Progress update: 40 tests processed at 03:13:50
+Progress update: 60 tests processed at 03:13:54
+Progress update: 80 tests processed at 03:13:57
+Progress update: 100 tests processed at 03:14:01
+Progress update: 120 tests processed at 03:14:04
+Progress update: 140 tests processed at 03:14:08
+Progress update: 160 tests processed at 03:14:12
+Progress update: 180 tests processed at 03:14:15

@@ -333,11 +333,6 @@
 ║ test_sm_basic.k                          │ `foo _sm `foo        │ 1                    │                      ║
 ║ test_sm_simple.k                         │ `1 _sm `1            │ 1                    │                      ║
 ║ test_ss_basic.k                          │ "hello world" _ss "world" │ 7                    │                      ║
-║ debug_ss.k                               │ [File not found]     │ File not found       │ 7                    ║
-║ debug_string.k                           │ [File not found]     │ File not found       │ "hello world"        ║
-║ debug_ss_detailed.k                      │ [File not found]     │ File not found       │ 7                    ║
-║ debug_index.k                            │ [File not found]     │ File not found       │ "h"                  ║
-║ debug_int.k                              │ [File not found]     │ File not found       │ 6                    ║
 ║ test_semicolon.k                         │ 1 2; 3 4             │ 3 4                  │ 1 2 3 4              ║
 ║ search_in_basic.k                        │ 4 _in 1 2 3 4 5      │ 4                    │                      ║
 ║ search_in_notfound.k                     │ 6 _in 1 2 3 4 5      │ 0                    │                      ║
@@ -465,7 +460,7 @@
 ║ while_safe_test.k                        │ i: 0                 │ Error: Cannot c...   │                      ║
 ║ while_simple_test.k                      │ while[0; 42]         │ Error: While fu...   │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 382/460 tests passed (83.0%)                                                                     ║
+║ SUMMARY: 382/455 tests passed (84.0%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -629,31 +624,6 @@ Test: test_vs_basic.k
 Input: _vs 1995
 Expected: (1995)
 Actual: Error: _vs (vector from scalar) requires two arguments - use infix notation: base _vs scalar
-──────────────────────────────────────────────────────────────────────────
-Test: debug_ss.k
-Input: [File not found]
-Expected: 7
-Actual: File not found
-──────────────────────────────────────────────────────────────────────────
-Test: debug_string.k
-Input: [File not found]
-Expected: "hello world"
-Actual: File not found
-──────────────────────────────────────────────────────────────────────────
-Test: debug_ss_detailed.k
-Input: [File not found]
-Expected: 7
-Actual: File not found
-──────────────────────────────────────────────────────────────────────────
-Test: debug_index.k
-Input: [File not found]
-Expected: "h"
-Actual: File not found
-──────────────────────────────────────────────────────────────────────────
-Test: debug_int.k
-Input: [File not found]
-Expected: 6
-Actual: File not found
 ──────────────────────────────────────────────────────────────────────────
 Test: test_semicolon.k
 Input: 1 2; 3 4

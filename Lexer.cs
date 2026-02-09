@@ -659,6 +659,9 @@ namespace K3CSharp
                 // System functions (missing from current implementation)
                 "_t" => new Token(TokenType.TIME, opName, start),
                 "_draw" => new Token(TokenType.DRAW, opName, start),
+                "_getenv" => new Token(TokenType.GETENV, opName, start),
+                "_setenv" => new Token(TokenType.SETENV, opName, start),
+                "_size" => new Token(TokenType.SIZE, opName, start),
                 "_in" => new Token(TokenType.IN, opName, start),
                 "_bin" => new Token(TokenType.BIN, opName, start),
                 "_binl" => new Token(TokenType.BINL, opName, start),
@@ -678,7 +681,6 @@ namespace K3CSharp
                 "_do" => new Token(TokenType.DO, opName, start),
                 "_while" => new Token(TokenType.WHILE, opName, start),
                 "_if" => new Token(TokenType.IF_FUNC, opName, start),
-                "_goto" => new Token(TokenType.GOTO, opName, start),
                 "_exit" => new Token(TokenType.EXIT, opName, start),
                 
                 // Control flow functions without underscores (K3 syntax)
