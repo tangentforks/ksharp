@@ -1,11 +1,30 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using K3CSharp;
 
 namespace K3CSharp
 {
     public partial class Evaluator
     {
         // List and system-related functions
+        
+        // Helper method to extract string content from VectorValue
+        private string ExtractStringFromVector(VectorValue vecVal)
+        {
+            // Check if this is a character vector (string)
+            if (vecVal.Elements.All(e => e is CharacterValue))
+            {
+                // Extract the actual string content from character values
+                var chars = vecVal.Elements.Select(e => ((CharacterValue)e).Value);
+                return string.Concat(chars);
+            }
+            else
+            {
+                // For non-character vectors, use standard ToString
+                return string.Concat(vecVal.Elements.Select(e => e.ToString()));
+            }
+        }
         
         // Dyadic implementations
         private K3Value In(K3Value left, K3Value right)
@@ -816,6 +835,7 @@ namespace K3CSharp
             {
                 CharacterValue charVal => charVal.Value,
                 SymbolValue symVal => symVal.Value,
+                VectorValue vecVal => ExtractStringFromVector(vecVal),
                 _ => throw new Exception("_ss: left argument must be character or symbol")
             };
             
@@ -823,11 +843,11 @@ namespace K3CSharp
             {
                 CharacterValue charVal => charVal.Value,
                 SymbolValue symVal => symVal.Value,
+                VectorValue vecVal => ExtractStringFromVector(vecVal),
                 _ => throw new Exception("_ss: right argument must be character or symbol")
             };
             
-            // Simple string search - find all occurrences of right pattern in left text
-            var indices = new List<int>();
+            List<int> indices = new List<int>();
             int index = 0;
             
             while (true)
@@ -835,11 +855,15 @@ namespace K3CSharp
                 int foundIndex = leftStr.IndexOf(rightStr, index);
                 if (foundIndex == -1)
                     break;
-                indices.Add(foundIndex);
+                indices.Add(foundIndex + 1); // Convert to 1-based indexing
                 index = foundIndex + 1; // Move to next character after found pattern
             }
             
-            return new VectorValue(indices.Select(i => new IntegerValue(i)).Cast<K3Value>().ToList());
+            // Return scalar if single result, vector if multiple results
+            if (indices.Count == 1)
+                return new IntegerValue(indices[0]);
+            else
+                return new VectorValue(indices.Select(i => new IntegerValue(i)).Cast<K3Value>().ToList());
         }
         private K3Value SsrFunction(K3Value operand)
         {

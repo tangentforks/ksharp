@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-02-08 22:41:35
+Generated: 2026-02-09 01:52:39
 
 SUMMARY:
 --------
-Total Tests:     435
-✅ Matched:       341
-❌ Differed:      58
+Total Tests:     436
+✅ Matched:       347
+❌ Differed:      56
 ⚠️  Skipped:       0
-💥 Errors:        36
-Success Rate:    78.4%
+💥 Errors:        33
+Success Rate:    79.6%
 
 DETAILED RESULTS:
 -----------------
@@ -207,7 +207,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   isolated.k                                         0.6                            0.6                                                                              
 ✅ PASS   join_operator.k                                    3 5                            3 5                                                                              
 ❌ FAIL   k_tree_assignment_absolute_foo.k                   42                                                            Compact representation                            
-💥 ERROR k_tree_current_branch.k                                                           `.k                            K3Sharp error, k.exe succeeded                    
+✅ PASS   k_tree_current_branch.k                            `.k                            `.k                            Compact representation                            
 ❌ FAIL   k_tree_dictionary_assignment.k                     .((`a;1;);(`b;2;);(`c;3;))     .((`a;1;)
   (`b;2;)
   (`c...                                                     
@@ -306,15 +306,13 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   precedence_power2.k                                83                             83                             smart integer division, inverse and exponenti...  
 ✅ PASS   precedence_spec1.k                                 11.57143                       11.57143                                                                         
 ✅ PASS   precedence_spec2.k                                 6                              6                              smart integer division, inverse and exponenti...  
-❌ FAIL   rand_draw_deal.k                                   3 9 1 5 4 6                    0 8 1 9 5 3                                                                      
+✅ PASS   rand_draw_deal.k                                   .((`type;-1;);(`shape;,4;...   .((`type;-1;);(`shape;,4;...   Compact representation                            
 💥 ERROR rand_draw_monadic_error.k                                                                                        Both K3Sharp and k.exe errors                     
-❌ FAIL   rand_draw_probability.k                            0.3188691 0.7930755 0.936...   0.03505812 0.7834427 0.79...                                                     
-❌ FAIL   rand_draw_select.k                                 0 2 1 3 3 1 0 0                3 0 2 0 3 1 2 1                                                                  
-❌ FAIL   rand_draw_vector_deal.k                            (5 8;0 8 4)                    (0 8 1
- 9 5 3)                                                                   
-❌ FAIL   rand_draw_vector_probability.k                     (0.8600976 0.2036201;0.44...   (0.03505812 0.7834427 0.7...                                                     
-❌ FAIL   rand_draw_vector_select.k                          (1 1;2 1 3)                    (2 0 3
- 1 2 1)                                                                   
+✅ PASS   rand_draw_probability.k                            .((`type;-2;);(`shape;,10;))   .((`type;-2;);(`shape;,10;))   Compact representation                            
+✅ PASS   rand_draw_select.k                                 .((`type;-1;);(`shape;,10;))   .((`type;-1;);(`shape;,10;))   Compact representation                            
+❌ FAIL   rand_draw_vector_deal.k                            .((`type;0;);(`shape;,2;)...   .((`type;0;);(`shape;2 3;...   Compact representation                            
+❌ FAIL   rand_draw_vector_probability.k                     .((`type;0;);(`shape;,2;))     .((`type;0;);(`shape;2 3;))    Compact representation                            
+❌ FAIL   rand_draw_vector_select.k                          .((`type;0;);(`shape;,2;))     .((`type;0;);(`shape;2 3;))    Compact representation                            
 ✅ PASS   reciprocal_operator.k                              0.25                           0.25                                                                             
 ✅ PASS   reverse_operator.k                                 3 2 1                          3 2 1                                                                            
 ✅ PASS   scalar_vector_addition.k                           4 5                            4 5                                                                              
@@ -397,9 +395,10 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   test_ic_basic.k                                    65                             65                                                                               
 ✅ PASS   test_ic_vector.k                                   65 66 67                       65 66 67                                                                         
 ✅ PASS   test_monadic_colon.k                               42                             42                                                                               
+✅ PASS   test_semicolon.k                                   3 4                            3 4                                                                              
 ✅ PASS   test_sm_basic.k                                    1                              1                                                                                
 💥 ERROR test_sm_simple.k                                   1                                                             k.exe error only                                  
-💥 ERROR test_ss_basic.k                                                                   ,6                             K3Sharp error, k.exe succeeded                    
+❌ FAIL   test_ss_basic.k                                    7                              ,6                                                                               
 💥 ERROR test_vs_basic.k                                                                                                  Both K3Sharp and k.exe errors                     
 ✅ PASS   test_vs_dyadic.k                                   1 9 9 5                        1 9 9 5                                                                          
 💥 ERROR time_dj.k                                                                         20350101                       K3Sharp error, k.exe succeeded                    
@@ -407,7 +406,7 @@ Status   Test File                                          K3Sharp Output      
 💥 ERROR time_jd.k                                                                         -3251                          K3Sharp error, k.exe succeeded                    
 💥 ERROR time_lt.k                                                                         -18000                         K3Sharp error, k.exe succeeded                    
 ✅ PASS   time_ltime.k                                       20341231 190000                20341231 190000                                                                  
-💥 ERROR time_t.k                                                                          -280613914                     K3Sharp error, k.exe succeeded                    
+✅ PASS   time_t.k                                           .((`type;1;);(`shape;!0;))     .((`type;1;);(`shape;!0;))     Compact representation                            
 ✅ PASS   type_char.k                                        3                              3                                                                                
 ✅ PASS   type_float.k                                       2                              2                                                                                
 ✅ PASS   type_null.k                                        6                              6                                                                                
@@ -513,7 +512,7 @@ File: float_exponential_large.k
 K3Sharp: 1e+015
 k.exe:   1e+15
 
-... and 48 more failed tests
+... and 46 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------
@@ -547,7 +546,7 @@ Error: K3Sharp Error: Undefined variable: :
 File: conditional_true.k
 Error: K3Sharp Error: Undefined variable: :
 
-... and 26 more error tests
+... and 23 more error tests
 
 K.EXE FAILING TESTS:
 --------------------

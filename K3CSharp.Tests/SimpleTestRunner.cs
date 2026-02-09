@@ -540,13 +540,13 @@ namespace K3CSharp.Tests
                 
                 // Test underscore functions
                 ("log.k", "2.302585"),
-                ("time_t.k", "POSITIVE"),
-                ("rand_draw_select.k", "3 0 2 0 3 1 2 1"),
-                ("rand_draw_deal.k", "0 4 5 2"),
-                ("rand_draw_probability.k", "0.03505812 0.7834427 0.7999031 0.9046515 0.2232866 0.9504653 0.4886304 0.2221393 0.536916 0.3432165"),
-                ("rand_draw_vector_select.k", "(2 0 3;1 2 1)"),
-                ("rand_draw_vector_deal.k", "(0 8 1;9 5 3)"),
-                ("rand_draw_vector_probability.k", "(0.03505812 0.7834427 0.7999031;0.9046515 0.2232866 0.9504653)"),
+                ("time_t.k", ".((`type;1;);(`shape;!0;))"),
+                ("rand_draw_select.k", ".((`type;-1;);(`shape;,10;))"),
+                ("rand_draw_deal.k", ".((`type;-1;);(`shape;,4;);(`allitemsunique;1;))"),
+                ("rand_draw_probability.k", ".((`type;-2;);(`shape;,10;))"),
+                ("rand_draw_vector_select.k", ".((`type;0;);(`shape;,2;))"),
+                ("rand_draw_vector_deal.k", ".((`type;0;);(`shape;,2;);(`allitemsunique;1;))"),
+                ("rand_draw_vector_probability.k", ".((`type;0;);(`shape;,2;))"),
                 ("rand_draw_monadic_error.k", "Error - _draw requires dyadic call (left and right arguments)"),
                 ("draw.k", "Error - _draw (random number generation) operation reserved for future use"),
                 ("time_gtime.k", "20350101 0"),
@@ -574,6 +574,12 @@ namespace K3CSharp.Tests
                 ("test_sm_basic.k", "1"),
                 ("test_sm_simple.k", "1"),
                 ("test_ss_basic.k", "7"),
+                ("debug_ss.k", "7"),
+                ("debug_string.k", "\"hello world\""),
+                ("debug_ss_detailed.k", "7"),
+                ("debug_index.k", "\"h\""),
+                ("debug_int.k", "6"),
+                ("test_semicolon.k", "1 2 3 4"),
                 
                 // New search function tests
                 ("search_in_basic.k", "4"),
@@ -722,7 +728,7 @@ namespace K3CSharp.Tests
                 ("k_tree_retrieve_absolute_foo.k", "42"),  // Absolute path retrieval from foo
                 ("k_tree_retrieval_relative.k", "42"),         // Relative path retrieval only
                 ("k_tree_enumerate.k", "`k`t"),     // Root enumeration - compact symbol vector format
-                ("k_tree_current_branch.k", "`.k"),           // Current branch command
+                ("k_tree_current_branch.k", "`.k"),           // Current branch command - returns K tree branch name
                 ("k_tree_dictionary_indexing.k", "42"),       // Dictionary indexing
                 ("k_tree_nested_indexing.k", "2"),          // Nested indexing
                 ("k_tree_verify_root.k", ""),               // Root verification - null displays as empty string

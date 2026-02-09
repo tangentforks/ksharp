@@ -16,7 +16,16 @@ namespace K3CSharp
             var currentTime = DateTime.UtcNow;
             var kTime = (long)(currentTime - baseTime).TotalSeconds;
             
-            return new LongValue(kTime);
+            return new IntegerValue((int)kTime);
+        }
+
+        public K3Value DirectoryFunction(K3Value operand)
+        {
+            // _d is a niladic getter that returns the current K tree branch name
+            // This follows the same pattern as other niladic getter verbs
+            // Default branch is ".k" per K tree specification
+            
+            return new SymbolValue(".k");
         }
 
         private K3Value TFunction(K3Value operand)

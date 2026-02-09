@@ -995,6 +995,8 @@ namespace K3CSharp
                     return IfFunction(arguments.Count > 0 ? new VectorValue(arguments) : new NullValue());
                 case "_t":
                     return TimeFunction(new NullValue());
+                case "_d":
+                    return DirectoryFunction(new NullValue());
                 case ":":
                     // Check if this is conditional evaluation (3+ arguments) or regular assignment
                     if (arguments.Count >= 3)

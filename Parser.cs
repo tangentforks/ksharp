@@ -47,8 +47,8 @@ namespace K3CSharp
         public static ASTNode MakeBinaryOp(TokenType op, ASTNode left, ASTNode right)
         {
             var node = new ASTNode(ASTNodeType.BinaryOp);
-            node.Children.Add(left);
-            node.Children.Add(right);
+            if (left != null) node.Children.Add(left);
+            if (right != null) node.Children.Add(right);
             
             // Convert token type to traditional operator symbol
             string symbolValue = op switch
@@ -102,7 +102,7 @@ namespace K3CSharp
         {
             var node = new ASTNode(ASTNodeType.Assignment);
             node.Value = new SymbolValue(variableName);
-            node.Children.Add(value);
+            if (value != null) node.Children.Add(value);
             return node;
         }
 
@@ -110,7 +110,7 @@ namespace K3CSharp
         {
             var node = new ASTNode(ASTNodeType.GlobalAssignment);
             node.Value = new SymbolValue(variableName);
-            node.Children.Add(value);
+            if (value != null) node.Children.Add(value);
             return node;
         }
 
@@ -123,15 +123,15 @@ namespace K3CSharp
         {
             var node = new ASTNode(ASTNodeType.Function);
             node.Parameters = parameters;
-            node.Children.Add(body);
+            if (body != null) node.Children.Add(body);
             return node;
         }
 
         public static ASTNode MakeFunctionCall(ASTNode function, List<ASTNode> arguments)
         {
             var node = new ASTNode(ASTNodeType.FunctionCall);
-            node.Children.Add(function);
-            node.Children.AddRange(arguments);
+            if (function != null) node.Children.Add(function);
+            if (arguments != null) node.Children.AddRange(arguments);
             return node;
         }
     }
@@ -1460,20 +1460,15 @@ namespace K3CSharp
             }
             else if (Match(TokenType.TIME))
             {
-                // Current time function - niladic (no arguments)
-                var parameters = new List<string>();
-                var bodyNode = new ASTNode(ASTNodeType.Block);
-                var node = ASTNode.MakeFunction(parameters, bodyNode);
-                return node;
+                // Current time function - niladic, create function call
+                var functionNode = ASTNode.MakeVariable("_t");
+                return ASTNode.MakeFunctionCall(functionNode, new List<ASTNode>());
             }
             else if (Match(TokenType.DIRECTORY))
             {
-                // DateTime function
-                var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("_dt");
-                if (operand != null) node.Children.Add(operand);
-                return node;
+                // Directory function - niladic, create function call
+                var functionNode = ASTNode.MakeVariable("_d");
+                return ASTNode.MakeFunctionCall(functionNode, new List<ASTNode>());
             }
             else if (Match(TokenType.LSQ))
             {
@@ -1521,8 +1516,8 @@ namespace K3CSharp
                 var rightOperand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_ss");
-                node.Children.Add(leftOperand);
-                node.Children.Add(rightOperand);
+                if (leftOperand != null) node.Children.Add(leftOperand);
+                if (rightOperand != null) node.Children.Add(rightOperand);
                 return node;
             }
             else if (Match(TokenType.CI))

@@ -48,15 +48,44 @@ A comprehensive C# implementation of the K3 programming language core, a high-pe
 
 **Latest Achievement**: **COMPLETE SYSTEM VERBS IMPLEMENTATION** - Successfully implemented all 17 system information verbs from `speclets/Var.txt` and updated REPL help system with proper categorization. Complete implementation with **308/418 k.exe compatibility** (76.6% success rate) and comprehensive system introspection capabilities. The interpreter demonstrates mature implementation with zero compilation errors and professional help organization.
 
-**📊 Latest Test Results (Feb 2026)**:
-- ✅ **373/454 tests passing** (82.2% success rate) - **Excellent Progress** 🚀
-- ✅ **All bracket notation working**: +[args], -[args], *[args], %[args] fully functional
-- ✅ **Niladic function support**: _t (time) function properly implemented
-- ✅ **String matching functions**: _sm and _ss functions working correctly
-- ✅ **Zero compilation errors**: Clean builds across all three projects
-- ✅ **Enhanced argument parsing**: Proper semicolon-separated argument handling
-- ❌ **81 tests remaining** (mostly advanced features and edge cases)
-- ⚠️ **Focus areas**: I/O functions, remaining n-arity issues, random test updates
+**📊 Latest Test Results (Feb 2026):**
+- ✅ **382/460 tests passing** (83.0% success rate)
+- ✅ **All random tests now deterministic** using dictionary pattern
+- ✅ **Cross-implementation compatibility verified** with k.exe comparison
+
+**🎯 Recent Major Achievement: Random Test Refactoring**
+
+Successfully refactored non-deterministic random tests to use invariant property testing:
+
+### ✅ **Tests Refactored:**
+- `time_t.k`: Now returns `.((`type;1;);(`shape;!0;))` 
+- `rand_draw_select.k`: Now returns `.((`type;-1;);(`shape;,10;))`
+- `rand_draw_deal.k`: Now returns `.((`type;-1;);(`shape;,4;);(`allitemsunique;1;))`
+- `rand_draw_probability.k`: Now returns `.((`type;-2;);(`shape;,10;))`
+- `rand_draw_vector_select.k`: Now returns `.((`type;0;);(`shape;,2;))`
+- `rand_draw_vector_deal.k`: Now returns `.((`type;0;);(`shape;,2;);(`allitemsunique;1;))`
+- `rand_draw_vector_probability.k`: Now returns `.((`type;0;);(`shape;,2;))`
+
+### 🔧 **Pattern Implemented:**
+```k
+r: <random_function_call>
+.((`type;4:r);(`shape;^r))  // For basic tests
+.((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))  // For deal tests (includes uniqueness check)
+```
+
+### 📈 **Benefits Achieved:**
+1. **Deterministic Testing**: Tests now produce consistent results across runs
+2. **Cross-Implementation Compatibility**: Same pattern works with both K3CSharp and k.exe
+3. **Maintainability**: Clear separation of test logic from random value generation
+4. **Specification Compliance**: Follows pattern specified in `Rand.txt` speclet
+
+### 🎯 **Current Status: Comprehensive K3 Implementation**
+- **Core Language**: Complete with all primitive verbs, operators, and data types
+- **Mathematical Functions**: Basic trigonometric and arithmetic functions implemented
+- **System Functions**: All 17 system information verbs implemented
+- **Dictionary Operations**: Complete dictionary and table operations
+- **Test Coverage**: 83.0% pass rate with comprehensive test suite
+- **Cross-Platform**: Windows and Linux compatibility maintained
 
 **🚀 Recent Major Improvements (Feb 2026)**:
 - ✅ **Bracket Notation Complete**: All dyadic operators (+, -, *, %) work with bracket notation
