@@ -1,0 +1,15 @@
+# Serialization Research: List (edge cases)
+# Generated: 2026-02-09 17:40:21
+# Total examples: 6
+
+_bd () → 
+_bd (1) → 
+_bd (1;2.5;"a") → 
+_bd (_n;`symbol;{[]}) → 
+_bd ((1;2);(3;4)) → 
+_bd (.(`a;1);.(`b;2)) → 
+
+# Summary:
+# Successful examples: 6
+# Data type: List
+# Mode: Edge cases

@@ -1,0 +1,11 @@
+# Serialization Research: Dictionary (edge cases)
+# Generated: 2026-02-09 17:42:05
+# Total examples: 2
+
+_bd .() → 
+_bd .,(`nested;.(`inner;1)) → 
+
+# Summary:
+# Successful examples: 2
+# Data type: Dictionary
+# Mode: Edge cases

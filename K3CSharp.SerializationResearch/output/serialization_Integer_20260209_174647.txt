@@ -1,0 +1,10 @@
+# Serialization Research: Integer (random examples)
+# Generated: 2026-02-09 17:46:47
+# Total examples: 1
+
+_bd -115054806 → 
+
+# Summary:
+# Successful examples: 1
+# Data type: Integer
+# Mode: Random generation

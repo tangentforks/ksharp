@@ -1,0 +1,19 @@
+# Serialization Research: Integer (random examples)
+# Generated: 2026-02-09 17:40:38
+# Total examples: 10
+
+_bd 1051361359 → 
+_bd 980377658 → 
+_bd 1827319707 → 
+_bd -1028595014 → 
+_bd 460511802 → 
+_bd -1199516986 → 
+_bd -2132616388 → 
+_bd -656219507 → 
+_bd 623623822 → 
+_bd -1970368027 → 
+
+# Summary:
+# Successful examples: 10
+# Data type: Integer
+# Mode: Random generation
