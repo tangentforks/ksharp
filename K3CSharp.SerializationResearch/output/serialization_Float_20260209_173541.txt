@@ -1,0 +1,14 @@
+# Serialization Research: Float (random examples)
+# Generated: 2026-02-09 17:35:42
+# Total examples: 5
+
+_bd -448371.50207689469 → 
+_bd 17853.181489304174 → 
+_bd 256139.99776534352 → 
+_bd -84668.840539745244 → 
+_bd -635697.82752415398 → 
+
+# Summary:
+# Successful examples: 5
+# Data type: Float
+# Mode: Random generation
