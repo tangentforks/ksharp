@@ -128,7 +128,6 @@ namespace K3CSharp.Tests
                 ("adverb_scan_with_initialization_1.k", "1 3 6 10 15"),
                 ("adverb_scan_with_initialization_2.k", "2 3 5 8 12"),
                 ("adverb_scan_with_initialization_divide.k", "(2;2;1;0.3333333;0.08333333)"), // Test %\ scan with divide
-                ("debug_test.k", "2"), // Debug %\ 
                 ("adverb_scan_with_initialization_minus.k", "2 1 -1 -4 -8"),
                 ("adverb_scan_with_initialization.k", "2 2 4 12"),
                 
@@ -541,7 +540,7 @@ namespace K3CSharp.Tests
                 
                 // Test underscore functions
                 ("log.k", "2.302585"),
-                ("time_t.k", "-280816017"),
+                ("time_t.k", "POSITIVE"),
                 ("rand_draw_select.k", "3 0 2 0 3 1 2 1"),
                 ("rand_draw_deal.k", "0 4 5 2"),
                 ("rand_draw_probability.k", "0.03505812 0.7834427 0.7999031 0.9046515 0.2232866 0.9504653 0.4886304 0.2221393 0.536916 0.3432165"),
@@ -557,12 +556,31 @@ namespace K3CSharp.Tests
                 ("time_ltime.k", "20341231 190000"),
                 ("in.k", "4"),
                 
+                // List operations tests
+                ("list_dv_basic.k", "3 5"),
+                ("list_dv_nomatch.k", "3 4 4 5"),
+                ("list_di_basic.k", "3 4 5"),
+                ("list_di_multiple.k", "3 4"),
+                ("list_sv_base10.k", "1995"),
+                ("list_sv_base2.k", "9"),
+                ("list_sv_mixed.k", "1995"),
+                ("test_ci_basic.k", "\"A\""),
+                ("test_ci_vector.k", "\"ABC\""),
+                ("test_ic_basic.k", "65"),
+                ("test_vs_basic.k", "(1995)"),
+                ("test_vs_dyadic.k", "1 9 9 5"),
+                ("test_ic_vector.k", "65 66 67"),
+                ("test_monadic_colon.k", "42"),
+                ("test_sm_basic.k", "1"),
+                ("test_sm_simple.k", "1"),
+                ("test_ss_basic.k", "7"),
+                
                 // New search function tests
                 ("search_in_basic.k", "4"),
                 ("search_in_notfound.k", "0"),
-                ("search_bin_basic.k", "4"),
-                ("search_binl_eachleft.k", "1 0 1"),
-                ("search_lin_intersection.k", "1 0 1 0 1"),
+                ("search_bin_basic.k", "1"),
+                ("search_binl_eachleft.k", "0 1 1 2 2"),
+                ("search_lin_intersection.k", "1 1 1 0 0"),
                 
                 // Amend Item tests - only valid cases with 3+ arguments
                 ("amend_item_basic.k", "1 12 3"),
@@ -647,10 +665,10 @@ namespace K3CSharp.Tests
                 ("do_simple.k", ""),
                 
                 // Dyadic bracket tests
-                ("dyadic_divide_bracket.k", "2.5"),
-                ("dyadic_minus_bracket.k", "-2"),
-                ("dyadic_multiply_bracket.k", "3"),
-                ("dyadic_plus_bracket.k", "5"),
+                ("dyadic_divide_bracket.k", "5"),
+                ("dyadic_minus_bracket.k", "7"),
+                ("dyadic_multiply_bracket.k", "24"),
+                ("dyadic_plus_bracket.k", "8"),
                 
                 // Empty brackets tests
                 ("empty_brackets_dictionary.k", "1 2 3"),

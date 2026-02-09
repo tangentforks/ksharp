@@ -42,26 +42,46 @@ namespace K3CSharp
         private K3Value Bin(K3Value left, K3Value right)
         {
             // _bin (Binary Search) function - performs binary search on sorted list
-            // Returns position (1-based) or 0 if not found
-            // Assumes right argument is sorted in ascending order
+            // According to spec: x _bin y where x is ascending list, y is atom
+            // Returns index of first element in x that is >= y
+            // If first element > y, returns 0
+            // If last element < y, returns length of x
             
-            if (right is VectorValue rightVec)
+            if (left is VectorValue leftVec)
             {
+                if (leftVec.Elements.Count == 0)
+                {
+                    return new IntegerValue(0);
+                }
+                
+                // Check if first element is already >= right
+                var firstComparison = CompareValues(leftVec.Elements[0], right);
+                if (firstComparison >= 0)
+                {
+                    return new IntegerValue(0);
+                }
+                
+                // Check if last element is < right
+                var lastComparison = CompareValues(leftVec.Elements[leftVec.Elements.Count - 1], right);
+                if (lastComparison < 0)
+                {
+                    return new IntegerValue(leftVec.Elements.Count);
+                }
+                
+                // Binary search for first element >= right
                 int low = 0;
-                int high = rightVec.Elements.Count - 1;
+                int high = leftVec.Elements.Count - 1;
+                int result = leftVec.Elements.Count; // Default to length if not found
                 
                 while (low <= high)
                 {
                     int mid = (low + high) / 2;
-                    var midValue = rightVec.Elements[mid];
-                    var comparison = CompareValues(left, midValue);
+                    var midValue = leftVec.Elements[mid];
+                    var comparison = CompareValues(midValue, right);
                     
-                    if (comparison == 0)
+                    if (comparison >= 0)
                     {
-                        return new IntegerValue(mid + 1); // 1-based indexing
-                    }
-                    else if (comparison < 0)
-                    {
+                        result = mid; // Potential answer, continue searching left
                         high = mid - 1;
                     }
                     else
@@ -69,37 +89,33 @@ namespace K3CSharp
                         low = mid + 1;
                     }
                 }
-                return new IntegerValue(0); // Not found
+                
+                return new IntegerValue((int)result);
             }
             else
             {
-                // Search for left in right scalar
+                // For non-vector left, return 0 if left >= right, 1 otherwise
                 var comparison = CompareValues(left, right);
-                if (comparison == 0)
-                {
-                    return new IntegerValue(1); // Found at position 1
-                }
-                return new IntegerValue(0); // Not found
+                return new IntegerValue(comparison >= 0 ? 0 : 1);
             }
         }
 
         private K3Value Binl(K3Value left, K3Value right)
         {
             // _binl (Binary Search Each-Left) function
-            // Returns 1 for each element of left that is found in right, 0 otherwise
-            // Equivalent to left _in\: right but optimized
+            // According to spec: x _binl y where x is ascending list, y is list
+            // Returns vector of indices where each element of y would be inserted in x
+            // x _binl y is equivalent to x _bin: y
             
-            if (left is VectorValue leftVec)
+            if (right is VectorValue rightVec)
             {
                 var results = new List<K3Value>();
                 
-                // For binary search each-left, we need to search each element of left in right
-                foreach (var leftElement in leftVec.Elements)
+                // For each element in right, find insertion position in left
+                foreach (var rightElement in rightVec.Elements)
                 {
-                    var result = Bin(leftElement, right);
-                    // Convert position result to 1/0 (found/not found)
-                    var found = result is IntegerValue intVal && intVal.Value != 0;
-                    results.Add(new IntegerValue(found ? 1 : 0));
+                    var result = Bin(left, rightElement);
+                    results.Add(result);
                 }
                 
                 return new VectorValue(results);
@@ -107,9 +123,7 @@ namespace K3CSharp
             else
             {
                 // Single element case
-                var result = Bin(left, right);
-                var found = result is IntegerValue intVal && intVal.Value != 0;
-                return new IntegerValue(found ? 1 : 0);
+                return Bin(left, right);
             }
         }
 
@@ -184,44 +198,649 @@ namespace K3CSharp
         // Database and system functions (placeholders)
         private K3Value DvFunction(K3Value operand)
         {
-            throw new Exception("_dv (delete by value) operation reserved for future use");
+            // _dv function should be handled as dyadic in binary operations
+            // This unary case should not be reached in normal operation
+            throw new Exception("_dv (delete by value) function requires two arguments - use infix notation: x _dv y");
+        }
+
+        private K3Value Dv(K3Value left, K3Value right)
+        {
+            // _dv (Delete by Value) function
+            // Returns a copy of left with all occurrences of right removed
+            // For dictionaries, returns left as is (they are atomic)
+            
+            // Handle dictionary case - dictionaries are atomic, so return as is
+            if (left is DictionaryValue)
+            {
+                return left;
+            }
+            
+            // Handle vector case
+            if (left is VectorValue leftVec)
+            {
+                var results = new List<K3Value>();
+                
+                foreach (var element in leftVec.Elements)
+                {
+                    var matchResult = Match(element, right);
+                    if (matchResult is IntegerValue intVal && intVal.Value != 1)
+                    {
+                        // Element doesn't match right, keep it
+                        results.Add(element);
+                    }
+                }
+                
+                return new VectorValue(results);
+            }
+            else
+            {
+                // For scalar left, return left if it doesn't match right, empty vector otherwise
+                var matchResult = Match(left, right);
+                if (matchResult is IntegerValue intVal && intVal.Value != 1)
+                {
+                    return left;
+                }
+                else
+                {
+                    return new VectorValue(new List<K3Value>()); // Empty vector
+                }
+            }
         }
 
         private K3Value DiFunction(K3Value operand)
         {
-            throw new Exception("_di (delete by index) operation reserved for future use");
+            // _di function should be handled as dyadic in binary operations
+            // This unary case should not be reached in normal operation
+            throw new Exception("_di (delete by index) function requires two arguments - use infix notation: x _di y");
+        }
+
+        private K3Value Di(K3Value left, K3Value right)
+        {
+            // _di (Delete by Index) function
+            // Returns a copy of left with items removed at indices specified in right
+            // Works with both vectors and dictionaries
+            
+            // Handle dictionary case
+            if (left is DictionaryValue leftDict)
+            {
+                var newEntries = new List<KeyValuePair<SymbolValue, (K3Value Value, DictionaryValue Attribute)>>();
+                
+                if (right is SymbolValue rightSymbol)
+                {
+                    // Remove key from dictionary
+                    foreach (var entry in leftDict.Entries)
+                    {
+                        var key = entry.Key;
+                        if (!Match(new SymbolValue(key.Value), rightSymbol).Equals(new IntegerValue(1)))
+                        {
+                            newEntries.Add(entry);
+                        }
+                    }
+                }
+                else if (right is VectorValue rightVec)
+                {
+                    // Remove multiple keys from dictionary
+                    var symbolsToRemove = new HashSet<string>();
+                    foreach (var rightElement in rightVec.Elements)
+                    {
+                        if (rightElement is SymbolValue rightSym)
+                        {
+                            symbolsToRemove.Add(rightSym.Value);
+                        }
+                    }
+                    
+                    foreach (var entry in leftDict.Entries)
+                    {
+                        if (!symbolsToRemove.Contains(entry.Key.Value))
+                        {
+                            newEntries.Add(entry);
+                        }
+                    }
+                }
+                else
+                {
+                    throw new Exception("_di: right argument must be a symbol or symbol vector when left is a dictionary");
+                }
+                
+                return new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue Attribute)>(newEntries));
+            }
+            
+            // Handle vector case
+            if (left is VectorValue leftVec)
+            {
+                var results = new List<K3Value>();
+                
+                // If right is a scalar, treat it as a single index
+                if (!(right is VectorValue))
+                {
+                    var index = GetIndexValue(right);
+                    if (index >= 0 && index < leftVec.Elements.Count)
+                    {
+                        // Skip the element at this index
+                        for (int i = 0; i < leftVec.Elements.Count; i++)
+                        {
+                            if (i != index)
+                            {
+                                results.Add(leftVec.Elements[i]);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Invalid index, return original vector
+                        return left;
+                    }
+                }
+                else
+                {
+                    // Right is a vector of indices
+                    var rightVec = (VectorValue)right;
+                    var indicesToRemove = new HashSet<int>();
+                    
+                    foreach (var indexValue in rightVec.Elements)
+                    {
+                        var index = GetIndexValue(indexValue);
+                        if (index >= 0 && index < leftVec.Elements.Count)
+                        {
+                            indicesToRemove.Add(index);
+                        }
+                    }
+                    
+                    for (int i = 0; i < leftVec.Elements.Count; i++)
+                    {
+                        if (!indicesToRemove.Contains(i))
+                        {
+                            results.Add(leftVec.Elements[i]);
+                        }
+                    }
+                }
+                
+                return new VectorValue(results);
+            }
+            else
+            {
+                throw new Exception("_di: left argument must be a vector or dictionary");
+            }
+        }
+        
+        private int GetIndexValue(K3Value value)
+        {
+            if (value is IntegerValue intValue)
+            {
+                return intValue.Value;
+            }
+            else
+            {
+                throw new Exception("_di: index must be an integer");
+            }
         }
 
         private K3Value SvFunction(K3Value operand)
         {
-            throw new Exception("_sv (scalar from vector) operation reserved for future use");
+            // _sv function should be handled as dyadic in binary operations
+            // This unary case should not be reached in normal operation
+            throw new Exception("_sv (scalar from vector) function requires two arguments - use infix notation: x _sv y");
         }
 
-        private K3Value VsFunction(K3Value operand)
+        private K3Value Sv(K3Value left, K3Value right)
         {
-            throw new Exception("_vs (vector from scalar) operation reserved for future use");
+            // _sv (Scalar from Vector) function
+            // Performs numeric base or radix conversion
+            // Left argument is the base or radices, right argument is integer vector
+            
+            if (left is IntegerValue leftInt && right is VectorValue rightVec)
+            {
+                // Single base case
+                return SvSingleBase(leftInt.Value, rightVec);
+            }
+            else if (left is VectorValue leftVec && right is VectorValue rightVec2)
+            {
+                // Multiple radices case
+                return SvMultipleRadices(leftVec, rightVec2);
+            }
+            else
+            {
+                throw new Exception("_sv: left argument must be integer (single base) or vector (multiple radies), right argument must be integer vector");
+            }
+        }
+        
+        private K3Value SvSingleBase(long baseValue, VectorValue digits)
+        {
+            // Convert digits from given base to base 10
+            long result = 0;
+            long multiplier = 1;
+            
+            // Process digits from right to left (least significant to most significant)
+            for (int i = digits.Elements.Count - 1; i >= 0; i--)
+            {
+                if (digits.Elements[i] is IntegerValue digit)
+                {
+                    var digitValue = ((IntegerValue)digits.Elements[i]).Value;
+                    if (digitValue < 0 || digitValue >= baseValue)
+                    {
+                        throw new Exception($"_sv: digit {digitValue} is out of range for base {baseValue}");
+                    }
+                    result += digitValue * multiplier;
+                    multiplier *= baseValue;
+                }
+                else
+                {
+                    throw new Exception("_sv: all elements in right argument must be integers");
+                }
+            }
+            
+            return new IntegerValue((int)result);
+        }
+        
+        private K3Value SvMultipleRadices(VectorValue radices, VectorValue digitVec)
+        {
+            // Convert digits from mixed radices to base 10
+            if (radices.Elements.Count != digitVec.Elements.Count)
+            {
+                throw new Exception("_sv: number of radices must match number of digits");
+            }
+            
+            long result = 0;
+            
+            // Process from left to right (most significant to least significant)
+            for (int i = 0; i < digitVec.Elements.Count; i++)
+            {
+                if (i < radices.Elements.Count && radices.Elements[i] is IntegerValue radix && digitVec.Elements[i] is IntegerValue digit)
+                {
+                    var radixValue = ((IntegerValue)radices.Elements[i]).Value;
+                    var digitValue = ((IntegerValue)digitVec.Elements[i]).Value;
+                    
+                    if (radixValue <= 0)
+                    {
+                        throw new Exception($"_sv: radix {radixValue} must be positive");
+                    }
+                    if (digitValue < 0 || digitValue >= radixValue)
+                    {
+                        throw new Exception($"_sv: digit {digitValue} is out of range for radix {radixValue}");
+                    }
+                    
+                    result = result * radixValue + digitValue;
+                }
+                else
+                {
+                    throw new Exception("_sv: all elements must be integers and radices must be positive integers");
+                }
+            }
+            
+            return new IntegerValue((int)result);
+        }
+
+        private K3Value Vs(K3Value left, K3Value right)
+        {
+            // _vs (vector from scalar) function
+            // Dyadic verb: x _vs y
+            // Converts scalar to vector representation using base/radices
+            
+            if (right is IntegerValue rightInt)
+            {
+                // Single integer case
+                return VsSingle(left, (int)rightInt.Value);
+            }
+            else if (right is VectorValue rightVec)
+            {
+                // Vector case - convert each integer to vector
+                var results = new List<K3Value>();
+                foreach (var element in rightVec.Elements)
+                {
+                    if (element is IntegerValue intVal)
+                    {
+                        results.Add(VsSingle(left, (int)intVal.Value));
+                    }
+                    else
+                    {
+                        throw new Exception("_vs: all elements in right argument must be integers");
+                    }
+                }
+                return new VectorValue(results);
+            }
+            else
+            {
+                throw new Exception("_vs: right argument must be integer or integer vector");
+            }
+        }
+        
+        private K3Value VsSingle(K3Value left, int value)
+        {
+            // Convert single integer to vector representation
+            
+            if (left is IntegerValue baseVal)
+            {
+                // Single base case
+                int baseNum = (int)baseVal.Value;
+                return ConvertToBase(value, baseNum);
+            }
+            else if (left is VectorValue radices)
+            {
+                // Multiple radices case
+                var radicesList = new List<int>();
+                foreach (var element in radices.Elements)
+                {
+                    if (element is IntegerValue intVal)
+                    {
+                        radicesList.Add((int)intVal.Value);
+                    }
+                    else
+                    {
+                        throw new Exception("_vs: all radices must be integers");
+                    }
+                }
+                return ConvertToRadices(value, radicesList);
+            }
+            else
+            {
+                throw new Exception("_vs: left argument must be integer or integer vector");
+            }
+        }
+        
+        private K3Value ConvertToBase(int value, int baseNum)
+        {
+            if (baseNum <= 0)
+                throw new Exception("_vs: base must be positive");
+            
+            var digits = new List<int>();
+            int remaining = value;
+            
+            if (remaining == 0)
+            {
+                return new VectorValue(new List<K3Value> { new IntegerValue(0) });
+            }
+            
+            while (remaining != 0)
+            {
+                digits.Add(Math.Abs(remaining % baseNum));
+                remaining = remaining / baseNum;
+            }
+            
+            digits.Reverse();
+            return new VectorValue(digits.Select(d => (K3Value)new IntegerValue(d)).ToList());
+        }
+        
+        private K3Value ConvertToRadices(int value, List<int> radices)
+        {
+            var digits = new List<int>();
+            int remaining = value;
+            
+            // Process radices from right to left (least significant to most)
+            for (int i = radices.Count - 1; i >= 0; i--)
+            {
+                int radix = radices[i];
+                if (radix <= 0)
+                    throw new Exception("_vs: all radices must be positive");
+                
+                digits.Add(Math.Abs(remaining % radix));
+                remaining = remaining / radix;
+            }
+            
+            digits.Reverse();
+            return new VectorValue(digits.Select(d => (K3Value)new IntegerValue(d)).ToList());
         }
 
         private K3Value CiFunction(K3Value operand)
         {
-            throw new Exception("_ci (character from integer) operation reserved for future use");
+            // _ci (character from integer) function
+            // Monadic verb: _ci x
+            
+            if (operand is IntegerValue intVal)
+            {
+                // Single integer case
+                return CiSingle((int)intVal.Value);
+            }
+            else if (operand is VectorValue vec)
+            {
+                // Vector case - convert each integer to character
+                var results = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    if (element is IntegerValue innerIntVal)
+                    {
+                        results.Add(CiSingle((int)innerIntVal.Value));
+                    }
+                    else
+                    {
+                        throw new Exception("_ci: all elements must be integers");
+                    }
+                }
+                return new VectorValue(results);
+            }
+            else
+            {
+                throw new Exception("_ci: operand must be integer or integer vector");
+            }
+        }
+
+        private K3Value Ci(K3Value left, K3Value right)
+        {
+            // _ci (character from integer) function
+            // Left argument is integer(s), right argument is unused (should be null or 0)
+            
+            if (right != null && right.Type != ValueType.Null)
+            {
+                throw new Exception("_ci: right argument should be null or 0");
+            }
+            
+            if (left is IntegerValue leftInt)
+            {
+                // Single integer case
+                return CiSingle(leftInt.Value);
+            }
+            else if (left is VectorValue leftVec)
+            {
+                // Vector case - convert each integer to character
+                var results = new List<K3Value>();
+                foreach (var element in leftVec.Elements)
+                {
+                    if (element is IntegerValue intVal)
+                    {
+                        results.Add(CiSingle(intVal.Value));
+                    }
+                    else
+                    {
+                        throw new Exception("_ci: all elements in left argument must be integers");
+                    }
+                }
+                return new VectorValue(results);
+            }
+            else
+            {
+                throw new Exception("_ci: left argument must be integer or integer vector");
+            }
+        }
+        
+        private K3Value CiSingle(int intValue)
+        {
+            // Convert integer to ASCII character
+            // Handle negative values and values > 255 by allowing unchecked overflow
+            // Convert to unsigned byte to get proper ASCII behavior
+            var charValue = (char)(intValue & 0xFF);
+            return new CharacterValue(charValue.ToString());
         }
 
         private K3Value IcFunction(K3Value operand)
         {
-            throw new Exception("_ic (integer from character) operation reserved for future use");
+            // _ic (integer from character) function
+            // Monadic verb: _ic x
+            
+            if (operand is CharacterValue charVal)
+            {
+                // Single character case
+                if (charVal.Value.Length == 1)
+                {
+                    char c = charVal.Value[0];  // Get first character
+                    return IcSingle(c);
+                }
+                else
+                    throw new Exception("_ic: operand must be a single character");
+            }
+            else if (operand is VectorValue vec)
+            {
+                // Vector case - convert each character to integer
+                var results = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    if (element is CharacterValue innerCharVal)
+                    {
+                        if (innerCharVal.Value.Length == 1)
+                        {
+                            char c = innerCharVal.Value[0];
+                            results.Add(IcSingle(c));
+                        }
+                        else
+                        {
+                            throw new Exception("_ic: all elements must be single characters");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("_ic: all elements must be characters");
+                    }
+                }
+                return new VectorValue(results);
+            }
+            else
+            {
+                throw new Exception("_ic: operand must be character or character vector");
+            }
         }
 
-        private K3Value SmFunction(K3Value operand)
+        private K3Value Ic(K3Value left, K3Value right)
         {
-            throw new Exception("_sm (string match) operation reserved for future use");
+            // _ic (integer from character) function
+            // Left argument is character(s), right argument is unused (should be null or 0)
+            
+            if (right != null && right.Type != ValueType.Null)
+            {
+                throw new Exception("_ic: right argument should be null or 0");
+            }
+            
+            if (left is CharacterValue leftChar)
+            {
+                // Single character case
+                if (leftChar.Value.Length == 1)
+                {
+                    char c = (char)leftChar.Value[0];  // Get first character with explicit cast
+                    return IcSingle(c);
+                }
+                else
+                    throw new Exception("_ic: left argument must be a single character");
+            }
+            else if (left is VectorValue leftVec)
+            {
+                // Vector case - convert each character to integer
+                var results = new List<K3Value>();
+                foreach (var element in leftVec.Elements)
+                {
+                    if (element is CharacterValue charVal)
+                    {
+                        if (charVal.Value.Length == 1)
+                        {
+                            char c = charVal.Value[0];
+                            results.Add(IcSingle(c));
+                        }
+                        else
+                        {
+                            throw new Exception("_ic: all elements must be single characters");
+                        }
+                    }
+                }
+                return new VectorValue(results);
+            }
+            else
+            {
+                throw new Exception("_ic: left argument must be character or character vector");
+            }
         }
-
-        private K3Value SsFunction(K3Value operand)
+        
+        private K3Value IcSingle(char charValue)
         {
-            throw new Exception("_ss (string search) operation reserved for future use");
+            // Convert character to integer (ASCII value)
+            return new IntegerValue((int)charValue);
         }
 
+        private K3Value Sm(K3Value left, K3Value right)
+        {
+            // _sm (string match) function
+            // Dyadic verb: x _sm y
+            // Returns 1 if left argument matches right argument pattern, 0 otherwise
+            
+            // Convert both arguments to strings for comparison
+            string leftStr = left switch
+            {
+                CharacterValue charVal => charVal.Value,
+                SymbolValue symVal => symVal.Value,
+                _ => throw new Exception("_sm: left argument must be character or symbol")
+            };
+            
+            string rightStr = right switch
+            {
+                CharacterValue charVal => charVal.Value,
+                SymbolValue symVal => symVal.Value,
+                _ => throw new Exception("_sm: right argument must be character or symbol")
+            };
+            
+            // Check if right argument contains regex wildcards
+            bool useRegex = rightStr.Contains('*') || rightStr.Contains('?') || rightStr.Contains('[');
+            
+            if (useRegex)
+            {
+                try
+                {
+                    // Use C# regex for pattern matching
+                    var regex = new System.Text.RegularExpressions.Regex(rightStr);
+                    return new IntegerValue(regex.IsMatch(leftStr) ? 1 : 0);
+                }
+                catch
+                {
+                    // If regex fails, fall back to exact match
+                    return new IntegerValue(leftStr == rightStr ? 1 : 0);
+                }
+            }
+            else
+            {
+                // Simple string comparison
+                return new IntegerValue(leftStr == rightStr ? 1 : 0);
+            }
+        }
+
+        private K3Value SsFunction(K3Value left, K3Value right)
+        {
+            // _ss (string search) function
+            // Dyadic verb: x _ss y
+            // Returns start indices where pattern occurs in text
+            
+            string leftStr = left switch
+            {
+                CharacterValue charVal => charVal.Value,
+                SymbolValue symVal => symVal.Value,
+                _ => throw new Exception("_ss: left argument must be character or symbol")
+            };
+            
+            string rightStr = right switch
+            {
+                CharacterValue charVal => charVal.Value,
+                SymbolValue symVal => symVal.Value,
+                _ => throw new Exception("_ss: right argument must be character or symbol")
+            };
+            
+            // Simple string search - find all occurrences of right pattern in left text
+            var indices = new List<int>();
+            int index = 0;
+            
+            while (true)
+            {
+                int foundIndex = leftStr.IndexOf(rightStr, index);
+                if (foundIndex == -1)
+                    break;
+                indices.Add(foundIndex);
+                index = foundIndex + 1; // Move to next character after found pattern
+            }
+            
+            return new VectorValue(indices.Select(i => new IntegerValue(i)).Cast<K3Value>().ToList());
+        }
         private K3Value SsrFunction(K3Value operand)
         {
             throw new Exception("_ssr (string search and replace) operation reserved for future use");

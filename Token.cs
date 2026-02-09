@@ -91,8 +91,11 @@ namespace K3CSharp
         VS,             // _vs database function
         SV,             // _sv database function
         SS,             // _ss database function
+        SM,             // _sm database function
         CI,             // _ci database function
         IC,             // _ic database function
+        DV,             // _dv delete by value
+        DI,             // _di delete by index
         DIRECTORY,      // _d directory operations
         DO,             // _do control flow
         WHILE,          // _while control flow

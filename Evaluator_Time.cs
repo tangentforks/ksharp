@@ -6,7 +6,7 @@ namespace K3CSharp
     {
         // Time-related functions
         
-        private K3Value TimeFunction(K3Value operand)
+        public K3Value TimeFunction(K3Value operand)
         {
             // _t is a niladic getter that returns an integer value representing current K-time
             // K-time is defined as seconds since the base timedate 12:00 AM, January 1, 2035 UTC

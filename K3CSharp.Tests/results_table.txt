@@ -26,8 +26,7 @@
 ║ adverb_scan_power.k                      │ ^\ 2 3 2             │ 2 8 64               │                      ║
 ║ adverb_scan_with_initialization_1.k      │ 1 +\ 2 3 4 5         │ 1 3 6 10 15          │                      ║
 ║ adverb_scan_with_initialization_2.k      │ 2 +\ 1 2 3 4         │ 2 3 5 8 12           │                      ║
-║ adverb_scan_with_initialization_divide.k │ 2 %\ 1 2 3 4         │ Error: Unknown ...   │ (2;2;1;0.333333...   ║
-║ debug_test.k                             │ [File not found]     │ File not found       │ 2                    ║
+║ adverb_scan_with_initialization_divide.k │ 2 %\ 1 2 3 4         │ (2;2;1;0.333333...   │                      ║
 ║ adverb_scan_with_initialization_minus.k  │ 2 -\ 1 2 3 4         │ 2 1 -1 -4 -8         │                      ║
 ║ adverb_scan_with_initialization.k        │ 2 *\ 1 2 3           │ 2 2 4 12             │                      ║
 ║ anonymous_function_double_param.k        │ {[op1;op2] op1 * op2} │ {[op1;op2] op1*...   │                      ║
@@ -135,7 +134,7 @@
 ║ precedence_power2.k                      │ 2 + 3 ^ 4            │ 83                   │                      ║
 ║ precedence_spec1.k                       │ 81 % 1 + 2 * 3       │ 11.57143             │                      ║
 ║ precedence_spec2.k                       │ 120 % 4 * 2 + 3      │ 6                    │                      ║
-║ reciprocal_operator.k                    │ %4                   │ 1                    │ 0.25                 ║
+║ reciprocal_operator.k                    │ %4                   │ 0.25                 │                      ║
 ║ reverse_operator.k                       │ | (1 2 3)            │ 3 2 1                │                      ║
 ║ scalar_vector_addition.k                 │ 1 2 + 3              │ 4 5                  │                      ║
 ║ scalar_vector_multiplication.k           │ 1 2 * 3              │ 3 6                  │                      ║
@@ -302,29 +301,46 @@
 ║ form_braces_function_calls.k             │ sum:{[a;b] a+b}      │ 5 20 12              │                      ║
 ║ form_braces_nested_function_calls.k      │ sum:{[a;b] a+b}      │ 5 8 25               │                      ║
 ║ log.k                                    │ _log 10              │ 2.302585             │                      ║
-║ time_t.k                                 │ _t                   │ Error: Binary o...   │ -280816017           ║
-║ rand_draw_select.k                       │ 8 _draw 4            │ 8                    │ 3 0 2 0 3 1 2 1      ║
-║ rand_draw_deal.k                         │ 6 _draw -10          │ 6                    │ 0 4 5 2              ║
-║ rand_draw_probability.k                  │ 10 _draw 0           │ 10                   │ 0.03505812 0.78...   ║
-║ rand_draw_vector_select.k                │ 2 3 _draw 4          │ 2 3                  │ (2 0 3;1 2 1)        ║
-║ rand_draw_vector_deal.k                  │ 2 3 _draw -10        │ 2 3                  │ (0 8 1;9 5 3)        ║
-║ rand_draw_vector_probability.k           │ 2 3 _draw 0          │ 2 3                  │ (0.03505812 0.7...   ║
-║ rand_draw_monadic_error.k                │ _draw 4              │                      │ Error - _draw r...   ║
-║ draw.k                                   │ _draw                │                      │ Error - _draw (...   ║
+║ time_t.k                                 │ _t                   │ Error: Function...   │ POSITIVE             ║
+║ rand_draw_select.k                       │ 8 _draw 4            │ 1 0 2 3 2 3 2 1      │ 3 0 2 0 3 1 2 1      ║
+║ rand_draw_deal.k                         │ 6 _draw -10          │ 3 9 1 5 4 6          │ 0 4 5 2              ║
+║ rand_draw_probability.k                  │ 10 _draw 0           │ 0.3405236 0.136...   │ 0.03505812 0.78...   ║
+║ rand_draw_vector_select.k                │ 2 3 _draw 4          │ (1 0;2 0 3)          │ (2 0 3;1 2 1)        ║
+║ rand_draw_vector_deal.k                  │ 2 3 _draw -10        │ (3 9;5 6 1)          │ (0 8 1;9 5 3)        ║
+║ rand_draw_vector_probability.k           │ 2 3 _draw 0          │ (0.3405236 0.13...   │ (0.03505812 0.7...   ║
+║ rand_draw_monadic_error.k                │ _draw 4              │ Error: _draw re...   │ Error - _draw r...   ║
+║ draw.k                                   │ _draw                │ Error: _draw re...   │ Error - _draw (...   ║
 ║ time_gtime.k                             │ _gtime 0             │ 20350101 0           │                      ║
 ║ time_lt.k                                │ _lt 0                │ Error: Undefine...   │ -18000               ║
 ║ time_jd.k                                │ _jd 20260206         │ Error: Undefine...   │ 0N                   ║
 ║ time_dj.k                                │ _dj 0                │ Error: Undefine...   │ 20350101             ║
 ║ time_ltime.k                             │ _ltime 0             │ 20341231 190000      │                      ║
 ║ in.k                                     │ 4 _in 1 7 2 4 6 3    │ 4                    │                      ║
+║ list_dv_basic.k                          │ 3 4 4 5 _dv 4        │ 3 5                  │                      ║
+║ list_dv_nomatch.k                        │ 3 4 4 5 _dv 6        │ 3 4 4 5              │                      ║
+║ list_di_basic.k                          │ 3 2 4 5 _di 1        │ 3 4 5                │                      ║
+║ list_di_multiple.k                       │ 3 2 4 5 _di 1 3      │ 3 4                  │                      ║
+║ list_sv_base10.k                         │ 10 _sv 1 9 9 5       │ 1995                 │                      ║
+║ list_sv_base2.k                          │ 2 _sv 1 0 0 1        │ 9                    │                      ║
+║ list_sv_mixed.k                          │ 10 10 10 10 _sv 1 9 9 5 │ 1995                 │                      ║
+║ test_ci_basic.k                          │ _ci 65               │ "A"                  │                      ║
+║ test_ci_vector.k                         │ _ci 65 66 67         │ "ABC"                │                      ║
+║ test_ic_basic.k                          │ _ic "A"              │ 65                   │                      ║
+║ test_vs_basic.k                          │ _vs 1995             │ Error: _vs (vec...   │ (1995)               ║
+║ test_vs_dyadic.k                         │ 10 _vs 1995          │ 1 9 9 5              │                      ║
+║ test_ic_vector.k                         │ _ic "ABC"            │ 65 66 67             │                      ║
+║ test_monadic_colon.k                     │ : 42                 │ 42                   │                      ║
+║ test_sm_basic.k                          │ `foo _sm `foo        │ 1                    │                      ║
+║ test_sm_simple.k                         │ `1 _sm `1            │ 1                    │                      ║
+║ test_ss_basic.k                          │ "hello world" _ss "world" │ Error: _ss: lef...   │ 7                    ║
 ║ search_in_basic.k                        │ 4 _in 1 2 3 4 5      │ 4                    │                      ║
 ║ search_in_notfound.k                     │ 6 _in 1 2 3 4 5      │ 0                    │                      ║
-║ search_bin_basic.k                       │ (1 2 3 4 5) _bin 4   │ 1 2 3 4 5            │ 4                    ║
-║ search_binl_eachleft.k                   │ 1 3 5 _binl 1 2 3 4 5 │ 1 3 5                │ 1 0 1                ║
-║ search_lin_intersection.k                │ 1 3 5 7 9 _lin 1 2 3 4 5 │ 1 3 5 7 9            │ 1 0 1 0 1            ║
-║ amend_item_basic.k                       │ @[1 2 3; 1; +; 10]   │ 1                    │ 1 12 3               ║
-║ amend_item_multiple.k                    │ @[1 2 3; 0 2; +; 10] │ 1                    │ 11 2 13              ║
-║ amend_item_monadic.k                     │ @[1 2 3; 1; {x*2}]   │ 1                    │ 1 4 3                ║
+║ search_bin_basic.k                       │ 3 4 5 6 _bin 4       │ 1                    │                      ║
+║ search_binl_eachleft.k                   │ 1 3 5 _binl 1 2 3 4 5 │ 0 1 1 2 2            │                      ║
+║ search_lin_intersection.k                │ 1 3 5 7 9 _lin 1 2 3 4 5 │ 1 1 1 0 0            │                      ║
+║ amend_item_basic.k                       │ @[1 2 3; 1; +; 10]   │ Error: List ind...   │ 1 12 3               ║
+║ amend_item_multiple.k                    │ @[1 2 3; 0 2; +; 10] │ Error: List ind...   │ 11 2 13              ║
+║ amend_item_monadic.k                     │ @[1 2 3; 1; {x*2}]   │ Error: List ind...   │ 1 4 3                ║
 ║ amend_test.k                             │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)  // Amend: add 10 to elements at indices 0 and 2 │ `.                   │ 1 12 3 4 5           ║
 ║ amend_simple.k                           │ 1 12 3 4 5           │ 1 12 3 4 5           │                      ║
 ║ find_basic.k                             │ 9 8 7 6 5 4 3 ? 7  // Find operator - basic functionality │ 2                    │                      ║
@@ -367,7 +383,7 @@
 ║ amend_apply.k                            │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10) │ `.                   │ (1 2 13 4 5
 6 7...   ║
 ║ amend_dot_test.k                         │ .[1 2 3; 1; +; 10]   │ Error: Dictiona...   │ 1 12 3 4 5           ║
-║ amend_item_simple.k                      │ @[1 2 3]             │ 0                    │ @[1 2 3]             ║
+║ amend_item_simple.k                      │ @[1 2 3]             │ Error: For atom...   │ @[1 2 3]             ║
 ║ amend_item_single.k                      │ @[1]                 │ 1                    │ @[1 2 3]             ║
 ║ amend_minimal.k                          │ (.) . (1 2 3; 0; +; 10) │ `.                   │ @[1 2 3]             ║
 ║ amend_parenthesized.k                    │ (.) . (1 2 3; 0; +; 10) │ `.                   │ @[1 2 3]             ║
@@ -382,10 +398,10 @@
 ║ do_bracket_test.k                        │ do[3; 42]  // Do function with bracket notation │ Error: Do funct...   │                      ║
 ║ do_loop.k                                │ i: 0; do[3; i+: 1]  // Do loop - increment i 3 times │ Error: Expected...   │                      ║
 ║ do_simple.k                              │ do[3; 42]  // Do loop - simple test │ Error: Do funct...   │                      ║
-║ dyadic_divide_bracket.k                  │ /[20; 4]  // Dyadic division with bracket notation │                      │ 2.5                  ║
-║ dyadic_minus_bracket.k                   │ -[10; 3]  // Dyadic subtraction with bracket notation │ Error: - operat...   │ -2                   ║
-║ dyadic_multiply_bracket.k                │ *[4; 6]  // Dyadic multiplication with bracket notation │ Error: * operat...   │ 3                    ║
-║ dyadic_plus_bracket.k                    │ +[3; 5]  // Dyadic addition with bracket notation │ 5                    │                      ║
+║ dyadic_divide_bracket.k                  │ %[20; 4]  // Dyadic division with bracket notation │ 5                    │                      ║
+║ dyadic_minus_bracket.k                   │ -[10; 3]  // Dyadic subtraction with bracket notation │ 7                    │                      ║
+║ dyadic_multiply_bracket.k                │ *[4; 6]  // Dyadic multiplication with bracket notation │ 24                   │                      ║
+║ dyadic_plus_bracket.k                    │ +[3; 5]  // Dyadic addition with bracket notation │ 8                    │                      ║
 ║ empty_brackets_dictionary.k              │ d: .((`a;1);(`b;2))  │ Error: Unexpect...   │ 1 2 3                ║
 ║ empty_brackets_vector.k                  │ v: 1 2 3 4           │ Error: Unexpect...   │ 1 2 3                ║
 ║ form_braces_complex_expressions.k        │ sum:{[a;b] a+b}      │ 14 20 10             │                      ║
@@ -443,21 +459,11 @@
 ║ while_safe_test.k                        │ i: 0                 │ Error: Cannot c...   │                      ║
 ║ while_simple_test.k                      │ while[0; 42]         │ Error: While fu...   │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 350/438 tests passed (79.9%)                                                                     ║
+║ SUMMARY: 373/454 tests passed (82.2%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
-Test: adverb_scan_with_initialization_divide.k
-Input: 2 %\ 1 2 3 4
-Expected: (2;2;1;0.3333333;0.08333333)
-Actual: Error: Unknown operator: /
-──────────────────────────────────────────────────────────────────────────
-Test: debug_test.k
-Input: [File not found]
-Expected: 2
-Actual: File not found
-──────────────────────────────────────────────────────────────────────────
 Test: complex_function.k
 Input: distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2}
 Expected: 205
@@ -502,11 +508,6 @@ Test: function_mul.k
 Input: mul:{[op1;op2] op1 * op2}
 Expected: 32
 Actual: {[op1;op2] op1*op2}
-──────────────────────────────────────────────────────────────────────────
-Test: reciprocal_operator.k
-Input: %4
-Expected: 0.25
-Actual: 1
 ──────────────────────────────────────────────────────────────────────────
 Test: special_null.k
 Input: _n
@@ -595,48 +596,48 @@ Actual: (7 15;(2;2.5);5 1)
 ──────────────────────────────────────────────────────────────────────────
 Test: time_t.k
 Input: _t
-Expected: -280816017
-Actual: Error: Binary operator must have exactly 2 children, got 0
+Expected: POSITIVE
+Actual: Error: Function node must contain a FunctionValue
 ──────────────────────────────────────────────────────────────────────────
 Test: rand_draw_select.k
 Input: 8 _draw 4
 Expected: 3 0 2 0 3 1 2 1
-Actual: 8
+Actual: 1 0 2 3 2 3 2 1
 ──────────────────────────────────────────────────────────────────────────
 Test: rand_draw_deal.k
 Input: 6 _draw -10
 Expected: 0 4 5 2
-Actual: 6
+Actual: 3 9 1 5 4 6
 ──────────────────────────────────────────────────────────────────────────
 Test: rand_draw_probability.k
 Input: 10 _draw 0
 Expected: 0.03505812 0.7834427 0.7999031 0.9046515 0.2232866 0.9504653 0.4886304 0.2221393 0.536916 0.3432165
-Actual: 10
+Actual: 0.3405236 0.1361231 0.5145521 0.9500848 0.6924351 0.8178339 0.5698573 0.4435149 0.4474872 0.08268581
 ──────────────────────────────────────────────────────────────────────────
 Test: rand_draw_vector_select.k
 Input: 2 3 _draw 4
 Expected: (2 0 3;1 2 1)
-Actual: 2 3
+Actual: (1 0;2 0 3)
 ──────────────────────────────────────────────────────────────────────────
 Test: rand_draw_vector_deal.k
 Input: 2 3 _draw -10
 Expected: (0 8 1;9 5 3)
-Actual: 2 3
+Actual: (3 9;5 6 1)
 ──────────────────────────────────────────────────────────────────────────
 Test: rand_draw_vector_probability.k
 Input: 2 3 _draw 0
 Expected: (0.03505812 0.7834427 0.7999031;0.9046515 0.2232866 0.9504653)
-Actual: 2 3
+Actual: (0.3405236 0.1361231;0.5221542 0.1195691 0.9858455)
 ──────────────────────────────────────────────────────────────────────────
 Test: rand_draw_monadic_error.k
 Input: _draw 4
 Expected: Error - _draw requires dyadic call (left and right arguments)
-Actual: 
+Actual: Error: _draw requires dyadic call (left and right arguments)
 ──────────────────────────────────────────────────────────────────────────
 Test: draw.k
 Input: _draw
 Expected: Error - _draw (random number generation) operation reserved for future use
-Actual: 
+Actual: Error: _draw requires dyadic call (left and right arguments)
 ──────────────────────────────────────────────────────────────────────────
 Test: time_lt.k
 Input: _lt 0
@@ -653,35 +654,30 @@ Input: _dj 0
 Expected: 20350101
 Actual: Error: Undefined variable: dj
 ──────────────────────────────────────────────────────────────────────────
-Test: search_bin_basic.k
-Input: (1 2 3 4 5) _bin 4
-Expected: 4
-Actual: 1 2 3 4 5
+Test: test_vs_basic.k
+Input: _vs 1995
+Expected: (1995)
+Actual: Error: _vs (vector from scalar) requires two arguments - use infix notation: base _vs scalar
 ──────────────────────────────────────────────────────────────────────────
-Test: search_binl_eachleft.k
-Input: 1 3 5 _binl 1 2 3 4 5
-Expected: 1 0 1
-Actual: 1 3 5
-──────────────────────────────────────────────────────────────────────────
-Test: search_lin_intersection.k
-Input: 1 3 5 7 9 _lin 1 2 3 4 5
-Expected: 1 0 1 0 1
-Actual: 1 3 5 7 9
+Test: test_ss_basic.k
+Input: "hello world" _ss "world"
+Expected: 7
+Actual: Error: _ss: left argument must be character or symbol
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_item_basic.k
 Input: @[1 2 3; 1; +; 10]
 Expected: 1 12 3
-Actual: 1
+Actual: Error: List indices must be integers
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_item_multiple.k
 Input: @[1 2 3; 0 2; +; 10]
 Expected: 11 2 13
-Actual: 1
+Actual: Error: List indices must be integers
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_item_monadic.k
 Input: @[1 2 3; 1; {x*2}]
 Expected: 1 4 3
-Actual: 1
+Actual: Error: List indices must be integers
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_test.k
 Input: (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)  // Amend: add 10 to elements at indices 0 and 2
@@ -727,12 +723,12 @@ Actual: `.
 Test: amend_dot_test.k
 Input: .[1 2 3; 1; +; 10]
 Expected: 1 12 3 4 5
-Actual: Error: Dictionary entry must be a tuple (2 elements) or triplet (3 elements)
+Actual: Error: Dictionary key must be a symbol
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_item_simple.k
 Input: @[1 2 3]
 Expected: @[1 2 3]
-Actual: 0
+Actual: Error: For atomic data, indices must be empty list
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_item_single.k
 Input: @[1]
@@ -798,21 +794,6 @@ Test: do_simple.k
 Input: do[3; 42]  // Do loop - simple test
 Expected: 
 Actual: Error: Do function requires at least 2 arguments: count and expression(s)
-──────────────────────────────────────────────────────────────────────────
-Test: dyadic_divide_bracket.k
-Input: /[20; 4]  // Dyadic division with bracket notation
-Expected: 2.5
-Actual: 
-──────────────────────────────────────────────────────────────────────────
-Test: dyadic_minus_bracket.k
-Input: -[10; 3]  // Dyadic subtraction with bracket notation
-Expected: -2
-Actual: Error: - operator requires 2 arguments
-──────────────────────────────────────────────────────────────────────────
-Test: dyadic_multiply_bracket.k
-Input: *[4; 6]  // Dyadic multiplication with bracket notation
-Expected: 3
-Actual: Error: * operator requires 2 arguments
 ──────────────────────────────────────────────────────────────────────────
 Test: empty_brackets_dictionary.k
 Input: d: .((`a;1);(`b;2))

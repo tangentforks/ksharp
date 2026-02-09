@@ -271,6 +271,7 @@ namespace K3CSharp
                     "NEGATE" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue))
                     ? AttributeHandle(operand)
                     : LogicalNegate(operand),
+                    ":" => ReturnOperator(operand),
                     "@" => Atom(operand),
                     "~" => AttributeHandle(operand),
                     "_log" => MathLog(operand),
@@ -291,19 +292,13 @@ namespace K3CSharp
                     "_dot" => MathDot(operand),
                     "_mul" => MathMul(operand),
                     "_inv" => MathInv(operand),
-                    "_t" => TimeFunction(operand),
                     "_T" => TFunction(operand),
-                    "_draw" => DrawFunction(operand),
                     "_in" => InFunction(operand),
                     "_bin" => BinFunction(operand),
                     "_binl" => BinlFunction(operand),
                     "_lin" => LinFunction(operand),
                     "_gtime" => GtimeFunction(operand),
-                    "_lt" => LtFunction(operand),
                     "_ltime" => LtimeFunction(operand),
-                    "_vs" => VsFunction(operand),
-                    "_sv" => SvFunction(operand),
-                    "_ss" => SsFunction(operand),
                     "_ci" => CiFunction(operand),
                     "_ic" => IcFunction(operand),
                     "_v" => VarFunction(operand),
@@ -390,10 +385,18 @@ namespace K3CSharp
                         "ADVERB_BACKSLASH" => Scan(new SymbolValue("+"), left, right),
                         "ADVERB_TICK" => Each(left, right),
                         "_in" => In(left, right),
+                        "_draw" => Draw(left, right),
                         "_bin" => Bin(left, right),
                         "_binl" => Binl(left, right),
                         "_lin" => Lin(left, right),
-                        "_draw" => Draw(left, right),
+                        "_dv" => Dv(left, right),
+                        "_di" => Di(left, right),
+                        "_ci" => CiFunction(left),
+                        "_ic" => IcFunction(left),
+                        "_sm" => Sm(left, right),
+                        "_sv" => Sv(left, right),
+                        "_vs" => Vs(left, right),
+                        "_ss" => SsFunction(left, right),
                         "?" => Find(left, right),
                         "TYPE" => GetTypeCode(left),
                         _ => throw new Exception($"Unknown binary operator: {op.Value}")
@@ -990,6 +993,8 @@ namespace K3CSharp
                 case "if":
                 case "_if":
                     return IfFunction(arguments.Count > 0 ? new VectorValue(arguments) : new NullValue());
+                case "_t":
+                    return TimeFunction(new NullValue());
                 case ":":
                     // Check if this is conditional evaluation (3+ arguments) or regular assignment
                     if (arguments.Count >= 3)
@@ -1111,6 +1116,9 @@ namespace K3CSharp
                 case "*":
                     if (arguments.Count >= 2) return Times(arguments[0], arguments[1]);
                     throw new Exception("* operator requires 2 arguments");
+                case "%":
+                    if (arguments.Count >= 2) return Divide(arguments[0], arguments[1]);
+                    throw new Exception("% operator requires 2 arguments");
                 case "/":
                     if (arguments.Count >= 2) return Divide(arguments[0], arguments[1]);
                     Console.WriteLine($"DEBUG: Divide operator called with symbol: {arguments[0]}"); // Debug output
@@ -1887,6 +1895,14 @@ namespace K3CSharp
             }
         }
 
+        private K3Value ReturnOperator(K3Value operand)
+        {
+            // Monadic colon (return) operator
+            // Returns the operand as-is (used for returning from functions)
+            // If called from top level, just return the value for display
+            return operand;
+        }
+
         private K3Value Atom(K3Value operand)
         {
             // @ operator: returns 1 if scalar, 0 if vector
@@ -1987,7 +2003,16 @@ namespace K3CSharp
                     throw new Exception("Invalid function name for dot-apply");
                 }
                 
-                var arguments = new List<K3Value> { right };
+                // Unpack vector arguments into individual arguments for bracket notation
+                List<K3Value> arguments;
+                if (right is VectorValue argVector)
+                {
+                    arguments = new List<K3Value>(argVector.Elements);
+                }
+                else
+                {
+                    arguments = new List<K3Value> { right };
+                }
                 return CallVariableFunction(functionName, arguments);
             }
             else

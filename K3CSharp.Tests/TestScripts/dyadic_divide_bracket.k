@@ -1,1 +1,1 @@
-/[20; 4]  // Dyadic division with bracket notation
+%[20; 4]  // Dyadic division with bracket notation

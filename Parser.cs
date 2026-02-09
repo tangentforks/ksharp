@@ -63,6 +63,17 @@ namespace K3CSharp
                 TokenType.GREATER => ">",
                 TokenType.EQUAL => "=",
                 TokenType.IN => "_in",
+                TokenType.BIN => "_bin",
+                TokenType.BINL => "_binl",
+                TokenType.LIN => "_lin",
+                TokenType.DV => "_dv",
+                TokenType.DI => "_di",
+                TokenType.VS => "_vs",
+                TokenType.SV => "_sv",
+                TokenType.SS => "_ss",
+                TokenType.SM => "_sm",
+                TokenType.CI => "_ci",
+                TokenType.IC => "_ic",
                 TokenType.DRAW => "_draw",
                 TokenType.POWER => "^",
                 TokenType.MODULUS => "!",
@@ -321,11 +332,11 @@ namespace K3CSharp
             return type == TokenType.PLUS || type == TokenType.MINUS || type == TokenType.MULTIPLY ||
                    type == TokenType.DIVIDE || type == TokenType.MIN || type == TokenType.MAX || 
                    type == TokenType.LESS || type == TokenType.GREATER || type == TokenType.EQUAL || 
+                   type == TokenType.IN || type == TokenType.BIN || type == TokenType.BINL || type == TokenType.LIN ||
+                   type == TokenType.DV || type == TokenType.DI || type == TokenType.VS || type == TokenType.SV || type == TokenType.SS || type == TokenType.SM || type == TokenType.CI || type == TokenType.IC ||
                    type == TokenType.POWER || type == TokenType.MODULUS || type == TokenType.JOIN ||
                    type == TokenType.COLON || type == TokenType.HASH || type == TokenType.UNDERSCORE || type == TokenType.QUESTION || 
-                   type == TokenType.NEGATE || type == TokenType.DOLLAR || type == TokenType.IN ||
-                   type == TokenType.BIN || type == TokenType.BINL || type == TokenType.LIN ||
-                   type == TokenType.DRAW ||
+                   type == TokenType.DOLLAR || type == TokenType.DRAW || type == TokenType.TYPE || type == TokenType.STRING_REPRESENTATION ||
                    type == TokenType.APPLY;
         }
 
@@ -341,7 +352,7 @@ namespace K3CSharp
             TokenType.LEFT_BRACKET, TokenType.APPLY, TokenType.DOT_APPLY, TokenType.TYPE, TokenType.STRING_REPRESENTATION,
             TokenType.ADVERB_SLASH, TokenType.ADVERB_BACKSLASH, TokenType.ADVERB_TICK,
             TokenType.ADVERB_SLASH_COLON, TokenType.ADVERB_BACKSLASH_COLON, TokenType.ADVERB_TICK_COLON,
-            TokenType.TIME, TokenType.DRAW, TokenType.IN, TokenType.BIN, TokenType.BINL, TokenType.LSQ, TokenType.LIN,
+            TokenType.TIME, TokenType.IN, TokenType.BIN, TokenType.BINL, TokenType.LSQ, TokenType.LIN,
             TokenType.GTIME, TokenType.LTIME, TokenType.VS, TokenType.SV, TokenType.SS, TokenType.CI, TokenType.IC,
             TokenType.DIRECTORY, TokenType.DO, TokenType.WHILE, TokenType.IF_FUNC, TokenType.GOTO, TokenType.EXIT, TokenType.EOF
         };
@@ -745,7 +756,7 @@ namespace K3CSharp
                         // This is unary reciprocal
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("#");
+                        node.Value = new SymbolValue("%");
                         if (operand != null) node.Children.Add(operand);
                         return node;
                     }
@@ -1007,6 +1018,25 @@ namespace K3CSharp
             else if (Match(TokenType.IF_FUNC))
             {
                 result = ASTNode.MakeVariable("if");
+            }
+            else if (Match(TokenType.COLON))
+            {
+                // Check if this is monadic colon (return operator) by looking ahead
+                // If the next token is not an identifier or variable, it's likely monadic
+                if (IsAtEnd() || (!IsIdentifierToken(CurrentToken().Type) && CurrentToken().Type != TokenType.LEFT_BRACKET))
+                {
+                    // Monadic colon - return operator
+                    var operand = ParseExpression();
+                    var node = new ASTNode(ASTNodeType.BinaryOp);
+                    node.Value = new SymbolValue(":");
+                    if (operand != null) node.Children.Add(operand);
+                    return node;
+                }
+                else
+                {
+                    // This will be handled as binary operator (assignment)
+                    result = ASTNode.MakeLiteral(new SymbolValue(":"));
+                }
             }
             // Dyadic operators as primary expressions for bracket notation
             else if (Match(TokenType.PLUS))
@@ -1430,22 +1460,11 @@ namespace K3CSharp
             }
             else if (Match(TokenType.TIME))
             {
-                // Current time function
-                var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("_t");
-                if (operand != null) node.Children.Add(operand);
+                // Current time function - niladic (no arguments)
+                var parameters = new List<string>();
+                var bodyNode = new ASTNode(ASTNodeType.Block);
+                var node = ASTNode.MakeFunction(parameters, bodyNode);
                 return node;
-            }
-            else if (Match(TokenType.DRAW))
-            {
-                // Draw function (random number generation) - dyadic operator
-                var left = result;
-                var right = ParseTerm();
-                if (left != null && right != null)
-                {
-                    result = ASTNode.MakeBinaryOp(TokenType.DRAW, left, right);
-                }
             }
             else if (Match(TokenType.DIRECTORY))
             {
@@ -1485,29 +1504,25 @@ namespace K3CSharp
             }
             else if (Match(TokenType.VS))
             {
-                // Database function
-                var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("_vs");
-                if (operand != null) node.Children.Add(operand);
-                return node;
+                // _vs is dyadic, provide helpful error for monadic usage
+                throw new Exception("_vs (vector from scalar) requires two arguments - use infix notation: base _vs scalar");
             }
-            else if (Match(TokenType.SV))
+            else if (Match(TokenType.DRAW))
             {
-                // Database function
-                var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("_sv");
-                if (operand != null) node.Children.Add(operand);
-                return node;
+                // _draw is dyadic, provide helpful error for monadic usage
+                throw new Exception("_draw requires dyadic call (left and right arguments)");
             }
             else if (Match(TokenType.SS))
             {
-                // Database function
-                var operand = ParseExpression();
+                // Database function - dyadic, needs two operands
+                var leftOperand = ParseExpression();
+                if (!Match(TokenType.SEMICOLON))
+                    throw new Exception("_ss: Expected semicolon after left operand");
+                var rightOperand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_ss");
-                if (operand != null) node.Children.Add(operand);
+                node.Children.Add(leftOperand);
+                node.Children.Add(rightOperand);
                 return node;
             }
             else if (Match(TokenType.CI))
@@ -1545,11 +1560,6 @@ namespace K3CSharp
                 node.Value = new SymbolValue("_exit");
                 if (operand != null) node.Children.Add(operand);
                 return node;
-            }
-            else if (Match(TokenType.COLON))
-            {
-                // Regular colon symbol - bracket notation will be handled by general apply logic
-                result = ASTNode.MakeLiteral(new SymbolValue(":"));
             }
             else if (Match(TokenType.LEFT_BRACE))
             {
@@ -1999,8 +2009,17 @@ namespace K3CSharp
                         "JOIN" => ",",
                         "HASH" => "#",
                         "UNDERSCORE" => "_",
-                        "TYPE" => "TYPE",
-                        "APPLY" => "@",
+                        "BIN" => "_bin",
+                        "BINL" => "_binl",
+                        "LIN" => "_lin",
+                        "DV" => "_dv",
+                        "DI" => "_di",
+                        "VS" => "_vs",
+                        "SV" => "_sv",
+                        "SS" => "_ss",
+                "SM" => "_sm",
+                        "CI" => "_ci",
+                        "IC" => "_ic",
                         _ => op.ToString()
                     };
                     var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
@@ -2378,7 +2397,7 @@ namespace K3CSharp
                         "PLUS" => "+",
                         "MINUS" => "-",
                         "MULTIPLY" => "*",
-                        "DIVIDE" => "/",
+                        "DIVIDE" => "%",
                         "POWER" => "^",
                         "MODULUS" => "!",
                         "MIN" => "&",
@@ -2406,8 +2425,8 @@ namespace K3CSharp
                         // Handle the bracket notation that follows
                         Match(TokenType.LEFT_BRACKET); // Consume '['
                         
-                        // Parse the arguments expression
-                        var argsExpression = ParseExpression();
+                        // Parse the arguments expression (can be semicolon-separated)
+                        var argsExpression = ParseExpressionInsideDelimiters();
                         if (argsExpression == null)
                         {
                             throw new Exception("Expected arguments expression in brackets");
@@ -2437,7 +2456,71 @@ namespace K3CSharp
                 }
                 else
                 {
-                    left = ParseTerm();
+                    // Check for unary operators at expression start (like %4, -5, +3, etc.)
+                    if (IsUnaryOperator(CurrentToken().Type))
+                    {
+                        var opToken = CurrentToken();
+                        Match(opToken.Type); // Consume the unary operator
+                        
+                        // Parse the operand
+                        var operand = ParseTerm();
+                        if (operand == null)
+                        {
+                            throw new Exception($"Expected operand after unary operator {opToken.Type}");
+                        }
+                        
+                        // Create unary operator node
+                        var unaryNode = new ASTNode(ASTNodeType.BinaryOp);
+                        var symbolValue = opToken.Type switch
+                        {
+                            TokenType.PLUS => "+",
+                            TokenType.MINUS => "-",
+                            TokenType.MULTIPLY => "*",
+                            TokenType.DIVIDE => "%",
+                            TokenType.MIN => "&",
+                            TokenType.MAX => "|",
+                            TokenType.LESS => "<",
+                            TokenType.GREATER => ">",
+                            TokenType.EQUAL => "=",
+                            TokenType.IN => "_in",
+                            TokenType.BIN => "_bin",
+                            TokenType.BINL => "_binl",
+                            TokenType.LIN => "_lin",
+                            TokenType.DV => "_dv",
+                            TokenType.DI => "_di",
+                            TokenType.VS => "_vs",
+                            TokenType.SV => "_sv",
+                            TokenType.SS => "_ss",
+                            TokenType.SM => "_sm",
+                            TokenType.CI => "_ci",
+                            TokenType.IC => "_ic",
+                            TokenType.DRAW => "_draw",
+                            TokenType.POWER => "^",
+                            TokenType.MODULUS => "!",
+                            TokenType.JOIN => ",",
+                            TokenType.COLON => ":",
+                            TokenType.HASH => "#",
+                            TokenType.UNDERSCORE => "_",
+                            TokenType.QUESTION => "?",
+                            TokenType.NEGATE => "~",
+                            TokenType.DOLLAR => "$",
+                            TokenType.APPLY => "@",
+                            TokenType.DOT_APPLY => ".",
+                            TokenType.TYPE => "TYPE",
+                            TokenType.STRING_REPRESENTATION => "STRING_REPRESENTATION",
+                            TokenType.DO => "do",
+                            TokenType.WHILE => "while",
+                            TokenType.IF_FUNC => "if",
+                            _ => opToken.Type.ToString()
+                        };
+                        unaryNode.Value = new SymbolValue(symbolValue);
+                        unaryNode.Children.Add(operand);
+                        left = unaryNode;
+                    }
+                    else
+                    {
+                        left = ParseTerm();
+                    }
                 }
             }
             else
@@ -2449,11 +2532,13 @@ namespace K3CSharp
             
             // Handle binary operators with Long Right Scope (LRS)
             // In K, there's no precedence among operators - they're all right-associative
-            if (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
+            while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
                    Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) || 
-                   Match(TokenType.EQUAL) || Match(TokenType.IN) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
+                   Match(TokenType.EQUAL) || Match(TokenType.IN) || Match(TokenType.BIN) || Match(TokenType.BINL) || Match(TokenType.LIN) ||
+                   Match(TokenType.DV) || Match(TokenType.DI) || Match(TokenType.VS) || Match(TokenType.SV) || Match(TokenType.SS) || Match(TokenType.SM) || Match(TokenType.CI) || Match(TokenType.IC) ||
+                   Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
                    Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || 
-                   Match(TokenType.DOLLAR) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
+                   Match(TokenType.DOLLAR) || Match(TokenType.DRAW) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
                    Match(TokenType.APPLY))
             {
                 var op = PreviousToken().Type;
@@ -2470,13 +2555,24 @@ namespace K3CSharp
                         "PLUS" => "+",
                         "MINUS" => "-",
                         "MULTIPLY" => "*",
-                        "DIVIDE" => "/",
+                        "DIVIDE" => "%",
                         "MIN" => "&",
                         "MAX" => "|",
                         "LESS" => "<",
                         "GREATER" => ">",
                         "EQUAL" => "=",
                         "IN" => "in",
+                        "BIN" => "_bin",
+                        "BINL" => "_binl",
+                        "LIN" => "_lin",
+                        "DV" => "_dv",
+                        "DI" => "_di",
+                        "VS" => "_vs",
+                        "SV" => "_sv",
+                        "SS" => "_ss",
+                "SM" => "_sm",
+                        "CI" => "_ci",
+                        "IC" => "_ic",
                         "POWER" => "^",
                         "MODULUS" => "!",
                         "JOIN" => ",",
@@ -2562,6 +2658,9 @@ namespace K3CSharp
                         "JOIN" => ",",
                         "HASH" => "#",
                         "UNDERSCORE" => "_",
+                        "BIN" => "_bin",
+                        "BINL" => "_binl",
+                        "LIN" => "_lin",
                         "TYPE" => "TYPE",
                         "APPLY" => "@",
                         _ => op.ToString()
@@ -2752,6 +2851,46 @@ namespace K3CSharp
             }
             
             return derivedVerb;
+        }
+
+        private bool IsIdentifierToken(TokenType type)
+        {
+            return type == TokenType.IDENTIFIER || 
+                   type == TokenType.DO || 
+                   type == TokenType.WHILE || 
+                   type == TokenType.IF_FUNC ||
+                   type == TokenType.DRAW ||
+                   type == TokenType.IN ||
+                   type == TokenType.BIN ||
+                   type == TokenType.BINL ||
+                   type == TokenType.LIN ||
+                   type == TokenType.DV ||
+                   type == TokenType.DI ||
+                   type == TokenType.VS ||
+                   type == TokenType.SV ||
+                   type == TokenType.SS ||
+                   type == TokenType.CI ||
+                   type == TokenType.IC ||
+                   type == TokenType.EXIT ||
+                   type == TokenType.GTIME ||
+                   type == TokenType.LTIME ||
+                   type == TokenType.TYPE ||
+                   type == TokenType.STRING_REPRESENTATION;
+        }
+
+        private bool IsUnaryOperator(TokenType type)
+        {
+            // Only operators that are commonly used as unary in K
+            return type == TokenType.MINUS || 
+                   type == TokenType.NEGATE ||
+                   type == TokenType.DOLLAR ||
+                   type == TokenType.DIVIDE ||  // % for reciprocal
+                   type == TokenType.MULTIPLY || // * for first
+                   type == TokenType.TYPE ||
+                   type == TokenType.STRING_REPRESENTATION ||
+                   type == TokenType.HASH ||
+                   type == TokenType.UNDERSCORE ||
+                   type == TokenType.QUESTION;
         }
 
         private bool IsAtEnd()
