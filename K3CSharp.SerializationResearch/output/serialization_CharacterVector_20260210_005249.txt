@@ -1,0 +1,13 @@
+# Serialization Research: CharacterVector (edge cases)
+# Generated: 2026-02-10 00:52:49
+# Total examples: 4
+
+_bd "" → "\001\000\000\000\t\000\000\000\375\377\377\377\000\000\000\000\000"
+_bd "a" → "\001\000\000\000\b\000\000\000\003\000\000\000a\000\000\000"
+_bd "hello" → "\001\000\000\000\016\000\000\000\375\377\377\377\005\000\000\000hello\000"
+_bd "\n\t\r" → "\001\000\000\000\014\000\000\000\375\377\377\377\003\000\000\000\n\t\r\000"
+
+# Summary:
+# Successful examples: 4
+# Data type: CharacterVector
+# Mode: Edge cases
