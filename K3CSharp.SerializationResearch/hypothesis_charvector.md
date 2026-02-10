@@ -26,8 +26,10 @@ From analyzing 14 examples (4 edge cases + 10 random), I identified a clear patt
 
 **🔍 Key Finding: Vector Flag `\375\377\377\377`**
 - This appears in ALL character vectors
-- Value = -1 in little-endian (4294967295 unsigned)
+- Value = **-3** in little-endian signed integer
+- Octal representation: `\573\377\377\377`
 - Distinguishes vectors from single characters (which use subtype=3)
+- **-3** likely indicates "vector of characters with subtype=3"
 
 ### **🎯 Hypothesis Formulation**
 
@@ -39,7 +41,7 @@ From analyzing 14 examples (4 edge cases + 10 random), I identified a clear patt
 **Where:**
 - `type_id = 1` (numeric/string type)
 - `length = 4 + 4 + vector_length + 1` (total bytes after length field)
-- `vector_flag = \375\377\377\377` (-1, indicates vector type)
+- `vector_flag = -3` (indicates character vector type)
 - `vector_length = number of characters in vector`
 - `utf8_data = UTF-8 encoded vector content`
 - `null_terminator = \000` (1 byte)
@@ -116,7 +118,7 @@ Value:  01 00 00 00 [len] FF FF FF FF [vec_len] [UTF-8 bytes] 00
 - **Vector structure**: ✅ Confirmed for all vector types
 - **Length calculation**: ✅ Confirmed across all examples
 - **Little-endian format**: ✅ Confirmed across all examples
-- **Type/Vector flag mapping**: ✅ Confirmed (type=1, vector_flag=-1)
+- **Type/Vector flag mapping**: ✅ Confirmed (type=1, vector_flag=-3)
 - **UTF-8 encoding**: ✅ Confirmed for special characters
 
 ### **� Step 11: Confirmed Theory**
@@ -134,8 +136,9 @@ Value:  01 00 00 00 [len] FF FF FF FF [vec_len] [UTF-8 bytes] 00
 
 **Key Finding: Vector Flag Distinguishes from Single Characters**
 - **Single Characters**: Use subtype=3 in 8-byte structure
-- **Character Vectors**: Use vector_flag=-1 in variable-length structure
+- **Character Vectors**: Use vector_flag=-3 in variable-length structure
 - **Clear Distinction**: K differentiates between single chars and char vectors
+- **Vector Flag Meaning**: -3 indicates "vector of characters with subtype=3"
 
 **Character Vector Encoding Rules:**
 - **Empty Vector**: 9 bytes (4 header + 4 flag + 0 + 1 null)
