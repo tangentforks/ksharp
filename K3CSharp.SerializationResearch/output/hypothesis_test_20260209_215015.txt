@@ -1,0 +1,10 @@
+# Serialization Research: Integer (random examples)
+# Generated: 2026-02-09 21:50:15
+# Total examples: 1
+
+_bd 2.718281828459045 → "\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000iW\024\213\n\277\005@"
+
+# Summary:
+# Successful examples: 1
+# Data type: Integer
+# Mode: Random generation
