@@ -66,7 +66,7 @@ namespace K3CSharp.SerializationResearch
             }
         }
 
-        public string TestHypothesis(string testData)
+        public string TestHypothesis(string testData, DataType dataType = DataType.Integer)
         {
             if (string.IsNullOrEmpty(testData))
             {
@@ -76,7 +76,7 @@ namespace K3CSharp.SerializationResearch
             var results = new List<SerializationResult>();
             
             // Process the test data as a single example
-            var result = ProcessExample(testData, DataType.Integer); // Default to Integer type for hypothesis testing
+            var result = ProcessExample(testData, dataType);
             
             if (result != null)
             {
@@ -86,7 +86,7 @@ namespace K3CSharp.SerializationResearch
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             var outputPath = Path.Combine(outputDirectory, $"hypothesis_test_{timestamp}.txt");
             
-            WriteResultsFile(outputPath, DataType.Integer, results, false);
+            WriteResultsFile(outputPath, dataType, results, false);
             return outputPath;
         }
 

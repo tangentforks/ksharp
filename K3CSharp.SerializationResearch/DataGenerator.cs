@@ -133,7 +133,7 @@ namespace K3CSharp.SerializationResearch
             }
             else // Non-printable - use octal escape
             {
-                return $"\"\\{code:o3}\"";
+                return $"\"\\{code:D3}\"";
             }
         }
         #endregion

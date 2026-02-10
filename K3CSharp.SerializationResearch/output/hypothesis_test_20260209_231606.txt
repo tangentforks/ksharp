@@ -1,0 +1,9 @@
+# Serialization Research: Character (random examples)
+# Generated: 2026-02-09 23:16:06
+# Total examples: 0
+
+
+# Summary:
+# Successful examples: 0
+# Data type: Character
+# Mode: Random generation

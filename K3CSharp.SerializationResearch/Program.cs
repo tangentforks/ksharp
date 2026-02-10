@@ -25,9 +25,9 @@ namespace K3CSharp.SerializationResearch
                     
                     if (!string.IsNullOrEmpty(options.HypothesisTest))
                     {
-                        // Hypothesis testing mode - default to Integer type
-                        options.DataType = DataType.Integer;
-                        outputPath = explorer.TestHypothesis(options.HypothesisTest!);
+                        // Hypothesis testing mode - use specified type or default to Integer
+                        var testType = options.HypothesisTestType ?? DataType.Integer;
+                        outputPath = explorer.TestHypothesis(options.HypothesisTest!, testType);
                     }
                     else
                     {
@@ -97,6 +97,11 @@ namespace K3CSharp.SerializationResearch
                     case "-x":
                         if (i + 1 >= args.Length) return null;
                         options.HypothesisTest = args[++i];
+                        break;
+
+                    case "--test-type":
+                        if (i + 1 >= args.Length) return null;
+                        options.HypothesisTestType = ParseDataType(args[++i]);
                         break;
 
                     case "--help":
@@ -193,5 +198,6 @@ namespace K3CSharp.SerializationResearch
         public string KExePath { get; set; } = @"c:\k\k.exe";
         public string OutputDir { get; set; } = "output";
         public string? HypothesisTest { get; set; }
+        public DataType? HypothesisTestType { get; set; }
     }
 }
