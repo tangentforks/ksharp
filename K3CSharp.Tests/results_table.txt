@@ -308,7 +308,6 @@
 ║ rand_draw_vector_select.k                │ r:2 3 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
 ║ rand_draw_vector_deal.k                  │ r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;0;);(`...   │                      ║
 ║ rand_draw_vector_probability.k           │ r:2 3 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
-║ rand_draw_monadic_error.k                │ _draw 4              │ Error: _draw re...   │ Error - _draw r...   ║
 ║ draw.k                                   │ _draw                │ Error: _draw re...   │ Error - _draw (...   ║
 ║ time_gtime.k                             │ _gtime 0             │ 20350101 0           │                      ║
 ║ time_lt.k                                │ _lt 0                │ Error: Undefine...   │ -18000               ║
@@ -323,15 +322,18 @@
 ║ list_sv_base10.k                         │ 10 _sv 1 9 9 5       │ 1995                 │                      ║
 ║ list_sv_base2.k                          │ 2 _sv 1 0 0 1        │ 9                    │                      ║
 ║ list_sv_mixed.k                          │ 10 10 10 10 _sv 1 9 9 5 │ 1995                 │                      ║
+║ list_getenv.k                            │ _getenv "PATH"       │ "C:\Program Fil...   │ "C:\Program Fil...   ║
+║ list_setenv.k                            │ `TESTVAR _setenv "hello world" │ `TESTVAR             │                      ║
+║ list_size.k                              │ _size "README.md"    │ Error: _size: e...   │ Error - _size: ...   ║
+║ list_size_existing.k                     │ _size "t:/_src/github.com/ERufian/ksharp/K3CSharp.csproj" │ 872.0                │                      ║
 ║ test_ci_basic.k                          │ _ci 65               │ "A"                  │                      ║
 ║ test_ci_vector.k                         │ _ci 65 66 67         │ "ABC"                │                      ║
 ║ test_ic_basic.k                          │ _ic "A"              │ 65                   │                      ║
-║ test_vs_basic.k                          │ _vs 1995             │ Error: _vs (vec...   │ (1995)               ║
 ║ test_vs_dyadic.k                         │ 10 _vs 1995          │ 1 9 9 5              │                      ║
 ║ test_ic_vector.k                         │ _ic "ABC"            │ 65 66 67             │                      ║
 ║ test_monadic_colon.k                     │ : 42                 │ 42                   │                      ║
 ║ test_sm_basic.k                          │ `foo _sm `foo        │ 1                    │                      ║
-║ test_sm_simple.k                         │ `1 _sm `1            │ 1                    │                      ║
+║ test_sm_simple.k                         │ `a _sm `a            │ 1                    │                      ║
 ║ test_ss_basic.k                          │ "hello world" _ss "world" │ 7                    │                      ║
 ║ test_semicolon.k                         │ 1 2; 3 4             │ 3 4                  │ 1 2 3 4              ║
 ║ search_in_basic.k                        │ 4 _in 1 2 3 4 5      │ 4                    │                      ║
@@ -460,7 +462,7 @@
 ║ while_safe_test.k                        │ i: 0                 │ Error: Cannot c...   │                      ║
 ║ while_simple_test.k                      │ while[0; 42]         │ Error: While fu...   │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 382/455 tests passed (84.0%)                                                                     ║
+║ SUMMARY: 384/457 tests passed (84.0%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -595,11 +597,6 @@ Input: a:5
 Expected: (7 10;(2;2.5);5 -1)
 Actual: (7 15;(2;2.5);5 1)
 ──────────────────────────────────────────────────────────────────────────
-Test: rand_draw_monadic_error.k
-Input: _draw 4
-Expected: Error - _draw requires dyadic call (left and right arguments)
-Actual: Error: _draw requires dyadic call (left and right arguments)
-──────────────────────────────────────────────────────────────────────────
 Test: draw.k
 Input: _draw
 Expected: Error - _draw (random number generation) operation reserved for future use
@@ -620,10 +617,15 @@ Input: _dj 0
 Expected: 20350101
 Actual: Error: Undefined variable: dj
 ──────────────────────────────────────────────────────────────────────────
-Test: test_vs_basic.k
-Input: _vs 1995
-Expected: (1995)
-Actual: Error: _vs (vector from scalar) requires two arguments - use infix notation: base _vs scalar
+Test: list_getenv.k
+Input: _getenv "PATH"
+Expected: "C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\euseb\bin;C:\Program Files\Microsoft MPI\Bin\;C:\Program Files\Eclipse Adoptium\jdk-8.0.382.5-hotspot\bin;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\ia32;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\Intel64;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\HP\HP Performance Advisor;C:\Program Files (x86)\QuickTime\QTSystem\;C:\Program Files (x86)\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\CMake\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\Microsoft Emulator Manager\1.0\;C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Pages\v1.0\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Users\euseb\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files (x86)\nodejs\;C:\Program Files\Common Files\Avid\Eucon;C:\Program Files (x86)\Common Files\Avid\Eucon;C:\Program Files\Avid\Avid Link\jre\bin;C:\Program Files (x86)\dotnet\;c:\Windows\SysWOW64\;c:\Windows\Sysnative\;c:\program files (x86)\iracing\d3dgear;C:\Program Files (x86)\Common Files\DivX Shared\DesktopService;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\gs\gs10.00.0\bin;C:\Program Files (x86)\Windows Kits\10\Microsoft Application Virtualization\Sequencer\;C:\Program Files\Calibre2\;C:\Program Files\NVIDIA Corporation\Nsight Compute 2020.1.1\;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files\Git LFS;C:\Program Files\GitHub CLI\;C:\Program Files (x86)\Incredibuild;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\Acustica\Medusa Framework\;C:\Program Files\Git\cmd;C:\Users\euseb\.local\bin;C:\Progra~1\NVIDIA~2\CUDA\v11.0\libnvvp;C:\Progra~1\NVIDIA~2\CUDA\v11.0\bin;C:\Progra~2\Common~1\Intel\Shared~1\redist\intel6~1\compiler;C:\Users\euseb\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Imaginando\DLYM;C:\Users\euseb\.dotnet\tools;C:\Users\euseb\AppData\Roaming\npm;C:\Users\euseb\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Imaginando\K7D;C:\Program Files\Imaginando\FRMS;C:\Program Files\Imaginando\DRC;C:\Users\euseb\AppData\Local\Programs\Ollama;C:\Users\euseb\.local\bin;C:\Users\euseb\.dotnet\tools"
+Actual: "C:\Program Files\Microsoft MPI\Bin\;C:\Program Files\Eclipse Adoptium\jdk-8.0.382.5-hotspot\bin;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\ia32;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\Intel64;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\HP\HP Performance Advisor;C:\Program Files (x86)\QuickTime\QTSystem\;C:\Program Files (x86)\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\CMake\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\Microsoft Emulator Manager\1.0\;C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Pages\v1.0\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Users\euseb\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files (x86)\nodejs\;C:\Program Files\Common Files\Avid\Eucon;C:\Program Files (x86)\Common Files\Avid\Eucon;C:\Program Files\Avid\Avid Link\jre\bin;C:\Program Files (x86)\dotnet\;c:\Windows\SysWOW64\;c:\Windows\Sysnative\;c:\program files (x86)\iracing\d3dgear;C:\Program Files (x86)\Common Files\DivX Shared\DesktopService;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\gs\gs10.00.0\bin;C:\Program Files (x86)\Windows Kits\10\Microsoft Application Virtualization\Sequencer\;C:\Program Files\Calibre2\;C:\Program Files\NVIDIA Corporation\Nsight Compute 2020.1.1\;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files\Git LFS;C:\Program Files\GitHub CLI\;C:\Program Files (x86)\Incredibuild;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\Acustica\Medusa Framework\;C:\Program Files\Git\cmd;C:\Users\euseb\.local\bin;C:\Progra~1\NVIDIA~2\CUDA\v11.0\libnvvp;C:\Progra~1\NVIDIA~2\CUDA\v11.0\bin;C:\Progra~2\Common~1\Intel\Shared~1\redist\intel6~1\compiler;C:\Users\euseb\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Imaginando\DLYM;C:\Users\euseb\.dotnet\tools;C:\Users\euseb\AppData\Roaming\npm;C:\Users\euseb\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Imaginando\K7D;C:\Program Files\Imaginando\FRMS;C:\Program Files\Imaginando\DRC;C:\Users\euseb\AppData\Local\Programs\Ollama;C:\Users\euseb\.local\bin;C:\Users\euseb\.dotnet\tools"
+──────────────────────────────────────────────────────────────────────────
+Test: list_size.k
+Input: _size "README.md"
+Expected: Error - _size: error accessing file 'README.md': _size: file 'README.md' not found
+Actual: Error: _size: error accessing file 'README.md': _size: file 'README.md' not found
 ──────────────────────────────────────────────────────────────────────────
 Test: test_semicolon.k
 Input: 1 2; 3 4

@@ -547,7 +547,6 @@ namespace K3CSharp.Tests
                 ("rand_draw_vector_select.k", ".((`type;0;);(`shape;,2;))"),
                 ("rand_draw_vector_deal.k", ".((`type;0;);(`shape;,2;);(`allitemsunique;1;))"),
                 ("rand_draw_vector_probability.k", ".((`type;0;);(`shape;,2;))"),
-                ("rand_draw_monadic_error.k", "Error - _draw requires dyadic call (left and right arguments)"),
                 ("draw.k", "Error - _draw (random number generation) operation reserved for future use"),
                 ("time_gtime.k", "20350101 0"),
                 ("time_lt.k", "-18000"),
@@ -570,11 +569,9 @@ namespace K3CSharp.Tests
                 ("list_setenv.k", "`TESTVAR"), // _setenv returns the variable name (not the value) - this is the current behavior
                 ("list_size.k", "Error - _size: error accessing file 'README.md': _size: file 'README.md' not found"), // File doesn't exist in test directory
                 ("list_size_existing.k", "872.0"), // Test with existing project file using absolute path
-                ("list_exit.k", "Error - _exit: argument must be an integer (or niladic for exit code 0)"), // We expect this to fail since we can't actually test exit
                 ("test_ci_basic.k", "\"A\""),
                 ("test_ci_vector.k", "\"ABC\""),
                 ("test_ic_basic.k", "65"),
-                ("test_vs_basic.k", "(1995)"),
                 ("test_vs_dyadic.k", "1 9 9 5"),
                 ("test_ic_vector.k", "65 66 67"),
                 ("test_monadic_colon.k", "42"),

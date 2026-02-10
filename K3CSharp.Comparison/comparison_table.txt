@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-02-09 01:52:39
+Generated: 2026-02-09 16:19:06
 
 SUMMARY:
 --------
-Total Tests:     436
-✅ Matched:       347
-❌ Differed:      56
-⚠️  Skipped:       0
-💥 Errors:        33
-Success Rate:    79.6%
+Total Tests:     438
+✅ Matched:       338
+❌ Differed:      54
+⚠️  Skipped:       16
+💥 Errors:        30
+Success Rate:    80.1%
 
 DETAILED RESULTS:
 -----------------
@@ -126,8 +126,8 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   find_notfound.k                                    7                              7                                                                                
 ✅ PASS   first_operator.k                                   1                              1                                                                                
 ✅ PASS   float_decimal_point.k                              10.0                           10.0                                                                             
-❌ FAIL   float_exponential_large.k                          1e+015                         1e+15                                                                            
-❌ FAIL   float_exponential_small.k                          1e-020                         1e-20                                                                            
+✅ PASS   float_exponential_large.k                          1e+015                         1e+015                                                                           
+✅ PASS   float_exponential_small.k                          1e-020                         1e-020                                                                           
 ✅ PASS   float_exponential.k                                170.0                          170.0                                                                            
 ✅ PASS   float_types.k                                      3.14                           3.14                                                                             
 ❌ FAIL   floor_operator.k                                   3.0                            3                                                                                
@@ -147,7 +147,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   form_braces_string.k                               ("John";"is";25;"years old")   ("John";"is";25;"years old")                                                     
 ❌ FAIL   form_character_charvector.k                        ""aaa""                        "aaa"                                                                            
 ✅ PASS   form_integer_charvector.k                          42                             42                                                                               
-✅ PASS   form_long.k                                        42j                            42j                                                                              
+⚠️  SKIP form_long.k                                                                                                      k.exe 32-bit limitation                           
 ✅ PASS   form_string_pad_left.k                             "  hello"                      "  hello"                                                                        
 ✅ PASS   format_0_1.k                                       ""                             ""                                                                               
 ❌ FAIL   format_1_1.k                                       ,"*"                           ,"1"                                                                             
@@ -157,7 +157,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   format_float_precision_vector_simple.k             ("       1.5";"       2.5")    ("       1.5";"       2.5")    Compact representation                            
 ✅ PASS   format_float_precision.k                           "    3.14"                     "    3.14"                                                                       
 ❌ FAIL   format_float_vector.k                              ""                             (,"1"
- ,"2"
+ ,"3"
  ,"3"
  "42")                                                         
 ✅ PASS   format_float_width_precision.k                     "      3.14"                   "      3.14"                                                                     
@@ -166,10 +166,7 @@ Status   Test File                                          K3Sharp Output      
  ""
  "")                                                                 
 ✅ PASS   format_integer.k                                   ""                             ""                                                                               
-❌ FAIL   format_long_vector.k                               ""                             (,"1"
- ,"*"
- ,"*"
- ,"*")                                                         
+⚠️  SKIP format_long_vector.k                                                                                             k.exe 32-bit limitation                           
 ✅ PASS   format_numeric.k                                   "    1"                        "    1"                                                                          
 ✅ PASS   format_pad_left.k                                  "   42"                        "   42"                                                                          
 ✅ PASS   format_pad_mixed_vector.k                          ("         1";"         2...   ("         1";"         2...   Compact representation                            
@@ -203,7 +200,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   in_simple.k                                        0                              0                                                                                
 ❌ FAIL   in.k                                               4                              1                                                                                
 ✅ PASS   integer_types_int.k                                42                             42                                                                               
-✅ PASS   integer_types_long.k                               123456789j                     123456789j                                                                       
+⚠️  SKIP integer_types_long.k                                                                                             k.exe 32-bit limitation                           
 ✅ PASS   isolated.k                                         0.6                            0.6                                                                              
 ✅ PASS   join_operator.k                                    3 5                            3 5                                                                              
 ❌ FAIL   k_tree_assignment_absolute_foo.k                   42                                                            Compact representation                            
@@ -226,6 +223,10 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   list_di_multiple.k                                 3 4                            3 4                                                                              
 ✅ PASS   list_dv_basic.k                                    3 5                            3 5                                                                              
 ✅ PASS   list_dv_nomatch.k                                  3 4 4 5                        3 4 4 5                                                                          
+❌ FAIL   list_getenv.k                                      "C:\Program Files\Microso...   "C:\\Program Files\\Micro...                                                     
+❌ FAIL   list_setenv.k                                      `TESTVAR                                                                                                        
+✅ PASS   list_size_existing.k                               872.0                          872.0                                                                            
+✅ PASS   list_size.k                                        2933.0                         2933.0                                                                           
 ✅ PASS   list_sv_base10.k                                   1995                           1995                                                                             
 ✅ PASS   list_sv_base2.k                                    9                              9                                                                                
 ✅ PASS   list_sv_mixed.k                                    1995                           1995                                                                             
@@ -276,12 +277,12 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   overflow_int_null_minus1.k                         0I                             0I                                                                               
 ✅ PASS   overflow_int_pos_inf_plus2.k                       -0I                            -0I                                                                              
 ✅ PASS   overflow_int_pos_inf.k                             0N                             0N                                                                               
-✅ PASS   overflow_long_max_plus1.k                          0Nj                            0Nj                                                                              
-❌ FAIL   overflow_long_min_minus1.k                         0Ij                            0Nj                                                                              
-✅ PASS   overflow_long_neg_inf_minus2.k                     0Ij                            0Ij                                                                              
-✅ PASS   overflow_long_neg_inf.k                            0Nj                            0Nj                                                                              
-✅ PASS   overflow_long_pos_inf_plus2.k                      -0Ij                           -0Ij                                                                             
-✅ PASS   overflow_long_pos_inf.k                            0Nj                            0Nj                                                                              
+⚠️  SKIP overflow_long_max_plus1.k                                                                                        k.exe 32-bit limitation                           
+⚠️  SKIP overflow_long_min_minus1.k                                                                                       k.exe 32-bit limitation                           
+⚠️  SKIP overflow_long_neg_inf_minus2.k                                                                                   k.exe 32-bit limitation                           
+⚠️  SKIP overflow_long_neg_inf.k                                                                                          k.exe 32-bit limitation                           
+⚠️  SKIP overflow_long_pos_inf_plus2.k                                                                                    k.exe 32-bit limitation                           
+⚠️  SKIP overflow_long_pos_inf.k                                                                                          k.exe 32-bit limitation                           
 ✅ PASS   overflow_regular_int.k                             -2147483639                    -2147483639                                                                      
 ✅ PASS   parentheses_basic.k                                7                              7                                                                                
 ✅ PASS   parentheses_grouping.k                             9                              9                                                                                
@@ -307,7 +308,6 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   precedence_spec1.k                                 11.57143                       11.57143                                                                         
 ✅ PASS   precedence_spec2.k                                 6                              6                              smart integer division, inverse and exponenti...  
 ✅ PASS   rand_draw_deal.k                                   .((`type;-1;);(`shape;,4;...   .((`type;-1;);(`shape;,4;...   Compact representation                            
-💥 ERROR rand_draw_monadic_error.k                                                                                        Both K3Sharp and k.exe errors                     
 ✅ PASS   rand_draw_probability.k                            .((`type;-2;);(`shape;,10;))   .((`type;-2;);(`shape;,10;))   Compact representation                            
 ✅ PASS   rand_draw_select.k                                 .((`type;-1;);(`shape;,10;))   .((`type;-1;);(`shape;,10;))   Compact representation                            
 ❌ FAIL   rand_draw_vector_deal.k                            .((`type;0;);(`shape;,2;)...   .((`type;0;);(`shape;2 3;...   Compact representation                            
@@ -365,9 +365,9 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   special_int_pos_inf_plus_1.k                       0N                             0N                                                                               
 ✅ PASS   special_int_pos_inf.k                              0I                             0I                                                                               
 ✅ PASS   special_int_vector.k                               0I 0N -0I                      0I 0N -0I                                                                        
-✅ PASS   special_long_neg_inf.k                             -0Ij                           -0Ij                                                                             
-✅ PASS   special_long_null.k                                0Nj                            0Nj                                                                              
-✅ PASS   special_long_pos_inf.k                             0Ij                            0Ij                                                                              
+⚠️  SKIP special_long_neg_inf.k                                                                                           k.exe 32-bit limitation                           
+⚠️  SKIP special_long_null.k                                                                                              k.exe 32-bit limitation                           
+⚠️  SKIP special_long_pos_inf.k                                                                                           k.exe 32-bit limitation                           
 ✅ PASS   special_neg0i_plus_1.k                             -2147483646                    -2147483646                                                                      
 ✅ PASS   special_null.k                                                                                                                                                     
 ✅ PASS   special_underflow_2.k                              2147483549                     2147483549                                                                       
@@ -397,9 +397,8 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   test_monadic_colon.k                               42                             42                                                                               
 ✅ PASS   test_semicolon.k                                   3 4                            3 4                                                                              
 ✅ PASS   test_sm_basic.k                                    1                              1                                                                                
-💥 ERROR test_sm_simple.k                                   1                                                             k.exe error only                                  
+✅ PASS   test_sm_simple.k                                   1                              1                                                                                
 ❌ FAIL   test_ss_basic.k                                    7                              ,6                                                                               
-💥 ERROR test_vs_basic.k                                                                                                  Both K3Sharp and k.exe errors                     
 ✅ PASS   test_vs_dyadic.k                                   1 9 9 5                        1 9 9 5                                                                          
 💥 ERROR time_dj.k                                                                         20350101                       K3Sharp error, k.exe succeeded                    
 ✅ PASS   time_gtime.k                                       20350101 0                     20350101 0                                                                       
@@ -420,11 +419,11 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   type_operator_vector_mixed.k                       0                              0                                                                                
 ✅ PASS   type_operator_vector_symbol.k                      -3                             -3                                                                               
 ✅ PASS   type_promotion_float_int.k                         3.5                            3.5                                                                              
-✅ PASS   type_promotion_float_long.k                        2.5                            2.5                                                                              
+⚠️  SKIP type_promotion_float_long.k                                                                                      k.exe 32-bit limitation                           
 ✅ PASS   type_promotion_int_float.k                         3.5                            3.5                                                                              
-✅ PASS   type_promotion_int_long.k                          3j                             3j                                                                               
-✅ PASS   type_promotion_long_float.k                        2.5                            2.5                                                                              
-✅ PASS   type_promotion_long_int.k                          3j                             3j                                                                               
+⚠️  SKIP type_promotion_int_long.k                                                                                        k.exe 32-bit limitation                           
+⚠️  SKIP type_promotion_long_float.k                                                                                      k.exe 32-bit limitation                           
+⚠️  SKIP type_promotion_long_int.k                                                                                        k.exe 32-bit limitation                           
 ✅ PASS   type_space.k                                       3                              3                                                                                
 ✅ PASS   type_symbol.k                                      4                              4                                                                                
 ✅ PASS   type_vector.k                                      -1                             -1                                                                               
@@ -508,11 +507,11 @@ File: dyadic_divide_bracket.k
 K3Sharp: 5
 k.exe:   5.0
 
-File: float_exponential_large.k
-K3Sharp: 1e+015
-k.exe:   1e+15
+File: floor_operator.k
+K3Sharp: 3.0
+k.exe:   3
 
-... and 46 more failed tests
+... and 44 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------
@@ -546,28 +545,8 @@ Error: K3Sharp Error: Undefined variable: :
 File: conditional_true.k
 Error: K3Sharp Error: Undefined variable: :
 
-... and 23 more error tests
+... and 20 more error tests
 
 K.EXE FAILING TESTS:
 --------------------
-Test: rand_draw_monadic_error.k
-Input: _draw 4
-Error: K3Sharp Error: _draw requires dyadic call (left and right arguments)
-
-Test: test_sm_simple.k
-Input: `1 _sm `1
-Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
-
-Test: test_vs_basic.k
-Input: _vs 1995
-Error: K3Sharp Error: _vs (vector from scalar) requires two arguments - use infix notation: base _vs scalar
-
-Progress update: 20 tests processed at 03:13:46
-Progress update: 40 tests processed at 03:13:50
-Progress update: 60 tests processed at 03:13:54
-Progress update: 80 tests processed at 03:13:57
-Progress update: 100 tests processed at 03:14:01
-Progress update: 120 tests processed at 03:14:04
-Progress update: 140 tests processed at 03:14:08
-Progress update: 160 tests processed at 03:14:12
-Progress update: 180 tests processed at 03:14:15
+No tests failing in k.exe found!
