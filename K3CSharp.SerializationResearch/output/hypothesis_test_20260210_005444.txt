@@ -1,0 +1,9 @@
+# Serialization Research: CharacterVector (random examples)
+# Generated: 2026-02-10 00:54:44
+# Total examples: 0
+
+
+# Summary:
+# Successful examples: 0
+# Data type: CharacterVector
+# Mode: Random generation
