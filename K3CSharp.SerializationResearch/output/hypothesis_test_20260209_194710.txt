@@ -1,8 +1,8 @@
 # Serialization Research: Integer (random examples)
-# Generated: 2026-02-09 17:46:47
+# Generated: 2026-02-09 19:47:10
 # Total examples: 1
 
-_bd -115054806 → 
+_bd 123456789 → "\001\000\000\000\b\000\000\000\001\000\000\000\025\315[\007"
 
 # Summary:
 # Successful examples: 1

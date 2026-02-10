@@ -66,6 +66,30 @@ namespace K3CSharp.SerializationResearch
             }
         }
 
+        public string TestHypothesis(string testData)
+        {
+            if (string.IsNullOrEmpty(testData))
+            {
+                throw new ArgumentException("Test data cannot be null or empty");
+            }
+
+            var results = new List<SerializationResult>();
+            
+            // Process the test data as a single example
+            var result = ProcessExample(testData, DataType.Integer); // Default to Integer type for hypothesis testing
+            
+            if (result != null)
+            {
+                results.Add(result);
+            }
+
+            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            var outputPath = Path.Combine(outputDirectory, $"hypothesis_test_{timestamp}.txt");
+            
+            WriteResultsFile(outputPath, DataType.Integer, results, false);
+            return outputPath;
+        }
+
         private SerializationResult? ProcessExample(string example, DataType dataType)
         {
             try
