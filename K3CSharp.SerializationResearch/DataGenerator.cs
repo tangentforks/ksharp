@@ -206,10 +206,12 @@ namespace K3CSharp.SerializationResearch
                     2 => $"\"{(char)random.Next(32, 127)}\"",
                     _ => "0"
                 };
-                pairs.Add($"{key};{value}");
+                pairs.Add($"({key};{value})");
             }
             
-            return $".,({string.Join(";", pairs)})";
+            // Use enlist operator only for 1-item dictionaries
+            var pairString = string.Join(";", pairs);
+            return count == 1 ? $",({pairString})" : $"({pairString})";
         }
         #endregion
 
@@ -227,23 +229,62 @@ namespace K3CSharp.SerializationResearch
             {
                 "{[]}", // Empty function
                 "{[x]}", // Args only
-            "{x}", // Body only
-            "{[x] x}", // Args and body
-            "{[x;y] x+y}", // Multiple args
-            "{[x] {[y] x+y}}" // Nested function
+                "{x+y}", // Body only with arithmetic
+                "{[x;y] x+y}", // Multiple args with arithmetic
+                "{[x] {[y] x+y}}", // Nested function
+                "{[x] x+y;z-x}", // Multiple expressions with semicolon
+                "{[x;y;z] x*y+z/x}", // Complex arithmetic
+                "{[x] x<10;x>5}", // Comparison operators
+                "{[x] x&y;x|z}", // Bitwise operators
+                "{[x] ~x;#x}", // Monadic operators
+                "{[x] x@y;x!z}", // Dyadic operators
+                "{[x] x::y;x.$z}", // Special operators
+                "{[x] x=1;x?2}", // Assignment and conditional
+                "{[x] x^y;x%z}", // Power and modulo
+                "{[x] _x;+x;-x}", // Monadic arithmetic
+                "{[x] .x;@x;~x}" // Special monadic operators
             };
         }
 
         private string GenerateRandomAnonymousFunction()
         {
-            var argCount = random.Next(0, 3);
+            var argCount = random.Next(0, 4); // 0-3 args
             var args = argCount > 0 ? 
                 $"[{string.Join("", Enumerable.Range(0, argCount).Select(i => $"{(char)('x' + i)}"))}]" : 
                 "[]";
             
-            var body = argCount > 0 ? 
-                $"{(char)('x' + random.Next(0, argCount))}" : 
-                random.Next(-10, 10).ToString();
+            // Define diverse operators as per speclet
+            var arithmeticOps = new[] { "+", "-", "*", "%", "/", "^" };
+            var comparisonOps = new[] { "<", ">", "=", "<=", ">=" };
+            var bitwiseOps = new[] { "&", "|", "^" };
+            var monadicOps = new[] { "-", "+", "*", "%", "&", "|", "<", ">", "^", "!", "#", "_", "?", "~", "@", ".", "=", "$" };
+            var dyadicOps = new[] { "!", "_", "@", ".", "::", "$" };
+            
+            var expressions = new List<string>();
+            var exprCount = random.Next(1, 4); // 1-3 expressions
+            
+            for (int i = 0; i < exprCount; i++)
+            {
+                var exprType = random.Next(0, 6);
+                var argVars = args == "[]" ? "0" : string.Join("", Enumerable.Range(0, Math.Min(argCount, 2)).Select(j => $"{(char)('x' + j)}"));
+                
+                var expr = exprType switch
+                {
+                    0 => $"{argVars}{arithmeticOps[random.Next(arithmeticOps.Length)]}{random.Next(1, 10)}",
+                    1 => $"{argVars}{comparisonOps[random.Next(comparisonOps.Length)]}{random.Next(1, 10)}",
+                    2 => $"{argVars}{bitwiseOps[random.Next(bitwiseOps.Length)]}{random.Next(1, 10)}",
+                    3 => $"{monadicOps[random.Next(monadicOps.Length)]}{argVars}",
+                    4 => $"{argVars}{dyadicOps[random.Next(dyadicOps.Length)]}{random.Next(1, 10)}",
+                    5 => $"{argVars}+{random.Next(1, 10)}-{random.Next(1, 5)}*{random.Next(1, 3)}", // Complex expression
+                    _ => $"{argVars}+{random.Next(1, 10)}"
+                };
+                
+                expressions.Add(expr);
+            }
+            
+            var body = random.NextDouble() < 0.05 
+                ? string.Join("\n", expressions) // Use newlines 5% of the time
+                : string.Join(";", expressions); // Use semicolons 95% of the time
             
             return $"{{{args} {body}}}";
         }
@@ -255,7 +296,7 @@ namespace K3CSharp.SerializationResearch
             return new List<string>
             {
                 "!0", // Empty vector
-                "1", // Single element (will be enlisted)
+                ",1", // Single element (enlisted)
                 "1 2 3", // Multiple elements
                 "0N 0I -0I" // Special values
             };
@@ -268,7 +309,10 @@ namespace K3CSharp.SerializationResearch
             
             var elements = Enumerable.Range(0, length)
                 .Select(_ => random.Next(-1000, 1000).ToString());
-            return string.Join(" ", elements);
+            var vector = string.Join(" ", elements);
+            
+            // Use enlist operator for single element
+            return length == 1 ? $",{vector}" : vector;
         }
 
         private List<string> GenerateFloatVectorEdgeCases()
@@ -276,7 +320,7 @@ namespace K3CSharp.SerializationResearch
             return new List<string>
             {
                 "0#0.0", // Empty vector
-                "1.0", // Single element
+                ",1.0", // Single element (enlisted)
                 "1.0 2.5 3.14", // Multiple elements
                 "0n 0i -0i" // Special values
             };
@@ -289,7 +333,10 @@ namespace K3CSharp.SerializationResearch
             
             var elements = Enumerable.Range(0, length)
                 .Select(_ => GenerateRandomFloat());
-            return string.Join(" ", elements);
+            var vector = string.Join(" ", elements);
+            
+            // Use enlist operator for single element
+            return length == 1 ? $",{vector}" : vector;
         }
 
         private List<string> GenerateCharacterVectorEdgeCases()
@@ -297,7 +344,7 @@ namespace K3CSharp.SerializationResearch
             return new List<string>
             {
                 "\"\"", // Empty vector
-                "\"a\"", // Single character
+                ",\"a\"", // Single character (enlisted)
                 "\"hello\"", // Multiple characters
                 "\"\\n\\t\\r\"" // Escape sequences
             };
@@ -310,7 +357,10 @@ namespace K3CSharp.SerializationResearch
             
             var chars = Enumerable.Range(0, length)
                 .Select(_ => (char)random.Next(32, 127)); // Printable only
-            return $"\"{new string(chars.ToArray())}\"";
+            var vector = $"\"{new string(chars.ToArray())}\"";
+            
+            // Use enlist operator for single character
+            return length == 1 ? $",{vector}" : vector;
         }
 
         private List<string> GenerateSymbolVectorEdgeCases()
@@ -318,7 +368,7 @@ namespace K3CSharp.SerializationResearch
             return new List<string>
             {
                 "0#`", // Empty vector
-                "`a", // Single symbol
+                ",`a", // Single symbol (enlisted)
                 "`a `b `c", // Multiple symbols
                 "`\"quoted\" `symbol" // Mixed quoted/unquoted
             };
@@ -331,7 +381,10 @@ namespace K3CSharp.SerializationResearch
             
             var symbols = Enumerable.Range(0, length)
                 .Select(_ => GenerateRandomSymbol().Trim('`'));
-            return string.Join(" ", symbols.Select(s => $"`{s}"));
+            var vector = string.Join(" ", symbols.Select(s => $"`{s}"));
+            
+            // Use enlist operator for single symbol
+            return length == 1 ? $",{vector}" : vector;
         }
         #endregion
 
@@ -341,11 +394,11 @@ namespace K3CSharp.SerializationResearch
             return new List<string>
             {
                 "()", // Empty list
-                "(1)", // Single element
+                ",_n", // Single element (enlisted null)
                 "(1;2.5;\"a\")", // Mixed types
                 "(_n;`symbol;{[]})", // With null, symbol, function
                 "((1;2);(3;4))", // Nested lists
-                "(.(`a;1);.(`b;2))" // With dictionaries
+                "(.,(`a;1);.,(`b;2))" // With dictionaries (proper 1-item dict syntax)
             };
         }
 
@@ -356,20 +409,34 @@ namespace K3CSharp.SerializationResearch
             
             var elements = new List<string>();
             var usedTypes = new HashSet<DataType>();
+            var lastType = (DataType?)null;
             
             for (int i = 0; i < length; i++)
             {
                 DataType type;
                 do
                 {
-                    type = (DataType)random.Next(0, 7); // Basic types only
-                } while (usedTypes.Count < 4 && usedTypes.Contains(type)); // Avoid uniform lists
+                    // Avoid creating uniform lists that would collapse to vectors
+                    // If we have 2+ elements and all previous elements are the same basic type,
+                    // ensure the next element is different
+                    if (i >= 2 && usedTypes.Count == 1)
+                    {
+                        var basicTypes = new[] { DataType.Integer, DataType.Float, DataType.Character, DataType.Symbol };
+                        var differentTypes = basicTypes.Where(t => t != lastType).ToList();
+                        type = differentTypes[random.Next(differentTypes.Count)];
+                    }
+                    else
+                    {
+                        type = (DataType)random.Next(0, 7); // Basic types only
+                    }
+                } while (usedTypes.Count < 4 && i < 4 && usedTypes.Contains(type)); // Avoid uniform lists
                 
                 usedTypes.Add(type);
+                lastType = type;
                 elements.Add(GenerateRandomExample(type));
             }
             
-            return $"({string.Join(";", elements)})";
+            return length == 1 ? ",_n" : $"({string.Join(";", elements)})";
         }
         #endregion
     }

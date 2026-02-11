@@ -103,6 +103,13 @@ namespace K3CSharp.SerializationResearch
                 // Clean up result (remove licensing info, etc.)
                 var cleanedResult = CleanResult(result);
                 
+                // Validate that the result type matches expected type
+                if (!ValidateResultType(example, dataType))
+                {
+                    Console.WriteLine($"Generated example '{example}' does not match expected type {dataType}");
+                    return null;
+                }
+                
                 return new SerializationResult
                 {
                     Input = example,
@@ -115,6 +122,42 @@ namespace K3CSharp.SerializationResearch
             {
                 Console.WriteLine($"Failed to process example '{example}': {ex.Message}");
                 return null; // Skip failed examples as per specification
+            }
+        }
+
+        private bool ValidateResultType(string example, DataType expectedType)
+        {
+            try
+            {
+                // Use 4: operator to check type of generated example
+                var typeCommand = $"4: {example}";
+                var typeResult = wrapper.ExecuteScript(typeCommand);
+                var cleanedType = CleanResult(typeResult).Trim();
+                
+                // Map K type names to our DataType enum
+                var actualType = cleanedType switch
+                {
+                    "integer" or "1" => DataType.Integer,
+                    "float" or "2" => DataType.Float,
+                    "character" or "3" => DataType.Character,
+                    "symbol" or "4" => DataType.Symbol,
+                    "dictionary" or "5" => DataType.Dictionary,
+                    "null" or "6" => DataType.Null,
+                    "function" or "7" => DataType.AnonymousFunction, // Handle both "function" and numeric type code 7
+                    "integer vector" or "-1" => DataType.IntegerVector,
+                    "float vector" or "-2" => DataType.FloatVector,
+                    "character vector" or "-3" => DataType.CharacterVector,
+                    "symbol vector" or "-4" => DataType.SymbolVector,
+                    "list" or "0" => DataType.List,
+                    _ => (DataType?)null
+                };
+                
+                return actualType == expectedType;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Type validation failed for '{example}': {ex.Message}");
+                return false;
             }
         }
 

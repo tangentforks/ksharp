@@ -4,11 +4,11 @@
 
 ### **📊 Pattern Analysis**
 
-From analyzing 75 examples (comprehensive dataset), I identified a clear pattern for **List**:
+From analyzing 104 examples (6 edge cases + 98 random), I identified a clear pattern for **List**:
 
 **🔍 Common Structure:**
 ```
-"\001\000\000\000[length:4]\376\377\377\377[element_count:4][element_1:variable][element_2:variable]...[element_n:variable]"
+"\001\000\000\000[length:4]\376\377\377\377[element_count:4][element_1:serialized][element_2:serialized]...[element_n:serialized]"
 ```
 
 **📋 Pattern Breakdown:**
@@ -16,13 +16,14 @@ From analyzing 75 examples (comprehensive dataset), I identified a clear pattern
 2. **Data Length**: `[length:4]` (4 bytes = total bytes, little-endian)
 3. **List Flag**: `\376\377\377\377` (4 bytes = -2, little-endian)
 4. **Element Count**: `[element_count:4]` (4 bytes = number of elements, little-endian)
-5. **Element Data**: `[element_1:variable]...[element_n:variable]` (variable length per element type)
+5. **Element Data**: `[element_1:serialized]...[element_n:serialized]` (variable length per element type)
 
 **🔍 Key Examples:**
 - **Empty List**: `()` → `\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000` (8 bytes total)
-- **Single Integer**: `(1)` → `\001\000\000\000\b\000\000\000\001\000\000\000\001\000\000\000` (12 bytes total)
-- **Mixed Types**: `(1;2.5;"a")` → `\001\000\000\000(\000\000\000\000\000\000\000\003\000\000\000\001\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\004@\003\000\000\000a\000\000\000` (40 bytes total)
-- **Nested Structures**: `((1;2);(3;4))` → Complex nested serialization
+- **Single Element List**: `,_n` → `\001\000\000\000\020\000\000\000\000\000\000\001\000\000\000\006\000\000\000\000\000\000` (20 bytes total)
+- **Mixed Types**: `(1;2.5;"a")` → `\001\000\000\000(\000\000\000\000\000\000\003\000\000\000\001\000\000\000\001\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\004@\003\000\000\000a\000\000\000` (40 bytes total)
+- **Nested Lists**: `((1;2);(3;4))` → `\001\000\000\000(\000\000\000\000\000\000\002\000\000\000\377\377\377\377\002\000\000\000\001\000\000\000\002\000\000\000\377\377\377\377\002\000\000\000\003\000\000\000\004\000\000\000` (40 bytes total)
+- **With Dictionaries**: `(.,(`a;1);.,(`b;2))` → Complex nested serialization with dictionaries
 
 ### **🎯 Hypothesis Formulation**
 
@@ -38,21 +39,21 @@ From analyzing 75 examples (comprehensive dataset), I identified a clear pattern
 - `element_count = number of elements` (4-byte little-endian)
 - `element_data = recursively serialized K elements` (variable length)
 
-### **🔍 Pattern Validation**
-
-**✅ Evidence Analysis:**
+### **✅ Evidence Analysis:**
 
 **Empty List (0 elements):**
 - `()` → `\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000` ✓
 - Length: 8 bytes (`\b\000\000\000` = 8) ✓
+- List flag: -2 (`\376\377\377\377`) ✓
 - Element count: 0 (`\000\000\000\000`) ✓
 - No element data ✓
 
-**Single Element (1 integer):**
-- `(1)` → `\001\000\000\000\b\000\000\000\001\000\000\000\001\000\000\000` ✓
-- Length: 12 bytes (`\b\000\000\000` = 8, but shows 12 - includes 4-byte integer) ✓
+**Single Element List (1 element):**
+- `,_n` → `\001\000\000\000\020\000\000\000\000\000\000\001\000\000\000\006\000\000\000\000\000\000` ✓
+- Length: 20 bytes (`\020\000\000\000` = 20) ✓
+- List flag: -2 (`\376\377\377\377`) ✓
 - Element count: 1 (`\001\000\000\000`) ✓
-- Element data: 4 bytes for integer 1 ✓
+- Element data: null serialization (12 bytes) ✓
 
 **Multiple Elements (3 mixed types):**
 - `(1;2.5;"a")` → 40 bytes total ✓
