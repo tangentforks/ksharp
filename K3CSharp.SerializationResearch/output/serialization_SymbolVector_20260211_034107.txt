@@ -1,0 +1,13 @@
+# Serialization Research: SymbolVector (edge cases)
+# Generated: 2026-02-11 03:41:08
+# Total examples: 4
+
+_bd 0#` → "\001\000\000\000\b\000\000\000\374\377\377\377\000\000\000\000"
+_bd `a → "\001\000\000\000\006\000\000\000\004\000\000\000a\000"
+_bd `a `b `c → "\001\000\000\000\016\000\000\000\374\377\377\377\003\000\000\000a\000b\000c\000"
+_bd `"quoted" `symbol → "\001\000\000\000\026\000\000\000\374\377\377\377\002\000\000\000quoted\000symbol\000"
+
+# Summary:
+# Successful examples: 4
+# Data type: SymbolVector
+# Mode: Edge cases
