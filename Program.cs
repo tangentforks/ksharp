@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace K3CSharp
 {
@@ -9,8 +8,6 @@ namespace K3CSharp
     {
         private static readonly List<string> commandHistory = new List<string>();
         private static int historyIndex = -1;
-        private static readonly StringBuilder currentLine = new StringBuilder();
-        private static int cursorPosition = 0;
         
         static void Main(string[] args)
         {
@@ -40,7 +37,7 @@ namespace K3CSharp
 
             while (true)
             {
-                Console.Write("  "); // Default prompt: two spaces per spec
+                Console.Write("  "); // Default prompt: two spaces
                 
                 var input = ReadMultiLineInput();
                 
@@ -79,248 +76,13 @@ namespace K3CSharp
 
         static string? ReadMultiLineInput()
         {
-            var lines = new List<string>();
-            int nestingLevel = 0;
-            
-            while (true)
-            {
-                // Build prompt based on nesting level
-                string prompt = $"  {new string('>', nestingLevel)}";
-                Console.Write(prompt);
-                
-                var line = ReadLineWithHistory();
-                
-                if (line == null) return null;
-                
-                // Handle cancellation
-                if (line == "\\")
-                {
-                    Console.WriteLine("(cancelled)");
-                    return "";
-                }
-                
-                // Handle quit commands
-                if (line == "\\\\" || line == "_exit")
-                {
-                    return line;
-                }
-                
-                if (string.IsNullOrWhiteSpace(line)) 
-                {
-                    // Empty line - add newline if in multi-line mode
-                    if (nestingLevel > 0)
-                    {
-                        lines.Add("");
-                    }
-                    continue;
-                }
-                
-                lines.Add(line);
-                
-                // Check if the current input forms a complete expression
-                var combinedInput = string.Join("\n", lines);
-                var lexer = new Lexer(combinedInput);
-                var tokens = lexer.Tokenize();
-                var parser = new Parser(tokens, combinedInput);
-                
-                if (parser.IsIncompleteExpression())
-                {
-                    // Calculate nesting level for prompt
-                    nestingLevel = CalculateNestingLevel(combinedInput);
-                }
-                else
-                {
-                    // Expression is complete
-                    break;
-                }
-            }
-            
-            return string.Join("\n", lines);
+            return Console.ReadLine();
         }
         
-        static int CalculateNestingLevel(string input)
-        {
-            int parentheses = 0;
-            int brackets = 0;
-            int braces = 0;
-            bool inString = false;
-            
-            foreach (char c in input)
-            {
-                if (c == '"' && !inString)
-                {
-                    inString = true;
-                }
-                else if (c == '"' && inString)
-                {
-                    inString = false;
-                }
-                else if (!inString)
-                {
-                    switch (c)
-                    {
-                        case '(':
-                            parentheses++;
-                            break;
-                        case ')':
-                            parentheses--;
-                            break;
-                        case '[':
-                            brackets++;
-                            break;
-                        case ']':
-                            brackets--;
-                            break;
-                        case '{':
-                            braces++;
-                            break;
-                        case '}':
-                            braces--;
-                            break;
-                    }
-                }
-            }
-            
-            return Math.Max(0, Math.Max(parentheses, Math.Max(brackets, braces)));
-        }
-
-        static string ReadLineWithHistory()
-        {
-            currentLine.Clear();
-            cursorPosition = 0;
-            
-            while (true)
-            {
-                var key = Console.ReadKey(true);
-                
-                switch (key.Key)
-                {
-                    case ConsoleKey.Enter:
-                        Console.WriteLine();
-                        return currentLine.ToString();
-                        
-                    case ConsoleKey.Escape:
-                        // Clear line
-                        Console.Write(new string(' ', currentLine.Length));
-                        Console.Write("\rK3> ");
-                        currentLine.Clear();
-                        cursorPosition = 0;
-                        break;
-                        
-                    case ConsoleKey.UpArrow:
-                        if (commandHistory.Count > 0)
-                        {
-                            if (historyIndex == -1)
-                                historyIndex = commandHistory.Count - 1;
-                            else if (historyIndex > 0)
-                                historyIndex--;
-                            
-                            ReplaceCurrentLine(commandHistory[historyIndex]);
-                        }
-                        break;
-                        
-                    case ConsoleKey.DownArrow:
-                        if (historyIndex != -1)
-                        {
-                            if (historyIndex < commandHistory.Count - 1)
-                            {
-                                historyIndex++;
-                                ReplaceCurrentLine(commandHistory[historyIndex]);
-                            }
-                            else
-                            {
-                                historyIndex = -1;
-                                ReplaceCurrentLine("");
-                            }
-                        }
-                        break;
-                        
-                    case ConsoleKey.LeftArrow:
-                        if (cursorPosition > 0)
-                        {
-                            cursorPosition--;
-                            Console.Write("\b");
-                        }
-                        break;
-                        
-                    case ConsoleKey.RightArrow:
-                        if (cursorPosition < currentLine.Length)
-                        {
-                            cursorPosition++;
-                            Console.Write(currentLine[cursorPosition - 1]);
-                        }
-                        break;
-                        
-                    case ConsoleKey.Backspace:
-                        if (cursorPosition > 0)
-                        {
-                            cursorPosition--;
-                            currentLine.Remove(cursorPosition, 1);
-                            Console.Write("\b" + currentLine.ToString().AsSpan(cursorPosition).ToString() + " ");
-                            Console.Write($"\rK3> {currentLine}");
-                            for (int i = 0; i < cursorPosition; i++)
-                                Console.Write(new string('\b', 1));
-                        }
-                        break;
-                        
-                    case ConsoleKey.Delete:
-                        if (cursorPosition < currentLine.Length)
-                        {
-                            currentLine.Remove(cursorPosition, 1);
-                            Console.Write(currentLine.ToString().AsSpan(cursorPosition).ToString() + " ");
-                            Console.Write($"\rK3> {currentLine}");
-                            for (int i = 0; i < cursorPosition; i++)
-                                Console.Write(new string('\b', 1));
-                        }
-                        break;
-                        
-                    case ConsoleKey.Home:
-                        while (cursorPosition > 0)
-                        {
-                            cursorPosition--;
-                            Console.Write("\b");
-                        }
-                        break;
-                        
-                    case ConsoleKey.End:
-                        while (cursorPosition < currentLine.Length)
-                        {
-                            Console.Write(currentLine[cursorPosition]);
-                            cursorPosition++;
-                        }
-                        break;
-                        
-                    case ConsoleKey.C when key.Modifiers == ConsoleModifiers.Control:
-                        // Clear line
-                        Console.Write(new string(' ', currentLine.Length));
-                        Console.Write("\rK3> ");
-                        currentLine.Clear();
-                        cursorPosition = 0;
-                        break;
-                        
-                    default:
-                        if (!char.IsControl(key.KeyChar))
-                        {
-                            currentLine.Insert(cursorPosition, key.KeyChar);
-                            Console.Write(currentLine.ToString().AsSpan(cursorPosition).ToString());
-                            cursorPosition++;
-                            
-                            // Move cursor back to correct position
-                            for (int i = cursorPosition; i < currentLine.Length; i++)
-                                Console.Write("\b");
-                        }
-                        break;
-                }
-            }
-        }
-
         static void ReplaceCurrentLine(string newText)
         {
-            Console.Write(new string(' ', currentLine.Length));
-            Console.Write($"\rK3> {newText}");
-            currentLine.Clear();
-            currentLine.Append(newText);
-            cursorPosition = currentLine.Length;
+            Console.Write(new string(' ', newText.Length));
+            Console.Write($"\r    {newText}");
         }
 
         public static K3Value ExecuteLine(string input, Evaluator evaluator)

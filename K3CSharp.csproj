@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -9,14 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="K3CSharp.SerializationResearch\**" />
     <Compile Remove="K3CSharp.Tests\**" />
     <Compile Remove="K3TestRunner\**" />
     <Compile Remove="K3CSharp.Comparison\**" />
     <Compile Remove="tools\**" />
+    <EmbeddedResource Remove="K3CSharp.SerializationResearch\**" />
     <EmbeddedResource Remove="K3CSharp.Tests\**" />
     <EmbeddedResource Remove="K3TestRunner\**" />
     <EmbeddedResource Remove="K3CSharp.Comparison\**" />
     <EmbeddedResource Remove="tools\**" />
+    <None Remove="K3CSharp.SerializationResearch\**" />
     <None Remove="K3CSharp.Tests\**" />
     <None Remove="K3TestRunner\**" />
     <None Remove="K3CSharp.Comparison\**" />
