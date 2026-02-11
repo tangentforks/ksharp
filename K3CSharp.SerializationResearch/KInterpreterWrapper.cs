@@ -50,8 +50,8 @@ namespace K3CSharp
                 
                 var processInfo = new ProcessStartInfo
                 {
-                    FileName = kExePath,
-                    Arguments = $"\"{tempScriptPath}\" > \"{outputPath}\"",
+                    FileName = "cmd.exe",
+                    Arguments = $"/c \"\"{kExePath}\" \"{tempScriptPath}\" > \"{outputPath}\"\"",
                     UseShellExecute = false,
                     RedirectStandardOutput = false,
                     RedirectStandardError = false,
@@ -86,14 +86,40 @@ namespace K3CSharp
             }
             finally
             {
-                // Clean up temporary files
-                if (tempScriptPath != null && File.Exists(tempScriptPath))
+                // Clean up temporary files with retry logic
+                CleanupTempFile(tempScriptPath);
+                CleanupTempFile(outputPath);
+            }
+        }
+
+        private void CleanupTempFile(string? filePath)
+        {
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+                return;
+
+            // Retry logic for file deletion (handles file locking issues)
+            for (int i = 0; i < 3; i++)
+            {
+                try
                 {
-                    File.Delete(tempScriptPath);
+                    File.Delete(filePath);
+                    break;
                 }
-                if (outputPath != null && File.Exists(outputPath))
+                catch (IOException)
                 {
-                    File.Delete(outputPath);
+                    // File might be locked, wait and retry
+                    if (i < 2)
+                    {
+                        System.Threading.Thread.Sleep(50);
+                    }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // File might be locked, wait and retry
+                    if (i < 2)
+                    {
+                        System.Threading.Thread.Sleep(50);
+                    }
                 }
             }
         }

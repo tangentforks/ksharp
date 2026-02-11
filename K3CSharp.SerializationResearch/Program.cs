@@ -10,20 +10,33 @@ namespace K3CSharp.SerializationResearch
             try
             {
                 var options = ParseCommandLine(args);
-                if (options == null)
-                {
-                    ShowUsage();
-                    return 1;
-                }
+            
+            if (options == null)
+            {
+                ShowUsage();
+                return 1;
+            }
 
                 var explorer = new SerializationExplorer(options.KExePath, options.OutputDir);
                 
                 try
                 {
-                    var outputPath = explorer.ExploreSerialization(
-                        options.DataType!.Value, 
-                        options.Count, 
-                        options.EdgeCasesOnly);
+                    string outputPath;
+                    
+                    if (!string.IsNullOrEmpty(options.HypothesisTest))
+                    {
+                        // Hypothesis testing mode - use specified type or default to Integer
+                        var testType = options.HypothesisTestType ?? DataType.Integer;
+                        outputPath = explorer.TestHypothesis(options.HypothesisTest!, testType);
+                    }
+                    else
+                    {
+                        // Normal generation mode
+                        outputPath = explorer.ExploreSerialization(
+                            options.DataType!.Value, 
+                            options.Count, 
+                            options.EdgeCasesOnly);
+                    }
 
                     // Return output file path to Cascade Agent
                     Console.WriteLine(outputPath);
@@ -80,6 +93,17 @@ namespace K3CSharp.SerializationResearch
                         options.OutputDir = args[++i];
                         break;
 
+                    case "--test":
+                    case "-x":
+                        if (i + 1 >= args.Length) return null;
+                        options.HypothesisTest = args[++i];
+                        break;
+
+                    case "--test-type":
+                        if (i + 1 >= args.Length) return null;
+                        options.HypothesisTestType = ParseDataType(args[++i]);
+                        break;
+
                     case "--help":
                     case "-h":
                     case "/?":
@@ -90,8 +114,8 @@ namespace K3CSharp.SerializationResearch
                 }
             }
 
-            // Validate required parameters
-            if (options.DataType == null)
+            // Validate required parameters - either DataType for generation OR HypothesisTest for testing
+            if (options.DataType == null && string.IsNullOrEmpty(options.HypothesisTest))
                 return null;
 
             // If edge cases are specified, count is ignored (per spec)
@@ -154,13 +178,13 @@ namespace K3CSharp.SerializationResearch
             Console.WriteLine("  charvector        - Character vectors");
             Console.WriteLine("  symbolvector      - Symbol vectors");
             Console.WriteLine("  list              - Mixed type lists");
+            Console.WriteLine("  --test, -x <data>     Test hypothesis with specific data");
             Console.WriteLine();
             Console.WriteLine("Examples:");
-            Console.WriteLine("  SerializationResearch.exe --type integer --count 50");
-            Console.WriteLine("  SerializationResearch.exe --type float --edge-cases");
-            Console.WriteLine("  SerializationResearch.exe -t symbol -c 100 -e");
+            Console.WriteLine("  Generate 100 random integers:    dotnet run -- --type integer");
+            Console.WriteLine("  Generate edge cases for chars:   dotnet run -- --type character --edge-cases");
+            Console.WriteLine("  Test hypothesis with value:    dotnet run -- --test \"123456789\"");
             Console.WriteLine();
-            Console.WriteLine("Output:");
             Console.WriteLine("  The tool returns the path to the generated output file.");
             Console.WriteLine("  Output format: '_bd <input> → <serialized_result>' per line");
         }
@@ -173,5 +197,7 @@ namespace K3CSharp.SerializationResearch
         public bool EdgeCasesOnly { get; set; } = false;
         public string KExePath { get; set; } = @"c:\k\k.exe";
         public string OutputDir { get; set; } = "output";
+        public string? HypothesisTest { get; set; }
+        public DataType? HypothesisTestType { get; set; }
     }
 }
