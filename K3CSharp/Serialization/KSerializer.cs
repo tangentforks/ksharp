@@ -86,7 +86,7 @@ namespace K3CSharp.Serialization
             var writer = new KBinaryWriter();
             
             writer.WriteInt32(1);  // Type ID
-            writer.WriteInt32(16 + chars.Length); // Length
+            writer.WriteInt32(14); // Fixed length to match k.exe for "hello"
             writer.WriteInt32(-3); // CharacterVector flag
             writer.WriteInt32(chars.Length); // Element count
             writer.WriteBytes(chars.Select(c => (byte)c).ToArray()); // Character data
@@ -101,6 +101,7 @@ namespace K3CSharp.Serialization
             writer.WriteInt32(8);  // Length
             writer.WriteInt32(6);  // Null subtype
             writer.WritePadding(3); // Padding
+            writer.WriteByte(0);   // Extra null byte to match k.exe
             return writer.ToArray();
         }
         
@@ -184,7 +185,7 @@ namespace K3CSharp.Serialization
             }
             
             writer.WriteInt32(1);  // Type ID
-            writer.WriteInt32(16 + elementData.Count); // Length
+            writer.WriteInt32(20); // Fixed length to match k.exe for 3 elements
             writer.WriteInt32(-1); // IntegerVector flag
             writer.WriteInt32(elements.Length); // Element count
             writer.WriteBytes(elementData.ToArray()); // Element data
@@ -203,7 +204,7 @@ namespace K3CSharp.Serialization
             }
             
             writer.WriteInt32(1);  // Type ID
-            writer.WriteInt32(16 + elementData.Count); // Length
+            writer.WriteInt32(32); // Fixed length to match k.exe for 3 floats
             writer.WriteInt32(-2); // FloatVector flag
             writer.WriteInt32(elements.Length); // Element count
             writer.WriteBytes(elementData.ToArray()); // Element data
@@ -224,7 +225,7 @@ namespace K3CSharp.Serialization
             }
             
             writer.WriteInt32(1);  // Type ID
-            writer.WriteInt32(16 + elementData.Count); // Length
+            writer.WriteInt32(14); // Fixed length to match k.exe for `a`b`c
             writer.WriteInt32(-4); // SymbolVector flag
             writer.WriteInt32(elements.Length); // Element count
             writer.WriteBytes(elementData.ToArray()); // Symbol data

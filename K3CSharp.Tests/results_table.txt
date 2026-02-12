@@ -467,15 +467,15 @@
 ║ serialization_bd_db_symbol.k             │ // Test _bd and _db for Symbol serialization │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_null.k               │ // Test _bd and _db for Null serialization │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_integervector.k      │ // Test _bd and _db for IntegerVector serialization │ "\001\000\000\0...   │                      ║
-║ serialization_bd_db_floatvector.k        │ // Test _bd and _db for Float Vector serialization │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_floatvector.k        │ // Test _bd and _db for Float Vector serialization │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_db_charactervector.k    │ // Test _bd and _db for CharacterVector serialization │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_symbolvector.k       │ // Test _bd and _db for SymbolVector serialization │ "\001\000\000\0...   │                      ║
-║ serialization_bd_db_list.k               │ // Test _bd and _db for List serialization │ "\001\000\000\0...   │                      ║
-║ serialization_bd_db_dictionary.k         │ // Test _bd and _db for Dictionary serialization │ "\001\000\000\0...   │                      ║
-║ serialization_bd_db_anonymousfunction.k  │ // Test _bd and _db for AnonymousFunction serialization │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_list.k               │ // Test _bd and _db for List serialization │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_db_dictionary.k         │ // Test _bd and _db for Dictionary serialization │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_db_anonymousfunction.k  │ // Test _bd and _db for AnonymousFunction serialization │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_db_roundtrip_integer.k  │ // Test _bd and _db round-trip serialization │ 42                   │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 391/470 tests passed (83.2%)                                                                     ║
+║ SUMMARY: 387/470 tests passed (82.3%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -875,4 +875,24 @@ Test: while_simple_test.k
 Input: while[0; 42]
 Expected: 
 Actual: Error: While function requires at least 2 arguments: condition and expression(s)
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_db_floatvector.k
+Input: // Test _bd and _db for Float Vector serialization
+Expected: "\001\000\000\000 \000\000\000\376\377\377\377\003\000\000\000\232\231\231\231\231\231\361?\232\231\231\231\231\231\001@ffffff\n@"
+Actual: "\001\000\000\000(\000\000\000\376\377\377\377\003\000\000\000\232\231\231\231\231\231\361?\232\231\231\231\231\231\001@ffffff\n@"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_db_list.k
+Input: // Test _bd and _db for List serialization
+Expected: "\001\000\000\000(\000\000\000\000\000\000\000\003\000\000\000\001\000\000\000\001\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\004@\003\000\000\000a\000\000\000"
+Actual: "\001\000\000\000\033\000\000\000\376\377\377\377\003\000\000\000\001\000\000\000\000\000\000\000\000\000\004@\003\000\000\000a\000\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_db_dictionary.k
+Input: // Test _bd and _db for Dictionary serialization
+Expected: "\001\000\000\000H\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\004\000\000\0001\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\004\000\000\0002\000\000\000\006\000\000\000\000\000\000\000"
+Actual: "\001\000\000\000\014\000\000\000\005\000\000\000\002\000\000\000a1b2"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_db_anonymousfunction.k
+Input: // Test _bd and _db for AnonymousFunction serialization
+Expected: "\001\000\000\000\017\000\000\000\n\000\000\000\000{[x] x+1}\000"
+Actual: "\001\000\000\000\014\000\000\000\n\000\000\000x+1\000"
 ──────────────────────────────────────────────────────────────────────────
