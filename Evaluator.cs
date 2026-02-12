@@ -372,6 +372,7 @@ namespace K3CSharp
                         "*" => Times(left, right),
                         "%" => Divide(left, right),
                         "^" => Power(left, right),
+                        "POWER" => Power(left, right),
                         "!" => ModRotate(left, right),
                         "&" => Min(left, right),
                         "|" => Max(left, right),

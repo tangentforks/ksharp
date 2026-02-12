@@ -122,7 +122,7 @@
 ║ parentheses_nested5.k                    │ ((1 * 2) + (3 * (4 + 5))) │ 29                   │                      ║
 ║ parentheses_precedence.k                 │ 1 + (2 * 3)          │ 7                    │                      ║
 ║ parenthesized_vector.k                   │ (1;2;3;4)            │ 1 2 3 4              │                      ║
-║ power_operator.k                         │ 2 ^ 3                │ Error: Unknown ...   │ 8                    ║
+║ power_operator.k                         │ 2 ^ 3                │ 8                    │                      ║
 ║ precedence_chain1.k                      │ 10 + 20 * 30 + 40    │ 1410                 │                      ║
 ║ precedence_chain2.k                      │ 100 % 10 + 20 * 30 + 40 │ 0.07092199           │                      ║
 ║ precedence_complex1.k                    │ 10 % 2 + 3 * 4       │ 0.7142857            │                      ║
@@ -130,8 +130,8 @@
 ║ precedence_mixed1.k                      │ 5 - 2 + 3            │ 0                    │                      ║
 ║ precedence_mixed2.k                      │ 5 * 2 + 3            │ 25                   │                      ║
 ║ precedence_mixed3.k                      │ 5 + 2 * 3            │ 11                   │                      ║
-║ precedence_power1.k                      │ 2 ^ 3 + 4            │ Error: Unknown ...   │ 128                  ║
-║ precedence_power2.k                      │ 2 + 3 ^ 4            │ Error: Unknown ...   │ 83                   ║
+║ precedence_power1.k                      │ 2 ^ 3 + 4            │ 128                  │                      ║
+║ precedence_power2.k                      │ 2 + 3 ^ 4            │ 83                   │                      ║
 ║ precedence_spec1.k                       │ 81 % 1 + 2 * 3       │ 11.57143             │                      ║
 ║ precedence_spec2.k                       │ 120 % 4 * 2 + 3      │ 6                    │                      ║
 ║ reciprocal_operator.k                    │ %4                   │ 0.25                 │                      ║
@@ -475,7 +475,7 @@
 ║ serialization_bd_db_anonymousfunction.k  │ // Test _bd and _db for AnonymousFunction serialization │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_roundtrip_integer.k  │ // Test _bd and _db round-trip serialization │ 704643072            │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 388/470 tests passed (82.6%)                                                                     ║
+║ SUMMARY: 391/470 tests passed (83.2%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -529,21 +529,6 @@ Test: function_mul.k
 Input: mul:{[op1;op2] op1 * op2}
 Expected: 32
 Actual: {[op1;op2] op1*op2}
-──────────────────────────────────────────────────────────────────────────
-Test: power_operator.k
-Input: 2 ^ 3
-Expected: 8
-Actual: Error: Unknown binary operator: POWER
-──────────────────────────────────────────────────────────────────────────
-Test: precedence_power1.k
-Input: 2 ^ 3 + 4
-Expected: 128
-Actual: Error: Unknown binary operator: POWER
-──────────────────────────────────────────────────────────────────────────
-Test: precedence_power2.k
-Input: 2 + 3 ^ 4
-Expected: 83
-Actual: Error: Unknown binary operator: POWER
 ──────────────────────────────────────────────────────────────────────────
 Test: shape_operator_empty_vector.k
 Input: ^ ()
