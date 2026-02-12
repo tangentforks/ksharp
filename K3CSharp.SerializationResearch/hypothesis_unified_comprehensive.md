@@ -40,7 +40,7 @@ From analyzing **11 data types** with **500+ examples**, I've identified a compr
 
 | Type | Vector Flag | Element Size | Terminator | Examples |
 |-------|-------------|--------------|------------|-----------|
-| IntegerVector | -1 | 4 bytes each | None | `1 2 3` → `\001\000\000\000\020\000\000\000\377\377\377\377\003\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000` |
+| IntegerVector | -1 | 4 bytes each | None | `1 2 3` → `\001\000\000\000\024\000\000\000\377\377\377\377\003\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000` |
 | FloatVector | -2 | 8 bytes each | None | `1.0 2.5 3.14` → `\001\000\000\000(\000\000\000\376\377\377\377\003\000\000\000[IEEE754 data]` |
 | CharacterVector | -3 | 1 byte each | `\000` | `"abc"` → `\001\000\000\000\016\000\000\000\375\377\377\377\003\000\000\000abc\000` |
 | SymbolVector | -4 | variable + null | `\000` per symbol | ``a`b`c`` → `\001\000\000\000\020\000\000\000\374\377\377\377\003\000\000\000a\000b\000c\000` |
@@ -92,7 +92,7 @@ K_Serialization(type, data) =
 
 ### **Length Calculations**
 - **Simple Types**: `8 + data_size` (fixed header + data + padding)
-- **Vector Types**: `16 + (element_size × element_count) + (terminator ? 1 : 0)`
+- **Vector Types**: `8 + (element_size × element_count)` (header + flag + count + data)
 - **Complex Types**: `12 + recursive_serialization_size(elements/pairs)`
 
 ---
@@ -126,7 +126,7 @@ K_Serialization(type, data) =
 | `"a"` | `\001\000\000\000\b\000\000\000\003\000\000\000a\000\000\000` | 8 | Character type 3 |
 | ``symbol`` | `\001\000\000\000\013\000\000\000\004\000\000\000symbol\000` | 13 | Symbol type 4 |
 | `_n` | `\001\000\000\000\b\000\000\000\006\000\000\000\000\000\000` | 8 | Null type 6 |
-| `1 2 3` | `\001\000\000\000\020\000\000\000\377\377\377\377\003\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000` | 20 | IntegerVector type -1 |
+| `1 2 3` | `\001\000\000\000\024\000\000\000\377\377\377\377\003\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000` | 20 | IntegerVector type -1 |
 | `(1;2;3)` | `\001\000\000\000\034\000\000\000\376\377\377\377\003\000\000\000[recursive data]` | 34 | List type 0 |
 | ``a`b`c`` | `\001\000\000\000\020\000\000\000\374\377\377\377\003\000\000\000a\000b\000c\000` | 20 | SymbolVector type -4 |
 | `{[x] x+1}` | `\001\000\000\000\021\000\000\000\n\000\000\000\000{[x] x+1}\000` | 21 | AnonymousFunction type 7 |

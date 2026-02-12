@@ -177,18 +177,16 @@ namespace K3CSharp.Serialization
         private byte[] SerializeIntegerVector(int[] elements)
         {
             var writer = new KBinaryWriter();
-            var elementData = new List<byte>();
+            
+            writer.WriteInt32(1);  // Type ID
+            writer.WriteInt32(8 + elements.Length * 4);  // Length = 8 + (elements × 4)
+            writer.WriteInt32(-1);  // IntegerVector flag
+            writer.WriteInt32(elements.Length); // Element count
             
             foreach (var element in elements)
             {
-                elementData.AddRange(BitConverter.GetBytes(element));
+                writer.WriteInt32(element);
             }
-            
-            writer.WriteInt32(1);  // Type ID
-            writer.WriteInt32(20); // Fixed length to match k.exe for 3 elements
-            writer.WriteInt32(-1); // IntegerVector flag
-            writer.WriteInt32(elements.Length); // Element count
-            writer.WriteBytes(elementData.ToArray()); // Element data
             
             return writer.ToArray();
         }
