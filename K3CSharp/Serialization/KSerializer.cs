@@ -32,9 +32,8 @@ namespace K3CSharp.Serialization
         {
             var writer = new KBinaryWriter();
             writer.WriteInt32(1);  // Type ID
-            writer.WriteInt32(8);   // Length
+            writer.WriteInt32(8);   // Length (subtype + value = 8 bytes)
             writer.WriteInt32(1);   // Subtype
-            writer.WritePadding(3);   // Padding
             writer.WriteInt32(value); // Value (little-endian)
             return writer.ToArray();
         }
@@ -43,9 +42,10 @@ namespace K3CSharp.Serialization
         {
             var writer = new KBinaryWriter();
             writer.WriteInt32(1);  // Type ID
-            writer.WriteInt32(16); // Length
+            writer.WriteInt32(16); // Length (matches k.exe)
             writer.WriteInt32(2);  // Subtype
-            writer.WritePadding(4); // Padding
+            writer.WriteByte(1);   // Padding byte value 1
+            writer.WritePadding(3); // Additional padding
             writer.WriteDouble(value); // IEEE 754 little-endian
             return writer.ToArray();
         }
@@ -54,8 +54,8 @@ namespace K3CSharp.Serialization
         {
             var writer = new KBinaryWriter();
             writer.WriteInt32(1);  // Type ID
-            writer.WriteInt32(8);  // Length
-            writer.WriteInt32(3);  // Character flag
+            writer.WriteInt32(8);  // Length (matches k.exe)
+            writer.WriteInt32(3);  // Character flag (3, not -1)
             writer.WriteByte((byte)value); // Character value
             writer.WritePadding(3); // Padding
             return writer.ToArray();
@@ -76,6 +76,12 @@ namespace K3CSharp.Serialization
         
         private byte[] SerializeCharacterVector(string str)
         {
+            // For single character, use character format instead of vector format
+            if (str.Length == 1)
+            {
+                return SerializeCharacter(str[0]);
+            }
+            
             var chars = str.ToCharArray();
             var writer = new KBinaryWriter();
             
@@ -256,11 +262,11 @@ namespace K3CSharp.Serialization
         
         private byte[] SerializeCompactCharacter(string charValue)
         {
-            // Compact character format: flag(4) + char(1) + padding(3)
+            // Compact character format used in vectors: flag(4) + char(1) + padding(3)
             var bytes = new byte[7];
-            BitConverter.GetBytes(3).CopyTo(bytes, 0); // Character flag
+            BitConverter.GetBytes(3).CopyTo(bytes, 0); // Character flag (3)
             bytes[4] = (byte)charValue[0]; // Character value
-            // bytes[5], bytes[6], bytes[7] remain 0 (padding)
+            // bytes[5], bytes[6] remain 0 (padding)
             return bytes;
         }
     }

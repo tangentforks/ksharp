@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-02-11 23:32:04
+Generated: 2026-02-12 00:46:17
 
 SUMMARY:
 --------
 Total Tests:     451
-✅ Matched:       346
-❌ Differed:      71
+✅ Matched:       350
+❌ Differed:      67
 ⚠️  Skipped:       0
 💥 Errors:        34
-Success Rate:    76.7%
+Success Rate:    77.6%
 
 DETAILED RESULTS:
 -----------------
@@ -229,7 +229,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   list_di_multiple.k                                 3 4                            3 4                                                                              
 ✅ PASS   list_dv_basic.k                                    3 5                            3 5                                                                              
 ✅ PASS   list_dv_nomatch.k                                  3 4 4 5                        3 4 4 5                                                                          
-❌ FAIL   list_getenv.k                                      "C:\Users\euseb\bin;C:\Pr...   "C:\\Users\\euseb\\bin;C:...                                                     
+❌ FAIL   list_getenv.k                                      "C:\Program Files\Microso...   "C:\\Program Files\\Micro...                                                     
 ❌ FAIL   list_setenv.k                                      `TESTVAR                                                                                                        
 ✅ PASS   list_size_existing.k                               1061.0                         1061.0                                                                           
 ✅ PASS   list_size.k                                        2933.0                         2933.0                                                                           
@@ -335,16 +335,16 @@ Status   Test File                                          K3Sharp Output      
  3 4
  -20.45)               K3Sharp error, k.exe succeeded                    
 ❌ FAIL   serialization_bd_db_anonymousfunction.k            "\001\000\000\000\014\000...   "\001\000\000\000\017\000...                                                     
-❌ FAIL   serialization_bd_db_character.k                    "\001\000\000\000\021\000...   "\001\000\000\000\b\000\0...                                                     
+✅ PASS   serialization_bd_db_character.k                    "\001\000\000\000\b\000\0...   "\001\000\000\000\b\000\0...                                                     
 ❌ FAIL   serialization_bd_db_charactervector.k              "\001\000\000\000\025\000...   "\001\000\000\000\016\000...                                                     
 ❌ FAIL   serialization_bd_db_dictionary.k                   "\001\000\000\000\014\000...   "\001\000\000\000H\000\00...                                                     
-❌ FAIL   serialization_bd_db_float.k                        "\001\000\000\000\020\000...   "\001\000\000\000\020\000...                                                     
+✅ PASS   serialization_bd_db_float.k                        "\001\000\000\000\020\000...   "\001\000\000\000\020\000...                                                     
 ❌ FAIL   serialization_bd_db_floatvector.k                  "\001\000\000\000(\000\00...   "\001\000\000\000 \000\00...                                                     
-❌ FAIL   serialization_bd_db_integer.k                      "\001\000\000\000\b\000\0...   "\001\000\000\000\b\000\0...                                                     
+✅ PASS   serialization_bd_db_integer.k                      "\001\000\000\000\b\000\0...   "\001\000\000\000\b\000\0...                                                     
 ❌ FAIL   serialization_bd_db_integervector.k                "\001\000\000\000\034\000...   "\001\000\000\000\024\000...                                                     
 ❌ FAIL   serialization_bd_db_list.k                         "\001\000\000\000\033\000...   "\001\000\000\000(\000\00...                                                     
 ❌ FAIL   serialization_bd_db_null.k                         "\001\000\000\000\b\000\0...   "\001\000\000\000\b\000\0...                                                     
-❌ FAIL   serialization_bd_db_roundtrip_integer.k            704643072                      42                                                                               
+✅ PASS   serialization_bd_db_roundtrip_integer.k            42                             42                                                                               
 ✅ PASS   serialization_bd_db_symbol.k                       "\001\000\000\000\013\000...   "\001\000\000\000\013\000...                                                     
 ❌ FAIL   serialization_bd_db_symbolvector.k                 "\001\000\000\000\026\000...   "\001\000\000\000\016\000...                                                     
 ❌ FAIL   shape_operator_empty_vector.k                      !0                             ,0                                                                               
@@ -532,7 +532,7 @@ File: amend_test.k
 K3Sharp: `.
 k.exe:   (1 2 13 4 5;6 7 8 9 10)
 
-... and 61 more failed tests
+... and 57 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------

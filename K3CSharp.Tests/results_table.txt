@@ -473,7 +473,7 @@
 ║ serialization_bd_db_list.k               │ // Test _bd and _db for List serialization │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_dictionary.k         │ // Test _bd and _db for Dictionary serialization │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_anonymousfunction.k  │ // Test _bd and _db for AnonymousFunction serialization │ "\001\000\000\0...   │                      ║
-║ serialization_bd_db_roundtrip_integer.k  │ // Test _bd and _db round-trip serialization │ 704643072            │                      ║
+║ serialization_bd_db_roundtrip_integer.k  │ // Test _bd and _db round-trip serialization │ 42                   │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║ SUMMARY: 391/470 tests passed (83.2%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝

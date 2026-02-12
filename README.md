@@ -589,6 +589,21 @@ Q4 2026: Complete .NET Integration + Performance Optimization
 
 ---
 
+## 📚 **Reference Documentation**
+
+For comprehensive K language reference and learning materials:
+
+- **[K User Manual](https://nsl.com/k/training/kusrlite.pdf)** - Complete K language guide with tutorials and examples
+- **[K Reference Manual](https://nsl.com/k/training/kreflite.pdf)** - Detailed reference for all K functions, operators, and concepts
+
+These official K documentation resources provide in-depth coverage of:
+- Language syntax and semantics
+- Complete function and operator reference  
+- Programming examples and best practices
+- Advanced features and optimization techniques
+
+---
+
 ## 🤝 **Contributing**
 
 1. Fork the repository

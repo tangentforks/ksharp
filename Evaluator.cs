@@ -2381,7 +2381,7 @@ namespace K3CSharp
                 // Convert bytes to character vector with proper escape sequences
                 var charString = ConvertBytesToCharacterString(bytes);
                 
-                // Convert the character string to a VectorValue of individual CharacterValue elements
+                // Convert to a VectorValue of individual CharacterValue elements
                 var charElements = new List<K3Value>();
                 for (int i = 1; i < charString.Length - 1; i++) // Skip opening and closing quotes
                 {
@@ -2666,7 +2666,9 @@ namespace K3CSharp
             }
             else
             {
-                throw new NotSupportedException($"Vector type not supported for serialization: {firstElement.GetType()}");
+                // Mixed vector - return as KList for serialization
+                var elements = vector.Elements.Select(ConvertToPrimitive).ToList();
+                return new KList { Elements = elements };
             }
         }
     }
