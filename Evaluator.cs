@@ -444,8 +444,29 @@ namespace K3CSharp
             {
                 elements.Add(Evaluate(child));
             }
-            // Use "mixed" creation method for empty vectors created from parentheses
-            return new VectorValue(elements, elements.Count == 0 ? "mixed" : "standard");
+            
+            // Check if this should be a List (mixed types) or Vector (homogeneous)
+            if (elements.Count == 0)
+            {
+                // Empty parentheses should create an empty List
+                return new KList { Elements = new List<object>() };
+            }
+            
+            // Check if all elements are the same type
+            var firstType = elements[0].GetType();
+            var isHomogeneous = elements.All(e => e.GetType() == firstType);
+            
+            if (isHomogeneous)
+            {
+                // Create homogeneous VectorValue
+                return new VectorValue(elements, "standard");
+            }
+            else
+            {
+                // Create mixed-type KList
+                var listElements = elements.Cast<object>().ToList(); // Convert K3Value to object
+                return new KList { Elements = listElements };
+            }
         }
         private K3Value EvaluateFunction(ASTNode node)
         {
@@ -2567,8 +2588,39 @@ namespace K3CSharp
                 SymbolValue sv => "`" + sv.Value,
                 NullValue => null,
                 VectorValue vv => ConvertVectorToPrimitive(vv),
+                KList lv => ConvertListToPrimitive(lv),
+                DictionaryValue dv => ConvertDictionaryToPrimitive(dv),
+                FunctionValue fv => ConvertFunctionToPrimitive(fv),
                 _ => throw new NotSupportedException($"Cannot convert {value.GetType()} to primitive type")
             };
+        }
+        
+        private object ConvertListToPrimitive(KList list)
+        {
+            // Return the KList object directly - KSerializer will handle serialization
+            return list;
+        }
+        
+        private object ConvertDictionaryToPrimitive(DictionaryValue dict)
+        {
+            // Convert DictionaryValue to KDictionary for serialization
+            var kdict = new KDictionary();
+            foreach (var entry in dict.Entries)
+            {
+                var key = ConvertToPrimitive(entry.Key);
+                var value = ConvertToPrimitive(entry.Value.Value);
+                kdict.Pairs.Add(new KeyValuePair<object, object>(key, value));
+            }
+            return kdict;
+        }
+        
+        private object ConvertFunctionToPrimitive(FunctionValue func)
+        {
+            // Convert FunctionValue to KFunction for serialization
+            var kfunc = new KFunction();
+            kfunc.Source = func.BodyText;
+            kfunc.HasParseErrors = false;
+            return kfunc;
         }
         
         private object ConvertVectorToPrimitive(VectorValue vector)

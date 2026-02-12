@@ -42,16 +42,16 @@
 ║ complex_function.k                       │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2} │ {[d0;v;a;t] d1 ...   │ 205                  ║
 ║ count_operator.k                         │ # (1 2 3)            │ 3                    │                      ║
 ║ cut_vector.k                             │ (0 2 4) _ (0 1 2 3 4 5 6 7) │ (0 1;2 3;4 5 6 7)    │                      ║
-║ dictionary_empty.k                       │ .()                  │ .()                  │                      ║
-║ dictionary_index.k                       │ (.((`a;1);(`b;2))) @ `a │ 1                    │                      ║
-║ dictionary_index_attr.k                  │ (.((`a;1);(`b;2;.((`c;3);(`d;4))))) @ `b. │ Error: Undefine...   │ .((`c;3;);(`d;4;))   ║
-║ dictionary_index_value.k                 │ (.((`a;1);(`b;2))) @ `a │ 1                    │                      ║
-║ dictionary_index_value2.k                │ (.((`a;1);(`b;2))) @ `b │ 2                    │                      ║
-║ dictionary_multiple.k                    │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
-║ dictionary_null_attributes.k             │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
+║ dictionary_empty.k                       │ .()                  │ Error: Make ope...   │ .()                  ║
+║ dictionary_index.k                       │ (.((`a;1);(`b;2))) @ `a │ Error: Dictiona...   │ 1                    ║
+║ dictionary_index_attr.k                  │ (.((`a;1);(`b;2;.((`c;3);(`d;4))))) @ `b. │ Error: Dictiona...   │ .((`c;3;);(`d;4;))   ║
+║ dictionary_index_value.k                 │ (.((`a;1);(`b;2))) @ `a │ Error: Dictiona...   │ 1                    ║
+║ dictionary_index_value2.k                │ (.((`a;1);(`b;2))) @ `b │ Error: Dictiona...   │ 2                    ║
+║ dictionary_multiple.k                    │ .((`a;1);(`b;2))     │ Error: Dictiona...   │ .((`a;1;);(`b;2;))   ║
+║ dictionary_null_attributes.k             │ .((`a;1);(`b;2))     │ Error: Dictiona...   │ .((`a;1;);(`b;2;))   ║
 ║ dictionary_single.k                      │ .,(`a;`b)            │ .,(`a;`b;)           │                      ║
-║ dictionary_type.k                        │ 4:.((`a;1);(`b;2))   │ 5                    │                      ║
-║ dictionary_with_null_value.k             │ .((`a;1);(`b;_n);(`c;3)) │ .((`a;1;);(`b;;...   │                      ║
+║ dictionary_type.k                        │ 4:.((`a;1);(`b;2))   │ Error: Dictiona...   │ 5                    ║
+║ dictionary_with_null_value.k             │ .((`a;1);(`b;_n);(`c;3)) │ Error: Dictiona...   │ .((`a;1;);(`b;;...   ║
 ║ drop_negative.k                          │ -4 _ 0 1 2 3 4 5 6 7 │ 0 1 2 3              │                      ║
 ║ drop_positive.k                          │ 4 _ 0 1 2 3 4 5 6 7  │ 4 5 6 7              │                      ║
 ║ empty_mixed_vector.k                     │ ()                   │ ()                   │                      ║
@@ -139,7 +139,7 @@
 ║ scalar_vector_addition.k                 │ 1 2 + 3              │ 4 5                  │                      ║
 ║ scalar_vector_multiplication.k           │ 1 2 * 3              │ 3 6                  │                      ║
 ║ shape_operator.k                         │ ^ (1 2 3)            │ ,3                   │                      ║
-║ shape_operator_empty_vector.k            │ ^ ()                 │ ,0                   │                      ║
+║ shape_operator_empty_vector.k            │ ^ ()                 │ !0                   │ ,0                   ║
 ║ shape_operator_jagged.k                  │ ^ ((1 2 3); (4 5); (6 7 8 9))  // Test shape operator on non-rectangular matrix (jagged array) - Current implementation returns number of rows │ ,3                   │                      ║
 ║ shape_operator_jagged_3d.k               │ ^ (((1 2); (3 4 5)); ((6 7); (8 9 10))) │ 2 2                  │                      ║
 ║ shape_operator_jagged_matrix.k           │ ^ ((1 2 3); (4 5); (6 7 8 9)) │ ,3                   │                      ║
@@ -178,7 +178,7 @@
 ║ square_bracket_vector_multiple.k         │ v:10 11 12 13 14 15 16 │ 14 16                │                      ║
 ║ square_bracket_vector_single.k           │ v:10 11 12 13 14 15 16 │ 14                   │                      ║
 ║ string_representation_int.k              │ 5:42                 │ "42"                 │                      ║
-║ string_representation_mixed.k            │ 5:(1;2.5;"a")        │ "(1;2.5;\"a\")"      │                      ║
+║ string_representation_mixed.k            │ 5:(1;2.5;"a")        │ "(1;2.5;"a")"        │ "(1;2.5;\"a\")"      ║
 ║ string_representation_symbol.k           │ 5:`symbol            │ "`symbol"            │                      ║
 ║ string_representation_vector.k           │ 5:(1 2 3)            │ "1 2 3"              │                      ║
 ║ symbol_quoted.k                          │ `"a symbol"          │ `"a symbol"          │                      ║
@@ -205,9 +205,9 @@
 ║ multiline_function_single.k              │ test: {[x] a:x*2; a+10} │ {[x] a : x*2 ; ...   │ 20                   ║
 ║ null_vector.k                            │ (;1;2)               │ (;1;2)               │                      ║
 ║ scoping_single.k                         │ globalVar: 100       │ {[x] globalVar ...   │ 60                   ║
-║ semicolon_simple.k                       │ (3 + 4; 5 + 6; -20.45) │ (7;14;-17.45)        │ (7;11;-20.45)        ║
+║ semicolon_simple.k                       │ (3 + 4; 5 + 6; -20.45) │ Error: Cannot a...   │ (7;11;-20.45)        ║
 ║ semicolon_vars.k                         │ a: 10                │ 30 210 0             │ 30 200 -10           ║
-║ semicolon_vector.k                       │ a: 1 2               │ (7;6 7;-17.45)       │ (7;3 4;-20.45)       ║
+║ semicolon_vector.k                       │ a: 1 2               │ Error: Cannot a...   │ (7;3 4;-20.45)       ║
 ║ simple_scalar_div.k                      │ 5 % 2                │ 2.5                  │                      ║
 ║ single_no_semicolon.k                    │ (42)                 │ 42                   │                      ║
 ║ smart_division1.k                        │ 5 10 % 2             │ 2.5 5.0              │                      ║
@@ -255,9 +255,9 @@
 ║ variable_usage.k                         │ x:10                 │ 30                   │                      ║
 ║ dot_execute.k                            │ ."2+2"               │ 4                    │                      ║
 ║ dot_execute_context.k                    │ foo:7                │ 8                    │                      ║
-║ dictionary_enumerate.k                   │ d: .((`a;1);(`b;2))  │ `a`b                 │                      ║
+║ dictionary_enumerate.k                   │ d: .((`a;1);(`b;2))  │ Error: Dictiona...   │ `a`b                 ║
 ║ null_operations.k                        │ _n@7                 │ 7                    │                      ║
-║ dictionary_dot_apply.k                   │ d: .((`a;1;.());(`b;2;.())) │ 1                    │                      ║
+║ dictionary_dot_apply.k                   │ d: .((`a;1;.());(`b;2;.())) │ Error: Make ope...   │ 1                    ║
 ║ monadic_format_basic.k                   │ $1                   │ ,"1"                 │                      ║
 ║ monadic_format_types.k                   │ $42.5                │ "42.5"               │                      ║
 ║ monadic_format_vector.k                  │ $1 2 3               │ (,"1";,"2";,"3")     │                      ║
@@ -265,7 +265,7 @@
 ║ monadic_format_string_a.k                │ $"a"                 │ ""a""                │ ,"a"                 ║
 ║ monadic_format_symbol_hello.k            │ $`hello              │ "hello"              │                      ║
 ║ monadic_format_symbol_simple.k           │ $`test               │ "test"               │                      ║
-║ monadic_format_dictionary.k              │ $.((`a;1);(`b;2);(`c;3)) │ ".((`a;1;);(`b;...   │                      ║
+║ monadic_format_dictionary.k              │ $.((`a;1);(`b;2);(`c;3)) │ Error: Dictiona...   │ ".((`a;1;);(`b;...   ║
 ║ monadic_format_nested_list.k             │ $((1;2;3);(4;5;6))   │ ((,"1";,"2";,"3...   │                      ║
 ║ monadic_format_integer.k                 │ $42                  │ "42"                 │                      ║
 ║ monadic_format_float.k                   │ $3.14                │ "3.14"               │                      ║
@@ -288,26 +288,26 @@
 ║ form_character_charvector.k              │ " "$"aaa"            │ ""aaa""              │ "aaa"                ║
 ║ dot_execute_variables.k                  │ a:1.5                │ 0.6                  │                      ║
 ║ form_braces_expressions.k                │ a:5                  │ 8 15 2               │                      ║
-║ form_braces_nested_expr.k                │ x:10                 │ (12 30;(7;6.666...   │ (12 20;(7;3.333...   ║
+║ form_braces_nested_expr.k                │ x:10                 │ Error: Error ev...   │ (12 20;(7;3.333...   ║
 ║ form_braces_complex.k                    │ a:1.5                │ 8.25 12.0 9.0        │                      ║
 ║ form_braces_string.k                     │ name:"John"          │ ("John";"is";25...   │                      ║
 ║ form_braces_mixed_type.k                 │ num:42               │ (42;"hello";`te...   │                      ║
 ║ form_braces_simple.k                     │ a:5                  │ 8                    │                      ║
 ║ form_braces_arith.k                      │ a:5                  │ 8 15 2 12 20 5       │                      ║
-║ form_braces_nested_arith.k               │ a:5                  │ (7 15;(2;2.5);5 1)   │ (7 10;(2;2.5);5...   ║
+║ form_braces_nested_arith.k               │ a:5                  │ Error: Error ev...   │ (7 10;(2;2.5);5...   ║
 ║ form_braces_float.k                      │ a:1.5                │ 4.0 3.75 0.6 -1.0    │                      ║
 ║ form_braces_mixed_arith.k                │ x:10                 │ 17.5 32.5 4.5        │                      ║
 ║ form_braces_example.k                    │ a:5                  │ 8 9                  │                      ║
 ║ form_braces_function_calls.k             │ sum:{[a;b] a+b}      │ 5 20 12              │                      ║
 ║ form_braces_nested_function_calls.k      │ sum:{[a;b] a+b}      │ 5 8 25               │                      ║
 ║ log.k                                    │ _log 10              │ 2.302585             │                      ║
-║ time_t.k                                 │ r:_t                 │ .((`type;1;);(`...   │                      ║
-║ rand_draw_select.k                       │ r:10 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;-1;);(...   │                      ║
-║ rand_draw_deal.k                         │ r:4 _draw -4; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;-1;);(...   │                      ║
-║ rand_draw_probability.k                  │ r:10 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;-2;);(...   │                      ║
-║ rand_draw_vector_select.k                │ r:2 3 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
-║ rand_draw_vector_deal.k                  │ r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;0;);(`...   │                      ║
-║ rand_draw_vector_probability.k           │ r:2 3 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
+║ time_t.k                                 │ r:_t                 │ Error: Dictiona...   │ .((`type;1;);(`...   ║
+║ rand_draw_select.k                       │ r:10 _draw 4; .((`type;4:r);(`shape;^r)) │ Error: Dictiona...   │ .((`type;-1;);(...   ║
+║ rand_draw_deal.k                         │ r:4 _draw -4; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ Error: Dictiona...   │ .((`type;-1;);(...   ║
+║ rand_draw_probability.k                  │ r:10 _draw 0; .((`type;4:r);(`shape;^r)) │ Error: Dictiona...   │ .((`type;-2;);(...   ║
+║ rand_draw_vector_select.k                │ r:2 3 _draw 4; .((`type;4:r);(`shape;^r)) │ Error: Dictiona...   │ .((`type;0;);(`...   ║
+║ rand_draw_vector_deal.k                  │ r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ Error: Dictiona...   │ .((`type;0;);(`...   ║
+║ rand_draw_vector_probability.k           │ r:2 3 _draw 0; .((`type;4:r);(`shape;^r)) │ Error: Dictiona...   │ .((`type;0;);(`...   ║
 ║ draw.k                                   │ _draw                │ Error: _draw re...   │ Error - _draw (...   ║
 ║ time_gtime.k                             │ _gtime 0             │ 20350101 0           │                      ║
 ║ time_lt.k                                │ _lt 0                │ Error: Undefine...   │ -18000               ║
@@ -341,9 +341,9 @@
 ║ search_bin_basic.k                       │ 3 4 5 6 _bin 4       │ 1                    │                      ║
 ║ search_binl_eachleft.k                   │ 1 3 5 _binl 1 2 3 4 5 │ 0 1 1 2 2            │                      ║
 ║ search_lin_intersection.k                │ 1 3 5 7 9 _lin 1 2 3 4 5 │ 1 1 1 0 0            │                      ║
-║ amend_item_basic.k                       │ @[1 2 3; 1; +; 10]   │ Error: List ind...   │ 1 12 3               ║
-║ amend_item_multiple.k                    │ @[1 2 3; 0 2; +; 10] │ Error: List ind...   │ 11 2 13              ║
-║ amend_item_monadic.k                     │ @[1 2 3; 1; {x*2}]   │ Error: List ind...   │ 1 4 3                ║
+║ amend_item_basic.k                       │ @[1 2 3; 1; +; 10]   │ 1                    │ 1 12 3               ║
+║ amend_item_multiple.k                    │ @[1 2 3; 0 2; +; 10] │ 1                    │ 11 2 13              ║
+║ amend_item_monadic.k                     │ @[1 2 3; 1; {x*2}]   │ 1                    │ 1 4 3                ║
 ║ amend_test.k                             │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)  // Amend: add 10 to elements at indices 0 and 2 │ `.                   │ 1 12 3 4 5           ║
 ║ amend_simple.k                           │ 1 12 3 4 5           │ 1 12 3 4 5           │                      ║
 ║ find_basic.k                             │ 9 8 7 6 5 4 3 ? 7  // Find operator - basic functionality │ 2                    │                      ║
@@ -358,11 +358,11 @@
 ║ vector_notation_functions.k              │ double: {[x] x * 2}  │ 10 20 30             │                      ║
 ║ vector_notation_mixed_types.k            │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
 ║ vector_notation_nested.k                 │ ((1 + 2); (3 + 4); (5 + 6)) │ 3 7 11               │                      ║
-║ vector_notation_semicolon.k              │ (3 + 4; 5 + 6; -20.45) │ (7;14;-17.45)        │ (7;11;-20.45)        ║
+║ vector_notation_semicolon.k              │ (3 + 4; 5 + 6; -20.45) │ Error: Cannot a...   │ (7;11;-20.45)        ║
 ║ vector_notation_single_group.k           │ (42)                 │ 42                   │                      ║
 ║ vector_notation_space.k                  │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
 ║ vector_notation_variables.k              │ a: 10                │ 30 210 0             │ 30 200 -10           ║
-║ vector_notation_semicolon.k              │ (3 + 4; 5 + 6; -20.45) │ (7;14;-17.45)        │ (7;11;-20.45)        ║
+║ vector_notation_semicolon.k              │ (3 + 4; 5 + 6; -20.45) │ Error: Cannot a...   │ (7;11;-20.45)        ║
 ║ vector_notation_single_group.k           │ (42)                 │ 42                   │                      ║
 ║ vector_notation_space.k                  │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
 ║ vector_notation_variables.k              │ a: 10                │ 30 210 0             │ 30 200 -10           ║
@@ -385,7 +385,7 @@
 ║ adverb_tick_colon_basic.k                │ -': 4 8 9 12 20      │ 4 1 3 8              │                      ║
 ║ amend_apply.k                            │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10) │ `.                   │ (1 2 13 4 5
 6 7...   ║
-║ amend_dot_test.k                         │ .[1 2 3; 1; +; 10]   │ Error: Dictiona...   │ 1 12 3 4 5           ║
+║ amend_dot_test.k                         │ .[1 2 3; 1; +; 10]   │ Error: Make ope...   │ 1 12 3 4 5           ║
 ║ amend_item_simple.k                      │ @[1 2 3]             │ Error: For atom...   │ @[1 2 3]             ║
 ║ amend_item_single.k                      │ @[1]                 │ 1                    │ @[1 2 3]             ║
 ║ amend_minimal.k                          │ (.) . (1 2 3; 0; +; 10) │ `.                   │ @[1 2 3]             ║
@@ -396,8 +396,8 @@
 ║ conditional_false.k                      │ :[0; "true"; "false"]  // Conditional evaluation - condition false │ Error: Undefine...   │                      ║
 ║ conditional_simple_test.k                │ :[1; "true"; "false"] │ Error: Undefine...   │                      ║
 ║ conditional_true.k                       │ :[1; "true"; "false"]  // Conditional evaluation - condition true │ Error: Undefine...   │                      ║
-║ dictionary_null_index.k                  │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
-║ dictionary_unmake.k                      │ d: .((`a;1);(`b;2))  │ Error: Undefine...   │ ((`a;1;);(`b;2;))    ║
+║ dictionary_null_index.k                  │ d: .((`a;1);(`b;2))  │ Error: Dictiona...   │ 1 2                  ║
+║ dictionary_unmake.k                      │ d: .((`a;1);(`b;2))  │ Error: Dictiona...   │ ((`a;1;);(`b;2;))    ║
 ║ do_bracket_test.k                        │ do[3; 42]  // Do function with bracket notation │ Error: Do funct...   │                      ║
 ║ do_loop.k                                │ i: 0; do[3; i+: 1]  // Do loop - increment i 3 times │ Error: Expected...   │                      ║
 ║ do_simple.k                              │ do[3; 42]  // Do loop - simple test │ Error: Do funct...   │                      ║
@@ -405,7 +405,7 @@
 ║ dyadic_minus_bracket.k                   │ -[10; 3]  // Dyadic subtraction with bracket notation │ 7                    │                      ║
 ║ dyadic_multiply_bracket.k                │ *[4; 6]  // Dyadic multiplication with bracket notation │ 24                   │                      ║
 ║ dyadic_plus_bracket.k                    │ +[3; 5]  // Dyadic addition with bracket notation │ 8                    │                      ║
-║ empty_brackets_dictionary.k              │ d: .((`a;1);(`b;2))  │ Error: Unexpect...   │ 1 2 3                ║
+║ empty_brackets_dictionary.k              │ d: .((`a;1);(`b;2))  │ Error: Dictiona...   │ 1 2 3                ║
 ║ empty_brackets_vector.k                  │ v: 1 2 3 4           │ Error: Unexpect...   │ 1 2 3                ║
 ║ form_braces_complex_expressions.k        │ sum:{[a;b] a+b}      │ 14 20 10             │                      ║
 ║ format_float_precision_complex_mixed.k   │ 10.3$(1.234;2.567;3.890;4.123) │ ("     1.234";"...   │ ("   1.50";"   ...   ║
@@ -428,7 +428,7 @@
 ║ monadic_format_string_a.k                │ $"a"                 │ ""a""                │ ,"a"                 ║
 ║ monadic_format_symbol_hello.k            │ $`hello              │ "hello"              │                      ║
 ║ monadic_format_symbol_simple.k           │ $`test               │ "test"               │                      ║
-║ monadic_format_dictionary.k              │ $.((`a;1);(`b;2);(`c;3)) │ ".((`a;1;);(`b;...   │ .((`a;1;);(`b;2...   ║
+║ monadic_format_dictionary.k              │ $.((`a;1);(`b;2);(`c;3)) │ Error: Dictiona...   │ .((`a;1;);(`b;2...   ║
 ║ monadic_format_nested_list.k             │ $((1;2;3);(4;5;6))   │ ((,"1";,"2";,"3...   │                      ║
 ║ monadic_format_integer.k                 │ $42                  │ "42"                 │                      ║
 ║ monadic_format_float.k                   │ $3.14                │ "3.14"               │                      ║
@@ -436,7 +436,7 @@
 ║ in_simple.k                              │ 5 _in 1 2 3          │ 0                    │                      ║
 ║ isolated.k                               │ a:1.5                │ 0.6                  │                      ║
 ║ modulo.k                                 │ a:1.5                │ 0.6                  │                      ║
-║ monadic_format_mixed_vector.k            │ $(1;2.5;"hello";`symbol) │ (,"1";"2.5";"he...   │                      ║
+║ monadic_format_mixed_vector.k            │ $(1;2.5;"hello";`symbol) │ "(1;2.5;"hello"...   │ (,"1";"2.5";"he...   ║
 ║ over_plus_empty.k                        │ +/!0                 │ 0                    │                      ║
 ║ simple_division.k                        │ 8 % 2                │ 4                    │                      ║
 ║ simple_subtraction.k                     │ 5 - 3                │ 2                    │                      ║
@@ -450,12 +450,12 @@
 ║ k_tree_enumerate.k                       │ !`                   │ `k`t                 │                      ║
 ║ k_tree_current_branch.k                  │ _d                   │ `.k                  │                      ║
 ║ k_tree_dictionary_indexing.k             │ .k.foo: 42           │ 42                   │                      ║
-║ k_tree_nested_indexing.k                 │ .k.dd: .((`a;1);(`b;2);(`c;3)) │ 2                    │                      ║
+║ k_tree_nested_indexing.k                 │ .k.dd: .((`a;1);(`b;2);(`c;3)) │ Error: Dictiona...   │ 2                    ║
 ║ k_tree_verify_root.k                     │ .k                   │                      │                      ║
 ║ k_tree_flip_dictionary.k                 │ .+(`a`b`c;1 2 3)     │ .((`a;1;);(`b;2...   │                      ║
 ║ k_tree_null_to_dict_conversion.k         │ .k.foo: 42           │ .,(`foo;42;)         │                      ║
-║ k_tree_dictionary_assignment.k           │ .k.dd: .((`a;1);(`b;2);(`c;3)) │ .((`a;1;);(`b;2...   │                      ║
-║ k_tree_test_bracket_indexing.k           │ d: .((`a;1);(`b;2);(`c;3)) │ 2                    │                      ║
+║ k_tree_dictionary_assignment.k           │ .k.dd: .((`a;1);(`b;2);(`c;3)) │ Error: Dictiona...   │ .((`a;1;);(`b;2...   ║
+║ k_tree_test_bracket_indexing.k           │ d: .((`a;1);(`b;2);(`c;3)) │ Error: Dictiona...   │ 2                    ║
 ║ k_tree_flip_test.k                       │ +(`a`b`c;1 2 3)      │ ((`a;1);(`b;2);...   │                      ║
 ║ vector_null_index.k                      │ v: 1 2 3 4           │ 1 2 3 4              │                      ║
 ║ while_bracket_test.k                     │ i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation │ Error: Expected...   │                      ║
@@ -470,12 +470,12 @@
 ║ serialization_bd_db_floatvector.k        │ // Test _bd and _db for Float Vector serialization │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_charactervector.k    │ // Test _bd and _db for CharacterVector serialization │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_symbolvector.k       │ // Test _bd and _db for SymbolVector serialization │ "\001\000\000\0...   │                      ║
-║ serialization_bd_db_list.k               │ // Test _bd and _db for List serialization │ Error: _bd (byt...   │ PLACEHOLDER          ║
-║ serialization_bd_db_dictionary.k         │ // Test _bd and _db for Dictionary serialization │ Error: _bd (byt...   │ PLACEHOLDER          ║
-║ serialization_bd_db_anonymousfunction.k  │ // Test _bd and _db for AnonymousFunction serialization │ Error: _bd (byt...   │ PLACEHOLDER          ║
+║ serialization_bd_db_list.k               │ // Test _bd and _db for List serialization │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_dictionary.k         │ // Test _bd and _db for Dictionary serialization │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_anonymousfunction.k  │ // Test _bd and _db for AnonymousFunction serialization │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_roundtrip_integer.k  │ // Test _bd and _db round-trip serialization │ 704643072            │                      ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 390/470 tests passed (83.0%)                                                                     ║
+║ SUMMARY: 368/470 tests passed (78.3%)                                                                     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -485,10 +485,50 @@ Input: distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2}
 Expected: 205
 Actual: {[d0;v;a;t] d1 : v*t ; d2 : a*t*t % 2 ; d0+d1+d2}
 ──────────────────────────────────────────────────────────────────────────
+Test: dictionary_empty.k
+Input: .()
+Expected: .()
+Actual: Error: Make operator requires a vector or dictionary
+──────────────────────────────────────────────────────────────────────────
+Test: dictionary_index.k
+Input: (.((`a;1);(`b;2))) @ `a
+Expected: 1
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
 Test: dictionary_index_attr.k
 Input: (.((`a;1);(`b;2;.((`c;3);(`d;4))))) @ `b.
 Expected: .((`c;3;);(`d;4;))
-Actual: Error: Undefined variable: b.
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
+Test: dictionary_index_value.k
+Input: (.((`a;1);(`b;2))) @ `a
+Expected: 1
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
+Test: dictionary_index_value2.k
+Input: (.((`a;1);(`b;2))) @ `b
+Expected: 2
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
+Test: dictionary_multiple.k
+Input: .((`a;1);(`b;2))
+Expected: .((`a;1;);(`b;2;))
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
+Test: dictionary_null_attributes.k
+Input: .((`a;1);(`b;2))
+Expected: .((`a;1;);(`b;2;))
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
+Test: dictionary_type.k
+Input: 4:.((`a;1);(`b;2))
+Expected: 5
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
+Test: dictionary_with_null_value.k
+Input: .((`a;1);(`b;_n);(`c;3))
+Expected: .((`a;1;);(`b;;);(`c;3;))
+Actual: Error: Dictionary entries must be vectors
 ──────────────────────────────────────────────────────────────────────────
 Test: function_add7.k
 Input: add7:{[arg1] arg1+7}
@@ -540,10 +580,20 @@ Input: 2 + 3 ^ 4
 Expected: 83
 Actual: Error: Unknown binary operator: POWER
 ──────────────────────────────────────────────────────────────────────────
+Test: shape_operator_empty_vector.k
+Input: ^ ()
+Expected: ,0
+Actual: !0
+──────────────────────────────────────────────────────────────────────────
 Test: special_null.k
 Input: _n
 Expected: _n
 Actual: 
+──────────────────────────────────────────────────────────────────────────
+Test: string_representation_mixed.k
+Input: 5:(1;2.5;"a")
+Expected: "(1;2.5;\"a\")"
+Actual: "(1;2.5;"a")"
 ──────────────────────────────────────────────────────────────────────────
 Test: multiline_function_single.k
 Input: test: {[x] a:x*2; a+10}
@@ -558,7 +608,7 @@ Actual: {[x] globalVar : x*2 ; globalVar+10}
 Test: semicolon_simple.k
 Input: (3 + 4; 5 + 6; -20.45)
 Expected: (7;11;-20.45)
-Actual: (7;14;-17.45)
+Actual: Error: Cannot add Integer and List
 ──────────────────────────────────────────────────────────────────────────
 Test: semicolon_vars.k
 Input: a: 10
@@ -568,7 +618,7 @@ Actual: 30 210 0
 Test: semicolon_vector.k
 Input: a: 1 2
 Expected: (7;3 4;-20.45)
-Actual: (7;6 7;-17.45)
+Actual: Error: Cannot add Integer and List
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_access.k
 Input: globalVar: 100  // Test function accessing global variable
@@ -595,10 +645,25 @@ Input: globalVar: 100  // Test nested functions
 Expected: 25
 Actual: Error: Expected '}' after function body
 ──────────────────────────────────────────────────────────────────────────
+Test: dictionary_enumerate.k
+Input: d: .((`a;1);(`b;2))
+Expected: `a`b
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
+Test: dictionary_dot_apply.k
+Input: d: .((`a;1;.());(`b;2;.()))
+Expected: 1
+Actual: Error: Make operator requires a vector or dictionary
+──────────────────────────────────────────────────────────────────────────
 Test: monadic_format_string_a.k
 Input: $"a"
 Expected: ,"a"
 Actual: ""a""
+──────────────────────────────────────────────────────────────────────────
+Test: monadic_format_dictionary.k
+Input: $.((`a;1);(`b;2);(`c;3))
+Expected: ".((`a;1;);(`b;2;);(`c;3;))"
+Actual: Error: Dictionary entries must be vectors
 ──────────────────────────────────────────────────────────────────────────
 Test: format_float_numeric.k
 Input: 0.0$1
@@ -618,12 +683,47 @@ Actual: ""aaa""
 Test: form_braces_nested_expr.k
 Input: x:10
 Expected: (12 20;(7;3.333333))
-Actual: (12 30;(7;6.666667))
+Actual: Error: Error evaluating string expression '(x-z;x%z)': Cannot subtract Integer and List
 ──────────────────────────────────────────────────────────────────────────
 Test: form_braces_nested_arith.k
 Input: a:5
 Expected: (7 10;(2;2.5);5 -1)
-Actual: (7 15;(2;2.5);5 1)
+Actual: Error: Error evaluating string expression '(a-c;a%b)': Cannot subtract Integer and List
+──────────────────────────────────────────────────────────────────────────
+Test: time_t.k
+Input: r:_t
+Expected: .((`type;1;);(`shape;!0;))
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_select.k
+Input: r:10 _draw 4; .((`type;4:r);(`shape;^r))
+Expected: .((`type;-1;);(`shape;,10;))
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_deal.k
+Input: r:4 _draw -4; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
+Expected: .((`type;-1;);(`shape;,4;);(`allitemsunique;1;))
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_probability.k
+Input: r:10 _draw 0; .((`type;4:r);(`shape;^r))
+Expected: .((`type;-2;);(`shape;,10;))
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_vector_select.k
+Input: r:2 3 _draw 4; .((`type;4:r);(`shape;^r))
+Expected: .((`type;0;);(`shape;,2;))
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_vector_deal.k
+Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
+Expected: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_vector_probability.k
+Input: r:2 3 _draw 0; .((`type;4:r);(`shape;^r))
+Expected: .((`type;0;);(`shape;,2;))
+Actual: Error: Dictionary entries must be vectors
 ──────────────────────────────────────────────────────────────────────────
 Test: draw.k
 Input: _draw
@@ -668,17 +768,17 @@ Actual: 3 4
 Test: amend_item_basic.k
 Input: @[1 2 3; 1; +; 10]
 Expected: 1 12 3
-Actual: Error: List indices must be integers
+Actual: 1
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_item_multiple.k
 Input: @[1 2 3; 0 2; +; 10]
 Expected: 11 2 13
-Actual: Error: List indices must be integers
+Actual: 1
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_item_monadic.k
 Input: @[1 2 3; 1; {x*2}]
 Expected: 1 4 3
-Actual: Error: List indices must be integers
+Actual: 1
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_test.k
 Input: (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)  // Amend: add 10 to elements at indices 0 and 2
@@ -698,7 +798,7 @@ Actual: Error: Binary operator must have exactly 2 children, got 0
 Test: vector_notation_semicolon.k
 Input: (3 + 4; 5 + 6; -20.45)
 Expected: (7;11;-20.45)
-Actual: (7;14;-17.45)
+Actual: Error: Cannot add Integer and List
 ──────────────────────────────────────────────────────────────────────────
 Test: vector_notation_variables.k
 Input: a: 10
@@ -708,7 +808,7 @@ Actual: 30 210 0
 Test: vector_notation_semicolon.k
 Input: (3 + 4; 5 + 6; -20.45)
 Expected: (7;11;-20.45)
-Actual: (7;14;-17.45)
+Actual: Error: Cannot add Integer and List
 ──────────────────────────────────────────────────────────────────────────
 Test: vector_notation_variables.k
 Input: a: 10
@@ -724,7 +824,7 @@ Actual: `.
 Test: amend_dot_test.k
 Input: .[1 2 3; 1; +; 10]
 Expected: 1 12 3 4 5
-Actual: Error: Dictionary key must be a symbol
+Actual: Error: Make operator requires a vector or dictionary
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_item_simple.k
 Input: @[1 2 3]
@@ -776,10 +876,15 @@ Input: :[1; "true"; "false"]  // Conditional evaluation - condition true
 Expected: 
 Actual: Error: Undefined variable: :
 ──────────────────────────────────────────────────────────────────────────
+Test: dictionary_null_index.k
+Input: d: .((`a;1);(`b;2))
+Expected: 1 2
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
 Test: dictionary_unmake.k
 Input: d: .((`a;1);(`b;2))
 Expected: ((`a;1;);(`b;2;))
-Actual: Error: Undefined variable: .d
+Actual: Error: Dictionary entries must be vectors
 ──────────────────────────────────────────────────────────────────────────
 Test: do_bracket_test.k
 Input: do[3; 42]  // Do function with bracket notation
@@ -799,7 +904,7 @@ Actual: Error: Do function requires at least 2 arguments: count and expression(s
 Test: empty_brackets_dictionary.k
 Input: d: .((`a;1);(`b;2))
 Expected: 1 2 3
-Actual: Error: Unexpected token: RIGHT_BRACKET(])
+Actual: Error: Dictionary entries must be vectors
 ──────────────────────────────────────────────────────────────────────────
 Test: empty_brackets_vector.k
 Input: v: 1 2 3 4
@@ -849,7 +954,27 @@ Actual: ""a""
 Test: monadic_format_dictionary.k
 Input: $.((`a;1);(`b;2);(`c;3))
 Expected: .((`a;1;);(`b;2;);(`c;3;))
-Actual: ".((`a;1;);(`b;2;);(`c;3;))"
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
+Test: monadic_format_mixed_vector.k
+Input: $(1;2.5;"hello";`symbol)
+Expected: (,"1";"2.5";"hello";"symbol")
+Actual: "(1;2.5;"hello";`symbol)"
+──────────────────────────────────────────────────────────────────────────
+Test: k_tree_nested_indexing.k
+Input: .k.dd: .((`a;1);(`b;2);(`c;3))
+Expected: 2
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
+Test: k_tree_dictionary_assignment.k
+Input: .k.dd: .((`a;1);(`b;2);(`c;3))
+Expected: .((`a;1;);(`b;2;);(`c;3;))
+Actual: Error: Dictionary entries must be vectors
+──────────────────────────────────────────────────────────────────────────
+Test: k_tree_test_bracket_indexing.k
+Input: d: .((`a;1);(`b;2);(`c;3))
+Expected: 2
+Actual: Error: Dictionary entries must be vectors
 ──────────────────────────────────────────────────────────────────────────
 Test: while_bracket_test.k
 Input: i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation
@@ -865,19 +990,4 @@ Test: while_simple_test.k
 Input: while[0; 42]
 Expected: 
 Actual: Error: While function requires at least 2 arguments: condition and expression(s)
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_db_list.k
-Input: // Test _bd and _db for List serialization
-Expected: PLACEHOLDER
-Actual: Error: _bd (bytes from data) operation failed: Unable to cast object of type 'K3CSharp.FloatValue' to type 'K3CSharp.IntegerValue'.
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_db_dictionary.k
-Input: // Test _bd and _db for Dictionary serialization
-Expected: PLACEHOLDER
-Actual: Error: _bd (bytes from data) operation failed: Cannot convert K3CSharp.DictionaryValue to primitive type
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_db_anonymousfunction.k
-Input: // Test _bd and _db for AnonymousFunction serialization
-Expected: PLACEHOLDER
-Actual: Error: _bd (bytes from data) operation failed: Cannot convert K3CSharp.FunctionValue to primitive type
 ──────────────────────────────────────────────────────────────────────────

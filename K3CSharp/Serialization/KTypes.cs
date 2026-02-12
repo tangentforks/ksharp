@@ -1,26 +1,58 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using K3CSharp;
 
 namespace K3CSharp.Serialization
 {
     /// <summary>
     /// K List type for serialization support
     /// </summary>
-    public class KList
+    public class KList : K3Value
     {
         public List<object> Elements { get; set; } = new List<object>();
         
-        public KList() { }
+        public KList() 
+        { 
+            Type = ValueType.List;
+        }
         
         public KList(params object[] elements)
         {
             Elements = elements.ToList();
+            Type = ValueType.List;
         }
         
         public KList(IEnumerable<object> elements)
         {
             Elements = elements.ToList();
+            Type = ValueType.List;
+        }
+        
+        public override string ToString()
+        {
+            if (Elements.Count == 0) return "()";
+            return "(" + string.Join(";", Elements.Select(e => e?.ToString() ?? "()")) + ")";
+        }
+        
+        public override K3Value Add(K3Value other)
+        {
+            throw new NotSupportedException("List does not support Add operation");
+        }
+        
+        public override K3Value Subtract(K3Value other)
+        {
+            throw new NotSupportedException("List does not support Subtract operation");
+        }
+        
+        public override K3Value Multiply(K3Value other)
+        {
+            throw new NotSupportedException("List does not support Multiply operation");
+        }
+        
+        public override K3Value Divide(K3Value other)
+        {
+            throw new NotSupportedException("List does not support Divide operation");
         }
     }
     

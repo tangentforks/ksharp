@@ -755,9 +755,9 @@ namespace K3CSharp.Tests
                 ("serialization_bd_db_floatvector.k", "\"\\001\\000\\000\\000(\\000\\000\\000\\376\\377\\377\\377\\003\\000\\000\\000\\232\\231\\231\\231\\231\\231\\361?\\232\\231\\231\\231\\231\\231\\001@ffffff\\n@\""),
                 ("serialization_bd_db_charactervector.k", "\"\\001\\000\\000\\000\\025\\000\\000\\000\\375\\377\\377\\377\\005\\000\\000\\000hello\\000\""),
                 ("serialization_bd_db_symbolvector.k", "\"\\001\\000\\000\\000\\026\\000\\000\\000\\374\\377\\377\\377\\003\\000\\000\\000a\\000b\\000c\\000\""),
-                ("serialization_bd_db_list.k", "PLACEHOLDER"),
-                ("serialization_bd_db_dictionary.k", "PLACEHOLDER"),
-                ("serialization_bd_db_anonymousfunction.k", "PLACEHOLDER"),
+                ("serialization_bd_db_list.k", "\"\\001\\000\\000\\000\\033\\000\\000\\000\\376\\377\\377\\377\\003\\000\\000\\000\\001\\000\\000\\000\\000\\000\\000\\000\\000\\000\\004@\\003\\000\\000\\000a\\000\\000\""),
+                ("serialization_bd_db_dictionary.k", "\"\\001\\000\\000\\000\\014\\000\\000\\000\\005\\000\\000\\000\\002\\000\\000\\000a1b2\""),
+                ("serialization_bd_db_anonymousfunction.k", "\"\\001\\000\\000\\000\\014\\000\\000\\000\\n\\000\\000\\000x+1\\000\""),
                 ("serialization_bd_db_roundtrip_integer.k", "704643072"),
             };
 

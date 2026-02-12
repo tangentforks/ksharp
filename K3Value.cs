@@ -15,7 +15,8 @@ namespace K3CSharp
         Vector,
         Function,
         Null,
-        Dictionary
+        Dictionary,
+        List
     }
 
     public abstract class K3Value

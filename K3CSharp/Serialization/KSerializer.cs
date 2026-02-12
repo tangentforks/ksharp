@@ -229,18 +229,39 @@ namespace K3CSharp.Serialization
         {
             return value switch
             {
-                int i => SerializeInteger(i),
-                double d => SerializeFloat(d),
-                char c => SerializeCharacter(c),
-                string s when s.StartsWith("`") => SerializeSymbol(s),
-                string s => SerializeCharacterVector(s),
-                null => SerializeNull(),
+                // Primitive types
+                int i => BitConverter.GetBytes(i), // Compact 4-byte integer
+                double d => BitConverter.GetBytes(d), // Compact 8-byte double
+                char c => new byte[] { (byte)c }, // Compact 1-byte char
+                string s when s.StartsWith("`") => Encoding.UTF8.GetBytes(s.Substring(1)), // Compact symbol without backtick
+                string s => Encoding.UTF8.GetBytes(s), // Compact string
+                null => new byte[0], // Compact null (empty)
+                
+                // K3Value objects
+                K3CSharp.IntegerValue iv => BitConverter.GetBytes(iv.Value),
+                K3CSharp.FloatValue fv => BitConverter.GetBytes(fv.Value),
+                K3CSharp.CharacterValue cv => SerializeCompactCharacter(cv.Value),
+                K3CSharp.SymbolValue sv => Encoding.UTF8.GetBytes(sv.Value),
+                K3CSharp.NullValue => new byte[0],
+                
+                // Complex types
                 KList list => SerializeList(list),
                 KDictionary dict => SerializeDictionary(dict),
                 KFunction func => SerializeAnonymousFunction(func),
                 KVector vec => SerializeVector(vec),
+                
                 _ => throw new NotSupportedException($"Unsupported value type: {value.GetType()}")
             };
+        }
+        
+        private byte[] SerializeCompactCharacter(string charValue)
+        {
+            // Compact character format: flag(4) + char(1) + padding(3)
+            var bytes = new byte[7];
+            BitConverter.GetBytes(3).CopyTo(bytes, 0); // Character flag
+            bytes[4] = (byte)charValue[0]; // Character value
+            // bytes[5], bytes[6], bytes[7] remain 0 (padding)
+            return bytes;
         }
     }
 }
