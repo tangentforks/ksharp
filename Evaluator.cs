@@ -2342,31 +2342,70 @@ namespace K3CSharp
         {
             try
             {
+                var primitiveValue = ConvertToPrimitive(operand);
                 var serializer = new KSerializer();
-                
-                // Convert K3Value to primitive type for serialization
-                object primitiveValue = operand switch
-                {
-                    IntegerValue iv => iv.Value,
-                    FloatValue fv => fv.Value,
-                    CharacterValue cv => cv.Value[0], // Take first character
-                    SymbolValue sv => "`" + sv.Value,
-                    NullValue => null,
-                    VectorValue vv => ConvertVectorToPrimitive(vv),
-                    _ => throw new NotSupportedException($"Unsupported type for _bd: {operand.GetType()}")
-                };
-                
                 var bytes = serializer.Serialize(primitiveValue);
                 
-                // Convert each byte to an integer (0-255)
-                var intElements = bytes.Select(b => (int)b).ToList();
+                // Convert bytes to character vector with proper escape sequences
+                var charString = ConvertBytesToCharacterString(bytes);
                 
-                return new VectorValue(intElements.Select(x => (K3Value)new IntegerValue(x)).ToList());
+                // Convert the character string to a VectorValue of individual CharacterValue elements
+                var charElements = new List<K3Value>();
+                for (int i = 1; i < charString.Length - 1; i++) // Skip opening and closing quotes
+                {
+                    charElements.Add(new CharacterValue(charString[i].ToString()));
+                }
+                
+                return new VectorValue(charElements);
             }
             catch (Exception ex)
             {
                 throw new Exception($"_bd (bytes from data) operation failed: {ex.Message}");
             }
+        }
+        
+        private string ConvertBytesToCharacterString(byte[] bytes)
+        {
+            var result = new System.Text.StringBuilder();
+            result.Append('"');
+            
+            foreach (var b in bytes)
+            {
+                switch (b)
+                {
+                    case 8:   // Backspace
+                        result.Append("\\b");
+                        break;
+                    case 9:   // Tab
+                        result.Append("\\t");
+                        break;
+                    case 10:  // Newline
+                        result.Append("\\n");
+                        break;
+                    case 13:  // Carriage return
+                        result.Append("\\r");
+                        break;
+                    case 34:  // Double quote
+                        result.Append("\\\"");
+                        break;
+                    case 92:  // Backslash
+                        result.Append("\\\\");
+                        break;
+                    default:
+                        if (b >= 32 && b <= 126) // Printable ASCII
+                        {
+                            result.Append((char)b);
+                        }
+                        else // Non-printable or extended ASCII
+                        {
+                            result.Append($"\\{Convert.ToString(b, 8).PadLeft(3, '0')}"); // Octal with leading zeros
+                        }
+                        break;
+                }
+            }
+            
+            result.Append('"');
+            return result.ToString();
         }
         
         private K3Value DbFunction(K3Value operand)
@@ -2375,27 +2414,26 @@ namespace K3CSharp
             {
                 if (operand is not VectorValue vector)
                 {
-                    throw new Exception("_db (data from bytes) requires an integer vector as input");
+                    throw new Exception("_db (data from bytes) requires a character vector as input");
                 }
                 
-                // Convert individual integers back to bytes
-                var bytes = new List<byte>();
+                // Convert VectorValue of CharacterValue elements to a character string
+                var charString = "\"";
                 foreach (var element in vector.Elements)
                 {
-                    if (element is IntegerValue intValue)
+                    if (element is CharacterValue charValue)
                     {
-                        // Each integer represents a single byte (0-255)
-                        if (intValue.Value < 0 || intValue.Value > 255)
-                        {
-                            throw new Exception($"_db: integer values must be in range 0-255, got {intValue.Value}");
-                        }
-                        bytes.Add((byte)intValue.Value);
+                        charString += charValue.Value;
                     }
                     else
                     {
-                        throw new Exception("_db: vector must contain only integer values");
+                        throw new Exception("_db: vector must contain only character values");
                     }
                 }
+                charString += "\"";
+                
+                // Parse character string with escape sequences back to bytes
+                var bytes = ParseCharacterStringToBytes(charString);
                 
                 var deserializer = new KDeserializer();
                 var result = deserializer.Deserialize(bytes.ToArray());
@@ -2419,6 +2457,93 @@ namespace K3CSharp
             }
         }
         
+        private List<byte> ParseCharacterStringToBytes(string charString)
+        {
+            var bytes = new List<byte>();
+            var i = 0;
+            
+            // Skip opening and closing quotes
+            if (charString.Length >= 2 && charString[0] == '"' && charString[charString.Length - 1] == '"')
+            {
+                i = 1;
+                while (i < charString.Length - 1)
+                {
+                    if (charString[i] == '\\')
+                    {
+                        // Handle escape sequence
+                        if (i + 1 < charString.Length - 1)
+                        {
+                            var escapeChar = charString[i + 1];
+                            switch (escapeChar)
+                            {
+                                case 'b':
+                                    bytes.Add(8);  // Backspace
+                                    i += 2;
+                                    break;
+                                case 't':
+                                    bytes.Add(9);  // Tab
+                                    i += 2;
+                                    break;
+                                case 'n':
+                                    bytes.Add(10); // Newline
+                                    i += 2;
+                                    break;
+                                case 'r':
+                                    bytes.Add(13); // Carriage return
+                                    i += 2;
+                                    break;
+                                case '"':
+                                    bytes.Add(34); // Double quote
+                                    i += 2;
+                                    break;
+                                case '\\':
+                                    bytes.Add(92); // Backslash
+                                    i += 2;
+                                    break;
+                                case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7':
+                                    // Octal escape sequence (up to 3 digits)
+                                    var octalStr = "";
+                                    var j = i + 1;
+                                    while (j < charString.Length - 1 && j < i + 4 && 
+                                           charString[j] >= '0' && charString[j] <= '7')
+                                    {
+                                        octalStr += charString[j];
+                                        j++;
+                                    }
+                                    if (octalStr.Length > 0)
+                                    {
+                                        bytes.Add(Convert.ToByte(octalStr, 8));
+                                        i = j;
+                                    }
+                                    else
+                                    {
+                                        i += 2;
+                                    }
+                                    break;
+                                default:
+                                    // Unknown escape, treat as literal character
+                                    bytes.Add((byte)escapeChar);
+                                    i += 2;
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            i++;
+                        }
+                    }
+                    else
+                    {
+                        // Regular character
+                        bytes.Add((byte)charString[i]);
+                        i++;
+                    }
+                }
+            }
+            
+            return bytes;
+        }
+        
         private K3Value ConvertToK3Value(object obj)
         {
             return obj switch
@@ -2429,6 +2554,20 @@ namespace K3CSharp
                 string s => s.StartsWith("`") ? new SymbolValue(s[1..]) : new CharacterValue(s),
                 null => new NullValue(),
                 _ => throw new NotSupportedException($"Cannot convert {obj.GetType()} to K3Value")
+            };
+        }
+        
+        private object ConvertToPrimitive(K3Value value)
+        {
+            return value switch
+            {
+                IntegerValue iv => iv.Value,
+                FloatValue fv => fv.Value,
+                CharacterValue cv => cv.Value,
+                SymbolValue sv => "`" + sv.Value,
+                NullValue => null,
+                VectorValue vv => ConvertVectorToPrimitive(vv),
+                _ => throw new NotSupportedException($"Cannot convert {value.GetType()} to primitive type")
             };
         }
         
