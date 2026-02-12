@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-02-11 22:51:41
+Generated: 2026-02-11 23:32:04
 
 SUMMARY:
 --------
 Total Tests:     451
-✅ Matched:       328
-❌ Differed:      66
+✅ Matched:       346
+❌ Differed:      71
 ⚠️  Skipped:       0
-💥 Errors:        57
-Success Rate:    72.7%
+💥 Errors:        34
+Success Rate:    76.7%
 
 DETAILED RESULTS:
 -----------------
@@ -77,24 +77,20 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   cut_vector.k                                       (0 1;2 3;4 5 6 7)              (0 1;2 3;4 5 6 7)              Compact representation                            
 💥 ERROR dictionary_dot_apply.k                                                            1                              K3Sharp error, k.exe succeeded                    
 💥 ERROR dictionary_empty.k                                                                .()                            K3Sharp error, k.exe succeeded                    
-💥 ERROR dictionary_enumerate.k                                                            `a `b                          K3Sharp error, k.exe succeeded                    
+✅ PASS   dictionary_enumerate.k                             `a`b                           `a`b                           Compact representation                            
 💥 ERROR dictionary_index_attr.k                                                           .((`c;3;)
   (`d;4;))           K3Sharp error, k.exe succeeded                    
-💥 ERROR dictionary_index_value.k                                                          1                              K3Sharp error, k.exe succeeded                    
-💥 ERROR dictionary_index_value2.k                                                         2                              K3Sharp error, k.exe succeeded                    
-💥 ERROR dictionary_index.k                                                                1                              K3Sharp error, k.exe succeeded                    
-💥 ERROR dictionary_multiple.k                                                             .((`a;1;)
-  (`b;2;))           K3Sharp error, k.exe succeeded                    
-💥 ERROR dictionary_null_attributes.k                                                      .((`a;1;)
-  (`b;2;))           K3Sharp error, k.exe succeeded                    
-💥 ERROR dictionary_null_index.k                                                           1 2                            K3Sharp error, k.exe succeeded                    
+✅ PASS   dictionary_index_value.k                           1                              1                                                                                
+✅ PASS   dictionary_index_value2.k                          2                              2                                                                                
+✅ PASS   dictionary_index.k                                 1                              1                                                                                
+✅ PASS   dictionary_multiple.k                              .((`a;1;);(`b;2;))             .((`a;1;);(`b;2;))             Compact representation                            
+✅ PASS   dictionary_null_attributes.k                       .((`a;1;);(`b;2;))             .((`a;1;);(`b;2;))             Compact representation                            
+✅ PASS   dictionary_null_index.k                            1 2                            1 2                                                                              
 ✅ PASS   dictionary_single.k                                .,(`a;`b;)                     .,(`a;`b;)                                                                       
-💥 ERROR dictionary_type.k                                                                 5                              K3Sharp error, k.exe succeeded                    
+✅ PASS   dictionary_type.k                                  5                              5                                                                                
 💥 ERROR dictionary_unmake.k                                                               ((`a;1;)
  (`b;2;))             K3Sharp error, k.exe succeeded                    
-💥 ERROR dictionary_with_null_value.k                                                      .((`a;1;)
-  (`b;;)
-  (`c;...   K3Sharp error, k.exe succeeded                    
+✅ PASS   dictionary_with_null_value.k                       .((`a;1;);(`b;;);(`c;3;))      .((`a;1;);(`b;;);(`c;3;))      Compact representation                            
 ✅ PASS   divide_float.k                                     0.6                            0.6                                                                              
 ✅ PASS   divide_integer.k                                   2.5                            2.5                                                                              
 ✅ PASS   division_float_4_2.0.k                             2.0                            2.0                                                                              
@@ -215,18 +211,18 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   join_operator.k                                    3 5                            3 5                                                                              
 ❌ FAIL   k_tree_assignment_absolute_foo.k                   42                                                            Compact representation                            
 ✅ PASS   k_tree_current_branch.k                            `.k                            `.k                            Compact representation                            
-💥 ERROR k_tree_dictionary_assignment.k                                                    .((`a;1;)
+❌ FAIL   k_tree_dictionary_assignment.k                     .((`a;1;);(`b;2;);(`c;3;))     .((`a;1;)
   (`b;2;)
-  (`c...   K3Sharp error, k.exe succeeded                    
+  (`c...                                                     
 ✅ PASS   k_tree_dictionary_indexing.k                       42                             42                             Compact representation                            
 ❌ FAIL   k_tree_enumerate.k                                 `k`t                           ,`k                            Compact representation                            
 ✅ PASS   k_tree_flip_dictionary.k                           .((`a;1;);(`b;2;);(`c;3;))     .((`a;1;);(`b;2;);(`c;3;))     Compact representation                            
 ✅ PASS   k_tree_flip_test.k                                 ((`a;1);(`b;2);(`c;3))         ((`a;1);(`b;2);(`c;3))         Compact representation                            
-💥 ERROR k_tree_nested_indexing.k                                                          2                              K3Sharp error, k.exe succeeded                    
+✅ PASS   k_tree_nested_indexing.k                           2                              2                              Compact representation                            
 ✅ PASS   k_tree_null_to_dict_conversion.k                   .,(`foo;42;)                   .,(`foo;42;)                   Compact representation                            
 ✅ PASS   k_tree_retrieval_relative.k                        42                             42                             Compact representation                            
 ✅ PASS   k_tree_retrieve_absolute_foo.k                     42                             42                             Compact representation                            
-💥 ERROR k_tree_test_bracket_indexing.k                                                    2                              K3Sharp error, k.exe succeeded                    
+✅ PASS   k_tree_test_bracket_indexing.k                     2                              2                              Compact representation                            
 ✅ PASS   k_tree_verify_root.k                                                                                             Compact representation                            
 ✅ PASS   less_than_operator.k                               1                              1                                                                                
 ✅ PASS   list_di_basic.k                                    3 4 5                          3 4 5                                                                            
@@ -262,7 +258,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   modulo.k                                           0.6                            0.6                                                                              
 ✅ PASS   modulus_operator.k                                 1                              1                                                                                
 ✅ PASS   monadic_format_basic.k                             ,"1"                           ,"1"                                                                             
-💥 ERROR monadic_format_dictionary.k                                                       ".(..)"                        K3Sharp error, k.exe succeeded                    
+❌ FAIL   monadic_format_dictionary.k                        ".((`a;1;);(`b;2;);(`c;3;))"   ".(..)"                                                                          
 ✅ PASS   monadic_format_float.k                             "3.14"                         "3.14"                                                                           
 ✅ PASS   monadic_format_integer.k                           "42"                           "42"                                                                             
 ❌ FAIL   monadic_format_mixed_vector.k                      "(1;2.5;"hello";`symbol)"      (,"1";"2.5";"hello";"symb...   Compact representation                            
@@ -305,7 +301,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   parentheses_precedence.k                           7                              7                                                                                
 ✅ PASS   parenthesized_vector.k                             1 2 3 4                        1 2 3 4                                                                          
 ✅ PASS   plus_over_empty.k                                  0                              0                                                                                
-💥 ERROR power_operator.k                                                                  8.0                            K3Sharp error, k.exe succeeded                    
+✅ PASS   power_operator.k                                   8                              8                              smart integer division, inverse and exponenti...  
 ✅ PASS   precedence_chain1.k                                1410                           1410                                                                             
 ✅ PASS   precedence_chain2.k                                0.07092199                     0.07092199                                                                       
 ✅ PASS   precedence_complex1.k                              0.7142857                      0.7142857                                                                        
@@ -313,28 +309,16 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   precedence_mixed1.k                                0                              0                                                                                
 ✅ PASS   precedence_mixed2.k                                25                             25                                                                               
 ✅ PASS   precedence_mixed3.k                                11                             11                                                                               
-💥 ERROR precedence_power1.k                                                               128.0                          K3Sharp error, k.exe succeeded                    
-💥 ERROR precedence_power2.k                                                               83.0                           K3Sharp error, k.exe succeeded                    
+✅ PASS   precedence_power1.k                                128                            128                            smart integer division, inverse and exponenti...  
+✅ PASS   precedence_power2.k                                83                             83                             smart integer division, inverse and exponenti...  
 ✅ PASS   precedence_spec1.k                                 11.57143                       11.57143                                                                         
 ✅ PASS   precedence_spec2.k                                 6                              6                              smart integer division, inverse and exponenti...  
-💥 ERROR rand_draw_deal.k                                                                  .((`type;-1;)
-  (`shape
- ...   K3Sharp error, k.exe succeeded                    
-💥 ERROR rand_draw_probability.k                                                           .((`type;-2;)
-  (`shape
- ...   K3Sharp error, k.exe succeeded                    
-💥 ERROR rand_draw_select.k                                                                .((`type;-1;)
-  (`shape
- ...   K3Sharp error, k.exe succeeded                    
-💥 ERROR rand_draw_vector_deal.k                                                           .((`type;0;)
-  (`shape
-  ...   K3Sharp error, k.exe succeeded                    
-💥 ERROR rand_draw_vector_probability.k                                                    .((`type;0;)
-  (`shape
-  ...   K3Sharp error, k.exe succeeded                    
-💥 ERROR rand_draw_vector_select.k                                                         .((`type;0;)
-  (`shape
-  ...   K3Sharp error, k.exe succeeded                    
+✅ PASS   rand_draw_deal.k                                   .((`type;-1;);(`shape;,4;...   .((`type;-1;);(`shape;,4;...   Compact representation                            
+✅ PASS   rand_draw_probability.k                            .((`type;-2;);(`shape;,10;))   .((`type;-2;);(`shape;,10;))   Compact representation                            
+✅ PASS   rand_draw_select.k                                 .((`type;-1;);(`shape;,10;))   .((`type;-1;);(`shape;,10;))   Compact representation                            
+❌ FAIL   rand_draw_vector_deal.k                            .((`type;0;);(`shape;,2;)...   .((`type;0;);(`shape;2 3;...   Compact representation                            
+❌ FAIL   rand_draw_vector_probability.k                     .((`type;0;);(`shape;,2;))     .((`type;0;);(`shape;2 3;))    Compact representation                            
+❌ FAIL   rand_draw_vector_select.k                          .((`type;0;);(`shape;,2;))     .((`type;0;);(`shape;2 3;))    Compact representation                            
 ✅ PASS   reciprocal_operator.k                              0.25                           0.25                                                                             
 ✅ PASS   reverse_operator.k                                 3 2 1                          3 2 1                                                                            
 ✅ PASS   scalar_vector_addition.k                           4 5                            4 5                                                                              
@@ -442,8 +426,7 @@ Status   Test File                                          K3Sharp Output      
 💥 ERROR time_jd.k                                                                         -3251                          K3Sharp error, k.exe succeeded                    
 💥 ERROR time_lt.k                                                                         -18000                         K3Sharp error, k.exe succeeded                    
 ✅ PASS   time_ltime.k                                       20341231 190000                20341231 190000                                                                  
-💥 ERROR time_t.k                                                                          .((`type;1;)
-  (`shape;!0;))   K3Sharp error, k.exe succeeded                    
+✅ PASS   time_t.k                                           .((`type;1;);(`shape;!0;))     .((`type;1;);(`shape;!0;))     Compact representation                            
 ✅ PASS   type_char.k                                        3                              3                                                                                
 ✅ PASS   type_float.k                                       2                              2                                                                                
 ✅ PASS   type_null.k                                        6                              6                                                                                
@@ -549,7 +532,7 @@ File: amend_test.k
 K3Sharp: `.
 k.exe:   (1 2 13 4 5;6 7 8 9 10)
 
-... and 56 more failed tests
+... and 61 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------
@@ -580,10 +563,10 @@ Error: K3Sharp Error: Make operator requires a vector or dictionary
 File: dictionary_empty.k
 Error: K3Sharp Error: Make operator requires a vector or dictionary
 
-File: dictionary_enumerate.k
-Error: K3Sharp Error: Dictionary entries must be vectors
+File: dictionary_index_attr.k
+Error: K3Sharp Error: Undefined variable: b.
 
-... and 47 more error tests
+... and 24 more error tests
 
 K.EXE FAILING TESTS:
 --------------------
