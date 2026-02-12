@@ -100,6 +100,8 @@ namespace K3CSharp
         SETENV,         // _setenv set environment variable
         SIZE,           // _size file size
         DIRECTORY,      // _d directory operations
+        BD,             // _bd bytes from data
+        DB,             // _db data from bytes
         DO,             // _do control flow
         WHILE,          // _while control flow
         IF_FUNC,        // _if control flow

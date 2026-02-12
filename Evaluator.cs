@@ -300,6 +300,8 @@ namespace K3CSharp
                     "_lin" => LinFunction(operand),
                     "_gtime" => GtimeFunction(operand),
                     "_ltime" => LtimeFunction(operand),
+                    "_bd" => BdFunction(operand),
+                    "_db" => DbFunction(operand),
                     "_ci" => CiFunction(operand),
                     "_ic" => IcFunction(operand),
                     "_v" => VarFunction(operand),
@@ -2333,6 +2335,136 @@ namespace K3CSharp
                 var errorMessage = new CharacterValue(ex.Message);
                 var errorVector = new VectorValue(new List<K3Value> { errorFlag, errorMessage });
                 return errorVector;
+            }
+        }
+        
+        private K3Value BdFunction(K3Value operand)
+        {
+            try
+            {
+                var serializer = new KSerializer();
+                
+                // Convert K3Value to primitive type for serialization
+                object primitiveValue = operand switch
+                {
+                    IntegerValue iv => iv.Value,
+                    FloatValue fv => fv.Value,
+                    CharacterValue cv => cv.Value[0], // Take first character
+                    SymbolValue sv => "`" + sv.Value,
+                    NullValue => null,
+                    VectorValue vv => ConvertVectorToPrimitive(vv),
+                    _ => throw new NotSupportedException($"Unsupported type for _bd: {operand.GetType()}")
+                };
+                
+                var bytes = serializer.Serialize(primitiveValue);
+                
+                // Convert each byte to an integer (0-255)
+                var intElements = bytes.Select(b => (int)b).ToList();
+                
+                return new VectorValue(intElements.Select(x => (K3Value)new IntegerValue(x)).ToList());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"_bd (bytes from data) operation failed: {ex.Message}");
+            }
+        }
+        
+        private K3Value DbFunction(K3Value operand)
+        {
+            try
+            {
+                if (operand is not VectorValue vector)
+                {
+                    throw new Exception("_db (data from bytes) requires an integer vector as input");
+                }
+                
+                // Convert individual integers back to bytes
+                var bytes = new List<byte>();
+                foreach (var element in vector.Elements)
+                {
+                    if (element is IntegerValue intValue)
+                    {
+                        // Each integer represents a single byte (0-255)
+                        if (intValue.Value < 0 || intValue.Value > 255)
+                        {
+                            throw new Exception($"_db: integer values must be in range 0-255, got {intValue.Value}");
+                        }
+                        bytes.Add((byte)intValue.Value);
+                    }
+                    else
+                    {
+                        throw new Exception("_db: vector must contain only integer values");
+                    }
+                }
+                
+                var deserializer = new KDeserializer();
+                var result = deserializer.Deserialize(bytes.ToArray());
+                
+                // Convert back to K3Value
+                return result switch
+                {
+                    int i => new IntegerValue(i),
+                    double d => new FloatValue(d),
+                    char c => new CharacterValue(c.ToString()),
+                    string s => s.StartsWith("`") ? new SymbolValue(s[1..]) : new CharacterValue(s),
+                    null => new NullValue(),
+                    List<object> list => new VectorValue(list.Select(ConvertToK3Value).ToList()),
+                    K3Value kv => kv, // Already a K3Value, return as-is
+                    _ => throw new NotSupportedException($"Deserialized type not supported: {result.GetType()}")
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"_db (data from bytes) operation failed: {ex.Message}");
+            }
+        }
+        
+        private K3Value ConvertToK3Value(object obj)
+        {
+            return obj switch
+            {
+                int i => new IntegerValue(i),
+                double d => new FloatValue(d),
+                char c => new CharacterValue(c.ToString()),
+                string s => s.StartsWith("`") ? new SymbolValue(s[1..]) : new CharacterValue(s),
+                null => new NullValue(),
+                _ => throw new NotSupportedException($"Cannot convert {obj.GetType()} to K3Value")
+            };
+        }
+        
+        private object ConvertVectorToPrimitive(VectorValue vector)
+        {
+            // Check if it's a homogeneous vector and convert accordingly
+            if (vector.Elements.Count == 0)
+            {
+                return new KVector(new int[0]); // Empty integer vector
+            }
+            
+            var firstElement = vector.Elements[0];
+            
+            if (firstElement is IntegerValue)
+            {
+                var intArray = vector.Elements.Cast<IntegerValue>().Select(iv => iv.Value).ToArray();
+                return new KVector(intArray);
+            }
+            else if (firstElement is FloatValue)
+            {
+                var doubleArray = vector.Elements.Cast<FloatValue>().Select(fv => fv.Value).ToArray();
+                return new KVector(doubleArray);
+            }
+            else if (firstElement is CharacterValue)
+            {
+                var charArray = vector.Elements.Cast<CharacterValue>().Select(cv => cv.Value[0]).ToArray();
+                return new KVector(charArray);
+            }
+            else if (firstElement is SymbolValue)
+            {
+                var symbolArray = vector.Elements.Cast<SymbolValue>().Select(sv => sv.Value).ToArray();
+                return new KVector(symbolArray);
+            }
+            else
+            {
+                throw new NotSupportedException($"Vector type not supported for serialization: {firstElement.GetType()}");
             }
         }
     }

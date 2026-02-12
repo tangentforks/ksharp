@@ -662,6 +662,8 @@ namespace K3CSharp
                 "_getenv" => new Token(TokenType.GETENV, opName, start),
                 "_setenv" => new Token(TokenType.SETENV, opName, start),
                 "_size" => new Token(TokenType.SIZE, opName, start),
+                "_bd" => new Token(TokenType.BD, opName, start),
+                "_db" => new Token(TokenType.DB, opName, start),
                 "_in" => new Token(TokenType.IN, opName, start),
                 "_bin" => new Token(TokenType.BIN, opName, start),
                 "_binl" => new Token(TokenType.BINL, opName, start),

@@ -78,7 +78,8 @@ namespace K3CSharp
                 TokenType.GETENV => "_getenv",
                 TokenType.SETENV => "_setenv",
                 TokenType.SIZE => "_size",
-                TokenType.POWER => "^",
+                TokenType.BD => "_bd",
+                TokenType.DB => "_db",
                 TokenType.MODULUS => "!",
                 TokenType.JOIN => ",",
                 TokenType.COLON => ":",
@@ -357,7 +358,7 @@ namespace K3CSharp
             TokenType.ADVERB_SLASH_COLON, TokenType.ADVERB_BACKSLASH_COLON, TokenType.ADVERB_TICK_COLON,
             TokenType.TIME, TokenType.IN, TokenType.BIN, TokenType.BINL, TokenType.LSQ, TokenType.LIN,
             TokenType.GTIME, TokenType.LTIME, TokenType.VS, TokenType.SV, TokenType.SS, TokenType.CI, TokenType.IC,
-            TokenType.DIRECTORY, TokenType.DO, TokenType.WHILE, TokenType.IF_FUNC, TokenType.EXIT, TokenType.EOF
+            TokenType.DIRECTORY, TokenType.BD, TokenType.DB, TokenType.DO, TokenType.WHILE, TokenType.IF_FUNC, TokenType.EXIT, TokenType.EOF
         };
         
         private bool ShouldStopParsing(TokenType[] stopTokens)
@@ -1472,6 +1473,24 @@ namespace K3CSharp
                 // Directory function - niladic, create function call
                 var functionNode = ASTNode.MakeVariable("_d");
                 return ASTNode.MakeFunctionCall(functionNode, new List<ASTNode>());
+            }
+            else if (Match(TokenType.BD))
+            {
+                // BD function - unary, create function call
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_bd");
+                if (operand != null) node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.DB))
+            {
+                // DB function - unary, create function call
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_db");
+                if (operand != null) node.Children.Add(operand);
+                return node;
             }
             else if (Match(TokenType.LSQ))
             {

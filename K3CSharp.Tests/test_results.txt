@@ -1,10 +1,10 @@
 Test File Validation:
-  Expected tests: 412
-  Actual .k files: 393
+  Expected tests: 469
+  Actual .k files: 450
   ✅ Test counts match perfectly!
 =========================
 Running K3CSharp Tests...
-Total tests: 412
+Total tests: 469
 =========================
 ✓ adverb_each_vector_minus.k: 9 18 27
 ✓ adverb_each_vector_multiply.k: 4 10 18
@@ -29,7 +29,7 @@ Total tests: 412
 ✓ adverb_scan_power.k: 2 8 64
 ✓ adverb_scan_with_initialization_1.k: 1 3 6 10 15
 ✓ adverb_scan_with_initialization_2.k: 2 3 5 8 12
-✗ adverb_scan_with_initialization_divide.k: Error - Unknown operator: /
+✓ adverb_scan_with_initialization_divide.k: (2;2;1;0.3333333;0.08333333)
 ✓ adverb_scan_with_initialization_minus.k: 2 1 -1 -4 -8
 ✓ adverb_scan_with_initialization.k: 2 2 4 12
 ✓ anonymous_function_double_param.k: {[op1;op2] op1*op2}
@@ -47,7 +47,7 @@ Total tests: 412
 ✓ cut_vector.k: (0 1;2 3;4 5 6 7)
 ✓ dictionary_empty.k: .()
 ✓ dictionary_index.k: 1
-✓ dictionary_index_attr.k: .((`c;3;);(`d;4;))
+✗ dictionary_index_attr.k: Error - Undefined variable: b.
 ✓ dictionary_index_value.k: 1
 ✓ dictionary_index_value2.k: 2
 ✓ dictionary_multiple.k: .((`a;1;);(`b;2;))
@@ -70,10 +70,10 @@ Total tests: 412
 ✓ float_types.k: 3.14
 ✗ function_add7.k: Expected '12', got '{[arg1] arg1+7}'
 ✗ function_call_anonymous.k: Expected '13', got '{[arg1] arg1+6}'
-✗ function_call_chain.k: Expected '20', got '{[op1;op2] op1*op2}'
+✗ function_call_chain.k: Error - Cannot subtract Function and Integer
 ✗ function_call_double.k: Expected '32', got '{[op1;op2] op1*op2}'
 ✗ function_call_simple.k: Expected '12', got '{[arg1] arg1+7}'
-✗ function_foo_chain.k: Expected '20', got '{[op1;op2] op1*op2}'
+✗ function_foo_chain.k: Error - Cannot subtract Function and Integer
 ✗ function_mul.k: Expected '32', got '{[op1;op2] op1*op2}'
 ✓ generate_operator.k: 0 0 0 0
 ✓ grade_down_operator.k: 1 2 3 4 0
@@ -125,7 +125,7 @@ Total tests: 412
 ✓ parentheses_nested5.k: 29
 ✓ parentheses_precedence.k: 7
 ✓ parenthesized_vector.k: 1 2 3 4
-✓ power_operator.k: 8
+✗ power_operator.k: Error - Unknown binary operator: POWER
 ✓ precedence_chain1.k: 1410
 ✓ precedence_chain2.k: 0.07092199
 ✓ precedence_complex1.k: 0.7142857
@@ -133,8 +133,8 @@ Total tests: 412
 ✓ precedence_mixed1.k: 0
 ✓ precedence_mixed2.k: 25
 ✓ precedence_mixed3.k: 11
-✓ precedence_power1.k: 128
-✓ precedence_power2.k: 83
+✗ precedence_power1.k: Error - Unknown binary operator: POWER
+✗ precedence_power2.k: Error - Unknown binary operator: POWER
 ✓ precedence_spec1.k: 11.57143
 ✓ precedence_spec2.k: 6
 ✓ reciprocal_operator.k: 0.25
@@ -168,7 +168,7 @@ Total tests: 412
 ✓ special_long_neg_inf.k: -0Ij
 ✓ special_long_null.k: 0Nj
 ✓ special_long_pos_inf.k: 0Ij
-✓ special_null.k: _n
+✗ special_null.k: Expected '_n', got ''
 ✓ special_int_pos_inf_plus_1.k: 0N
 ✓ special_int_null_plus_1.k: -0I
 ✓ special_int_neg_inf_plus_1.k: -2147483646
@@ -177,11 +177,8 @@ Total tests: 412
 ✓ special_1_plus_int_null.k: -0I
 ✓ special_int_vector.k: 0I 0N -0I
 ✓ special_float_vector.k: 0i 0n -0i
-DEBUG: ParseTerm bracket handling loop reached
 ✓ square_bracket_function.k: 2
-DEBUG: ParseTerm bracket handling loop reached
 ✓ square_bracket_vector_multiple.k: 14 16
-DEBUG: ParseTerm bracket handling loop reached
 ✓ square_bracket_vector_single.k: 14
 ✓ string_representation_int.k: "42"
 ✓ string_representation_mixed.k: "(1;2.5;\"a\")"
@@ -254,12 +251,10 @@ DEBUG: ParseTerm bracket handling loop reached
 ✓ variable_assignment.k: 7
 ✓ variable_reassignment.k: 7.2 4.5
 ✗ variable_scoping_global_access.k: Expected '150', got '{[x] globalVar+x}'
-✗ variable_scoping_global_assignment.k: Error - Unexpected token: GLOBAL_ASSIGNMENT(::)
-✗ variable_scoping_global_unchanged.k: Error - Unexpected token: RIGHT_BRACE(})
-✗ variable_scoping_local_hiding.k: Expected '60', got '{[x] 
- globalVar : x*2 
- globalVar+10}'
-✗ variable_scoping_nested_functions.k: Expected '25', got '7'
+✗ variable_scoping_global_assignment.k: Error - Expected '}' after function body
+✗ variable_scoping_global_unchanged.k: Error - Expected '}' after function body
+✗ variable_scoping_local_hiding.k: Error - Expected '}' after function body
+✗ variable_scoping_nested_functions.k: Error - Expected '}' after function body
 ✓ variable_usage.k: 30
 ✓ dot_execute.k: 4
 ✓ dot_execute_context.k: 8
@@ -270,7 +265,7 @@ DEBUG: ParseTerm bracket handling loop reached
 ✓ monadic_format_types.k: "42.5"
 ✓ monadic_format_vector.k: (,"1";,"2";,"3")
 ✓ monadic_format_string_hello.k: "hello"
-✓ monadic_format_string_a.k: ,"a"
+✗ monadic_format_string_a.k: Expected ',"a"', got '""a""'
 ✓ monadic_format_symbol_hello.k: "hello"
 ✓ monadic_format_symbol_simple.k: "test"
 ✓ monadic_format_dictionary.k: ".((`a;1;);(`b;2;);(`c;3;))"
@@ -306,41 +301,58 @@ DEBUG: ParseTerm bracket handling loop reached
 ✓ form_braces_float.k: 4.0 3.75 0.6 -1.0
 ✓ form_braces_mixed_arith.k: 17.5 32.5 4.5
 ✓ form_braces_example.k: 8 9
-DEBUG: ParseTerm bracket handling loop reached
-DEBUG: ParseTerm bracket handling loop reached
-DEBUG: ParseTerm bracket handling loop reached
 ✓ form_braces_function_calls.k: 5 20 12
-DEBUG: ParseTerm bracket handling loop reached
-DEBUG: ParseTerm bracket handling loop reached
-DEBUG: ParseTerm bracket handling loop reached
 ✓ form_braces_nested_function_calls.k: 5 8 25
 ✓ log.k: 2.302585
-✗ time.k: Error - _t (current time) operation reserved for future use
-✗ draw.k: Error - _draw (random number generation) operation reserved for future use
+✓ time_t.k: .((`type;1;);(`shape;!0;))
+✓ rand_draw_select.k: .((`type;-1;);(`shape;,10;))
+✓ rand_draw_deal.k: .((`type;-1;);(`shape;,4;);(`allitemsunique;1;))
+✓ rand_draw_probability.k: .((`type;-2;);(`shape;,10;))
+✓ rand_draw_vector_select.k: .((`type;0;);(`shape;,2;))
+✓ rand_draw_vector_deal.k: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
+✓ rand_draw_vector_probability.k: .((`type;0;);(`shape;,2;))
+✗ draw.k: Error - _draw requires dyadic call (left and right arguments)
+✓ time_gtime.k: 20350101 0
+✗ time_lt.k: Error - Undefined variable: lt
+✗ time_jd.k: Error - Undefined variable: jd
+✗ time_dj.k: Error - Undefined variable: dj
+✓ time_ltime.k: 20341231 190000
 ✓ in.k: 4
+✓ list_dv_basic.k: 3 5
+✓ list_dv_nomatch.k: 3 4 4 5
+✓ list_di_basic.k: 3 4 5
+✓ list_di_multiple.k: 3 4
+✓ list_sv_base10.k: 1995
+✓ list_sv_base2.k: 9
+✓ list_sv_mixed.k: 1995
+✗ list_getenv.k: Expected '"C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\euseb\bin;C:\Program Files\Microsoft MPI\Bin\;C:\Program Files\Eclipse Adoptium\jdk-8.0.382.5-hotspot\bin;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\ia32;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\Intel64;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\HP\HP Performance Advisor;C:\Program Files (x86)\QuickTime\QTSystem\;C:\Program Files (x86)\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\CMake\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\Microsoft Emulator Manager\1.0\;C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Pages\v1.0\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Users\euseb\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files (x86)\nodejs\;C:\Program Files\Common Files\Avid\Eucon;C:\Program Files (x86)\Common Files\Avid\Eucon;C:\Program Files\Avid\Avid Link\jre\bin;C:\Program Files (x86)\dotnet\;c:\Windows\SysWOW64\;c:\Windows\Sysnative\;c:\program files (x86)\iracing\d3dgear;C:\Program Files (x86)\Common Files\DivX Shared\DesktopService;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\gs\gs10.00.0\bin;C:\Program Files (x86)\Windows Kits\10\Microsoft Application Virtualization\Sequencer\;C:\Program Files\Calibre2\;C:\Program Files\NVIDIA Corporation\Nsight Compute 2020.1.1\;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files\Git LFS;C:\Program Files\GitHub CLI\;C:\Program Files (x86)\Incredibuild;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\Acustica\Medusa Framework\;C:\Program Files\Git\cmd;C:\Users\euseb\.local\bin;C:\Progra~1\NVIDIA~2\CUDA\v11.0\libnvvp;C:\Progra~1\NVIDIA~2\CUDA\v11.0\bin;C:\Progra~2\Common~1\Intel\Shared~1\redist\intel6~1\compiler;C:\Users\euseb\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Imaginando\DLYM;C:\Users\euseb\.dotnet\tools;C:\Users\euseb\AppData\Roaming\npm;C:\Users\euseb\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Imaginando\K7D;C:\Program Files\Imaginando\FRMS;C:\Program Files\Imaginando\DRC;C:\Users\euseb\AppData\Local\Programs\Ollama;C:\Users\euseb\.local\bin;C:\Users\euseb\.dotnet\tools"', got '"C:\Users\euseb\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\euseb\bin;C:\Program Files\Microsoft MPI\Bin;C:\Program Files\Eclipse Adoptium\jdk-8.0.382.5-hotspot\bin;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\ia32;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\Intel64;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\HP\HP Performance Advisor;C:\Program Files (x86)\QuickTime\QTSystem;C:\Program Files (x86)\Common Files\Propellerhead Software\ReWire;C:\Program Files\Common Files\Propellerhead Software\ReWire;C:\Program Files\Microsoft SQL Server\130\Tools\Binn;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn;C:\Program Files (x86)\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\CMake\bin;C:\Program Files\dotnet;C:\Program Files (x86)\Microsoft Emulator Manager\1.0;C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Pages\v1.0;C:\Program Files\Microsoft SQL Server\110\Tools\Binn;C:\Users\euseb\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm;C:\Program Files\Microsoft SQL Server\120\Tools\Binn;C:\Program Files (x86)\nodejs;C:\Program Files\Common Files\Avid\Eucon;C:\Program Files (x86)\Common Files\Avid\Eucon;C:\Program Files\Avid\Avid Link\jre\bin;C:\Program Files (x86)\dotnet;C:\Windows\SysWOW64;C:\Windows\Sysnative;C:\program files (x86)\iracing\d3dgear;C:\Program Files (x86)\Common Files\DivX Shared\DesktopService;C:\Program Files\Microsoft SQL Server\150\Tools\Binn;C:\Program Files\gs\gs10.00.0\bin;C:\Program Files (x86)\Windows Kits\10\Microsoft Application Virtualization\Sequencer;C:\Program Files\Calibre2;C:\Program Files\NVIDIA Corporation\Nsight Compute 2020.1.1;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files\Git LFS;C:\Program Files\GitHub CLI;C:\Program Files (x86)\Incredibuild;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit;C:\Program Files\Acustica\Medusa Framework;C:\Program Files\Git\cmd;C:\Users\euseb\.local\bin;C:\Progra~1\NVIDIA~2\CUDA\v11.0\libnvvp;C:\Progra~1\NVIDIA~2\CUDA\v11.0\bin;C:\Progra~2\Common~1\Intel\Shared~1\redist\intel6~1\compiler;C:\Users\euseb\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Imaginando\DLYM;C:\Users\euseb\.dotnet\tools;C:\Users\euseb\AppData\Roaming\npm;C:\Users\euseb\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Imaginando\K7D;C:\Program Files\Imaginando\FRMS;C:\Program Files\Imaginando\DRC;C:\Users\euseb\AppData\Local\Programs\Ollama;C:\Users\euseb\.local\bin;C:\Users\euseb\.dotnet\tools;C:\Users\euseb\.windsurf\extensions\ms-python.debugpy-2025.18.0-win32-x64\bundled\scripts\noConfigScripts;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl"'
+✓ list_setenv.k: `TESTVAR
+✗ list_size.k: Error - _size: error accessing file 'README.md': _size: file 'README.md' not found
+✗ list_size_existing.k: Expected '872.0', got '1061.0'
+✓ test_ci_basic.k: "A"
+✓ test_ci_vector.k: "ABC"
+✓ test_ic_basic.k: 65
+✓ test_vs_dyadic.k: 1 9 9 5
+✓ test_ic_vector.k: 65 66 67
+✓ test_monadic_colon.k: 42
+✓ test_sm_basic.k: 1
+✓ test_sm_simple.k: 1
+✓ test_ss_basic.k: 7
+✗ test_semicolon.k: Expected '1 2 3 4', got '3 4'
 ✓ search_in_basic.k: 4
 ✓ search_in_notfound.k: 0
-✗ search_bin_basic.k: Expected '4', got '1 2 3 4 5'
-✗ search_binl_eachleft.k: Expected '1 0 1', got '1 3 5'
-✗ search_lin_intersection.k: Expected '1 0 1 0 1', got '1 3 5 7 9'
-DEBUG: About to ParseExpression inside brackets
-DEBUG: ParseExpression returned: Block
-DEBUG: About to Match RIGHT_BRACKET
-✗ amend_item_basic.k: Expected '1 12 3', got '1'
-DEBUG: About to ParseExpression inside brackets
-DEBUG: ParseExpression returned: Block
-DEBUG: About to Match RIGHT_BRACKET
-✗ amend_item_multiple.k: Expected '11 2 13', got '1'
-DEBUG: About to ParseExpression inside brackets
-DEBUG: ParseExpression returned: Block
-DEBUG: About to Match RIGHT_BRACKET
-✗ amend_item_monadic.k: Expected '1 4 3', got '1'
+✓ search_bin_basic.k: 1
+✓ search_binl_eachleft.k: 0 1 1 2 2
+✓ search_lin_intersection.k: 1 1 1 0 0
+✗ amend_item_basic.k: Error - List indices must be integers
+✗ amend_item_multiple.k: Error - List indices must be integers
+✗ amend_item_monadic.k: Error - List indices must be integers
 ✗ amend_test.k: Expected '1 12 3 4 5', got '`.'
 ✓ amend_simple.k: 1 12 3 4 5
 ✓ find_basic.k: 2
 ✓ find_notfound.k: 7
 ✗ bin.k: Error - Unexpected token: BIN(_bin)
-✗ lsq.k: Error - _lsq (least squares) operation reserved for future use
+✗ lsq.k: Error - Binary operator must have exactly 2 children, got 0
 ✓ format_float_precision_vector_simple.k: ("       1.5";"       2.5")
 ✓ format_float_precision_mixed_vector.k: ("   1.50";"   2.70";"   3.14";"   4.20")
 ✓ format_pad_mixed_vector.k: ("         1";"         2";"         3")
@@ -376,65 +388,28 @@ DEBUG: About to Match RIGHT_BRACKET
 ✓ adverb_tick_colon_basic.k: 4 1 3 8
 ✗ amend_apply.k: Expected '(1 2 13 4 5
 6 7 8 9 10)', got '`.'
-✗ amend_dot_test.k: Error - Dictionary entry must be a tuple (2 elements) or triplet (3 elements)
-DEBUG: About to ParseExpression inside brackets
-DEBUG: ParseExpression returned: Vector
-DEBUG: About to Match RIGHT_BRACKET
-✗ amend_item_simple.k: Expected '@[1 2 3]', got '0'
-DEBUG: About to ParseExpression inside brackets
-DEBUG: ParseExpression returned: Literal
-DEBUG: About to Match RIGHT_BRACKET
+✗ amend_dot_test.k: Error - Dictionary key must be a symbol
+✗ amend_item_simple.k: Error - For atomic data, indices must be empty list
 ✗ amend_item_single.k: Expected '@[1 2 3]', got '1'
 ✗ amend_minimal.k: Expected '@[1 2 3]', got '`.'
 ✗ amend_parenthesized.k: Expected '@[1 2 3]', got '`.'
 ✗ amend_test_anonymous_func.k: Expected '1 12 3 4 5', got '`.'
 ✗ amend_test_func_var.k: Expected '11 2 3', got '`.'
-DEBUG: About to ParseExpression inside brackets
-DEBUG: ParseExpression returned: Block
-DEBUG: About to Match RIGHT_BRACKET
 ✗ conditional_bracket_test.k: Error - Undefined variable: :
-DEBUG: About to ParseExpression inside brackets
-DEBUG: ParseExpression returned: Block
-DEBUG: About to Match RIGHT_BRACKET
 ✗ conditional_false.k: Error - Undefined variable: :
-DEBUG: About to ParseExpression inside brackets
-DEBUG: ParseExpression returned: Block
-DEBUG: About to Match RIGHT_BRACKET
 ✗ conditional_simple_test.k: Error - Undefined variable: :
-DEBUG: About to ParseExpression inside brackets
-DEBUG: ParseExpression returned: Block
-DEBUG: About to Match RIGHT_BRACKET
 ✗ conditional_true.k: Error - Undefined variable: :
 ✓ dictionary_null_index.k: 1 2
-✓ dictionary_unmake.k: ((`a;1;);(`b;2;))
-DEBUG: ParseTerm bracket handling loop reached
+✗ dictionary_unmake.k: Error - Undefined variable: .d
 ✗ do_bracket_test.k: Error - Do function requires at least 2 arguments: count and expression(s)
-DEBUG: ParseTerm bracket handling loop reached
 ✗ do_loop.k: Error - Expected ']' after arguments expression
-DEBUG: ParseTerm bracket handling loop reached
 ✗ do_simple.k: Error - Do function requires at least 2 arguments: count and expression(s)
-✗ dyadic_divide_bracket.k: Expected '2.5', got '_n'
-DEBUG: About to ParseExpression inside brackets
-DEBUG: ParseExpression returned: Block
-DEBUG: About to Match RIGHT_BRACKET
-✗ dyadic_minus_bracket.k: Error - - operator requires 2 arguments
-DEBUG: About to ParseExpression inside brackets
-DEBUG: ParseExpression returned: Block
-DEBUG: About to Match RIGHT_BRACKET
-✗ dyadic_multiply_bracket.k: Error - * operator requires 2 arguments
-DEBUG: About to ParseExpression inside brackets
-DEBUG: ParseExpression returned: Block
-DEBUG: About to Match RIGHT_BRACKET
-✓ dyadic_plus_bracket.k: 5
-DEBUG: ParseTerm bracket handling loop reached
+✓ dyadic_divide_bracket.k: 5
+✓ dyadic_minus_bracket.k: 7
+✓ dyadic_multiply_bracket.k: 24
+✓ dyadic_plus_bracket.k: 8
 ✗ empty_brackets_dictionary.k: Error - Unexpected token: RIGHT_BRACKET(])
-DEBUG: ParseTerm bracket handling loop reached
 ✗ empty_brackets_vector.k: Error - Unexpected token: RIGHT_BRACKET(])
-DEBUG: ParseTerm bracket handling loop reached
-DEBUG: ParseTerm bracket handling loop reached
-DEBUG: ParseTerm bracket handling loop reached
-DEBUG: ParseTerm bracket handling loop reached
-DEBUG: ParseTerm bracket handling loop reached
 ✓ form_braces_complex_expressions.k: 14 20 10
 ✗ format_float_precision_complex_mixed.k: Expected '("   1.50";"   2.70";"   3.14";"   4.20")', got '("     1.234";"     2.567";"     3.890";"     4.123")'
 ✗ format_float_vector.k: Expected '("       1.5";"       2.5")', got '""'
@@ -444,11 +419,8 @@ DEBUG: ParseTerm bracket handling loop reached
 ✓ format_string_pad_right.k: "test      "
 ✗ format_vector_int.k: Expected '("1";"2";"3")', got '""'
 ✓ group_operator.k: (0 1 6;2 7 16;3 5 12 15 17;,4;8 9;,10;,11;,13;14 18;,19)
-DEBUG: ParseTerm bracket handling loop reached
 ✗ if_bracket_test.k: Error - Cannot compare Integer and Vector with <
-DEBUG: ParseTerm bracket handling loop reached
 ✗ if_simple_test.k: Error - If function requires at least 2 arguments: condition and expression(s)
-DEBUG: ParseTerm bracket handling loop reached
 ✗ if_true.k: Error - Cannot compare Integer and Vector with <
 ✓ in_basic.k: 4
 ✓ in_notfound.k: 0
@@ -456,7 +428,7 @@ DEBUG: ParseTerm bracket handling loop reached
 ✓ monadic_format_types.k: "42.5"
 ✓ monadic_format_vector.k: (,"1";,"2";,"3")
 ✓ monadic_format_string_hello.k: "hello"
-✓ monadic_format_string_a.k: ,"a"
+✗ monadic_format_string_a.k: Expected ',"a"', got '""a""'
 ✓ monadic_format_symbol_hello.k: "hello"
 ✓ monadic_format_symbol_simple.k: "test"
 ✗ monadic_format_dictionary.k: Expected '.((`a;1;);(`b;2;);(`c;3;))', got '".((`a;1;);(`b;2;);(`c;3;))"'
@@ -475,13 +447,35 @@ DEBUG: ParseTerm bracket handling loop reached
 ✓ take_operator_empty_float.k: 0#0.0
 ✓ take_operator_empty_symbol.k: 0#`
 ✓ take_operator_overflow.k: 1 2 3 1 2 3 1 2 3 1
+✓ k_tree_assignment_absolute_foo.k: 42
+✓ k_tree_retrieve_absolute_foo.k: 42
+✓ k_tree_retrieval_relative.k: 42
+✓ k_tree_enumerate.k: `k`t
+✓ k_tree_current_branch.k: `.k
+✓ k_tree_dictionary_indexing.k: 42
+✓ k_tree_nested_indexing.k: 2
+✓ k_tree_verify_root.k: 
+✓ k_tree_flip_dictionary.k: .((`a;1;);(`b;2;);(`c;3;))
+✓ k_tree_null_to_dict_conversion.k: .,(`foo;42;)
+✓ k_tree_dictionary_assignment.k: .((`a;1;);(`b;2;);(`c;3;))
+✓ k_tree_test_bracket_indexing.k: 2
+✓ k_tree_flip_test.k: ((`a;1);(`b;2);(`c;3))
 ✓ vector_null_index.k: 1 2 3 4
-DEBUG: ParseTerm bracket handling loop reached
 ✗ while_bracket_test.k: Error - Expected ']' after arguments expression
-DEBUG: ParseTerm bracket handling loop reached
 ✗ while_safe_test.k: Error - Cannot compare Integer and Vector with <
-DEBUG: ParseTerm bracket handling loop reached
 ✗ while_simple_test.k: Error - While function requires at least 2 arguments: condition and expression(s)
+✓ serialization_bd_db_integer.k: 1 0 0 0 8 0 0 0 1 0 0 0 0 0 0 42 0 0 0
+✓ serialization_bd_db_float.k: 1 0 0 0 16 0 0 0 2 0 0 0 0 0 0 0 110 134 27 240 249 33 9 64
+✓ serialization_bd_db_character.k: 1 0 0 0 8 0 0 0 3 0 0 0 97 0 0 0
+✓ serialization_bd_db_symbol.k: 1 0 0 0 11 0 0 0 4 0 0 0 115 121 109 98 111 108 0
+✓ serialization_bd_db_null.k: 1 0 0 0 8 0 0 0 6 0 0 0 0 0 0
+✓ serialization_bd_db_integervector.k: 1 0 0 0 28 0 0 0 255 255 255 255 3 0 0 0 1 0 0 0 2 0 0 0 3 0 0 0
+✓ serialization_bd_db_charactervector.k: 1 0 0 0 21 0 0 0 253 255 255 255 5 0 0 0 104 101 108 108 111 0
+✓ serialization_bd_db_symbolvector.k: 1 0 0 0 22 0 0 0 252 255 255 255 3 0 0 0 97 0 98 0 99 0
+✗ serialization_bd_db_list.k: Error - _bd (bytes from data) operation failed: Unable to cast object of type 'K3CSharp.FloatValue' to type 'K3CSharp.IntegerValue'.
+✗ serialization_bd_db_dictionary.k: Error - _bd (bytes from data) operation failed: Vector type not supported for serialization: K3CSharp.VectorValue
+✗ serialization_bd_db_anonymousfunction.k: Error - _bd (bytes from data) operation failed: Unsupported type for _bd: K3CSharp.FunctionValue
+✓ serialization_bd_db_roundtrip_integer.k: 704643072
 
-Test Results: 342/412 passed (83.0%)
+Test Results: 389/469 passed (82.9%)
 Detailed results table written to: T:\_src\github.com\ERufian\ksharp\K3CSharp.Tests\results_table.txt

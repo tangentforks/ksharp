@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-02-11 01:24:58
+Generated: 2026-02-11 21:11:44
 
 SUMMARY:
 --------
-Total Tests:     438
-✅ Matched:       350
-❌ Differed:      58
+Total Tests:     450
+✅ Matched:       347
+❌ Differed:      67
 ⚠️  Skipped:       0
-💥 Errors:        30
-Success Rate:    79.9%
+💥 Errors:        36
+Success Rate:    77.1%
 
 DETAILED RESULTS:
 -----------------
@@ -226,7 +226,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   list_di_multiple.k                                 3 4                            3 4                                                                              
 ✅ PASS   list_dv_basic.k                                    3 5                            3 5                                                                              
 ✅ PASS   list_dv_nomatch.k                                  3 4 4 5                        3 4 4 5                                                                          
-❌ FAIL   list_getenv.k                                      "C:\Program Files\Microso...   "C:\\Program Files\\Micro...                                                     
+❌ FAIL   list_getenv.k                                      "C:\Users\euseb\bin;C:\Pr...   "C:\\Users\\euseb\\bin;C:...                                                     
 ❌ FAIL   list_setenv.k                                      `TESTVAR                                                                                                        
 ✅ PASS   list_size_existing.k                               1061.0                         1061.0                                                                           
 ✅ PASS   list_size.k                                        2933.0                         2933.0                                                                           
@@ -298,7 +298,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   parentheses_precedence.k                           7                              7                                                                                
 ✅ PASS   parenthesized_vector.k                             1 2 3 4                        1 2 3 4                                                                          
 ✅ PASS   plus_over_empty.k                                  0                              0                                                                                
-✅ PASS   power_operator.k                                   8                              8                              smart integer division, inverse and exponenti...  
+💥 ERROR power_operator.k                                                                  8.0                            K3Sharp error, k.exe succeeded                    
 ✅ PASS   precedence_chain1.k                                1410                           1410                                                                             
 ✅ PASS   precedence_chain2.k                                0.07092199                     0.07092199                                                                       
 ✅ PASS   precedence_complex1.k                              0.7142857                      0.7142857                                                                        
@@ -306,8 +306,8 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   precedence_mixed1.k                                0                              0                                                                                
 ✅ PASS   precedence_mixed2.k                                25                             25                                                                               
 ✅ PASS   precedence_mixed3.k                                11                             11                                                                               
-✅ PASS   precedence_power1.k                                128                            128                            smart integer division, inverse and exponenti...  
-✅ PASS   precedence_power2.k                                83                             83                             smart integer division, inverse and exponenti...  
+💥 ERROR precedence_power1.k                                                               128.0                          K3Sharp error, k.exe succeeded                    
+💥 ERROR precedence_power2.k                                                               83.0                           K3Sharp error, k.exe succeeded                    
 ✅ PASS   precedence_spec1.k                                 11.57143                       11.57143                                                                         
 ✅ PASS   precedence_spec2.k                                 6                              6                              smart integer division, inverse and exponenti...  
 ✅ PASS   rand_draw_deal.k                                   .((`type;-1;);(`shape;,4;...   .((`type;-1;);(`shape;,4;...   Compact representation                            
@@ -329,6 +329,18 @@ Status   Test File                                          K3Sharp Output      
 ❌ FAIL   semicolon_simple.k                                 (7;14;-17.45)                  (7;11;-20.45)                                                                    
 ❌ FAIL   semicolon_vars.k                                   30 210 0                       30 200 -10                                                                       
 ❌ FAIL   semicolon_vector.k                                 (7;6 7;-17.45)                 (7;3 4;-20.45)                 Compact representation                            
+💥 ERROR serialization_bd_db_anonymousfunction.k                                           "\001\000\000\000\017\000...   K3Sharp error, k.exe succeeded                    
+❌ FAIL   serialization_bd_db_character.k                    1 0 0 0 8 0 0 0 3 0 0 0 9...   "\001\000\000\000\b\000\0...                                                     
+❌ FAIL   serialization_bd_db_charactervector.k              1 0 0 0 21 0 0 0 253 255 ...   "\001\000\000\000\016\000...                                                     
+💥 ERROR serialization_bd_db_dictionary.k                                                                                 Both K3Sharp and k.exe errors                     
+❌ FAIL   serialization_bd_db_float.k                        1 0 0 0 16 0 0 0 2 0 0 0 ...   "\001\000\000\000\020\000...                                                     
+❌ FAIL   serialization_bd_db_integer.k                      1 0 0 0 8 0 0 0 1 0 0 0 0...   "\001\000\000\000\b\000\0...                                                     
+❌ FAIL   serialization_bd_db_integervector.k                1 0 0 0 28 0 0 0 255 255 ...   "\001\000\000\000\024\000...                                                     
+💥 ERROR serialization_bd_db_list.k                                                        "\001\000\000\000(\000\00...   K3Sharp error, k.exe succeeded                    
+❌ FAIL   serialization_bd_db_null.k                         1 0 0 0 8 0 0 0 6 0 0 0 0...   "\001\000\000\000\b\000\0...                                                     
+❌ FAIL   serialization_bd_db_roundtrip_integer.k            704643072                      42                                                                               
+❌ FAIL   serialization_bd_db_symbol.k                       1 0 0 0 11 0 0 0 4 0 0 0 ...   "\001\000\000\000\013\000...                                                     
+❌ FAIL   serialization_bd_db_symbolvector.k                 1 0 0 0 22 0 0 0 252 255 ...   "\001\000\000\000\016\000...                                                     
 ✅ PASS   shape_operator_empty_vector.k                      ,0                             ,0                                                                               
 ✅ PASS   shape_operator_jagged_3d.k                         2 2                            2 2                                                                              
 ✅ PASS   shape_operator_jagged_matrix.k                     ,3                             ,3                                                                               
@@ -514,7 +526,7 @@ File: float_exponential_large.k
 K3Sharp: 1e+015
 k.exe:   1e+15
 
-... and 48 more failed tests
+... and 57 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------
@@ -548,8 +560,12 @@ Error: K3Sharp Error: Undefined variable: :
 File: conditional_true.k
 Error: K3Sharp Error: Undefined variable: :
 
-... and 20 more error tests
+... and 26 more error tests
 
 K.EXE FAILING TESTS:
 --------------------
-No tests failing in k.exe found!
+Test: serialization_bd_db_dictionary.k
+Input: // Test _bd and _db for Dictionary serialization
+_bd ((`a;`1);(`b;`2))
+Error: K3Sharp Error: _bd (bytes from data) operation failed: Vector type not supported for serialization: K3CSharp.VectorValue
+

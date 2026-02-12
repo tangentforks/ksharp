@@ -870,16 +870,6 @@ namespace K3CSharp
             throw new Exception("_ssr (string search and replace) operation reserved for future use");
         }
 
-        private K3Value BdFunction(K3Value operand)
-        {
-            throw new Exception("_bd (bytes from data) operation reserved for future use");
-        }
-
-        private K3Value DbFunction(K3Value operand)
-        {
-            throw new Exception("_db (data from bytes) operation reserved for future use");
-        }
-
         private K3Value GetenvFunction(K3Value operand)
         {
             string varName = operand switch
