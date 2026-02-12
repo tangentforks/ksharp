@@ -1768,41 +1768,51 @@ namespace K3CSharp
                 
                 foreach (var element in vec.Elements)
                 {
+                    // Handle both VectorValue and KList for dictionary entries
+                    List<K3Value> entryElements;
+                    
                     if (element is VectorValue entryVec)
                     {
-                        if (entryVec.Elements.Count == 2)
+                        entryElements = entryVec.Elements;
+                    }
+                    else if (element is KList entryList)
+                    {
+                        // Convert KList elements back to K3Value
+                        entryElements = entryList.Elements.Cast<K3Value>().ToList();
+                    }
+                    else
+                    {
+                        throw new Exception("Dictionary entries must be vectors or lists");
+                    }
+                    
+                    if (entryElements.Count == 2)
+                    {
+                        // Tuple (key; value) - attribute is null
+                        if (entryElements[0] is SymbolValue key)
                         {
-                            // Tuple (key; value) - attribute is null
-                            if (entryVec.Elements[0] is SymbolValue key)
-                            {
-                                newDict[key] = (entryVec.Elements[1], new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue Attribute)>()));
-                            }
-                            else
-                            {
-                                throw new Exception("Dictionary key must be a symbol");
-                            }
-                        }
-                        else if (entryVec.Elements.Count == 3)
-                        {
-                            // Triplet (key; value; attribute)
-                            if (entryVec.Elements[0] is SymbolValue key)
-                            {
-                                var attribute = entryVec.Elements[2] as DictionaryValue;
-                                newDict[key] = (entryVec.Elements[1], attribute ?? new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue Attribute)>()));
-                            }
-                            else
-                            {
-                                throw new Exception("Dictionary key must be a symbol");
-                            }
+                            newDict[key] = (entryElements[1], new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue Attribute)>()));
                         }
                         else
                         {
-                            throw new Exception("Dictionary entry must be a tuple (2 elements) or triplet (3 elements)");
+                            throw new Exception("Dictionary key must be a symbol");
+                        }
+                    }
+                    else if (entryElements.Count == 3)
+                    {
+                        // Triplet (key; value; attribute)
+                        if (entryElements[0] is SymbolValue key)
+                        {
+                            var attribute = entryElements[2] as DictionaryValue;
+                            newDict[key] = (entryElements[1], attribute ?? new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue Attribute)>()));
+                        }
+                        else
+                        {
+                            throw new Exception("Dictionary key must be a symbol");
                         }
                     }
                     else
                     {
-                        throw new Exception("Dictionary entries must be vectors");
+                        throw new Exception("Dictionary entry must be a tuple (2 elements) or triplet (3 elements)");
                     }
                 }
                 

@@ -2190,17 +2190,42 @@ namespace K3CSharp
                         }
                     }
                     
-                    // Parse space-separated vector
-                    var expression = ParseExpression();
+                    // Parse remaining elements separated by semicolons
+                    while (Match(TokenType.SEMICOLON))
+                    {
+                        // Handle empty position (consecutive semicolons)
+                        if (CurrentToken().Type == TokenType.RIGHT_PAREN)
+                        {
+                            elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                        }
+                        else
+                        {
+                            var beforeParsePos = current;
+                            var expr = ParseExpression();
+                            
+                            // If we didn't make progress, break to avoid infinite loop
+                            if (current == beforeParsePos)
+                            {
+                                elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                            }
+                            else if (expr != null)
+                            {
+                                elements.Add(expr);
+                            }
+                            else
+                            {
+                                elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                            }
+                        }
+                    }
                     
                     if (!Match(TokenType.RIGHT_PAREN))
                     {
                         throw new Exception("Expected ')' after expression");
                     }
                     
-                    // If the expression is a vector, keep it as a vector
-                    // Otherwise, return the expression as-is
-                    return expression ?? ASTNode.MakeLiteral(new NullValue());
+                    // Return the vector
+                    return ASTNode.MakeVector(elements);
                 }
                 else
                 {
