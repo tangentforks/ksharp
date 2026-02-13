@@ -479,7 +479,7 @@
 ║ serialization_bd_integer_edge_1.k                  │ _bd 1                │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_-1.k                 │ _bd -1               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_2147483647.k         │ _bd 2147483647       │ "\001\000\000\0...   │                      ║
-║ serialization_bd_integer_edge_-2147483648.k        │ _bd -2147483648      │ Error: Value wa...   │ "\001\000\000\0...   ║
+║ serialization_bd_integer_edge_-2147483648.k        │ _bd -2147483648      │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_0N.k                 │ _bd 0N               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_0I.k                 │ _bd 0I               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_-0I.k                │ _bd -0I              │ "\001\000\000\0...   │                      ║
@@ -496,7 +496,7 @@
 ║ serialization_bd_symbol_edge_test123.k             │ _bd `test123         │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_symbol_edge_underscore.k          │ _bd `_underscore     │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_symbol_edge_hello.k               │ _bd `"hello"         │ "\001\000\000\0...   │                      ║
-║ serialization_bd_symbol_edge_newline_tab.k         │ _bd `"\n\t"          │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_symbol_edge_newline_tab.k         │ _bd `"\n\t"          │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_symbol_edge_001.k                 │ _bd `"\001"          │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_symbol_edge_empty.k               │ _bd `                │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_character_edge_a.k                │ _bd "a"              │ "\001\000\000\0...   │                      ║
@@ -531,16 +531,16 @@
 ║ serialization_bd_anonymousfunction_random_1.k      │ _bd {[x] x+7;x$1;x<=2} │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_anonymousfunction_random_2.k      │ _bd {[] 0|4;0&3}     │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_anonymousfunction_random_3.k      │ _bd {[xyz] xy|3}     │ "\001\000\000\0...   │ "\001\000\000\0...   ║
-║ serialization_bd_floatvector_random_1.k            │ _bd 196825.27335627712 -326371.90292283031 -214498.92985862558 11655.819143220946 │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_floatvector_random_1.k            │ _bd 196825.27335627712 -326371.90292283031 -214498.92985862558 11655.819143220946 │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_floatvector_random_2.k            │ _bd 148812.33236087282 │ "\001\000\000\0...   │                      ║
-║ serialization_bd_floatvector_random_3.k            │ _bd 585267.57816312299 -569668.94176055992 37200.312770306708 397004.01885714347 │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_floatvector_random_3.k            │ _bd 585267.57816312299 -569668.94176055992 37200.312770306708 397004.01885714347 │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_symbolvector_random_1.k           │ _bd `qzUM7 `g8X6P `"î­¥" `KgNQ5i `"< +" `b5 │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_symbolvector_random_2.k           │ _bd `"Ô 0" `D `qCBI1b `"*H " `"Â‰©" `ULsyI `"F~" `"C" `Mont `O25B │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_symbolvector_random_3.k           │ _bd `"õ³" `EE5ijP `trD0LuE `"ÓW" `"¸" `y │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_db_anonymousfunction.k            │ // Test _bd and _db for AnonymousFunction serialization │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_db_roundtrip_integer.k            │ // Test _bd and _db round-trip serialization │ 42                   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 430/535 tests passed (80.4%)                                                                               ║
+║ SUMMARY: 434/535 tests passed (81.1%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -956,20 +956,10 @@ Input: // Test _bd and _db for AnonymousFunction serialization
 Expected: "\001\000\000\000\017\000\000\000\n\000\000\000\000{[x] x+1}\000"
 Actual: "\001\000\000\000\020\000\000\000\n\000\000\000[x] x+1\000"
 ──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_integer_edge_-2147483648.k
-Input: _bd -2147483648
-Expected: "\001\000\000\000\b\000\000\000\001\000\000\000\001\000\000\200"
-Actual: Error: Value was either too large or too small for an Int32.
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_symbol_edge_newline_tab.k
-Input: _bd `"\n\t"
-Expected: "\001\000\000\000\007\000\000\000\004\000\000\000\n\t\000"
-Actual: "\001\000\000\000\t\000\000\000\004\000\000\000\\n\\t\000"
-──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_symbol_edge_001.k
 Input: _bd `"\001"
 Expected: "\001\000\000\000\006\000\000\000\004\000\000\000\001\000"
-Actual: "\001\000\000\000\t\000\000\000\004\000\000\000\\001\000"
+Actual: "\001\000\000\000\n\000\000\000\004\000\000\00014001\000"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_character_edge_null.k
 Input: _bd "\0"
@@ -1040,16 +1030,6 @@ Test: serialization_bd_anonymousfunction_random_3.k
 Input: _bd {[xyz] xy|3}
 Expected: "\001\000\000\000\024\000\000\000\n\000\000\000.k\000{[xyz] xy|3}\000"
 Actual: "\001\000\000\000\023\000\000\000\n\000\000\000[xyz] xy|3\000"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_floatvector_random_1.k
-Input: _bd 196825.27335627712 -326371.90292283031 -214498.92985862558 11655.819143220946
-Expected: "\001\000\000\000(\000\000\000\376\377\377\377\004\000\000\000sj\325/\312\006\bAl\315\227\234\217\353\023\301\026\270Yp\027/\n\301Z`\257\331\350\303\306@"
-Actual: "\001\000\000\000\030\000\000\000\376\377\377\377\002\000\000\000b\017\377\315\204\275\364@\276t~\367,\310\374\300"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_floatvector_random_3.k
-Input: _bd 585267.57816312299 -569668.94176055992 37200.312770306708 397004.01885714347
-Expected: "\001\000\000\000(\000\000\000\376\377\377\377\004\000\000\0002\377\004(g\334!A\253p.\342\211b!\301\317\3376\002\n*\342@zIO\0230;\030A"
-Actual: "\001\000\000\000 \000\000\000\376\377\377\377\003\000\000\000\300\241\243uQw\316@5\221\341\207\306\271 A\324iuy<\373\006A"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_symbolvector_random_1.k
 Input: _bd `qzUM7 `g8X6P `"î­¥" `KgNQ5i `"< +" `b5

@@ -576,7 +576,16 @@ namespace K3CSharp
                 if (lexeme == "0I" || lexeme == "0N" || lexeme == "-0I")
                     result = ASTNode.MakeLiteral(new IntegerValue(lexeme));
                 else
-                    result = ASTNode.MakeLiteral(new IntegerValue(int.Parse(lexeme)));
+                {
+                    int value = Int32.Parse(lexeme);
+                    // Convert extreme values to special values per spec
+                    if (value >= 2147483647)
+                        result = ASTNode.MakeLiteral(new IntegerValue("0I"));
+                    else if (value <= -2147483648)
+                        result = ASTNode.MakeLiteral(new IntegerValue("-0I"));
+                    else
+                        result = ASTNode.MakeLiteral(new IntegerValue(value));
+                }
             }
             else if (Match(TokenType.LONG))
             {

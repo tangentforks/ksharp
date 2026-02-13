@@ -97,6 +97,11 @@ namespace K3CSharp
                             position += 3;
                         }
                     }
+                    else if (position + 1 < input.Length && char.IsDigit(input[position + 1]))
+                    {
+                        // Negative number like -2147483648
+                        tokens.Add(ReadNumber());
+                    }
                     else
                     {
                         tokens.Add(new Token(TokenType.MINUS, "-", position));
@@ -437,8 +442,46 @@ namespace K3CSharp
                 string quotedValue = "";
                 while (currentChar != '"' && currentChar != '\0')
                 {
-                    quotedValue += currentChar;
-                    Advance();
+                    if (currentChar == '\\')
+                    {
+                        Advance(); // Skip backslash
+                        if (currentChar == '\0')
+                        {
+                            // End of input after backslash - treat backslash as literal
+                            quotedValue += '\\';
+                            break;
+                        }
+                        
+                        // Handle escape sequences in symbols
+                        switch (currentChar)
+                        {
+                            case '"':
+                                quotedValue += '"';
+                                break;
+                            case '\\':
+                                quotedValue += '\\';
+                                break;
+                            case 'n':
+                                quotedValue += '\n';
+                                break;
+                            case 't':
+                                quotedValue += '\t';
+                                break;
+                            case 'r':
+                                quotedValue += '\r';
+                                break;
+                            default:
+                                // Unknown escape sequence - treat backslash and character literally
+                                quotedValue += '\\' + currentChar;
+                                break;
+                        }
+                        Advance();
+                    }
+                    else
+                    {
+                        quotedValue += currentChar;
+                        Advance();
+                    }
                 }
                 if (currentChar == '"')
                 {
@@ -496,31 +539,39 @@ namespace K3CSharp
             bool hasDecimal = false;
             bool hasExponent = false;
             
-            // Handle negative special values FIRST (before regular number parsing)
-            if (currentChar == '-' && position + 2 < input.Length && 
-                input[position + 1] == '0' && 
-                (input[position + 2] == 'I' || input[position + 2] == 'i'))
+            // Handle negative numbers FIRST (including special values)
+            if (currentChar == '-' && position + 1 < input.Length && char.IsDigit(input[position + 1]))
             {
-                if (position + 3 < input.Length && input[position + 3] == 'j')
+                number += currentChar;
+                Advance();
+            }
+            
+            // Handle negative special values like -0I, -0i
+            if (number == "-" && position + 1 < input.Length && input[position] == '0' && 
+                position + 2 < input.Length && (input[position + 1] == 'I' || input[position + 1] == 'i'))
+            {
+                if (position + 3 < input.Length && input[position + 2] == 'j')
                 {
                     // -0Ij
-                    position += 4;
-                    var token = new Token(TokenType.LONG, "-0Ij", start);
+                    number += "0Ij";
+                    position += 3;
+                    var token = new Token(TokenType.LONG, number, start);
                     return token;
                 }
                 else
                 {
                     // -0I or -0i
-                    string special = input.Substring(position, 3);
-                    position += 3;
+                    string special = input.Substring(position, 2);
+                    number += special;
+                    position += 2;
                     if (input[position - 1] == 'i')
                     {
-                        var token = new Token(TokenType.FLOAT, special, start);
+                        var token = new Token(TokenType.FLOAT, number, start);
                         return token;
                     }
                     else
                     {
-                        var token = new Token(TokenType.INTEGER, special, start);
+                        var token = new Token(TokenType.INTEGER, number, start);
                         return token;
                     }
                 }
