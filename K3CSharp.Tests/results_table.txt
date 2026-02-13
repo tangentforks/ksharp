@@ -497,7 +497,7 @@
 ║ serialization_bd_symbol_edge_underscore.k          │ _bd `_underscore     │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_symbol_edge_hello.k               │ _bd `"hello"         │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_symbol_edge_newline_tab.k         │ _bd `"\n\t"          │ "\001\000\000\0...   │                      ║
-║ serialization_bd_symbol_edge_001.k                 │ _bd `"\001"          │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_symbol_edge_001.k                 │ _bd `"\001"          │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_symbol_edge_empty.k               │ _bd `                │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_character_edge_a.k                │ _bd "a"              │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_character_edge_b.k                │ _bd "b"              │ "\001\000\000\0...   │                      ║
@@ -510,10 +510,10 @@
 ║ serialization_bd_character_edge_newline.k          │ _bd "\n"             │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_character_edge_tab.k              │ _bd "\t"             │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_character_edge_carriage.k         │ _bd "\r"             │ "\001\000\000\0...   │                      ║
-║ serialization_bd_character_edge_null.k             │ _bd "\0"             │ "\001\000\000\0...   │ "\001\000\000\0...   ║
-║ serialization_bd_character_edge_001.k              │ _bd "\001"           │ "\001\000\000\0...   │ "\001\000\000\0...   ║
-║ serialization_bd_character_edge_377.k              │ _bd "\377"           │ "\001\000\000\0...   │ "\001\000\000\0...   ║
-║ serialization_bd_character_edge_backspace.k        │ _bd "\b"             │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_character_edge_null.k             │ _bd "\0"             │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_001.k              │ _bd "\001"           │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_377.k              │ _bd "\377"           │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_backspace.k        │ _bd "\b"             │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_charactervector_edge_empty.k      │ _bd ""               │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_charactervector_edge_a.k          │ _bd "a"              │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_charactervector_edge_hello.k      │ _bd "hello"          │ "\001\000\000\0...   │                      ║
@@ -540,7 +540,7 @@
 ║ serialization_bd_db_anonymousfunction.k            │ // Test _bd and _db for AnonymousFunction serialization │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_db_roundtrip_integer.k            │ // Test _bd and _db round-trip serialization │ 42                   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 434/535 tests passed (81.1%)                                                                               ║
+║ SUMMARY: 439/535 tests passed (82.1%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -955,31 +955,6 @@ Test: serialization_bd_db_anonymousfunction.k
 Input: // Test _bd and _db for AnonymousFunction serialization
 Expected: "\001\000\000\000\017\000\000\000\n\000\000\000\000{[x] x+1}\000"
 Actual: "\001\000\000\000\020\000\000\000\n\000\000\000[x] x+1\000"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_symbol_edge_001.k
-Input: _bd `"\001"
-Expected: "\001\000\000\000\006\000\000\000\004\000\000\000\001\000"
-Actual: "\001\000\000\000\n\000\000\000\004\000\000\00014001\000"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_character_edge_null.k
-Input: _bd "\0"
-Expected: "\001\000\000\000\b\000\000\000\003\000\000\000\000\000\000\000"
-Actual: "\001\000\000\000\014\000\000\000\375\377\377\377\003\000\000\000140\000"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_character_edge_001.k
-Input: _bd "\001"
-Expected: "\001\000\000\000\b\000\000\000\003\000\000\000\001\000\000\000"
-Actual: "\001\000\000\000\016\000\000\000\375\377\377\377\005\000\000\00014001\000"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_character_edge_377.k
-Input: _bd "\377"
-Expected: "\001\000\000\000\b\000\000\000\003\000\000\000\377\000\000\000"
-Actual: "\001\000\000\000\016\000\000\000\375\377\377\377\005\000\000\00014377\000"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_character_edge_backspace.k
-Input: _bd "\b"
-Expected: "\001\000\000\000\b\000\000\000\003\000\000\000\b\000\000\000"
-Actual: "\001\000\000\000\014\000\000\000\375\377\377\377\003\000\000\000190\000"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_charactervector_edge_empty.k
 Input: _bd ""

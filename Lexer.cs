@@ -383,29 +383,60 @@ namespace K3CSharp
                     }
                     
                     // Handle escape sequences
-                    switch (currentChar)
+                    if (currentChar >= '0' && currentChar <= '7')
                     {
-                        case '"':
-                            value += '"';
-                            break;
-                        case '\\':
-                            value += '\\';
-                            break;
-                        case 'n':
-                            value += '\n';
-                            break;
-                        case 't':
-                            value += '\t';
-                            break;
-                        case 'r':
-                            value += '\r';
-                            break;
-                        default:
-                            // Unknown escape sequence - treat backslash and character literally
-                            value += '\\' + currentChar;
-                            break;
+                        // Octal escape sequence - read up to 3 octal digits
+                        string octalDigits = currentChar.ToString();
+                        Advance();
+                        
+                        // Read up to 2 more octal digits
+                        for (int i = 0; i < 2 && currentChar >= '0' && currentChar <= '7'; i++)
+                        {
+                            octalDigits += currentChar;
+                            Advance();
+                        }
+                        
+                        // Convert octal to character
+                        try
+                        {
+                            char octalChar = (char)Convert.ToInt32(octalDigits, 8);
+                            value += octalChar;
+                        }
+                        catch
+                        {
+                            // Invalid octal - treat as literal characters
+                            value += "\\" + octalDigits;
+                        }
                     }
-                    Advance();
+                    else
+                    {
+                        switch (currentChar)
+                        {
+                            case '"':
+                                value += '"';
+                                break;
+                            case '\\':
+                                value += '\\';
+                                break;
+                            case 'b':
+                                value += '\b';
+                                break;
+                            case 'n':
+                                value += '\n';
+                                break;
+                            case 't':
+                                value += '\t';
+                                break;
+                            case 'r':
+                                value += '\r';
+                                break;
+                            default:
+                                // Any other character after backslash - treat as character itself
+                                value += currentChar;
+                                break;
+                        }
+                        Advance();
+                    }
                 }
                 else
                 {
@@ -453,29 +484,60 @@ namespace K3CSharp
                         }
                         
                         // Handle escape sequences in symbols
-                        switch (currentChar)
+                        if (currentChar >= '0' && currentChar <= '7')
                         {
-                            case '"':
-                                quotedValue += '"';
-                                break;
-                            case '\\':
-                                quotedValue += '\\';
-                                break;
-                            case 'n':
-                                quotedValue += '\n';
-                                break;
-                            case 't':
-                                quotedValue += '\t';
-                                break;
-                            case 'r':
-                                quotedValue += '\r';
-                                break;
-                            default:
-                                // Unknown escape sequence - treat backslash and character literally
-                                quotedValue += '\\' + currentChar;
-                                break;
+                            // Octal escape sequence - read up to 3 octal digits
+                            string octalDigits = currentChar.ToString();
+                            Advance();
+                            
+                            // Read up to 2 more octal digits
+                            for (int i = 0; i < 2 && currentChar >= '0' && currentChar <= '7'; i++)
+                            {
+                                octalDigits += currentChar;
+                                Advance();
+                            }
+                            
+                            // Convert octal to character
+                            try
+                            {
+                                char octalChar = (char)Convert.ToInt32(octalDigits, 8);
+                                quotedValue += octalChar;
+                            }
+                            catch
+                            {
+                                // Invalid octal - treat as literal characters
+                                quotedValue += "\\" + octalDigits;
+                            }
                         }
-                        Advance();
+                        else
+                        {
+                            switch (currentChar)
+                            {
+                                case '"':
+                                    quotedValue += '"';
+                                    break;
+                                case '\\':
+                                    quotedValue += '\\';
+                                    break;
+                                case 'b':
+                                    quotedValue += '\b';
+                                    break;
+                                case 'n':
+                                    quotedValue += '\n';
+                                    break;
+                                case 't':
+                                    quotedValue += '\t';
+                                    break;
+                                case 'r':
+                                    quotedValue += '\r';
+                                    break;
+                                default:
+                                    // Any other character after backslash - treat as character itself
+                                    quotedValue += currentChar;
+                                    break;
+                            }
+                            Advance();
+                        }
                     }
                     else
                     {
