@@ -1762,10 +1762,73 @@ namespace K3CSharp
                 
                 return new VectorValue(triplets);
             }
+            else if (value is KList list)
+            {
+                // Make operation: .() creates empty dictionary, .(elements) creates dictionary
+                var newDict = new Dictionary<SymbolValue, (K3Value, DictionaryValue?)>();
+                
+                foreach (var element in list.Elements)
+                {
+                    // Convert object to K3Value
+                    K3Value k3Element = element as K3Value;
+                    if (k3Element == null && element != null)
+                    {
+                        // Handle primitive types
+                        if (element is string s) k3Element = new CharacterValue(s);
+                        else if (element is int i) k3Element = new IntegerValue(i);
+                        else if (element is double d) k3Element = new FloatValue(d);
+                        else if (element is char c) k3Element = new CharacterValue(c.ToString());
+                        else throw new Exception($"Unsupported element type in list: {element.GetType()}");
+                    }
+                    
+                    if (k3Element != null)
+                    {
+                        // Handle both VectorValue and KList for dictionary entries
+                        List<K3Value> entryElements;
+                        
+                        if (k3Element is VectorValue entryVec)
+                        {
+                            entryElements = entryVec.Elements;
+                        }
+                        else if (k3Element is KList entryList)
+                        {
+                            entryElements = entryList.Elements.Cast<K3Value>().ToList();
+                        }
+                        else
+                        {
+                            // Single element - wrap in list
+                            entryElements = new List<K3Value> { k3Element };
+                        }
+                        
+                        // Process entry elements (same logic as VectorValue case)
+                        if (entryElements.Count == 2)
+                        {
+                            // Dictionary entry: (key; value)
+                            var key = entryElements[0] as SymbolValue ?? throw new Exception("Dictionary key must be a symbol");
+                            var val = entryElements[1];
+                            newDict[key] = (val, null);
+                        }
+                        else if (entryElements.Count == 3)
+                        {
+                            // Dictionary entry with attribute: (key; value; attr)
+                            var key = entryElements[0] as SymbolValue ?? throw new Exception("Dictionary key must be a symbol");
+                            var val = entryElements[1];
+                            var attr = entryElements[2] as DictionaryValue ?? throw new Exception("Dictionary attribute must be a dictionary");
+                            newDict[key] = (val, attr);
+                        }
+                        else
+                        {
+                            throw new Exception("Dictionary entry must be a tuple (2 elements) or triplet (3 elements)");
+                        }
+                    }
+                }
+                
+                return new DictionaryValue(newDict);
+            }
             else if (value is VectorValue vec)
             {
                 // Make operation: .() creates empty dictionary, .(elements) creates dictionary
-                var newDict = new Dictionary<SymbolValue, (K3Value, DictionaryValue)>();
+                var newDict = new Dictionary<SymbolValue, (K3Value, DictionaryValue?)>();
                 
                 foreach (var element in vec.Elements)
                 {
