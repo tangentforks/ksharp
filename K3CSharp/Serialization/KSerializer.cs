@@ -18,6 +18,7 @@ namespace K3CSharp.Serialization
                 double d => SerializeFloat(d),
                 char c => SerializeCharacter(c),
                 string s when s.StartsWith("`") => SerializeSymbol(s),
+                string s when s.Length == 1 => SerializeCharacter(s[0]),
                 string s => SerializeCharacterVector(s),
                 null => SerializeNull(),
                 KList list => SerializeList(list),
@@ -31,7 +32,9 @@ namespace K3CSharp.Serialization
         private byte[] SerializeInteger(int value)
         {
             var writer = new KBinaryWriter();
-            writer.WriteInt32(1);  // Type ID
+            writer.WriteByte(1);   // Architecture: little-endian
+            writer.WriteByte(0);   // Message type: _bd serialization
+            writer.WriteInt16(0);  // Reserved: 2 bytes
             writer.WriteInt32(8);   // Length (subtype + value = 8 bytes)
             writer.WriteInt32(1);   // Subtype
             writer.WriteInt32(value); // Value (little-endian)
@@ -41,7 +44,9 @@ namespace K3CSharp.Serialization
         private byte[] SerializeFloat(double value)
         {
             var writer = new KBinaryWriter();
-            writer.WriteInt32(1);  // Type ID
+            writer.WriteByte(1);   // Architecture: little-endian
+            writer.WriteByte(0);   // Message type: _bd serialization
+            writer.WriteInt16(0);  // Reserved: 2 bytes
             writer.WriteInt32(16); // Length (matches k.exe)
             writer.WriteInt32(2);  // Subtype
             writer.WriteByte(1);   // Padding byte value 1
@@ -53,7 +58,9 @@ namespace K3CSharp.Serialization
         private byte[] SerializeCharacter(char value)
         {
             var writer = new KBinaryWriter();
-            writer.WriteInt32(1);  // Type ID
+            writer.WriteByte(1);   // Architecture: little-endian
+            writer.WriteByte(0);   // Message type: _bd serialization
+            writer.WriteInt16(0);  // Reserved: 2 bytes
             writer.WriteInt32(8);  // Length (matches k.exe)
             writer.WriteInt32(3);  // Character flag (3, not -1)
             writer.WriteByte((byte)value); // Character value
@@ -66,7 +73,9 @@ namespace K3CSharp.Serialization
             var writer = new KBinaryWriter();
             var symbolData = Encoding.UTF8.GetBytes(symbol.StartsWith("`") ? symbol[1..] : symbol);
             
-            writer.WriteInt32(1);  // Type ID
+            writer.WriteByte(1);   // Architecture: little-endian
+            writer.WriteByte(0);   // Message type: _bd serialization
+            writer.WriteInt16(0);  // Reserved: 2 bytes
             writer.WriteInt32(4 + symbolData.Length + 1); // Length
             writer.WriteInt32(4);  // Symbol flag
             writer.WriteBytes(symbolData); // Symbol data
@@ -74,19 +83,15 @@ namespace K3CSharp.Serialization
             return writer.ToArray();
         }
         
-        private byte[] SerializeCharacterVector(string str)
+        public byte[] SerializeCharacterVector(string str)
         {
-            // For single character, use character format instead of vector format
-            if (str.Length == 1)
-            {
-                return SerializeCharacter(str[0]);
-            }
-            
             var chars = str.ToCharArray();
             var writer = new KBinaryWriter();
             
-            writer.WriteInt32(1);  // Type ID
-            writer.WriteInt32(14); // Fixed length to match k.exe for "hello"
+            writer.WriteByte(1);   // Architecture: little-endian
+            writer.WriteByte(0);   // Message type: _bd serialization
+            writer.WriteInt16(0);  // Reserved: 2 bytes
+            writer.WriteInt32(8 + chars.Length + 1); // Length: flag(4) + count(4) + data + null(1)
             writer.WriteInt32(-3); // CharacterVector flag
             writer.WriteInt32(chars.Length); // Element count
             writer.WriteBytes(chars.Select(c => (byte)c).ToArray()); // Character data
@@ -97,7 +102,9 @@ namespace K3CSharp.Serialization
         private byte[] SerializeNull()
         {
             var writer = new KBinaryWriter();
-            writer.WriteInt32(1);  // Type ID
+            writer.WriteByte(1);   // Architecture: little-endian
+            writer.WriteByte(0);   // Message type: _bd serialization
+            writer.WriteInt16(0);  // Reserved: 2 bytes
             writer.WriteInt32(8);  // Length
             writer.WriteInt32(6);  // Null subtype
             writer.WritePadding(3); // Padding
@@ -115,7 +122,9 @@ namespace K3CSharp.Serialization
                 elementData.AddRange(SerializeValue(element));
             }
             
-            writer.WriteInt32(1);  // Type ID
+            writer.WriteByte(1);   // Architecture: little-endian
+            writer.WriteByte(0);   // Message type: _bd serialization
+            writer.WriteInt16(0);  // Reserved: 2 bytes
             writer.WriteInt32(8 + elementData.Count); // Length
             writer.WriteInt32(-2); // List flag
             writer.WriteInt32(list.Elements.Count); // Element count
@@ -134,7 +143,9 @@ namespace K3CSharp.Serialization
                 pairData.AddRange(SerializeValue(kvp.Value));
             }
             
-            writer.WriteInt32(1);  // Type ID
+            writer.WriteByte(1);   // Architecture: little-endian
+            writer.WriteByte(0);   // Message type: _bd serialization
+            writer.WriteInt16(0);  // Reserved: 2 bytes
             writer.WriteInt32(8 + pairData.Count); // Length
             writer.WriteInt32(5);  // Dictionary flag
             writer.WriteInt32(dict.Pairs.Count); // Pair count
@@ -147,7 +158,9 @@ namespace K3CSharp.Serialization
             var writer = new KBinaryWriter();
             var functionData = Encoding.UTF8.GetBytes(func.Source);
             
-            writer.WriteInt32(1);  // Type ID
+            writer.WriteByte(1);   // Architecture: little-endian
+            writer.WriteByte(0);   // Message type: _bd serialization
+            writer.WriteInt16(0);  // Reserved: 2 bytes
             writer.WriteInt32(9 + functionData.Length); // Length
             writer.WriteInt32(10); // Function flag
             
@@ -178,7 +191,9 @@ namespace K3CSharp.Serialization
         {
             var writer = new KBinaryWriter();
             
-            writer.WriteInt32(1);  // Type ID
+            writer.WriteByte(1);   // Architecture: little-endian
+            writer.WriteByte(0);   // Message type: _bd serialization
+            writer.WriteInt16(0);  // Reserved: 2 bytes
             writer.WriteInt32(8 + elements.Length * 4);  // Length = 8 + (elements × 4)
             writer.WriteInt32(-1);  // IntegerVector flag
             writer.WriteInt32(elements.Length); // Element count
@@ -201,8 +216,10 @@ namespace K3CSharp.Serialization
                 elementData.AddRange(BitConverter.GetBytes(element));
             }
             
-            writer.WriteInt32(1);  // Type ID
-            writer.WriteInt32(32); // Fixed length to match k.exe for 3 floats
+            writer.WriteByte(1);   // Architecture: little-endian
+            writer.WriteByte(0);   // Message type: _bd serialization
+            writer.WriteInt16(0);  // Reserved: 2 bytes
+            writer.WriteInt32(8 + elements.Length * 8); // Length = 8 + (elements × 8)
             writer.WriteInt32(-2); // FloatVector flag
             writer.WriteInt32(elements.Length); // Element count
             writer.WriteBytes(elementData.ToArray()); // Element data
@@ -222,8 +239,10 @@ namespace K3CSharp.Serialization
                 elementData.Add(0); // Null terminator per symbol
             }
             
-            writer.WriteInt32(1);  // Type ID
-            writer.WriteInt32(14); // Fixed length to match k.exe for `a`b`c
+            writer.WriteByte(1);   // Architecture: little-endian
+            writer.WriteByte(0);   // Message type: _bd serialization
+            writer.WriteInt16(0);  // Reserved: 2 bytes
+            writer.WriteInt32(8 + elementData.Count); // Length = 8 + total symbol data
             writer.WriteInt32(-4); // SymbolVector flag
             writer.WriteInt32(elements.Length); // Element count
             writer.WriteBytes(elementData.ToArray()); // Symbol data

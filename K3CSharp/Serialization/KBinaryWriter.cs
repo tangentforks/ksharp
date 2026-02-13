@@ -55,6 +55,20 @@ namespace K3CSharp.Serialization
             buffer.Add(value);
         }
         
+        public void WriteInt16(short value)
+        {
+            var bytes = BitConverter.GetBytes(value);
+            if (BitConverter.IsLittleEndian)
+            {
+                buffer.AddRange(bytes);
+            }
+            else
+            {
+                // Reverse for big-endian systems
+                buffer.AddRange(bytes.Reverse());
+            }
+        }
+        
         public void WritePadding(int count)
         {
             buffer.AddRange(Enumerable.Repeat<byte>(0, count));
