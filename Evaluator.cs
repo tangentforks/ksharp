@@ -148,7 +148,6 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Debug: current branch is empty (root), so no relative resolution
                     // This means we should fall back to regular variable lookup
                 }
                 
@@ -677,64 +676,42 @@ namespace K3CSharp
                 ASTNode? ast;
                 
                 // Try to get cached AST from the function value if available
-                // This is a performance optimization to avoid re-parsing the same function
                 if (functionEvaluator.currentFunctionValue != null)
                 {
                     ast = functionEvaluator.currentFunctionValue.GetCachedAst();
-                }
-                else
-                {
-                    // Fallback to parsing from text (deferred validation per spec)
-                    if (preParsedTokens != null && preParsedTokens.Count > 0)
-                    {
-                        var parser = new Parser(preParsedTokens, bodyText);
-                        ast = ParseFunctionBodyStatements(parser, bodyText);
-                    }
-                    else
-                    {
-                        // For complex function bodies with nested functions, use enhanced parsing
-                        if (bodyText.Contains("{[") || bodyText.Contains("::"))
-                        {
-                            // Use enhanced parsing for complex function bodies
-                            // Try manual parsing first, fall back to dot execute if needed
-                            try
-                            {
-                                var lexer = new Lexer(bodyText);
-                                var tokens = lexer.Tokenize();
-                                var parser = new Parser(tokens, bodyText);
-                                ast = ParseFunctionBodyStatements(parser, bodyText);
-                            }
-                            catch
-                            {
-                                // If parsing fails, use dot execute as a robust fallback
-                                // This preserves variable context and handles complex nested scenarios
-                                var chars = bodyText.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
-                                var charVector = new VectorValue(chars, "standard");
-                                return Make(charVector);
-                            }
-                        }
-                        else
-                        {
-                            var lexer = new Lexer(bodyText);
-                            var tokens = lexer.Tokenize();
-                            var parser = new Parser(tokens, bodyText);
-                            ast = ParseFunctionBodyStatements(parser, bodyText);
-                        }
-                    }
-                }
-                
-                if (ast != null)
+                    if (ast != null)
                     {
                         return functionEvaluator.Evaluate(ast) ?? new NullValue();
                     }
-                    else
-                    {
-                        return new NullValue();
-                    }
+                }
+                
+                // Fallback to parsing from text (deferred validation per spec)
+                if (preParsedTokens != null && preParsedTokens.Count > 0)
+                {
+                    var parser = new Parser(preParsedTokens, bodyText);
+                    ast = ParseFunctionBodyStatements(parser, bodyText);
+                }
+                else
+                {
+                    var lexer = new Lexer(bodyText);
+                    var tokens = lexer.Tokenize();
+                    var parser = new Parser(tokens, bodyText);
+                    ast = ParseFunctionBodyStatements(parser, bodyText);
+                }
+                
+                if (ast != null)
+                {
+                    // Cache the parsed AST for future use
+                    functionEvaluator.currentFunctionValue?.CacheAst(ast);
+                    return functionEvaluator.Evaluate(ast) ?? new NullValue();
+                }
+                else
+                {
+                    return new NullValue();
+                }
             }
             catch (Exception ex)
             {
-                // Runtime validation - function body errors are caught here (per spec)
                 throw new Exception($"Function execution error: {ex.Message}");
             }
         }
@@ -1156,7 +1133,6 @@ namespace K3CSharp
                     throw new Exception("% operator requires 2 arguments");
                 case "/":
                     if (arguments.Count >= 2) return Divide(arguments[0], arguments[1]);
-                    Console.WriteLine($"DEBUG: Divide operator called with symbol: {arguments[0]}"); // Debug output
                     throw new Exception("/ operator requires 2 arguments");
                 case "^":
                     if (arguments.Count >= 2) return Power(arguments[0], arguments[1]);

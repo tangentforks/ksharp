@@ -278,8 +278,6 @@ namespace K3CSharp
                 {
                     var block = new ASTNode(ASTNodeType.Block);
                     block.Children.AddRange(statements);
-                    
-                    // At top level, this block represents a niladic function
                     // According to K spec, it should return the value of the last expression
                     // We'll handle this in the evaluator by returning the last statement's value
                     return block;
@@ -1097,15 +1095,16 @@ namespace K3CSharp
                 // Check for empty parentheses () which should be an empty list
                 if (Match(TokenType.RIGHT_PAREN))
                 {
-                    // Empty parentheses create an empty list
                     result = ASTNode.MakeVector(new List<ASTNode>());
                 }
                 else
                 {
-                    // Parse parenthesized expression - semicolon handling is at expression level
-                    delimiterDepth++; // Enter delimiter
-                    var expression = ParseExpressionInsideDelimiters();
-                    delimiterDepth--; // Exit delimiter
+                    // Parse parenthesized expression
+                    var expression = ParseExpressionWithoutSemicolons();
+                    if (expression == null)
+                    {
+                        throw new Exception("Expected expression after '('");
+                    }
                     
                     if (!Match(TokenType.RIGHT_PAREN))
                     {
@@ -1113,6 +1112,19 @@ namespace K3CSharp
                     }
                     
                     result = expression;
+                }
+                
+                // After parsing a parenthesized expression, check for dot-apply
+                if (result != null && !IsAtEnd() && CurrentToken().Type == TokenType.DOT_APPLY)
+                {
+                    // This is a case of: (expression) . argument
+                    // We need to parse the argument after the dot
+                    Advance(); // Skip the DOT_APPLY token
+                    var arg = ParseExpressionWithoutSemicolons();
+                    if (arg != null)
+                    {
+                        result = ASTNode.MakeBinaryOp(TokenType.DOT_APPLY, result, arg);
+                    }
                 }
             }
             else if (Match(TokenType.NEGATE))
@@ -2060,6 +2072,15 @@ namespace K3CSharp
                 "SM" => "_sm",
                         "CI" => "_ci",
                         "IC" => "_ic",
+                        "DRAW" => "_draw",
+                        "COLON" => ":",
+                        "APPLY" => "@",
+                        "DOT_APPLY" => ".",
+                        "TYPE" => "TYPE",
+                        "STRING_REPRESENTATION" => "STRING_REPRESENTATION",
+                        "DO" => "do",
+                        "WHILE" => "while",
+                        "IF_FUNC" => "if",
                         _ => op.ToString()
                     };
                     var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
@@ -2409,7 +2430,7 @@ namespace K3CSharp
                     
                     if (!IsAtEnd())
                     {
-                        var stmt = ParseExpressionWithoutSemicolons();
+                        var stmt = ParseExpression();
                         if (stmt != null)  // Only add non-null statements
                         {
                             statements.Add(stmt);
@@ -2604,7 +2625,7 @@ namespace K3CSharp
                    Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
                    Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || 
                    Match(TokenType.DOLLAR) || Match(TokenType.DRAW) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
-                   Match(TokenType.APPLY))
+                   Match(TokenType.APPLY) || Match(TokenType.DOT_APPLY))
             {
                 var op = PreviousToken().Type;
                 

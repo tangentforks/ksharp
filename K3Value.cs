@@ -1126,6 +1126,15 @@ namespace K3CSharp
             }
         }
 
+        // Cache an already parsed AST (thread-safe)
+        public void CacheAst(ASTNode ast)
+        {
+            lock (_astCacheLock)
+            {
+                _cachedAst = ast;
+            }
+        }
+
         public override K3Value Add(K3Value other)
         {
             throw new InvalidOperationException("Cannot add Function values");
