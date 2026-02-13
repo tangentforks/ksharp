@@ -12,21 +12,27 @@ From analyzing 13 examples (8 edge cases + 5 random), I identified a clear patte
 ```
 
 **📋 Pattern Breakdown:**
-1. **Type Identifier**: `\001\000\000\000` (4 bytes = 1, little-endian)
-2. **Data Length**: `\020\000\000\000` (4 bytes = 16, little-endian) 
-3. **Subtype**: `\002\000\000\000` (4 bytes = 2, little-endian)
-4. **Padding**: `\001\000\000\000` (4 bytes padding)
-5. **Float Value**: `[8_bytes_data]` (8 bytes, IEEE 754 double, little-endian)
+1. **Data Architecture**: `\001` (1 byte = 1, little-endian)
+2. **Serialization Type**: `\000` (1 byte = 0, _bd serialization)
+3. **Reserved**: `\000\000` (2 bytes reserved)
+4. **Data Length**: `\020\000\000\000` (4 bytes = 16, little-endian) 
+5. **Subtype**: `\002\000\000\000` (4 bytes = 2, little-endian)
+6. **Padding**: `\001\000\000\000` (4 bytes padding)
+7. **Float Value**: `[8_bytes_data]` (8 bytes, IEEE 754 double, little-endian)
+
+**📖 Source**: Header information obtained from https://code.kx.com/q/kb/serialization/
 
 ### **🎯 Hypothesis Formulation**
 
 **Hypothesis**: K serializes Float (IEEE 754 double) using the following binary format:
 ```
-[type_id:4][length:4][subtype:4][padding:4][value:8]
+[architecture:1][message_type:1][reserved:2][length:4][subtype:4][padding:4][value:8]
 ```
 
 **Where:**
-- `type_id = 1` (numeric type)
+- `architecture = 1` (little-endian)
+- `message_type = 0` (_bd serialization)
+- `reserved = 0,0` (unused)
 - `length = 16` (total bytes after this field)
 - `subtype = 2` (float/double subtype)
 - `padding = 4 bytes` (constant: `\001\000\000\000`)

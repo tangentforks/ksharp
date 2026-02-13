@@ -12,20 +12,26 @@ From analyzing the single Null example, I identified a clear pattern:
 ```
 
 **📋 Pattern Breakdown:**
-1. **Type Identifier**: `\001\000\000\000` (4 bytes = 1, little-endian)
-2. **Data Length**: `\b\000\000\000` (4 bytes = 8, little-endian) 
-3. **Subtype**: `\006\000\000\000` (4 bytes = 6, little-endian)
-4. **Null Data**: `\000\000\000` (3 bytes padding)
+1. **Data Architecture**: `\001` (1 byte = 1, little-endian)
+2. **Serialization Type**: `\000` (1 byte = 0, _bd serialization)
+3. **Reserved**: `\000\000` (2 bytes reserved)
+4. **Data Length**: `\b\000\000\000` (4 bytes = 8, little-endian) 
+5. **Subtype**: `\006\000\000\000` (4 bytes = 6, little-endian)
+6. **Null Data**: `\000\000\000` (3 bytes padding)
+
+**📖 Source**: Header information obtained from https://code.kx.com/q/kb/serialization/
 
 ### **🎯 Hypothesis Formulation**
 
 **Hypothesis**: K serializes Null using the following binary format:
 ```
-[type_id:4][length:4][subtype:4][padding:3]
+[architecture:1][message_type:1][reserved:2][length:4][subtype:4][padding:3]
 ```
 
 **Where:**
-- `type_id = 1` (numeric/string type)
+- `architecture = 1` (little-endian)
+- `message_type = 0` (_bd serialization)
+- `reserved = 0,0` (unused)
 - `length = 8` (fixed length for Null type)
 - `subtype = 6` (null subtype)
 - `padding = 3 zero bytes` (alignment padding)

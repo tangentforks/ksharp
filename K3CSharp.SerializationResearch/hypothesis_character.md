@@ -12,12 +12,16 @@ From analyzing 94 examples (14 edge cases + 80 random), I identified a clear pat
 ```
 
 **📋 Pattern Breakdown:**
-1. **Type Identifier**: `\001\000\000\000` (4 bytes = 1, little-endian)
-2. **Data Length**: `\b\000\000\000` (4 bytes = 8, little-endian)
-3. **Character Flag**: `\003\000\000\000` (4 bytes = 3, little-endian)
-4. **Character Value**: `[character]` (1 byte for printable ASCII, variable for escaped)
-5. **Padding**: `\000\000\000` (3 bytes of zero padding)
-6. **Null Terminator**: `\000` (1 byte null terminator)
+1. **Data Architecture**: `\001` (1 byte = 1, little-endian)
+2. **Serialization Type**: `\000` (1 byte = 0, _bd serialization)
+3. **Reserved**: `\000\000` (2 bytes reserved)
+4. **Data Length**: `\b\000\000\000` (4 bytes = 8, little-endian)
+5. **Character Flag**: `\003\000\000\000` (4 bytes = 3, little-endian)
+6. **Character Value**: `[character]` (1 byte for printable ASCII, variable for escaped)
+7. **Padding**: `\000\000\000` (3 bytes of zero padding)
+8. **Null Terminator**: `\000` (1 byte null terminator)
+
+**📖 Source**: Header information obtained from https://code.kx.com/q/kb/serialization/
 
 **🔍 Key Examples:**
 - **Printable ASCII**: `"a"` → `\001\000\000\000\b\000\000\000\003\000\000\000a\000\000\000` (8 bytes total)

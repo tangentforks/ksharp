@@ -12,13 +12,17 @@ From analyzing 107 examples (comprehensive dataset), I identified a clear patter
 ```
 
 **📋 Pattern Breakdown:**
-1. **Type Identifier**: `\001\000\000\000` (4 bytes = 1, little-endian)
-2. **Data Length**: `[length:4]` (4 bytes = total bytes, little-endian)
-3. **Symbol Flag**: `\004\000\000\000` (4 bytes = 4, little-endian)
-4. **Symbol Data**: `[symbol_data:variable]` (variable length, UTF-8 encoded)
-5. **Null Terminator**: `\000` (1 byte)
+1. **Data Architecture**: `\001` (1 byte = 1, little-endian)
+2. **Serialization Type**: `\000` (1 byte = 0, _bd serialization)
+3. **Reserved**: `\000\000` (2 bytes reserved)
+4. **Data Length**: `[length:4]` (4 bytes = total bytes, little-endian)
+5. **Symbol Flag**: `\004\000\000\000` (4 bytes = 4, little-endian)
+6. **Symbol Data**: `[symbol_data:variable]` (variable length, UTF-8 encoded)
+7. **Null Terminator**: `\000` (1 byte)
 
-**🔍 Key Examples:**
+**� Source**: Header information obtained from https://code.kx.com/q/kb/serialization/
+
+**� Key Examples:**
 - **Single Character**: `a` → `\001\000\000\000\006\000\000\000\004\000\000\000a\000` (6 bytes total)
 - **Multiple Characters**: `symbol` → `\001\000\000\000\013\000\000\000\004\000\000\000symbol\000` (13 bytes total)
 - **Mixed Characters**: `test123` → `\001\000\000\000\014\000\000\000\004\000\000\000test123\000` (14 bytes total)
@@ -29,11 +33,13 @@ From analyzing 107 examples (comprehensive dataset), I identified a clear patter
 
 **Hypothesis**: K serializes Symbol using the following binary format:
 ```
-[type_id:4][length:4][symbol_flag:4][utf8_data:variable][null_terminator:1]
+[architecture:1][message_type:1][reserved:2][length:4][symbol_flag:4][utf8_data:variable][null_terminator:1]
 ```
 
 **Where:**
-- `type_id = 1` (numeric/string type)
+- `architecture = 1` (little-endian)
+- `message_type = 0` (_bd serialization)
+- `reserved = 0,0` (unused)
 - `length = 4 + symbol_length + 1` (total bytes after this field)
 - `symbol_flag = 4` (symbol subtype indicator)
 - `utf8_data = UTF-8 encoded symbol content` (variable length)

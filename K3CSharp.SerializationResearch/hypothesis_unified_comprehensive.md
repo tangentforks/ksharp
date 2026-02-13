@@ -12,20 +12,29 @@ From analyzing **11 data types** with **500+ examples**, I've identified a compr
 
 ### **Universal Header Structure**
 ```
-[type_id:4][length:4][type_specific_data:variable]
+[architecture:1][message_type:1][reserved:2][length:4][type_specific_data:variable]
 ```
 
 **📋 Universal Components:**
-1. **Type Identifier**: 4 bytes, little-endian (always starts with `\001\000\000\000`)
-2. **Data Length**: 4 bytes, little-endian (total bytes after this field)
-3. **Type-Specific Data**: Variable length based on type
+1. **Data Architecture**: 1 byte - `0` for big-endian, `1` for little-endian
+2. **Serialization/Message Type**: 1 byte - `0` for _bd serialization, `0` for async IPC, `1` for sync IPC, `2` for IPC responses
+3. **Reserved**: 2 bytes - Currently unused/reserved
+4. **Data Length**: 4 bytes, little-endian (total bytes after this field)
+5. **Type-Specific Data**: Variable length based on type
+
+**📖 Source**: Information obtained from https://code.kx.com/q/kb/serialization/
+
+**🔍 Analysis Notes:**
+- All _bd examples show `\001\000\000\000` meaning: little-endian (1) + serialization type (0) + reserved (0,0)
+- The first byte being `1` confirms little-endian architecture in all test cases
+- The second byte being `0` confirms this is _bd serialization (not IPC)
 
 ---
 
 ## **📋 Type Classification System**
 
 ### **Category 1: Simple Scalar Types**
-**Pattern**: `[type_id:4][length:4][subtype:4][data:variable][padding:optional]`
+**Pattern**: `[architecture:1][message_type:1][reserved:2][length:4][subtype:4][data:variable][padding:optional]`
 
 | Type | Subtype | Data Size | Padding | Examples |
 |-------|----------|------------|----------|-----------|
@@ -36,7 +45,7 @@ From analyzing **11 data types** with **500+ examples**, I've identified a compr
 | Null | 6 | 0 bytes | 3 bytes | `_n` → `\001\000\000\000\b\000\000\000\006\000\000\000\000\000\000` |
 
 ### **Category 2: Vector Types**
-**Pattern**: `[type_id:4][length:4][vector_flag:4][element_count:4][element_data:variable][null_terminator:optional]`
+**Pattern**: `[architecture:1][message_type:1][reserved:2][length:4][vector_flag:4][element_count:4][element_data:variable][null_terminator:optional]`
 
 | Type | Vector Flag | Element Size | Terminator | Examples |
 |-------|-------------|--------------|------------|-----------|
@@ -46,7 +55,7 @@ From analyzing **11 data types** with **500+ examples**, I've identified a compr
 | SymbolVector | -4 | variable + null | `\000` per symbol | ``a`b`c`` → `\001\000\000\000\020\000\000\000\374\377\377\377\003\000\000\000a\000b\000c\000` |
 
 ### **Category 3: Complex Types**
-**Pattern**: `[type_id:4][length:4][complex_flag:4][complex_data:variable]`
+**Pattern**: `[architecture:1][message_type:1][reserved:2][length:4][complex_flag:4][complex_data:variable]`
 
 | Type | Complex Flag | Structure | Examples |
 |-------|--------------|------------|-----------|

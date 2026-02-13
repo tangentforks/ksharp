@@ -2,12 +2,16 @@
 
 ## **Format Structure**
 ```
-[4 bytes] Type ID: \001
+[1 byte] Data Architecture: \001 (little-endian)
+[1 byte] Serialization Type: \000 (_bd serialization)
+[2 bytes] Reserved: \000\000
 [4 bytes] Length: 8 + (elements × 4)
 [4 bytes] Vector Flag: \377\377\377\377 (-1)
 [4 bytes] Element Count: number of elements
 [4×n bytes] Element Data: each integer as little-endian
 ```
+
+**📖 Source**: Header information obtained from https://code.kx.com/q/kb/serialization/
 
 ## **Length Formula**
 ```

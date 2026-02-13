@@ -12,13 +12,17 @@ From analyzing 104 examples (6 edge cases + 98 random), I identified a clear pat
 ```
 
 **📋 Pattern Breakdown:**
-1. **Type Identifier**: `\001\000\000\000` (4 bytes = 1, little-endian)
-2. **Data Length**: `[length:4]` (4 bytes = total bytes, little-endian)
-3. **List Flag**: `\376\377\377\377` (4 bytes = -2, little-endian)
-4. **Element Count**: `[element_count:4]` (4 bytes = number of elements, little-endian)
-5. **Element Data**: `[element_1:serialized]...[element_n:serialized]` (variable length per element type)
+1. **Data Architecture**: `\001` (1 byte = 1, little-endian)
+2. **Serialization Type**: `\000` (1 byte = 0, _bd serialization)
+3. **Reserved**: `\000\000` (2 bytes reserved)
+4. **Data Length**: `[length:4]` (4 bytes = total bytes, little-endian)
+5. **List Flag**: `\376\377\377\377` (4 bytes = -2, little-endian)
+6. **Element Count**: `[element_count:4]` (4 bytes = number of elements, little-endian)
+7. **Element Data**: `[element_1:serialized]...[element_n:serialized]` (variable length per element type)
 
-**🔍 Key Examples:**
+**� Source**: Header information obtained from https://code.kx.com/q/kb/serialization/
+
+**� Key Examples:**
 - **Empty List**: `()` → `\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000` (8 bytes total)
 - **Single Element List**: `,_n` → `\001\000\000\000\020\000\000\000\000\000\000\001\000\000\000\006\000\000\000\000\000\000` (20 bytes total)
 - **Mixed Types**: `(1;2.5;"a")` → `\001\000\000\000(\000\000\000\000\000\000\003\000\000\000\001\000\000\000\001\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\004@\003\000\000\000a\000\000\000` (40 bytes total)
@@ -29,11 +33,13 @@ From analyzing 104 examples (6 edge cases + 98 random), I identified a clear pat
 
 **Hypothesis**: K serializes List using the following binary format:
 ```
-[type_id:4][length:4][list_flag:4][element_count:4][element_1:serialized]...[element_n:serialized]
+[architecture:1][message_type:1][reserved:2][length:4][list_flag:4][element_count:4][element_1:serialized]...[element_n:serialized]
 ```
 
 **Where:**
-- `type_id = 1` (numeric/string type)
+- `architecture = 1` (little-endian)
+- `message_type = 0` (_bd serialization)
+- `reserved = 0,0` (unused)
 - `length = 8 + sum(serialized_element_sizes)` (total bytes after this field)
 - `list_flag = -2` (list subtype indicator)
 - `element_count = number of elements` (4-byte little-endian)
