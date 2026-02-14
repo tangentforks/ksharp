@@ -1099,8 +1099,8 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Parse parenthesized expression
-                    var expression = ParseExpressionWithoutSemicolons();
+                    // Parse parenthesized expression - inside parentheses, semicolons create lists
+                    var expression = ParseExpressionInsideDelimiters();
                     if (expression == null)
                     {
                         throw new Exception("Expected expression after '('");
