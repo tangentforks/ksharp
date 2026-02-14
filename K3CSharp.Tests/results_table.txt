@@ -306,7 +306,7 @@
 ║ rand_draw_deal.k                                   │ r:4 _draw -4; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;-1;);(...   │                      ║
 ║ rand_draw_probability.k                            │ r:10 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;-2;);(...   │                      ║
 ║ rand_draw_vector_select.k                          │ r:2 3 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
-║ rand_draw_vector_deal.k                            │ r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;0;);(`...   │                      ║
+║ rand_draw_vector_deal.k                            │ r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;0;);(`...   │ .((`type;0;);(`...   ║
 ║ rand_draw_vector_probability.k                     │ r:2 3 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
 ║ time_gtime.k                                       │ _gtime 0             │ 20350101 0           │                      ║
 ║ time_lt.k                                          │ _lt 0                │ -18000j              │ -18000               ║
@@ -360,10 +360,6 @@
 ║ vector_notation_single_group.k                     │ (42)                 │ 42                   │                      ║
 ║ vector_notation_space.k                            │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
 ║ vector_notation_variables.k                        │ a: 10                │ 30 210 0             │ 30 200 -10           ║
-║ vector_notation_semicolon.k                        │ (3 + 4; 5 + 6; -20.45) │ Error: Cannot a...   │ (7;11;-20.45)        ║
-║ vector_notation_single_group.k                     │ (42)                 │ 42                   │                      ║
-║ vector_notation_space.k                            │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
-║ vector_notation_variables.k                        │ a: 10                │ 30 210 0             │ 30 200 -10           ║
 ║ vector_addition.k                                  │ 1 2 + 3 4            │ 4 6                  │                      ║
 ║ vector_division.k                                  │ 1 2 % 3 4            │ 0.3333333 0.5        │                      ║
 ║ vector_index_duplicate.k                           │ 5 8 4 9 @ 0 0        │ 5 5                  │                      ║
@@ -390,10 +386,10 @@
 ║ amend_parenthesized.k                              │ (.) . (1 2 3; 0; +; 10) │ Error: Dictiona...   │ @[1 2 3]             ║
 ║ amend_test_anonymous_func.k                        │ f:{x+y}              │ Error: Dictiona...   │ 1 12 3 4 5           ║
 ║ amend_test_func_var.k                              │ f:{x+y}              │ Error: Dictiona...   │ 11 2 3               ║
-║ conditional_bracket_test.k                         │ :[1 < 2; "true"; "false"]  // Test conditional evaluation with bracket notation │ Error: Undefine...   │                      ║
-║ conditional_false.k                                │ :[0; "true"; "false"]  // Conditional evaluation - condition false │ Error: Undefine...   │                      ║
-║ conditional_simple_test.k                          │ :[1; "true"; "false"] │ Error: Undefine...   │                      ║
-║ conditional_true.k                                 │ :[1; "true"; "false"]  // Conditional evaluation - condition true │ Error: Undefine...   │                      ║
+║ conditional_bracket_test.k                         │ :[1 < 2; "true"; "false"]  // Test conditional evaluation with bracket notation │ Error: Undefine...   │ "true"               ║
+║ conditional_false.k                                │ :[0; "true"; "false"]  // Conditional evaluation - condition false │ Error: Undefine...   │ "false"              ║
+║ conditional_simple_test.k                          │ :[1; "true"; "false"] │ Error: Undefine...   │ "true"               ║
+║ conditional_true.k                                 │ :[1; "true"; "false"]  // Conditional evaluation - condition true │ Error: Undefine...   │ "true"               ║
 ║ dictionary_null_index.k                            │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
 ║ dictionary_unmake.k                                │ d: .((`a;1);(`b;2))  │ Error: Undefine...   │ ((`a;1;);(`b;2;))    ║
 ║ do_bracket_test.k                                  │ do[3; 42]  // Do function with bracket notation │ Error: Do funct...   │                      ║
@@ -403,12 +399,18 @@
 ║ dyadic_minus_bracket.k                             │ -[10; 3]  // Dyadic subtraction with bracket notation │ 7                    │                      ║
 ║ dyadic_multiply_bracket.k                          │ *[4; 6]  // Dyadic multiplication with bracket notation │ 24                   │                      ║
 ║ dyadic_plus_bracket.k                              │ +[3; 5]  // Dyadic addition with bracket notation │ 8                    │                      ║
-║ empty_brackets_dictionary.k                        │ d: .((`a;1);(`b;2))  │ Error: Unexpect...   │ 1 2 3                ║
+║ empty_brackets_dictionary.k                        │ d: .((`a;1);(`b;2))  │ Error: Unexpect...   │ 1 2                  ║
 ║ empty_brackets_vector.k                            │ v: 1 2 3 4           │ Error: Unexpect...   │ 1 2 3                ║
 ║ form_braces_complex_expressions.k                  │ sum:{[a;b] a+b}      │ 14 20 10             │                      ║
-║ format_float_precision_complex_mixed.k             │ 10.3$(1.234;2.567;3.890;4.123) │ ("     1.234";"...   │ ("   1.50";"   ...   ║
-║ format_float_vector.k                              │ 0.0$(1;2.5;3.14;42)  │ ""                   │ ("       1.5";"...   ║
-║ format_int_vector.k                                │ 0$(1;2.5;3.14;42)    │ ""                   │ ("         1";"...   ║
+║ format_float_precision_complex_mixed.k             │ 10.3$(1.234;2.567;3.890;4.123) │ ("     1.234";"...   │ ("     1.234"
+ ...   ║
+║ format_float_vector.k                              │ 0.0$(1;2.5;3.14;42)  │ ""                   │ (,"1"
+ ,"2"
+ ,"...   ║
+║ format_int_vector.k                                │ 0$(1;2.5;3.14;42)    │ ""                   │ (""
+ ""
+ ""
+ "")     ║
 ║ format_long_vector.k                               │ 0j$(1;2.5;3.14;42)   │ ""                   │                      ║
 ║ format_string_pad_left.k                           │ 10$"hello"           │ "     hello"         │                      ║
 ║ format_string_pad_right.k                          │ -10$"test"           │ "test      "         │                      ║
@@ -419,18 +421,6 @@
 ║ if_true.k                                          │ a: 10; if[1 < 2; a: 20]  // If statement - condition true │ Error: Cannot c...   │                      ║
 ║ in_basic.k                                         │ 4 _in 1 7 2 4 6 3    │ 4                    │                      ║
 ║ in_notfound.k                                      │ 10 _in 1 7 2 4 6 3   │ 0                    │                      ║
-║ monadic_format_basic.k                             │ $1                   │ ,"1"                 │                      ║
-║ monadic_format_types.k                             │ $42.5                │ "42.5"               │                      ║
-║ monadic_format_vector.k                            │ $1 2 3               │ (,"1";,"2";,"3")     │                      ║
-║ monadic_format_string_hello.k                      │ $"hello"             │ "hello"              │                      ║
-║ monadic_format_string_a.k                          │ $"a"                 │ ""a""                │ ,"a"                 ║
-║ monadic_format_symbol_hello.k                      │ $`hello              │ "hello"              │                      ║
-║ monadic_format_symbol_simple.k                     │ $`test               │ "test"               │                      ║
-║ monadic_format_dictionary.k                        │ $.((`a;1);(`b;2);(`c;3)) │ ".((`a;1;);(`b;...   │ .((`a;1;);(`b;2...   ║
-║ monadic_format_nested_list.k                       │ $((1;2;3);(4;5;6))   │ ((,"1";,"2";,"3...   │                      ║
-║ monadic_format_integer.k                           │ $42                  │ "42"                 │                      ║
-║ monadic_format_float.k                             │ $3.14                │ "3.14"               │                      ║
-║ monadic_format_vector_simple.k                     │ $1 2 3               │ (,"1";,"2";,"3")     │                      ║
 ║ in_simple.k                                        │ 5 _in 1 2 3          │ 0                    │                      ║
 ║ isolated.k                                         │ a:1.5                │ 0.6                  │                      ║
 ║ modulo.k                                           │ a:1.5                │ 0.6                  │                      ║
@@ -439,9 +429,6 @@
 ║ simple_division.k                                  │ 8 % 2                │ 4                    │                      ║
 ║ simple_subtraction.k                               │ 5 - 3                │ 2                    │                      ║
 ║ string_parse.k                                     │ a: 10                │ 30                   │                      ║
-║ take_operator_empty_float.k                        │ 0#0.0                │ 0#0.0                │                      ║
-║ take_operator_empty_symbol.k                       │ 0#``                 │ 0#`                  │                      ║
-║ take_operator_overflow.k                           │ 10#1 2 3             │ 1 2 3 1 2 3 1 2...   │                      ║
 ║ k_tree_assignment_absolute_foo.k                   │ .k.foo: 42           │ 42                   │                      ║
 ║ k_tree_retrieve_absolute_foo.k                     │ .k.foo: 42           │ 42                   │                      ║
 ║ k_tree_retrieval_relative.k                        │ .k.foo: 42           │ 42                   │                      ║
@@ -512,7 +499,7 @@
 ║ serialization_bd_character_edge_001.k              │ _bd "\001"           │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_character_edge_377.k              │ _bd "\377"           │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_character_edge_backspace.k        │ _bd "\b"             │ "\001\000\000\0...   │                      ║
-║ serialization_bd_charactervector_edge_empty.k      │ _bd ""               │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_charactervector_edge_empty.k      │ _bd ""               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_charactervector_edge_a.k          │ _bd "a"              │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_charactervector_edge_hello.k      │ _bd "hello"          │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_charactervector_edge_whitespace.k │ _bd "\n\t\r"         │ "\001\000\000\0...   │                      ║
@@ -520,8 +507,8 @@
 ║ serialization_bd_integervector_edge_single.k       │ _bd ,1               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integervector_edge_123.k          │ _bd 1 2 3            │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integervector_edge_special.k      │ _bd 0N 0I -0I        │ "\001\000\000\0...   │                      ║
-║ serialization_bd_list_edge_empty.k                 │ _bd ()               │ "\001\000\000\0...   │ "\001\000\000\0...   ║
-║ serialization_bd_list_edge_null.k                  │ _bd ,_n              │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_list_edge_empty.k                 │ _bd ()               │ "\001\000\000\0...   │                      ║
+║ serialization_bd_list_edge_null.k                  │ _bd ,_n              │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_list_edge_mixed.k                 │ _bd (1;2.5;"a")      │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_list_edge_complex.k               │ _bd (_n;`symbol;{[]}) │ Error: _bd (byt...   │ "\001\000\000\0...   ║
 ║ serialization_bd_list_edge_nested.k                │ _bd ((1;2);(3;4))    │ "\001\000\000\0...   │ "\001\000\000\0...   ║
@@ -535,10 +522,8 @@
 ║ serialization_bd_symbolvector_random_1.k           │ _bd `qzUM7 `g8X6P `"î­¥" `KgNQ5i `"< +" `b5 │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_symbolvector_random_2.k           │ _bd `"Ô 0" `D `qCBI1b `"*H " `"Â‰©" `ULsyI `"F~" `"C" `Mont `O25B │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_symbolvector_random_3.k           │ _bd `"õ³" `EE5ijP `trD0LuE `"ÓW" `"¸" `y │ "\001\000\000\0...   │ "\001\000\000\0...   ║
-║ serialization_bd_db_anonymousfunction.k            │ // Test _bd and _db for AnonymousFunction serialization │ "\001\000\000\0...   │ "\001\000\000\0...   ║
-║ serialization_bd_db_roundtrip_integer.k            │ // Test _bd and _db round-trip serialization │ 42                   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 454/533 tests passed (85.2%)                                                                               ║
+║ SUMMARY: 440/512 tests passed (85.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -623,6 +608,11 @@ Input: a:5
 Expected: (7 10;(2;2.5);5 -1)
 Actual: Error: Error evaluating string expression '(a-c;a%b)': Cannot subtract Integer and List
 ──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_vector_deal.k
+Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
+Expected: .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
+Actual: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
+──────────────────────────────────────────────────────────────────────────
 Test: time_lt.k
 Input: _lt 0
 Expected: -18000
@@ -636,7 +626,7 @@ Actual: -3251
 Test: list_getenv.k
 Input: _getenv "PATH"
 Expected: "C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\euseb\bin;C:\Program Files\Microsoft MPI\Bin\;C:\Program Files\Eclipse Adoptium\jdk-8.0.382.5-hotspot\bin;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\ia32;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\Intel64;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\HP\HP Performance Advisor;C:\Program Files (x86)\QuickTime\QTSystem\;C:\Program Files (x86)\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\CMake\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\Microsoft Emulator Manager\1.0\;C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Pages\v1.0\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Users\euseb\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files (x86)\nodejs\;C:\Program Files\Common Files\Avid\Eucon;C:\Program Files (x86)\Common Files\Avid\Eucon;C:\Program Files\Avid\Avid Link\jre\bin;C:\Program Files (x86)\dotnet\;c:\Windows\SysWOW64\;c:\Windows\Sysnative\;c:\program files (x86)\iracing\d3dgear;C:\Program Files (x86)\Common Files\DivX Shared\DesktopService;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\gs\gs10.00.0\bin;C:\Program Files (x86)\Windows Kits\10\Microsoft Application Virtualization\Sequencer\;C:\Program Files\Calibre2\;C:\Program Files\NVIDIA Corporation\Nsight Compute 2020.1.1\;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files\Git LFS;C:\Program Files\GitHub CLI\;C:\Program Files (x86)\Incredibuild;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\Acustica\Medusa Framework\;C:\Program Files\Git\cmd;C:\Users\euseb\.local\bin;C:\Progra~1\NVIDIA~2\CUDA\v11.0\libnvvp;C:\Progra~1\NVIDIA~2\CUDA\v11.0\bin;C:\Progra~2\Common~1\Intel\Shared~1\redist\intel6~1\compiler;C:\Users\euseb\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Imaginando\DLYM;C:\Users\euseb\.dotnet\tools;C:\Users\euseb\AppData\Roaming\npm;C:\Users\euseb\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Imaginando\K7D;C:\Program Files\Imaginando\FRMS;C:\Program Files\Imaginando\DRC;C:\Users\euseb\AppData\Local\Programs\Ollama;C:\Users\euseb\.local\bin;C:\Users\euseb\.dotnet\tools"
-Actual: "C:\Program Files\Microsoft MPI\Bin\;C:\Program Files\Eclipse Adoptium\jdk-8.0.382.5-hotspot\bin;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\ia32;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\Intel64;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\HP\HP Performance Advisor;C:\Program Files (x86)\QuickTime\QTSystem\;C:\Program Files (x86)\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\CMake\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\Microsoft Emulator Manager\1.0\;C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Pages\v1.0\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Users\euseb\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files (x86)\nodejs\;C:\Program Files\Common Files\Avid\Eucon;C:\Program Files (x86)\Common Files\Avid\Eucon;C:\Program Files\Avid\Avid Link\jre\bin;C:\Program Files (x86)\dotnet\;c:\Windows\SysWOW64\;c:\Windows\Sysnative\;c:\program files (x86)\iracing\d3dgear;C:\Program Files (x86)\Common Files\DivX Shared\DesktopService;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\gs\gs10.00.0\bin;C:\Program Files (x86)\Windows Kits\10\Microsoft Application Virtualization\Sequencer\;C:\Program Files\Calibre2\;C:\Program Files\NVIDIA Corporation\Nsight Compute 2020.1.1\;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files\Git LFS;C:\Program Files\GitHub CLI\;C:\Program Files (x86)\Incredibuild;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\Acustica\Medusa Framework\;C:\Program Files\Git\cmd;C:\Users\euseb\.local\bin;C:\Progra~1\NVIDIA~2\CUDA\v11.0\libnvvp;C:\Progra~1\NVIDIA~2\CUDA\v11.0\bin;C:\Progra~2\Common~1\Intel\Shared~1\redist\intel6~1\compiler;C:\Users\euseb\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Imaginando\DLYM;C:\Users\euseb\.dotnet\tools;C:\Users\euseb\AppData\Roaming\npm;C:\Users\euseb\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Imaginando\K7D;C:\Program Files\Imaginando\FRMS;C:\Program Files\Imaginando\DRC;C:\Users\euseb\AppData\Local\Programs\Ollama;C:\Users\euseb\.local\bin;C:\Users\euseb\.dotnet\tools;c:\Users\euseb\.windsurf\extensions\ms-python.debugpy-2025.18.0-win32-x64\bundled\scripts\noConfigScripts"
+Actual: "C:\Program Files\Microsoft MPI\Bin\;C:\Program Files\Eclipse Adoptium\jdk-8.0.382.5-hotspot\bin;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\ia32;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\Intel64;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\HP\HP Performance Advisor;C:\Program Files (x86)\QuickTime\QTSystem\;C:\Program Files (x86)\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\CMake\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\Microsoft Emulator Manager\1.0\;C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Pages\v1.0\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Users\euseb\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files (x86)\nodejs\;C:\Program Files\Common Files\Avid\Eucon;C:\Program Files (x86)\Common Files\Avid\Eucon;C:\Program Files\Avid\Avid Link\jre\bin;C:\Program Files (x86)\dotnet\;c:\Windows\SysWOW64\;c:\Windows\Sysnative\;c:\program files (x86)\iracing\d3dgear;C:\Program Files (x86)\Common Files\DivX Shared\DesktopService;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\gs\gs10.00.0\bin;C:\Program Files (x86)\Windows Kits\10\Microsoft Application Virtualization\Sequencer\;C:\Program Files\Calibre2\;C:\Program Files\NVIDIA Corporation\Nsight Compute 2020.1.1\;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files\Git LFS;C:\Program Files\GitHub CLI\;C:\Program Files (x86)\Incredibuild;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\Acustica\Medusa Framework\;C:\Program Files\Git\cmd;C:\Users\euseb\.local\bin;C:\Progra~1\NVIDIA~2\CUDA\v11.0\libnvvp;C:\Progra~1\NVIDIA~2\CUDA\v11.0\bin;C:\Progra~2\Common~1\Intel\Shared~1\redist\intel6~1\compiler;C:\Users\euseb\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Imaginando\DLYM;C:\Users\euseb\.dotnet\tools;C:\Users\euseb\AppData\Roaming\npm;C:\Users\euseb\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Imaginando\K7D;C:\Program Files\Imaginando\FRMS;C:\Program Files\Imaginando\DRC;C:\Users\euseb\AppData\Local\Programs\Ollama;C:\Users\euseb\.local\bin;C:\Users\euseb\.dotnet\tools"
 ──────────────────────────────────────────────────────────────────────────
 Test: list_size.k
 Input: _size "README.md"
@@ -677,16 +667,6 @@ Test: lsq.k
 Input: _lsq
 Expected: Error - _lsq (least squares) operation reserved for future use
 Actual: Error: Binary operator must have exactly 2 children, got 0
-──────────────────────────────────────────────────────────────────────────
-Test: vector_notation_semicolon.k
-Input: (3 + 4; 5 + 6; -20.45)
-Expected: (7;11;-20.45)
-Actual: Error: Cannot add Integer and List
-──────────────────────────────────────────────────────────────────────────
-Test: vector_notation_variables.k
-Input: a: 10
-Expected: 30 200 -10
-Actual: 30 210 0
 ──────────────────────────────────────────────────────────────────────────
 Test: vector_notation_semicolon.k
 Input: (3 + 4; 5 + 6; -20.45)
@@ -741,22 +721,22 @@ Actual: Error: Dictionary key must be a symbol
 ──────────────────────────────────────────────────────────────────────────
 Test: conditional_bracket_test.k
 Input: :[1 < 2; "true"; "false"]  // Test conditional evaluation with bracket notation
-Expected: 
+Expected: "true"
 Actual: Error: Undefined variable: :
 ──────────────────────────────────────────────────────────────────────────
 Test: conditional_false.k
 Input: :[0; "true"; "false"]  // Conditional evaluation - condition false
-Expected: 
+Expected: "false"
 Actual: Error: Undefined variable: :
 ──────────────────────────────────────────────────────────────────────────
 Test: conditional_simple_test.k
 Input: :[1; "true"; "false"]
-Expected: 
+Expected: "true"
 Actual: Error: Undefined variable: :
 ──────────────────────────────────────────────────────────────────────────
 Test: conditional_true.k
 Input: :[1; "true"; "false"]  // Conditional evaluation - condition true
-Expected: 
+Expected: "true"
 Actual: Error: Undefined variable: :
 ──────────────────────────────────────────────────────────────────────────
 Test: dictionary_unmake.k
@@ -781,7 +761,7 @@ Actual: Error: Do function requires at least 2 arguments: count and expression(s
 ──────────────────────────────────────────────────────────────────────────
 Test: empty_brackets_dictionary.k
 Input: d: .((`a;1);(`b;2))
-Expected: 1 2 3
+Expected: 1 2
 Actual: Error: Unexpected token: RIGHT_BRACKET(])
 ──────────────────────────────────────────────────────────────────────────
 Test: empty_brackets_vector.k
@@ -791,17 +771,26 @@ Actual: Error: Unexpected token: RIGHT_BRACKET(])
 ──────────────────────────────────────────────────────────────────────────
 Test: format_float_precision_complex_mixed.k
 Input: 10.3$(1.234;2.567;3.890;4.123)
-Expected: ("   1.50";"   2.70";"   3.14";"   4.20")
+Expected: ("     1.234"
+ "     2.567"
+ "     3.890"
+ "     4.123")
 Actual: ("     1.234";"     2.567";"     3.890";"     4.123")
 ──────────────────────────────────────────────────────────────────────────
 Test: format_float_vector.k
 Input: 0.0$(1;2.5;3.14;42)
-Expected: ("       1.5";"       2.5")
+Expected: (,"1"
+ ,"2"
+ ,"3"
+ "42")
 Actual: ""
 ──────────────────────────────────────────────────────────────────────────
 Test: format_int_vector.k
 Input: 0$(1;2.5;3.14;42)
-Expected: ("         1";"         2";"         3")
+Expected: (""
+ ""
+ ""
+ "")
 Actual: ""
 ──────────────────────────────────────────────────────────────────────────
 Test: format_vector_int.k
@@ -823,16 +812,6 @@ Test: if_true.k
 Input: a: 10; if[1 < 2; a: 20]  // If statement - condition true
 Expected: 
 Actual: Error: Cannot compare Integer and Vector with <
-──────────────────────────────────────────────────────────────────────────
-Test: monadic_format_string_a.k
-Input: $"a"
-Expected: ,"a"
-Actual: ""a""
-──────────────────────────────────────────────────────────────────────────
-Test: monadic_format_dictionary.k
-Input: $.((`a;1);(`b;2);(`c;3))
-Expected: .((`a;1;);(`b;2;);(`c;3;))
-Actual: ".((`a;1;);(`b;2;);(`c;3;))"
 ──────────────────────────────────────────────────────────────────────────
 Test: monadic_format_mixed_vector.k
 Input: $(1;2.5;"hello";`symbol)
@@ -861,28 +840,13 @@ Actual: "\001\000\000\000\033\000\000\000\376\377\377\377\003\000\000\000\001\00
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_db_dictionary.k
 Input: // Test _bd and _db for Dictionary serialization
-Expected: "\001\000\000\000H\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\004\000\000\0001\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\004\000\000\0002\000\000\000\006\000\000\000\000\000\000"
+Expected: "\001\000\000\000H\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\004\000\000\0001\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\004\000\000\0002\000\000\000\006\000\000\000\000\000"
 Actual: "\001\000\000\000\014\000\000\000\005\000\000\000\002\000\000\000a1b2"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_db_anonymousfunction.k
 Input: // Test _bd and _db for AnonymousFunction serialization
 Expected: "\001\000\000\000\017\000\000\000\n\000\000\000\000{[x] x+1}\000"
 Actual: "\001\000\000\000\020\000\000\000\n\000\000\000[x] x+1\000"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_charactervector_edge_empty.k
-Input: _bd ""
-Expected: "\001\000\000\000\t\000\000\000\375\377\377\377\000\000\000\000\000"
-Actual: "\001\000\000\000\b\000\000\000\377\377\377\377\000\000\000\000"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_list_edge_empty.k
-Input: _bd ()
-Expected: "\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000\000"
-Actual: "\001\000\000\000\b\000\000\000\376\377\377\377\000\000\000\000"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_list_edge_null.k
-Input: _bd ,_n
-Expected: "\001\000\000\000\020\000\000\000\000\000\000\000\001\000\000\000\006\000\000\000\000\000\000"
-Actual: "\001\000\000\000\b\000\000\000\376\377\377\377\001\000\000\000"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_list_edge_mixed.k
 Input: _bd (1;2.5;"a")
@@ -933,9 +897,4 @@ Test: serialization_bd_symbolvector_random_3.k
 Input: _bd `"õ³" `EE5ijP `trD0LuE `"ÓW" `"¸" `y
 Expected: "\001\000\000\000'\000\000\000\374\377\377\377\006\000\000\000\303\265\302\263\000EE5ijP\000trD0LuE\000\303\223W\000\302\270\302\202\000y\000"
 Actual: "\001\000\000\000%\000\000\000\374\377\377\377\006\000\000\000\303\265\302\263\000EE5ijP\000trD0LuE\000\303\223W\000\302\270\000y\000"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_db_anonymousfunction.k
-Input: // Test _bd and _db for AnonymousFunction serialization
-Expected: "\001\000\000\000\017\000\000\000\n\000\000\000\000{[x] x+1}\000"
-Actual: "\001\000\000\000\020\000\000\000\n\000\000\000[x] x+1\000"
 ──────────────────────────────────────────────────────────────────────────

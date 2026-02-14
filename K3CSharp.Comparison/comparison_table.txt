@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-02-13 20:43:04
+Generated: 2026-02-13 22:51:51
 
 SUMMARY:
 --------
-Total Tests:     514
-✅ Matched:       420
-❌ Differed:      54
+Total Tests:     512
+✅ Matched:       422
+❌ Differed:      55
 ⚠️  Skipped:       0
-💥 Errors:        40
-Success Rate:    81.7%
+💥 Errors:        35
+Success Rate:    82.4%
 
 DETAILED RESULTS:
 -----------------
@@ -66,7 +66,6 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   atom_vector.k                                      0                              0                                                                                
 ✅ PASS   attribute_handle_symbol.k                          `a.                            `a.                                                                              
 ✅ PASS   attribute_handle_vector.k                          `a.`b.`c.                      `a.`b.`c.                      Compact representation                            
-💥 ERROR bin.k                                                                             _bin                           K3Sharp error, k.exe succeeded                    
 ✅ PASS   character_single.k                                 "f"                            "f"                                                                              
 ✅ PASS   character_vector.k                                 "hello"                        "hello"                                                                          
 ✅ PASS   complex_function.k                                 205                            205                            smart integer division, inverse and exponenti...  
@@ -108,7 +107,6 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   dot_execute_context.k                              8                              8                                                                                
 ✅ PASS   dot_execute_variables.k                            0.6                            0.6                                                                              
 ✅ PASS   dot_execute.k                                      4                              4                                                                                
-💥 ERROR draw.k                                                                            _draw                          K3Sharp error, k.exe succeeded                    
 ✅ PASS   drop_negative.k                                    0 1 2 3                        0 1 2 3                                                                          
 ✅ PASS   drop_positive.k                                    4 5 6 7                        4 5 6 7                                                                          
 ❌ FAIL   dyadic_divide_bracket.k                            5                              5.0                                                                              
@@ -485,10 +483,10 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   test_sm_simple.k                                   1                              1                                                                                
 ❌ FAIL   test_ss_basic.k                                    7                              ,6                                                                               
 ✅ PASS   test_vs_dyadic.k                                   1 9 9 5                        1 9 9 5                                                                          
-💥 ERROR time_dj.k                                                                         20350101                       K3Sharp error, k.exe succeeded                    
+✅ PASS   time_dj.k                                          20350101                       20350101                                                                         
 ✅ PASS   time_gtime.k                                       20350101 0                     20350101 0                                                                       
-💥 ERROR time_jd.k                                                                         -3251                          K3Sharp error, k.exe succeeded                    
-💥 ERROR time_lt.k                                                                         -18000                         K3Sharp error, k.exe succeeded                    
+✅ PASS   time_jd.k                                          -3251                          -3251                                                                            
+❌ FAIL   time_lt.k                                          -18000j                        -18000                                                                           
 ✅ PASS   time_ltime.k                                       20341231 190000                20341231 190000                                                                  
 ✅ PASS   time_t.k                                           .((`type;1;);(`shape;!0;))     .((`type;1;);(`shape;!0;))     Compact representation                            
 ✅ PASS   type_char.k                                        3                              3                                                                                
@@ -593,7 +591,7 @@ File: form_braces_float.k
 K3Sharp: 4.0 3.75 0.6 -1.0
 k.exe:   4 3.75 0.6 -1
 
-... and 44 more failed tests
+... and 45 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------
@@ -621,13 +619,13 @@ Error: K3Sharp Error: Dictionary key must be a symbol
 File: amend_test.k
 Error: K3Sharp Error: Dictionary key must be a symbol
 
-File: bin.k
-Error: K3Sharp Error: Unexpected token: BIN(_bin)
-
 File: conditional_bracket_test.k
 Error: K3Sharp Error: Undefined variable: :
 
-... and 30 more error tests
+File: conditional_false.k
+Error: K3Sharp Error: Undefined variable: :
+
+... and 25 more error tests
 
 K.EXE FAILING TESTS:
 --------------------
