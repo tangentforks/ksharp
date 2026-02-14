@@ -80,6 +80,11 @@ namespace K3CSharp
                 TokenType.SIZE => "_size",
                 TokenType.BD => "_bd",
                 TokenType.DB => "_db",
+                TokenType.LT => "_lt",
+                TokenType.JD => "_jd",
+                TokenType.DJ => "_dj",
+                TokenType.GTIME => "_gtime",
+                TokenType.LTIME => "_ltime",
                 TokenType.MODULUS => "!",
                 TokenType.JOIN => ",",
                 TokenType.COLON => ":",
@@ -336,6 +341,7 @@ namespace K3CSharp
                    type == TokenType.LESS || type == TokenType.GREATER || type == TokenType.EQUAL || 
                    type == TokenType.IN || type == TokenType.BIN || type == TokenType.BINL || type == TokenType.LIN ||
                    type == TokenType.DV || type == TokenType.DI || type == TokenType.VS || type == TokenType.SV || type == TokenType.SS || type == TokenType.SM || type == TokenType.CI || type == TokenType.IC ||
+                   type == TokenType.LT || type == TokenType.JD || type == TokenType.DJ || type == TokenType.GTIME || type == TokenType.LTIME ||
                    type == TokenType.POWER || type == TokenType.MODULUS || type == TokenType.JOIN ||
                    type == TokenType.COLON || type == TokenType.HASH || type == TokenType.UNDERSCORE || type == TokenType.QUESTION || 
                    type == TokenType.DOLLAR || type == TokenType.DRAW || type == TokenType.GETENV || type == TokenType.SETENV || type == TokenType.SIZE || type == TokenType.STRING_REPRESENTATION ||
@@ -1537,6 +1543,33 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_ltime");
+                if (operand != null) node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.LT))
+            {
+                // Local time offset function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_lt");
+                if (operand != null) node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.JD))
+            {
+                // Julian date conversion function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_jd");
+                if (operand != null) node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.DJ))
+            {
+                // Date from Julian conversion function
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_dj");
                 if (operand != null) node.Children.Add(operand);
                 return node;
             }

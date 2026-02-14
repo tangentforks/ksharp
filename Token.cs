@@ -88,6 +88,9 @@ namespace K3CSharp
         LIN,            // _lin list intersection
         GTIME,          // _gtime GMT time conversion
         LTIME,          // _ltime local time conversion
+        LT,             // _lt local time
+        JD,             // _jd Julian date
+        DJ,             // _dj date from Julian
         VS,             // _vs database function
         SV,             // _sv database function
         SS,             // _ss database function

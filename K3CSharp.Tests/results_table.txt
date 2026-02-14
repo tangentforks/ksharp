@@ -310,9 +310,9 @@
 ║ rand_draw_vector_probability.k                     │ r:2 3 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
 ║ draw.k                                             │ _draw                │ Error: _draw re...   │ Error - _draw (...   ║
 ║ time_gtime.k                                       │ _gtime 0             │ 20350101 0           │                      ║
-║ time_lt.k                                          │ _lt 0                │ Error: Undefine...   │ -18000               ║
-║ time_jd.k                                          │ _jd 20260206         │ Error: Undefine...   │ 0N                   ║
-║ time_dj.k                                          │ _dj 0                │ Error: Undefine...   │ 20350101             ║
+║ time_lt.k                                          │ _lt 0                │ -18000j              │ -18000               ║
+║ time_jd.k                                          │ _jd 20260206         │ -3251                │ 0N                   ║
+║ time_dj.k                                          │ _dj 0                │ 20350101             │                      ║
 ║ time_ltime.k                                       │ _ltime 0             │ 20341231 190000      │                      ║
 ║ in.k                                               │ 4 _in 1 7 2 4 6 3    │ 4                    │                      ║
 ║ list_dv_basic.k                                    │ 3 4 4 5 _dv 4        │ 3 5                  │                      ║
@@ -540,7 +540,7 @@
 ║ serialization_bd_db_anonymousfunction.k            │ // Test _bd and _db for AnonymousFunction serialization │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_db_roundtrip_integer.k            │ // Test _bd and _db round-trip serialization │ 42                   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 453/535 tests passed (84.7%)                                                                               ║
+║ SUMMARY: 454/535 tests passed (84.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -633,17 +633,12 @@ Actual: Error: _draw requires dyadic call (left and right arguments)
 Test: time_lt.k
 Input: _lt 0
 Expected: -18000
-Actual: Error: Undefined variable: lt
+Actual: -18000j
 ──────────────────────────────────────────────────────────────────────────
 Test: time_jd.k
 Input: _jd 20260206
 Expected: 0N
-Actual: Error: Undefined variable: jd
-──────────────────────────────────────────────────────────────────────────
-Test: time_dj.k
-Input: _dj 0
-Expected: 20350101
-Actual: Error: Undefined variable: dj
+Actual: -3251
 ──────────────────────────────────────────────────────────────────────────
 Test: list_getenv.k
 Input: _getenv "PATH"
