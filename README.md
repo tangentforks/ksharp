@@ -162,7 +162,7 @@ Based on comprehensive analysis of K3 features, current implementation represent
 - **Debug Commands** (\b [s|t|n] for break/trace settings)
 - **Timer System** (\t [seconds] command for periodic execution)
 - **Advanced Mathematical Functions** (_lsq for matrix operations)
-- **Extended File I/O** (_load, _save, _read, _write with advanced options)
+- **Extended File and network I/O** (1: 2: 3: and 4: for I/O operations)
 
 #### **❌ Remaining Components (20%):**
 - **Foreign Function Interface** (.NET assembly loading and method invocation)
@@ -516,7 +516,23 @@ dotnet run
 
 ## 🔮 **Next Steps - Final 20% K3 Specification Completion**
 
-### **🚀 Phase 1: Foreign Function Interface (Next 1-2 Months) - HIGH PRIORITY**
+### **🚀 Phase 1: I/O Verbs and Matrix Operations (Next 1-2 Months) - HIGH PRIORITY**
+
+#### **Complete I/O System Implementation**
+- **File Handle Operations**: `1:`, `2:`, `3:`, `4:` for comprehensive file I/O
+- **Network I/O**: Socket operations and network communication
+- **Stream Processing**: Efficient handling of large files and data streams
+- **Error Handling**: Robust I/O error management and recovery
+
+#### **Matrix Operations Enhancement**
+- **`_lsq` function**: Least squares for advanced matrix operations
+- **Enhanced Matrix Functions**: Improved `_dot`, `_mul`, `_inv` with proper internals
+- **Numerical Precision**: Extended precision arithmetic support
+- **Performance Optimization**: Efficient matrix computation algorithms
+
+---
+
+### **🚀 Phase 2: Foreign Function Interface (2-3 Months) - HIGH PRIORITY**
 
 #### **Complete .NET Interoperability**
 - **Assembly Loading**: Dynamic loading of .NET libraries with dependency resolution
@@ -528,7 +544,7 @@ dotnet run
 
 ---
 
-### **🚀 Phase 2: Advanced Command System (2-3 Months) - HIGH PRIORITY**
+### **🚀 Phase 3: Advanced Command System (3-4 Months) - MEDIUM PRIORITY**
 
 #### **Complete Backslash Command Implementation**
 - **Script Loading**: `\l [file]` with error handling and relative path support
@@ -554,13 +570,13 @@ dotnet run
 
 ---
 
-### **🔬 Phase 4: Extended File I/O System (4-5 Months) - LOWER PRIORITY**
+### **🏗️ Phase 4: Performance Optimization and Documentation (4-5 Months) - LOWER PRIORITY**
 
-#### **Advanced File Operations**
-- **Stream Processing**: `_load`, `_save`, `_read`, `_write` with large file support
-- **Directory Management**: `_dir`, `_cd`, `_pwd` operations
-- **File System Integration**: Cross-platform file handling
-- **Serialization Extensions**: Custom data format support
+#### **Final Polish**
+- **Performance Optimization**: JIT compilation and memory management improvements
+- **Documentation Polish**: Complete API documentation and user guides
+- **Code Quality**: Final cleanup and optimization
+- **Testing**: Comprehensive validation and edge case coverage
 
 ---
 
@@ -578,7 +594,7 @@ dotnet run
 #### **Success Metrics**
 - **K3 Specification Compliance**: 100% core language coverage (target: 100%)
 - **.NET Ecosystem Access**: Seamless integration with .NET libraries (🔄 **Planned**)
-- **✅ Cross-Platform**: Windows, Linux, macOS support (100% acieved)
+- **✅ Cross-Platform**: Windows, Linux, macOS support (100% achieved)
 
 ---
 
