@@ -308,7 +308,6 @@
 ║ rand_draw_vector_select.k                          │ r:2 3 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
 ║ rand_draw_vector_deal.k                            │ r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;0;);(`...   │                      ║
 ║ rand_draw_vector_probability.k                     │ r:2 3 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
-║ draw.k                                             │ _draw                │ Error: _draw re...   │ Error - _draw (...   ║
 ║ time_gtime.k                                       │ _gtime 0             │ 20350101 0           │                      ║
 ║ time_lt.k                                          │ _lt 0                │ -18000j              │ -18000               ║
 ║ time_jd.k                                          │ _jd 20260206         │ -3251                │ 0N                   ║
@@ -348,7 +347,6 @@
 ║ amend_simple.k                                     │ 1 12 3 4 5           │ 1 12 3 4 5           │                      ║
 ║ find_basic.k                                       │ 9 8 7 6 5 4 3 ? 7  // Find operator - basic functionality │ 2                    │                      ║
 ║ find_notfound.k                                    │ 9 8 7 6 5 4 3 ? 1  // Find operator - not found case │ 7                    │                      ║
-║ bin.k                                              │ _bin                 │ Error: Unexpect...   │ Error - _bin (b...   ║
 ║ lsq.k                                              │ _lsq                 │ Error: Binary o...   │ Error - _lsq (l...   ║
 ║ format_float_precision_vector_simple.k             │ 10.1$(1.5;2.5)       │ ("       1.5";"...   │                      ║
 ║ format_float_precision_mixed_vector.k              │ 7.2$(1.5;2.7;3.14159;4.2) │ ("   1.50";"   ...   │                      ║
@@ -540,7 +538,7 @@
 ║ serialization_bd_db_anonymousfunction.k            │ // Test _bd and _db for AnonymousFunction serialization │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_db_roundtrip_integer.k            │ // Test _bd and _db round-trip serialization │ 42                   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 454/535 tests passed (84.9%)                                                                               ║
+║ SUMMARY: 454/533 tests passed (85.2%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -625,11 +623,6 @@ Input: a:5
 Expected: (7 10;(2;2.5);5 -1)
 Actual: Error: Error evaluating string expression '(a-c;a%b)': Cannot subtract Integer and List
 ──────────────────────────────────────────────────────────────────────────
-Test: draw.k
-Input: _draw
-Expected: Error - _draw (random number generation) operation reserved for future use
-Actual: Error: _draw requires dyadic call (left and right arguments)
-──────────────────────────────────────────────────────────────────────────
 Test: time_lt.k
 Input: _lt 0
 Expected: -18000
@@ -679,11 +672,6 @@ Test: amend_test.k
 Input: (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)  // Amend: add 10 to elements at indices 0 and 2
 Expected: 1 12 3 4 5
 Actual: Error: Dictionary key must be a symbol
-──────────────────────────────────────────────────────────────────────────
-Test: bin.k
-Input: _bin
-Expected: Error - _bin (binary search) operation reserved for future use
-Actual: Error: Unexpected token: BIN(_bin)
 ──────────────────────────────────────────────────────────────────────────
 Test: lsq.k
 Input: _lsq

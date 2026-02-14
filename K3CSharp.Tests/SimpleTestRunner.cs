@@ -547,7 +547,6 @@ namespace K3CSharp.Tests
                 ("rand_draw_vector_select.k", ".((`type;0;);(`shape;,2;))"),
                 ("rand_draw_vector_deal.k", ".((`type;0;);(`shape;,2;);(`allitemsunique;1;))"),
                 ("rand_draw_vector_probability.k", ".((`type;0;);(`shape;,2;))"),
-                ("draw.k", "Error - _draw (random number generation) operation reserved for future use"),
                 ("time_gtime.k", "20350101 0"),
                 ("time_lt.k", "-18000"),
                 ("time_jd.k", "0N"),
@@ -600,7 +599,6 @@ namespace K3CSharp.Tests
                 ("find_basic.k", "2"),
                 ("find_notfound.k", "7"),
                 
-                ("bin.k", "Error - _bin (binary search) operation reserved for future use"),
                 ("lsq.k", "Error - _lsq (least squares) operation reserved for future use"),
                 
                 // Form specifiers on mixed vectors
