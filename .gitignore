@@ -419,7 +419,6 @@ FodyWeavers.xsd
 
 # internal documentation
 vibe-docs
-BEST.md
 kref*.*
 kusr*.*
 speck#.*
