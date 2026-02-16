@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace K3CSharp.Serialization
+namespace K3CSharp
 {
     /// <summary>
     /// Main K deserializer implementing unified serialization pattern

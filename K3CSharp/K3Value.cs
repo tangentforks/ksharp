@@ -971,7 +971,7 @@ namespace K3CSharp
                 else if (CreationMethod == "enumerate_char" || (Elements.Count > 0 && Elements.All(e => e is CharacterValue)))
                     return "\"\"";
                 else if (CreationMethod == "standard")
-                    return "0"; // Empty standard integer vector
+                    return "()"; // Empty standard vector
                 else if (asElement || CreationMethod == "mixed")
                     return "()"; // Empty mixed vector
                 else

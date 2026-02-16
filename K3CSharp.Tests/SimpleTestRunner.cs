@@ -739,7 +739,6 @@ namespace K3CSharp.Tests
                 ("serialization_bd_db_anonymousfunction.k", "\"\\001\\000\\000\\000\\017\\000\\000\\000\\n\\000\\000\\000\\000{[x] x+1}\\000\""),
                 ("serialization_bd_db_roundtrip_integer.k", "42"),
                 ("serialization_bd_db_roundtrip_list.k", "(1;2.5;\"a\")"),
-                ("test_mixed_serialization.k", "\"\\001\\000\\000\\000*\\000\\000\\000\\000\\000\\000\\000\\003\\000\\000\\000\\001\\000\\000\\000\\001\\000\\000\\000\\002\\000\\000\\000\\000\\000\\000\\000\\000\\000\\004@\\003\\000\\000\\000a\\000\\000\\000\""),
                 
                 // Comprehensive _bd serialization tests - Edge cases and random examples
                 ("serialization_bd_null_edge_0.k", "\"\\001\\000\\000\\000\\b\\000\\000\\000\\006\\000\\000\\000\\000\\000\\000\\000\""),

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace K3CSharp.Serialization
+namespace K3CSharp
 {
     /// <summary>
     /// Binary reader for K serialization format with little-endian encoding

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using K3CSharp.Serialization;
 
 namespace K3CSharp
 {
@@ -451,8 +450,8 @@ namespace K3CSharp
             // Check if this should be a List (mixed types) or Vector (homogeneous)
             if (elements.Count == 0)
             {
-                // Empty parentheses should create an empty List
-                return new KList { Elements = new List<object>() };
+                // Empty parentheses should create an empty VectorValue
+                return new VectorValue(new List<K3Value>());
             }
             
             // Check if all elements are the same type
@@ -466,9 +465,9 @@ namespace K3CSharp
             }
             else
             {
-                // Create mixed-type KList
-                var listElements = elements.Cast<object>().ToList(); // Convert K3Value to object
-                return new KList { Elements = listElements };
+                // Create mixed-type VectorValue
+                var listElements = elements.Cast<K3Value>().ToList(); // Convert K3Value to object
+                return new VectorValue(listElements);
             }
         }
         private K3Value EvaluateFunction(ASTNode node)
@@ -1741,24 +1740,15 @@ namespace K3CSharp
                 
                 return new VectorValue(triplets);
             }
-            else if (value is KList list)
+            else if (value is VectorValue list)
             {
                 // Make operation: .() creates empty dictionary, .(elements) creates dictionary
                 var newDict = new Dictionary<SymbolValue, (K3Value, DictionaryValue?)>();
                 
                 foreach (var element in list.Elements)
                 {
-                    // Convert object to K3Value
-                    K3Value? k3Element = element as K3Value;
-                    if (k3Element == null && element != null)
-                    {
-                        // Handle primitive types
-                        if (element is string s) k3Element = new CharacterValue(s);
-                        else if (element is int i) k3Element = new IntegerValue(i);
-                        else if (element is double d) k3Element = new FloatValue(d);
-                        else if (element is char c) k3Element = new CharacterValue(c.ToString());
-                        else throw new Exception($"Unsupported element type in list: {element.GetType()}");
-                    }
+                    // element is already K3Value, no conversion needed
+                    K3Value k3Element = element;
                     
                     if (k3Element != null)
                     {
@@ -1769,7 +1759,7 @@ namespace K3CSharp
                         {
                             entryElements = entryVec.Elements;
                         }
-                        else if (k3Element is KList entryList)
+                        else if (k3Element is VectorValue entryList)
                         {
                             entryElements = entryList.Elements.Cast<K3Value>().ToList();
                         }
@@ -1818,9 +1808,9 @@ namespace K3CSharp
                     {
                         entryElements = entryVec.Elements;
                     }
-                    else if (element is KList entryList)
+                    else if (element is VectorValue entryList)
                     {
-                        // Convert KList elements back to K3Value
+                        // Convert VectorValue elements back to K3Value
                         entryElements = entryList.Elements.Cast<K3Value>().ToList();
                     }
                     else
@@ -2646,90 +2636,28 @@ namespace K3CSharp
                 SymbolValue sv => "`" + sv.Value,
                 NullValue => null,
                 VectorValue vv => ConvertVectorToPrimitive(vv),
-                KList lv => ConvertListToPrimitive(lv),
                 DictionaryValue dv => ConvertDictionaryToPrimitive(dv),
                 FunctionValue fv => ConvertFunctionToPrimitive(fv),
                 _ => throw new NotSupportedException($"Cannot convert {value.GetType()} to primitive type")
             };
         }
         
-        private object ConvertListToPrimitive(KList list)
-        {
-            // Return the KList object directly - KSerializer will handle serialization
-            return list;
-        }
-        
         private object ConvertDictionaryToPrimitive(DictionaryValue dict)
         {
-            // Convert DictionaryValue to KDictionary for serialization
-            var kdict = new KDictionary();
-            foreach (var entry in dict.Entries)
-            {
-                var key = ConvertToPrimitive(entry.Key);
-                var value = ConvertToPrimitive(entry.Value.Value);
-                kdict.Pairs.Add(new KeyValuePair<object, object>(key!, value!));
-            }
-            return kdict;
+            // Return DictionaryValue directly - KSerializer will handle serialization
+            return dict;
         }
         
         private object ConvertFunctionToPrimitive(FunctionValue func)
         {
-            // Convert FunctionValue to KFunction for serialization
-            var kfunc = new KFunction();
-            
-            // Reconstruct full function source with parameters and braces
-            var paramsStr = "[" + string.Join(";", func.Parameters) + "] ";
-            kfunc.Source = "{" + paramsStr + func.BodyText + "}";
-            kfunc.HasParseErrors = false;
-            return kfunc;
+            // Return FunctionValue directly - KSerializer will handle serialization
+            return func;
         }
         
         private object ConvertVectorToPrimitive(VectorValue vector)
         {
-            // Check if it's a homogeneous vector and convert accordingly
-            if (vector.Elements.Count == 0)
-            {
-                return new KVector(new int[0]); // Empty integer vector
-            }
-            
-            var firstElement = vector.Elements[0];
-            
-            // Check if all elements are of the same type
-            bool allIntegers = vector.Elements.All(e => e is IntegerValue);
-            bool allFloats = vector.Elements.All(e => e is FloatValue);
-            bool allCharacters = vector.Elements.All(e => e is CharacterValue);
-            bool allSymbols = vector.Elements.All(e => e is SymbolValue);
-            
-            if (allIntegers)
-            {
-                var intArray = vector.Elements.Cast<IntegerValue>().Select(iv => iv.Value).ToArray();
-                return new KVector(intArray);
-            }
-            else if (allFloats)
-            {
-                var doubleArray = vector.Elements.Cast<FloatValue>().Select(fv => fv.Value).ToArray();
-                return new KVector(doubleArray);
-            }
-            else if (allCharacters)
-            {
-                var charArray = vector.Elements.Cast<CharacterValue>().Select(cv => cv.Value[0]).ToArray();
-                return new KVector(charArray);
-            }
-            else if (allSymbols)
-            {
-                var symbolArray = vector.Elements.Cast<SymbolValue>().Select(sv => sv.Value).ToArray();
-                return new KVector(symbolArray);
-            }
-            else
-            {
-                // Mixed type vector - convert to KList for mixed list serialization
-                var klist = new KList();
-                foreach (var element in vector.Elements)
-                {
-                    klist.Elements.Add(element);
-                }
-                return klist;
-            }
+            // Return VectorValue directly - KSerializer will handle serialization
+            return vector;
         }
     }
     

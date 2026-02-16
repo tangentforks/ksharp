@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace K3CSharp.Serialization
+namespace K3CSharp
 {
     /// <summary>
     /// Main K serializer implementing unified serialization pattern
@@ -21,11 +21,9 @@ namespace K3CSharp.Serialization
                 string s when s.Length == 1 => SerializeCharacter(s[0]),
                 string s => SerializeCharacterVector(s),
                 null => SerializeNull(),
-                KList list => SerializeList(list),
-                KDictionary dict => SerializeDictionary(dict),
-                KFunction func => SerializeAnonymousFunction(func),
-                K3CSharp.FunctionValue fv => SerializeAnonymousFunction(ToKFunction(fv)),
-                KVector vec => SerializeVector(vec),
+                K3CSharp.VectorValue list => SerializeList(list), // Use VectorValue for mixed lists
+                K3CSharp.DictionaryValue dict => SerializeDictionary(dict), // Use DictionaryValue
+                K3CSharp.FunctionValue func => SerializeAnonymousFunction(func), // Use FunctionValue directly
                 _ => throw new NotSupportedException($"Unsupported type: {value.GetType()}")
             };
         }
@@ -36,15 +34,15 @@ namespace K3CSharp.Serialization
             writer.WriteByte(1);   // Architecture: little-endian
             writer.WriteByte(0);   // Message type: _bd serialization
             writer.WriteInt16(0);  // Reserved: 2 bytes
-            writer.WriteInt32(length); // Length
-            return writer.GetBuffer();
+            writer.WriteInt32(length); // Data length
+            return writer.ToArray();
         }
         
         private byte[] SerializeIntegerData(int value)
         {
             var writer = new KBinaryWriter();
-            writer.WriteInt32(1);   // Subtype
-            writer.WriteInt32(value); // Value (little-endian)
+            writer.WriteInt32(1);  // Integer flag
+            writer.WriteInt32(value); // Integer value
             return writer.GetBuffer();
         }
         
@@ -58,10 +56,8 @@ namespace K3CSharp.Serialization
         private byte[] SerializeFloatData(double value)
         {
             var writer = new KBinaryWriter();
-            writer.WriteInt32(2);  // Subtype
-            writer.WriteByte(1);   // Padding byte value 1
-            writer.WritePadding(3); // Additional padding
-            writer.WriteDouble(value); // IEEE 754 little-endian
+            writer.WriteInt32(2);  // Float flag
+            writer.WriteDouble(value); // Float value
             return writer.GetBuffer();
         }
         
@@ -75,9 +71,9 @@ namespace K3CSharp.Serialization
         private byte[] SerializeCharacterData(char value)
         {
             var writer = new KBinaryWriter();
-            writer.WriteInt32(3);  // Character flag (3, not -1)
+            writer.WriteInt32(3);  // Character flag
             writer.WriteByte((byte)value); // Character value
-            writer.WritePadding(3); // Padding
+            writer.WritePadding(3); // 3 bytes padding to align to 4-byte boundary
             return writer.GetBuffer();
         }
         
@@ -91,8 +87,7 @@ namespace K3CSharp.Serialization
         private byte[] SerializeSymbolData(string symbol)
         {
             var writer = new KBinaryWriter();
-            var symbolData = Encoding.UTF8.GetBytes(symbol.StartsWith("`") ? symbol[1..] : symbol);
-            
+            var symbolData = Encoding.UTF8.GetBytes(symbol);
             writer.WriteInt32(4);  // Symbol flag
             writer.WriteBytes(symbolData); // Symbol data
             writer.WriteByte(0); // Null terminator
@@ -126,9 +121,7 @@ namespace K3CSharp.Serialization
         {
             var writer = new KBinaryWriter();
             writer.WriteInt32(6);  // Null subtype
-            writer.WriteInt32(0);  // Length 0
-            writer.WritePadding(3); // Padding
-            writer.WriteByte(0);   // Extra null byte to match k.exe
+            writer.WritePadding(4); // 4 bytes padding to match k.exe
             return writer.ToArray();
         }
         
@@ -139,14 +132,14 @@ namespace K3CSharp.Serialization
             return message.Concat(nullData).ToArray();
         }
         
-        private byte[] SerializeList(KList list)
+        private byte[] SerializeList(K3CSharp.VectorValue list)
         {
             var listData = SerializeListData(list);
             var message = SerializeMessage(listData.Length);
             return message.Concat(listData).ToArray();
         }
         
-        private byte[] SerializeListData(KList list)
+        private byte[] SerializeListData(K3CSharp.VectorValue list)
         {
             var elementData = new List<byte>();
             
@@ -167,14 +160,12 @@ namespace K3CSharp.Serialization
         {
             return element switch
             {
-                // Handle KVector types (from nested list serialization) - return only data, not full message
-                K3CSharp.VectorValue vv => SerializeVectorData(ToKVector(vv)),
-                KVector vec => SerializeVectorData(vec),
+                // Handle nested lists (for dictionary triplets)
+                K3CSharp.VectorValue nestedList => SerializeListData(nestedList),
                 
                 // Handle complex types that can be list elements - return only data, not full message
-                KDictionary dict => SerializeDictionaryData(dict),
-                KFunction func => SerializeAnonymousFunctionData(func),
-                K3CSharp.FunctionValue fv => SerializeAnonymousFunctionData(ToKFunction(fv)),
+                K3CSharp.DictionaryValue dict => SerializeDictionaryData(dict),
+                K3CSharp.FunctionValue func => SerializeAnonymousFunctionData(func),
                 
                 // Handle primitive K3Value objects
                 K3CSharp.IntegerValue iv => SerializeIntegerData(iv.Value),
@@ -187,50 +178,60 @@ namespace K3CSharp.Serialization
             };
         }
         
-        private byte[] SerializeDictionary(KDictionary dict)
+        private byte[] SerializeDictionary(K3CSharp.DictionaryValue dict)
         {
             var dictData = SerializeDictionaryData(dict);
             var message = SerializeMessage(dictData.Length);
             return message.Concat(dictData).ToArray();
         }
         
-        private byte[] SerializeDictionaryData(KDictionary dict)
+        private byte[] SerializeDictionaryData(K3CSharp.DictionaryValue dict)
         {
-            var writer = new KBinaryWriter();
-            var pairData = new List<byte>();
+            // Convert dictionary to list of triplets using unmake functionality
+            var triplets = new List<K3CSharp.K3Value>();
             
-            foreach (var kvp in dict.Pairs)
+            foreach (var kvp in dict.Entries)
             {
-                pairData.AddRange(SerializeValue(kvp.Key));
-                pairData.AddRange(SerializeValue(kvp.Value));
+                var key = kvp.Key;
+                var (value, attr) = kvp.Value;
+                
+                // Create triplet as VectorValue (mixed list) with 3 elements: (key; value; null)
+                var tripletElements = new List<K3CSharp.K3Value> { key, value, new K3CSharp.NullValue() };
+                var tripletList = new K3CSharp.VectorValue(tripletElements);
+                
+                // Add triplet as element to main list
+                triplets.Add(tripletList);
             }
             
-            writer.WriteInt32(5);  // Dictionary flag
-            writer.WriteInt32(dict.Pairs.Count); // Pair count
-            writer.WriteBytes(pairData.ToArray()); // Pair data
-            return writer.ToArray();
+            // Create list from triplets (type 0 list)
+            var tripletListContainer = new K3CSharp.VectorValue(triplets);
+            
+            // Serialize as list data first
+            var listData = SerializeListData(tripletListContainer);
+            
+            // Change type from 0 (list) to 5 (dictionary)
+            if (listData.Length >= 4)
+            {
+                listData[0] = 5; // Dictionary flag instead of list flag
+            }
+            
+            return listData;
         }
         
-        private byte[] SerializeAnonymousFunction(KFunction func)
+        private byte[] SerializeAnonymousFunction(K3CSharp.FunctionValue func)
         {
             var functionData = SerializeAnonymousFunctionData(func);
             var message = SerializeMessage(functionData.Length);
             return message.Concat(functionData).ToArray();
         }
         
-        private byte[] SerializeAnonymousFunctionData(KFunction func)
+        private byte[] SerializeAnonymousFunctionData(K3CSharp.FunctionValue func)
         {
             var writer = new KBinaryWriter();
-            var functionSource = Encoding.UTF8.GetBytes(func.Source);
+            var functionSource = Encoding.UTF8.GetBytes("{" + "[" + string.Join(";", func.Parameters) + "] " + func.BodyText + "}");
             
             writer.WriteInt32(10); // Function flag
             writer.WriteByte(0); // Extra null byte to match k.exe
-            
-            // Add error metadata for pre-parsing failures
-            if (func.HasParseErrors)
-            {
-                writer.WriteBytes(Encoding.ASCII.GetBytes(".k\0"));
-            }
             
             writer.WriteBytes(functionSource); // Function source
             writer.WriteByte(0); // Null terminator
@@ -257,10 +258,9 @@ namespace K3CSharp.Serialization
                 K3CSharp.NullValue => new byte[0],
                 
                 // Complex types
-                KList list => SerializeList(list),
-                KDictionary dict => SerializeDictionary(dict),
-                KFunction func => SerializeAnonymousFunction(func),
-                KVector vec => SerializeElementData(vec),
+                K3CSharp.VectorValue list => SerializeList(list),
+                K3CSharp.DictionaryValue dict => SerializeDictionary(dict),
+                K3CSharp.FunctionValue func => SerializeAnonymousFunction(func),
                 
                 _ => throw new NotSupportedException($"Unsupported value type: {value.GetType()}")
             };
@@ -276,113 +276,18 @@ namespace K3CSharp.Serialization
             return bytes;
         }
         
-        private KVector ToKVector(K3CSharp.VectorValue vectorValue)
-        {
-            var kVector = new KVector();
-            
-            // Determine vector type based on element types
-            if (vectorValue.Elements.All(e => e is K3CSharp.IntegerValue))
-            {
-                kVector.Type = KVectorType.Integer;
-                kVector.IntegerElements = vectorValue.Elements.Cast<K3CSharp.IntegerValue>().Select(iv => iv.Value).ToArray();
-            }
-            else if (vectorValue.Elements.All(e => e is K3CSharp.FloatValue))
-            {
-                kVector.Type = KVectorType.Float;
-                kVector.FloatElements = vectorValue.Elements.Cast<K3CSharp.FloatValue>().Select(fv => fv.Value).ToArray();
-            }
-            else if (vectorValue.Elements.All(e => e is K3CSharp.CharacterValue))
-            {
-                kVector.Type = KVectorType.Character;
-                kVector.CharacterElements = vectorValue.Elements.Cast<K3CSharp.CharacterValue>().Select(cv => cv.Value[0]).ToArray();
-            }
-            else if (vectorValue.Elements.All(e => e is K3CSharp.SymbolValue))
-            {
-                kVector.Type = KVectorType.Symbol;
-                kVector.SymbolElements = vectorValue.Elements.Cast<K3CSharp.SymbolValue>().Select(sv => sv.Value).ToArray();
-            }
-            else
-            {
-                // Mixed vector - not supported for now, fall back to general handling
-                throw new NotSupportedException($"Mixed vectors not supported in element serialization");
-            }
-            
-            return kVector;
-        }
-        
-        private KFunction ToKFunction(K3CSharp.FunctionValue functionValue)
-        {
-            return new KFunction
-            {
-                Source = "{" + "[" + string.Join(";", functionValue.Parameters) + "] " + functionValue.BodyText + "}",
-                HasParseErrors = false // Could be determined from functionValue.PreParsedTokens if needed
-            };
-        }
-        
-        private byte[] SerializeVector(KVector vector)
-        {
-            var vectorData = SerializeVectorData(vector);
-            var message = SerializeMessage(vectorData.Length);
-            return message.Concat(vectorData).ToArray();
-        }
-        
-        private int GetVectorElementCount(KVector vector)
-        {
-            return vector.Type switch
-            {
-                KVectorType.Integer => vector.IntegerElements.Length,
-                KVectorType.Float => vector.FloatElements.Length,
-                KVectorType.Character => vector.CharacterElements.Length,
-                KVectorType.Symbol => vector.SymbolElements.Length,
-                _ => 0
-            };
-        }
-        
-        private byte[] SerializeVectorData(KVector vector)
+        private byte[] SerializeVectorData(K3CSharp.VectorValue vector)
         {
             var elementData = new List<byte>();
-            var vectorTypeFlag = vector.Type switch
-            {
-                KVectorType.Integer => -1,
-                KVectorType.Float => -2,
-                KVectorType.Character => -3,
-                KVectorType.Symbol => -4,
-                _ => throw new NotSupportedException($"Unsupported vector type: {vector.Type}")
-            };
             
-            // Add vector type flag (4 bytes) and element count (4 bytes) at the beginning
-            elementData.AddRange(BitConverter.GetBytes(vectorTypeFlag));
-            elementData.AddRange(BitConverter.GetBytes(GetVectorElementCount(vector)));
+            // For VectorValue (mixed lists), we serialize as list type 0
+            elementData.AddRange(BitConverter.GetBytes(0)); // List type: 0 for mixed lists
+            elementData.AddRange(BitConverter.GetBytes(vector.Elements.Count)); // Element count
             
-            switch (vector.Type)
+            foreach (var element in vector.Elements)
             {
-                case KVectorType.Integer:
-                    foreach (var element in vector.IntegerElements)
-                    {
-                        elementData.AddRange(BitConverter.GetBytes(element));
-                    }
-                    break;
-                case KVectorType.Float:
-                    foreach (var element in vector.FloatElements)
-                    {
-                        elementData.AddRange(BitConverter.GetBytes(element));
-                    }
-                    break;
-                case KVectorType.Character:
-                    foreach (var element in vector.CharacterElements)
-                    {
-                        elementData.Add((byte)element);
-                    }
-                    elementData.Add(0); // Null terminator for character vector
-                    break;
-                case KVectorType.Symbol:
-                    foreach (var element in vector.SymbolElements)
-                    {
-                        var symbolBytes = Encoding.UTF8.GetBytes(element);
-                        elementData.AddRange(symbolBytes);
-                        elementData.Add(0); // Null terminator per symbol
-                    }
-                    break;
+                var serialized = SerializeElementData(element);
+                elementData.AddRange(serialized);
             }
             
             return elementData.ToArray();

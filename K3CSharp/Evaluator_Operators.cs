@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using K3CSharp.Serialization;
 
 namespace K3CSharp
 {
@@ -1023,10 +1022,10 @@ namespace K3CSharp
                     return new VectorValue(dimensions.Select(d => (K3Value)new IntegerValue(d)).ToList());
                 }
             }
-            else if (a is KList list)
+            else if (a is VectorValue list)
             {
-                // Handle KList (empty list) according to updated spec
-                // "If the input is an empty list the result will be handled like a jagged list representing 1 dimension of length 0: ,0"
+                // Handle VectorValue (empty list) according to updated spec
+                // "If the input is an empty list result will be handled like a jagged list representing 1 dimension of length 0: ,0"
                 return new VectorValue(new List<K3Value> { new IntegerValue(0) });
             }
             
