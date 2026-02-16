@@ -2677,9 +2677,9 @@ namespace K3CSharp
             // Convert FunctionValue to KFunction for serialization
             var kfunc = new KFunction();
             
-            // Reconstruct full function source with parameters
-            var paramsStr = func.Parameters.Count > 0 ? "[" + string.Join(";", func.Parameters) + "] " : "";
-            kfunc.Source = paramsStr + func.BodyText;
+            // Reconstruct full function source with parameters and braces
+            var paramsStr = "[" + string.Join(";", func.Parameters) + "] ";
+            kfunc.Source = "{" + paramsStr + func.BodyText + "}";
             kfunc.HasParseErrors = false;
             return kfunc;
         }
