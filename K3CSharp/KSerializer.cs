@@ -46,6 +46,13 @@ namespace K3CSharp
             return writer.GetBuffer();
         }
         
+        private byte[] SerializeRawIntegerData(int value)
+        {
+            var writer = new KBinaryWriter();
+            writer.WriteInt32(value); // Just the raw integer value (4 bytes)
+            return writer.GetBuffer();
+        }
+        
         private byte[] SerializeInteger(int value)
         {
             var data = SerializeIntegerData(value);
@@ -59,6 +66,13 @@ namespace K3CSharp
             writer.WriteInt32(2);  // Float flag
             writer.WriteInt32(1);  // Subtype field (required for floats in k.exe)
             writer.WriteDouble(value); // Float value
+            return writer.GetBuffer();
+        }
+        
+        private byte[] SerializeRawFloatData(double value)
+        {
+            var writer = new KBinaryWriter();
+            writer.WriteDouble(value); // Just the raw float value (8 bytes)
             return writer.GetBuffer();
         }
         
@@ -78,6 +92,13 @@ namespace K3CSharp
             return writer.GetBuffer();
         }
         
+        private byte[] SerializeRawCharacterData(char value)
+        {
+            var writer = new KBinaryWriter();
+            writer.WriteByte((byte)value); // Just the raw character value (1 byte)
+            return writer.GetBuffer();
+        }
+        
         private byte[] SerializeCharacter(char value)
         {
             var data = SerializeCharacterData(value);
@@ -93,6 +114,17 @@ namespace K3CSharp
             var symbolData = Encoding.UTF8.GetBytes(symbolValue);
             writer.WriteInt32(4);  // Symbol flag
             writer.WriteBytes(symbolData); // Symbol data
+            writer.WriteByte(0); // Null terminator
+            return writer.GetBuffer();
+        }
+        
+        private byte[] SerializeRawSymbolData(string symbol)
+        {
+            var writer = new KBinaryWriter();
+            // Remove initial backtick and get raw symbol value
+            var symbolValue = symbol.StartsWith("`") ? symbol.Substring(1) : symbol;
+            var symbolData = Encoding.UTF8.GetBytes(symbolValue);
+            writer.WriteBytes(symbolData); // Just the raw symbol bytes
             writer.WriteByte(0); // Null terminator
             return writer.GetBuffer();
         }
@@ -145,17 +177,43 @@ namespace K3CSharp
         private byte[] SerializeListData(K3CSharp.VectorValue list)
         {
             var elementData = new List<byte>();
+            int vectorType = GetVectorType(list);
+            
+            // For typed vectors (-1, -2, -3, -4), use raw serialization without type headers
+            // For mixed lists (0), use full serialization
+            bool useRawSerialization = vectorType <= -1 && vectorType >= -4;
             
             foreach (var element in list.Elements)
             {
-                var serialized = SerializeElementData(element);
-                elementData.AddRange(serialized);
+                if (useRawSerialization)
+                {
+                    // Use raw serialization for typed vectors
+                    byte[] rawData = element switch
+                    {
+                        K3CSharp.IntegerValue iv => SerializeRawIntegerData(iv.Value),
+                        K3CSharp.LongValue lv => SerializeRawIntegerData((int)lv.Value), // Convert long to int for raw serialization
+                        K3CSharp.FloatValue fv => SerializeRawFloatData(fv.Value),
+                        K3CSharp.CharacterValue cv => SerializeRawCharacterData(cv.Value[0]),
+                        K3CSharp.SymbolValue sv => SerializeRawSymbolData(sv.Value),
+                        _ => throw new NotSupportedException($"Unsupported element type for raw serialization: {element.GetType()}")
+                    };
+                    elementData.AddRange(rawData);
+                }
+                else
+                {
+                    // Use full serialization for mixed lists only
+                    var serialized = SerializeElementData(element);
+                    elementData.AddRange(serialized);
+                }
+            }
+            
+            // Special case: add null terminator for character vectors
+            if (vectorType == -3)
+            {
+                elementData.Add(0); // Null terminator
             }
             
             var writer = new KBinaryWriter();
-            
-            // Determine vector type based on CreationMethod and element types
-            int vectorType = GetVectorType(list);
             writer.WriteInt32(vectorType);  // Vector type: -1=int, -2=float, -3=char, -4=symbol, 0=mixed
             writer.WriteInt32(list.Elements.Count); // Element count
             writer.WriteBytes(elementData.ToArray()); // Element data
