@@ -153,10 +153,53 @@ namespace K3CSharp
             }
             
             var writer = new KBinaryWriter();
-            writer.WriteInt32(0);  // List type: 0 for mixed lists
+            
+            // Determine vector type based on CreationMethod and element types
+            int vectorType = GetVectorType(list);
+            writer.WriteInt32(vectorType);  // Vector type: -1=int, -2=float, -3=char, -4=symbol, 0=mixed
             writer.WriteInt32(list.Elements.Count); // Element count
             writer.WriteBytes(elementData.ToArray()); // Element data
             return writer.ToArray();
+        }
+        
+        private int GetVectorType(K3CSharp.VectorValue list)
+        {
+            // Check CreationMethod for specific vector types
+            switch (list.CreationMethod)
+            {
+                case "enumerate_int":
+                case "enumerate_long":
+                    return -1; // Integer vector
+                case "enumerate_float":
+                    return -2; // Float vector
+                case "enumerate_char":
+                    return -3; // Character vector
+                case "enumerate_symbol":
+                    return -4; // Symbol vector
+            }
+            
+            // For empty vectors with no elements, determine from CreationMethod
+            if (list.Elements.Count == 0)
+            {
+                if (list.CreationMethod.Contains("int")) return -1;
+                if (list.CreationMethod.Contains("float")) return -2;
+                if (list.CreationMethod.Contains("char")) return -3;
+                if (list.CreationMethod.Contains("symbol")) return -4;
+                return 0; // Default to mixed list
+            }
+            
+            // For non-empty vectors, determine from element types
+            var firstElement = list.Elements[0];
+            if (list.Elements.All(e => e is IntegerValue || e is LongValue))
+                return -1; // Integer vector
+            else if (list.Elements.All(e => e is FloatValue))
+                return -2; // Float vector  
+            else if (list.Elements.All(e => e is CharacterValue))
+                return -3; // Character vector
+            else if (list.Elements.All(e => e is SymbolValue))
+                return -4; // Symbol vector
+            else
+                return 0; // Mixed list
         }
         
         private byte[] SerializeElementData(object element)
