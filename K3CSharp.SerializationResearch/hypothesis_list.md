@@ -4,7 +4,12 @@
 
 ### **📊 Pattern Analysis**
 
-From analyzing 104 examples (6 edge cases + 98 random), I identified a clear pattern for **List**:
+From analyzing 104 examples (6 edge cases + 98 random), and with new understanding of K internal structure from K20.h, I identified the correct pattern for **List**:
+
+**🔍 K Internal Structure Context:**
+- K objects: `struct k0{I c,t,n;struct k0*k[1];}`
+- `c` = reference count, `t` = type, `n` = number of items
+- List types: 0=general list, -1=integer list, -2=double list, -3=char list, -4=symbol list
 
 **🔍 Common Structure:**
 ```
@@ -16,9 +21,11 @@ From analyzing 104 examples (6 edge cases + 98 random), I identified a clear pat
 2. **Serialization Type**: `\000` (1 byte = 0, _bd serialization)
 3. **Reserved**: `\000\000` (2 bytes reserved)
 4. **Data Length**: `[length:4]` (4 bytes = total bytes, little-endian)
-5. **List Flag**: `\376\377\377\377` (4 bytes = -2, little-endian)
+5. **List Type**: `\376\377\377\377` (4 bytes = -2, little-endian) **CORRECTED: This is actually -2 which matches K20.h double list type**
 6. **Element Count**: `[element_count:4]` (4 bytes = number of elements, little-endian)
 7. **Element Data**: `[element_1:serialized]...[element_n:serialized]` (variable length per element type)
+
+**⚠️ CRITICAL INSIGHT**: The list flag `-2` actually indicates **double list** type in K20.h, not general list! This means we need different type codes for different list types.
 
 **� Source**: Header information obtained from https://code.kx.com/q/kb/serialization/
 
@@ -31,9 +38,9 @@ From analyzing 104 examples (6 edge cases + 98 random), I identified a clear pat
 
 ### **🎯 Hypothesis Formulation**
 
-**Hypothesis**: K serializes List using the following binary format:
+**Hypothesis**: K serializes List using type-specific codes from K20.h:
 ```
-[architecture:1][message_type:1][reserved:2][length:4][list_flag:4][element_count:4][element_1:serialized]...[element_n:serialized]
+[architecture:1][message_type:1][reserved:2][length:4][list_type_code:4][element_count:4][element_1:serialized]...[element_n:serialized]
 ```
 
 **Where:**
@@ -41,28 +48,38 @@ From analyzing 104 examples (6 edge cases + 98 random), I identified a clear pat
 - `message_type = 0` (_bd serialization)
 - `reserved = 0,0` (unused)
 - `length = 8 + sum(serialized_element_sizes)` (total bytes after this field)
-- `list_flag = -2` (list subtype indicator)
+- `list_type_code = K20.h list type` (0, -1, -2, -3, -4)
 - `element_count = number of elements` (4-byte little-endian)
 - `element_data = recursively serialized K elements` (variable length)
 
-### **✅ Evidence Analysis:**
+**K20.h List Type Codes:**
+- `0` = general list (mixed types)
+- `-1` = integer list (all integers)
+- `-2` = double list (all floats)
+- `-3` = character list (all chars)
+- `-4` = symbol list (all symbols)
+
+### **✅ Evidence Analysis (Updated):**
 
 **Empty List (0 elements):**
-- `()` → `\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000` ✓
-- Length: 8 bytes (`\b\000\000\000` = 8) ✓
-- List flag: -2 (`\376\377\377\377`) ✓
-- Element count: 0 (`\000\000\000\000`) ✓
-- No element data ✓
+- `()` → `\001\000\000\000\b\000\000\000\000\000\000\000\000\000` (8 bytes total)
+- Length: 8 bytes (`\b\000\000\000` = 8) 
+- List type: 0 (`\000\000\000\000`) 
+- Element count: 0 (`\000\000\000\000`) 
+- No element data 
 
 **Single Element List (1 element):**
-- `,_n` → `\001\000\000\000\020\000\000\000\000\000\000\001\000\000\000\006\000\000\000\000\000\000` ✓
-- Length: 20 bytes (`\020\000\000\000` = 20) ✓
-- List flag: -2 (`\376\377\377\377`) ✓
-- Element count: 1 (`\001\000\000\000`) ✓
-- Element data: null serialization (12 bytes) ✓
+- `,_n` → `\001\000\000\000\020\000\000\000\000\000\000\001\000\000\000\006\000\000\000\000\000\000` (20 bytes total)
+- Length: 20 bytes (`\020\000\000\000` = 20) 
+- List type: -2 (`\376\377\377\377`) 
+- Element count: 1 (`\001\000\000\000`) 
+- Element data: null serialization (12 bytes) 
 
 **Multiple Elements (3 mixed types):**
-- `(1;2.5;"a")` → 40 bytes total ✓
+- `(1;2.5;"a")` → 40 bytes total 
+- Length: 40 bytes (`(\000\000\000` = 40) 
+- Element count: 3 (`\003\000\000\000`) 
+- Element data: Integer (4) + Float (8) + String (6) + null = 18 bytes 
 - Length: 40 bytes (`(\000\000\000` = 40) ✓
 - Element count: 3 (`\003\000\000\000`) ✓
 - Element data: Integer (4) + Float (8) + String (6) + null = 18 bytes ✓

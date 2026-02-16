@@ -29,58 +29,80 @@ namespace K3CSharp.Serialization
             };
         }
         
-        private byte[] SerializeInteger(int value)
+        private byte[] SerializeMessage(int length)
         {
             var writer = new KBinaryWriter();
             writer.WriteByte(1);   // Architecture: little-endian
             writer.WriteByte(0);   // Message type: _bd serialization
             writer.WriteInt16(0);  // Reserved: 2 bytes
-            writer.WriteInt32(8);   // Length (subtype + value = 8 bytes)
-            writer.WriteInt32(1);   // Subtype
-            writer.WriteInt32(value); // Value (little-endian)
-            return writer.ToArray();
+            writer.WriteInt32(length); // Length
+            return writer.GetBuffer();
         }
         
-        private byte[] SerializeFloat(double value)
+        private byte[] SerializeIntegerData(int value)
         {
             var writer = new KBinaryWriter();
-            writer.WriteByte(1);   // Architecture: little-endian
-            writer.WriteByte(0);   // Message type: _bd serialization
-            writer.WriteInt16(0);  // Reserved: 2 bytes
-            writer.WriteInt32(16); // Length (matches k.exe)
+            writer.WriteInt32(1);   // Subtype
+            writer.WriteInt32(value); // Value (little-endian)
+            return writer.GetBuffer();
+        }
+        
+        private byte[] SerializeInteger(int value)
+        {
+            var data = SerializeIntegerData(value);
+            var message = SerializeMessage(data.Length);
+            return message.Concat(data).ToArray();
+        }
+        
+        private byte[] SerializeFloatData(double value)
+        {
+            var writer = new KBinaryWriter();
             writer.WriteInt32(2);  // Subtype
             writer.WriteByte(1);   // Padding byte value 1
             writer.WritePadding(3); // Additional padding
             writer.WriteDouble(value); // IEEE 754 little-endian
-            return writer.ToArray();
+            return writer.GetBuffer();
+        }
+        
+        private byte[] SerializeFloat(double value)
+        {
+            var data = SerializeFloatData(value);
+            var message = SerializeMessage(data.Length);
+            return message.Concat(data).ToArray();
+        }
+        
+        private byte[] SerializeCharacterData(char value)
+        {
+            var writer = new KBinaryWriter();
+            writer.WriteInt32(3);  // Character flag (3, not -1)
+            writer.WriteByte((byte)value); // Character value
+            writer.WritePadding(3); // Padding
+            return writer.GetBuffer();
         }
         
         private byte[] SerializeCharacter(char value)
         {
-            var writer = new KBinaryWriter();
-            writer.WriteByte(1);   // Architecture: little-endian
-            writer.WriteByte(0);   // Message type: _bd serialization
-            writer.WriteInt16(0);  // Reserved: 2 bytes
-            writer.WriteInt32(8);  // Length (matches k.exe)
-            writer.WriteInt32(3);  // Character flag (3, not -1)
-            writer.WriteByte((byte)value); // Character value
-            writer.WritePadding(3); // Padding
-            return writer.ToArray();
+            var data = SerializeCharacterData(value);
+            var message = SerializeMessage(data.Length);
+            return message.Concat(data).ToArray();
         }
         
-        private byte[] SerializeSymbol(string symbol)
+        private byte[] SerializeSymbolData(string symbol)
         {
             var writer = new KBinaryWriter();
             var symbolData = Encoding.UTF8.GetBytes(symbol.StartsWith("`") ? symbol[1..] : symbol);
             
-            writer.WriteByte(1);   // Architecture: little-endian
-            writer.WriteByte(0);   // Message type: _bd serialization
-            writer.WriteInt16(0);  // Reserved: 2 bytes
-            writer.WriteInt32(4 + symbolData.Length + 1); // Length
             writer.WriteInt32(4);  // Symbol flag
             writer.WriteBytes(symbolData); // Symbol data
-            writer.WriteByte(0);    // Null terminator
-            return writer.ToArray();
+            writer.WriteByte(0); // Null terminator
+            return writer.GetBuffer();
+        }
+        
+        private byte[] SerializeSymbol(string symbol)
+        {
+            var data = SerializeSymbolData(symbol);
+            var message = SerializeMessage(data.Length);
+            return message.Concat(data).ToArray();
         }
         
         public byte[] SerializeCharacterVector(string str)
@@ -114,22 +136,55 @@ namespace K3CSharp.Serialization
         
         private byte[] SerializeList(KList list)
         {
-            var writer = new KBinaryWriter();
             var elementData = new List<byte>();
             
             foreach (var element in list.Elements)
             {
-                elementData.AddRange(SerializeValue(element));
+                var serialized = SerializeElementData(element);
+                elementData.AddRange(serialized);
             }
             
+            var writer = new KBinaryWriter();
             writer.WriteByte(1);   // Architecture: little-endian
             writer.WriteByte(0);   // Message type: _bd serialization
             writer.WriteInt16(0);  // Reserved: 2 bytes
-            writer.WriteInt32(8 + elementData.Count); // Length
-            writer.WriteInt32(-2); // List flag
+            writer.WriteInt32(8 + elementData.Count); // Length: header(8) + element_data
+            writer.WriteInt32(0);  // List type: 0 for mixed lists
             writer.WriteInt32(list.Elements.Count); // Element count
             writer.WriteBytes(elementData.ToArray()); // Element data
             return writer.ToArray();
+        }
+        
+        private byte[] SerializeElementData(object element)
+        {
+            // Only handle K3Value objects - parsing should be done by the parser
+            if (element is K3CSharp.IntegerValue iv)
+            {
+                return SerializeIntegerData(iv.Value);
+            }
+            else if (element is K3CSharp.FloatValue fv)
+            {
+                return SerializeFloatData(fv.Value);
+            }
+            else if (element is K3CSharp.CharacterValue cv)
+            {
+                return SerializeCharacterData(cv.Value[0]);
+            }
+            else if (element is K3CSharp.SymbolValue sv)
+            {
+                return SerializeSymbolData(sv.Value);
+            }
+            else if (element is K3CSharp.NullValue)
+            {
+                var writer = new KBinaryWriter();
+                writer.WriteInt32(6); // Type 6 (null)
+                writer.WriteInt32(0); // Length 0
+                return writer.GetBuffer();
+            }
+            else
+            {
+                throw new NotSupportedException($"Unsupported element type: {element.GetType()}");
+            }
         }
         
         private byte[] SerializeDictionary(KDictionary dict)
@@ -234,7 +289,10 @@ namespace K3CSharp.Serialization
             
             foreach (var symbol in elements)
             {
-                var symbolBytes = Encoding.UTF8.GetBytes(symbol.StartsWith("`") ? symbol[1..] : symbol);
+                var cleanSymbol = symbol.StartsWith("`") ? symbol[1..] : symbol;
+                
+                // Use UTF-8 encoding for all symbols
+                var symbolBytes = Encoding.UTF8.GetBytes(cleanSymbol);
                 elementData.AddRange(symbolBytes);
                 elementData.Add(0); // Null terminator per symbol
             }

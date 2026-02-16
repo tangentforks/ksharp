@@ -71,13 +71,17 @@ namespace K3CSharp.Serialization
         
         public void WritePadding(int count)
         {
-            buffer.AddRange(Enumerable.Repeat<byte>(0, count));
+            for (int i = 0; i < count; i++)
+            {
+                buffer.Add(0);
+            }
         }
         
-        public byte[] ToArray()
-        {
-            return buffer.ToArray();
-        }
+        public int Count => buffer.Count;
+        
+        public byte[] GetBuffer() => buffer.ToArray();
+        
+        public byte[] ToArray() => buffer.ToArray();
         
         public int Length => buffer.Count;
     }

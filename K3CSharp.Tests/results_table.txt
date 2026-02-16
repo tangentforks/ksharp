@@ -455,10 +455,12 @@
 ║ serialization_bd_db_floatvector.k                  │ // Test _bd and _db for Float Vector serialization │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_charactervector.k              │ // Test _bd and _db for CharacterVector serialization │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_symbolvector.k                 │ // Test _bd and _db for SymbolVector serialization │ "\001\000\000\0...   │                      ║
-║ serialization_bd_db_list.k                         │ // Test _bd and _db for List serialization │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_db_list.k                         │ // Test _bd and _db for List serialization │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_dictionary.k                   │ // Test _bd and _db for Dictionary serialization │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_db_anonymousfunction.k            │ // Test _bd and _db for AnonymousFunction serialization │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_db_roundtrip_integer.k            │ // Test _bd and _db round-trip serialization │ 42                   │                      ║
+║ serialization_bd_db_roundtrip_list.k               │ // Test _bd and _db round-trip serialization for mixed list │ Error: _db (dat...   │ (1;2.5;"a")          ║
+║ test_mixed_serialization.k                         │ [File not found]     │ File not found       │ "\001\000\000\0...   ║
 ║ serialization_bd_null_edge_0.k                     │ _bd _n               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_0.k                  │ _bd 0                │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_1.k                  │ _bd 1                │ "\001\000\000\0...   │                      ║
@@ -507,23 +509,23 @@
 ║ serialization_bd_integervector_edge_single.k       │ _bd ,1               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integervector_edge_123.k          │ _bd 1 2 3            │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integervector_edge_special.k      │ _bd 0N 0I -0I        │ "\001\000\000\0...   │                      ║
-║ serialization_bd_list_edge_empty.k                 │ _bd ()               │ "\001\000\000\0...   │                      ║
-║ serialization_bd_list_edge_null.k                  │ _bd ,_n              │ "\001\000\000\0...   │                      ║
+║ serialization_bd_list_edge_empty.k                 │ _bd ()               │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_list_edge_null.k                  │ _bd ,_n              │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_list_edge_mixed.k                 │ _bd (1;2.5;"a")      │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_list_edge_complex.k               │ _bd (_n;`symbol;{[]}) │ Error: _bd (byt...   │ "\001\000\000\0...   ║
-║ serialization_bd_list_edge_nested.k                │ _bd ((1;2);(3;4))    │ "\001\000\000\0...   │ "\001\000\000\0...   ║
-║ serialization_bd_list_edge_dicts.k                 │ _bd (.,(`a;1);.,(`b;2)) │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_list_edge_nested.k                │ _bd ((1;2);(3;4))    │ Error: _bd (byt...   │ "\001\000\000\0...   ║
+║ serialization_bd_list_edge_dicts.k                 │ _bd (.,(`a;1);.,(`b;2)) │ Error: _bd (byt...   │ "\001\000\000\0...   ║
 ║ serialization_bd_anonymousfunction_random_1.k      │ _bd {[x] x+7;x$1;x<=2} │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_anonymousfunction_random_2.k      │ _bd {[] 0|4;0&3}     │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_anonymousfunction_random_3.k      │ _bd {[xyz] xy|3}     │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_floatvector_random_1.k            │ _bd 196825.27335627712 -326371.90292283031 -214498.92985862558 11655.819143220946 │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_floatvector_random_2.k            │ _bd 148812.33236087282 │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_floatvector_random_3.k            │ _bd 585267.57816312299 -569668.94176055992 37200.312770306708 397004.01885714347 │ "\001\000\000\0...   │                      ║
-║ serialization_bd_symbolvector_random_1.k           │ _bd `qzUM7 `g8X6P `"î­¥" `KgNQ5i `"< +" `b5 │ "\001\000\000\0...   │ "\001\000\000\0...   ║
-║ serialization_bd_symbolvector_random_2.k           │ _bd `"Ô 0" `D `qCBI1b `"*H " `"Â‰©" `ULsyI `"F~" `"C" `Mont `O25B │ "\001\000\000\0...   │ "\001\000\000\0...   ║
-║ serialization_bd_symbolvector_random_3.k           │ _bd `"õ³" `EE5ijP `trD0LuE `"ÓW" `"¸" `y │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_symbolvector_random_1.k           │ _bd `qzUM7 `g8X6P `"iay" `KgNQ5i `"< +" `b5 │ "\001\000\000\0...   │                      ║
+║ serialization_bd_symbolvector_random_2.k           │ _bd `"O 0" `D `qCBI1b `"*H " `"SS" `ULsyI `"F~" `"C" `Mont `O25B │ "\001\000\000\0...   │                      ║
+║ serialization_bd_symbolvector_random_3.k           │ _bd `o3 `EE5ijP `trD0LuE `OW `"." `y │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 440/512 tests passed (85.9%)                                                                               ║
+║ SUMMARY: 442/514 tests passed (86.0%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -833,11 +835,6 @@ Input: while[0; 42]
 Expected: 
 Actual: Error: While function requires at least 2 arguments: condition and expression(s)
 ──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_db_list.k
-Input: // Test _bd and _db for List serialization
-Expected: "\001\000\000\000(\000\000\000\000\000\000\000\003\000\000\000\001\000\000\000\001\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\004@\003\000\000\000a\000\000\000"
-Actual: "\001\000\000\000\033\000\000\000\376\377\377\377\003\000\000\000\001\000\000\000\000\000\000\000\000\000\004@\003\000\000\000a\000\000"
-──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_db_dictionary.k
 Input: // Test _bd and _db for Dictionary serialization
 Expected: "\001\000\000\000H\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\004\000\000\0001\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\004\000\000\0002\000\000\000\006\000\000\000\000\000"
@@ -848,25 +845,45 @@ Input: // Test _bd and _db for AnonymousFunction serialization
 Expected: "\001\000\000\000\017\000\000\000\n\000\000\000\000{[x] x+1}\000"
 Actual: "\001\000\000\000\020\000\000\000\n\000\000\000[x] x+1\000"
 ──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_db_roundtrip_list.k
+Input: // Test _bd and _db round-trip serialization for mixed list
+Expected: (1;2.5;"a")
+Actual: Error: _db (data from bytes) operation failed: Unsupported scalar subtype: 0
+──────────────────────────────────────────────────────────────────────────
+Test: test_mixed_serialization.k
+Input: [File not found]
+Expected: "\001\000\000\000*\000\000\000\000\000\000\000\003\000\000\000\001\000\000\000\001\000\000\000\002\000\000\000\000\000\000\000\000\000\004@\003\000\000\000a\000\000\000"
+Actual: File not found
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_list_edge_empty.k
+Input: _bd ()
+Expected: "\001\000\000\000\b\000\000\000\376\377\377\377\000\000\000\000"
+Actual: "\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_list_edge_null.k
+Input: _bd ,_n
+Expected: "\001\000\000\000\b\000\000\000\376\377\377\377\001\000\000\000"
+Actual: "\001\000\000\000\020\000\000\000\000\000\000\000\001\000\000\000\006\000\000\000\000\000\000\000"
+──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_list_edge_mixed.k
 Input: _bd (1;2.5;"a")
 Expected: "\001\000\000\000(\000\000\000\000\000\000\000\003\000\000\000\001\000\000\000\001\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\004@\003\000\000\000a\000\000\000"
-Actual: "\001\000\000\000\033\000\000\000\376\377\377\377\003\000\000\000\001\000\000\000\000\000\000\000\000\000\004@\003\000\000\000a\000\000"
+Actual: "\001\000\000\000(\000\000\000\000\000\000\000\003\000\000\000\001\000\000\000\001\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\004@\003\000\000\000a\000\000\000"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_list_edge_complex.k
 Input: _bd (_n;`symbol;{[]})
 Expected: "\001\000\000\0000\000\000\000\000\000\000\000\003\000\000\000\006\000\000\000\000\000\000\000\004\000\000\000symbol\000\000\000\001\000\000\000\n\000\000\000\000{[]}\000\000\000\001\000\000\000"
-Actual: Error: _bd (bytes from data) operation failed: Unsupported value type: K3CSharp.FunctionValue
+Actual: Error: _bd (bytes from data) operation failed: Unsupported element type: K3CSharp.FunctionValue
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_list_edge_nested.k
 Input: _bd ((1;2);(3;4))
 Expected: "\001\000\000\000(\000\000\000\000\000\000\000\002\000\000\000\377\377\377\377\002\000\000\000\001\000\000\000\002\000\000\000\377\377\377\377\002\000\000\000\003\000\000\000\004\000\000\000"
-Actual: "\001\000\000\0008\000\000\000\376\377\377\377\002\000\000\000\001\000\000\000\020\000\000\000\377\377\377\377\002\000\000\000\001\000\000\000\002\000\000\000\001\000\000\000\020\000\000\000\377\377\377\377\002\000\000\000\003\000\000\000\004\000\000\000"
+Actual: Error: _bd (bytes from data) operation failed: Unsupported element type: K3CSharp.VectorValue
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_list_edge_dicts.k
 Input: _bd (.,(`a;1);.,(`b;2))
 Expected: "\001\000\000\000X\000\000\000\000\000\000\000\002\000\000\000\005\000\000\000\001\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000.\002\001\000\000\000\001\000\000\000\006\000\000\000\000\000\000\000\005\000\000\000\001\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000.\002\001\000\000\002\000\000\000\006\000\000\000\000\000\000"
-Actual: "\001\000\000\0002\000\000\000\376\377\377\377\002\000\000\000\001\000\000\000\r\000\000\000\005\000\000\000\001\000\000\000a\001\000\000\000\001\000\000\000\r\000\000\000\005\000\000\000\001\000\000\000b\002\000\000\000"
+Actual: Error: _bd (bytes from data) operation failed: Unsupported element type: K3CSharp.DictionaryValue
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_anonymousfunction_random_1.k
 Input: _bd {[x] x+7;x$1;x<=2}
@@ -882,19 +899,4 @@ Test: serialization_bd_anonymousfunction_random_3.k
 Input: _bd {[xyz] xy|3}
 Expected: "\001\000\000\000\024\000\000\000\n\000\000\000.k\000{[xyz] xy|3}\000"
 Actual: "\001\000\000\000\023\000\000\000\n\000\000\000[xyz] xy|3\000"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_symbolvector_random_1.k
-Input: _bd `qzUM7 `g8X6P `"î­¥" `KgNQ5i `"< +" `b5
-Expected: "\001\000\000\000*\000\000\000\374\377\377\377\006\000\000\000qzUM7\000g8X6P\000\303\256\036\302\255\302\245\000KgNQ5i\000<\013+\000b5\000"
-Actual: "\001\000\000\000)\000\000\000\374\377\377\377\006\000\000\000qzUM7\000g8X6P\000\303\256\302\255\302\245\000KgNQ5i\000< +\000b5\000"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_symbolvector_random_2.k
-Input: _bd `"Ô 0" `D `qCBI1b `"*H " `"Â‰©" `ULsyI `"F~" `"C" `Mont `O25B
-Expected: "\001\000\000\0008\000\000\000\374\377\377\377\n\000\000\000\303\224\0070\000D\000qCBI1b\000*H \000\303\202\302\211\302\251\000ULsyI\000F~\302\224\000C\000Mont\000O25B\000"
-Actual: "\001\000\000\0007\000\000\000\374\377\377\377\n\000\000\000\303\224 0\000D\000qCBI1b\000*H \000\303\202\342\200\260\302\251\000ULsyI\000F~\000C\000Mont\000O25B\000"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_symbolvector_random_3.k
-Input: _bd `"õ³" `EE5ijP `trD0LuE `"ÓW" `"¸" `y
-Expected: "\001\000\000\000'\000\000\000\374\377\377\377\006\000\000\000\303\265\302\263\000EE5ijP\000trD0LuE\000\303\223W\000\302\270\302\202\000y\000"
-Actual: "\001\000\000\000%\000\000\000\374\377\377\377\006\000\000\000\303\265\302\263\000EE5ijP\000trD0LuE\000\303\223W\000\302\270\000y\000"
 ──────────────────────────────────────────────────────────────────────────

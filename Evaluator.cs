@@ -1749,7 +1749,7 @@ namespace K3CSharp
                 foreach (var element in list.Elements)
                 {
                     // Convert object to K3Value
-                    K3Value k3Element = element as K3Value;
+                    K3Value? k3Element = element as K3Value;
                     if (k3Element == null && element != null)
                     {
                         // Handle primitive types
@@ -1802,7 +1802,7 @@ namespace K3CSharp
                     }
                 }
                 
-                return new DictionaryValue(newDict);
+                return new DictionaryValue(newDict!);
             }
             else if (value is VectorValue vec)
             {
@@ -1859,7 +1859,7 @@ namespace K3CSharp
                     }
                 }
                 
-                return new DictionaryValue(newDict);
+                return new DictionaryValue(newDict!);
             }
             else
             {
@@ -2418,7 +2418,7 @@ namespace K3CSharp
             {
                 var primitiveValue = ConvertToPrimitive(operand);
                 var serializer = new KSerializer();
-                var bytes = serializer.Serialize(primitiveValue);
+                var bytes = serializer.Serialize(primitiveValue!);
                 
                 // Convert bytes to character vector with proper escape sequences
                 var charString = ConvertBytesToCharacterString(bytes);
@@ -2506,11 +2506,17 @@ namespace K3CSharp
                 }
                 charString += "\"";
                 
+                Console.WriteLine($"DbFunction: charString = {charString}");
+                
                 // Parse character string with escape sequences back to bytes
                 var bytes = ParseCharacterStringToBytes(charString);
                 
+                Console.WriteLine($"DbFunction: parsed {bytes.Count} bytes: {string.Join(",", bytes.Select(b => b.ToString()))}");
+                
                 var deserializer = new KDeserializer();
                 var result = deserializer.Deserialize(bytes.ToArray());
+                
+                Console.WriteLine($"DbFunction: deserialized result = {result} (type: {result?.GetType().Name})");
                 
                 // Convert back to K3Value
                 return result switch
@@ -2518,16 +2524,15 @@ namespace K3CSharp
                     int i => new IntegerValue(i),
                     double d => new FloatValue(d),
                     char c => new CharacterValue(c.ToString()),
-                    string s => s.StartsWith("`") ? new SymbolValue(s[1..]) : new CharacterValue(s),
+                    string s => new CharacterValue(s),
+                    Array arr => new VectorValue(arr.Cast<object>().Select(ConvertToK3Value).ToList()),
                     null => new NullValue(),
-                    List<object> list => new VectorValue(list.Select(ConvertToK3Value).ToList()),
-                    K3Value kv => kv, // Already a K3Value, return as-is
-                    _ => throw new NotSupportedException($"Deserialized type not supported: {result.GetType()}")
+                    _ => throw new Exception($"Unsupported deserialized type: {result.GetType()}")
                 };
             }
             catch (Exception ex)
             {
-                throw new Exception($"_db (data from bytes) operation failed: {ex.Message}");
+                throw new Exception($"_db (data from bytes) operation failed: {ex.Message}", ex);
             }
         }
         
@@ -2631,7 +2636,7 @@ namespace K3CSharp
             };
         }
         
-        private object ConvertToPrimitive(K3Value value)
+        private object? ConvertToPrimitive(K3Value value)
         {
             return value switch
             {
@@ -2662,7 +2667,7 @@ namespace K3CSharp
             {
                 var key = ConvertToPrimitive(entry.Key);
                 var value = ConvertToPrimitive(entry.Value.Value);
-                kdict.Pairs.Add(new KeyValuePair<object, object>(key, value));
+                kdict.Pairs.Add(new KeyValuePair<object, object>(key!, value!));
             }
             return kdict;
         }
@@ -2689,31 +2694,41 @@ namespace K3CSharp
             
             var firstElement = vector.Elements[0];
             
-            if (firstElement is IntegerValue)
+            // Check if all elements are of the same type
+            bool allIntegers = vector.Elements.All(e => e is IntegerValue);
+            bool allFloats = vector.Elements.All(e => e is FloatValue);
+            bool allCharacters = vector.Elements.All(e => e is CharacterValue);
+            bool allSymbols = vector.Elements.All(e => e is SymbolValue);
+            
+            if (allIntegers)
             {
                 var intArray = vector.Elements.Cast<IntegerValue>().Select(iv => iv.Value).ToArray();
                 return new KVector(intArray);
             }
-            else if (firstElement is FloatValue)
+            else if (allFloats)
             {
                 var doubleArray = vector.Elements.Cast<FloatValue>().Select(fv => fv.Value).ToArray();
                 return new KVector(doubleArray);
             }
-            else if (firstElement is CharacterValue)
+            else if (allCharacters)
             {
                 var charArray = vector.Elements.Cast<CharacterValue>().Select(cv => cv.Value[0]).ToArray();
                 return new KVector(charArray);
             }
-            else if (firstElement is SymbolValue)
+            else if (allSymbols)
             {
                 var symbolArray = vector.Elements.Cast<SymbolValue>().Select(sv => sv.Value).ToArray();
                 return new KVector(symbolArray);
             }
             else
             {
-                // Mixed vector - return as KList for serialization
-                var elements = vector.Elements.Select(ConvertToPrimitive).ToList();
-                return new KList { Elements = elements };
+                // Mixed type vector - convert to KList for mixed list serialization
+                var klist = new KList();
+                foreach (var element in vector.Elements)
+                {
+                    klist.Elements.Add(element);
+                }
+                return klist;
             }
         }
     }
