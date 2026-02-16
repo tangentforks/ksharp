@@ -425,3 +425,5 @@ speck#.*
 updates_from_usr_and_ref.md
 K3CSharp_implementation_details.md
 /TestScripts
+/K3CSharp/TestScripts
+K3CSharp.SerializationResearch/Kx annotated serialization.htm

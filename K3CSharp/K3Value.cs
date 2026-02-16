@@ -1069,6 +1069,7 @@ namespace K3CSharp
     public class FunctionValue : K3Value
     {
         public string BodyText { get; }
+        public string OriginalSourceText { get; }
         public List<string> Parameters { get; }
         public int Valence { get; }
         public List<Token> PreParsedTokens { get; }
@@ -1080,9 +1081,10 @@ namespace K3CSharp
         // Associated K tree for anonymous functions
         public KTree AssociatedKTree { get; private set; }
         
-        public FunctionValue(string bodyText, List<string> parameters, List<Token> preParsedTokens = null!)
+        public FunctionValue(string bodyText, List<string> parameters, List<Token> preParsedTokens = null!, string originalSourceText = "")
         {
             BodyText = bodyText;
+            OriginalSourceText = originalSourceText;
             Parameters = parameters;
             Type = ValueType.Function;
             Valence = parameters.Count;
@@ -1157,7 +1159,11 @@ namespace K3CSharp
 
         public override string ToString()
         {
-            // Generate representative textual representation
+            // Use the original source text if available for exact representation
+            if (!string.IsNullOrEmpty(OriginalSourceText))
+                return OriginalSourceText;
+                
+            // Fall back to reconstructed representation for backward compatibility
             var paramsStr = Parameters.Count > 0 ? "[" + string.Join(";", Parameters) + "] " : "";
             return "{" + paramsStr + BodyText + "}";
         }

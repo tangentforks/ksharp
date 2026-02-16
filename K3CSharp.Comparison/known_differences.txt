@@ -1,3 +1,7 @@
+# Known Differences Between K and K3CSharp
+# Format: TestName :: Tweak1&Tweak2&Tweak3 :: Notes
+# Tweak format: regex:pattern:replacement (all tweaks use regex format for consistency)
+
 adverb_backslash_colon_basic :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 adverb_slash_colon_basic :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 amend_simple :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
@@ -30,11 +34,6 @@ k_tree_test_bracket_indexing :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact represent
 k_tree_flip_test :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 k_tree_flip_dictionary :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 k_tree_null_to_dict_conversion :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
-# Known Differences Between K and K3CSharp
-# Format: TestName :: Tweak1&Tweak2&Tweak3 :: Notes
-# Tweak format: regex:pattern:replacement (all tweaks use regex format for consistency)
-
-_d :: :: K3CSharp returns current working directory path per spec, k.exe returns branch name `.k
 
 adverb_scan_divide :: regex:\(|\)|\.0\b: &regex:[;]:space :: smart integer division, inverse and exponentiation
 adverb_scan_power :: regex:\(|\)|\.0\b: &regex:[;]:space :: smart integer division, inverse and exponentiation
@@ -55,8 +54,6 @@ dictionary_enumerate :: regex:\s+: :: Compact representation
 division_int_4_2 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
 division_rules_12_4 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
 division_rules_4_2 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
-form_braces_complex ::  :: k.exe removes .0 from whole numbers, K# preserves them
-form_braces_float ::  :: k.exe removes .0 from whole numbers, K# preserves them
 smart_division1 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
 smart_division2 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
 smart_division3 :: regex:\.0\b: :: smart integer division, inverse and exponentiation

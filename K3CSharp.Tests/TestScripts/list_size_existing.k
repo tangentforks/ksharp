@@ -1,1 +1,1 @@
-_size "t:/_src/github.com/ERufian/ksharp/K3CSharp.csproj"
+_size "C:\\Windows\\System32\\write.exe"

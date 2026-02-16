@@ -1646,9 +1646,14 @@ namespace K3CSharp
                 if (operand != null) node.Children.Add(operand);
                 return node;
             }
-            else if (Match(TokenType.LEFT_BRACE))
+            else if (CurrentToken().Type == TokenType.LEFT_BRACE)
             {
+                // Capture the opening brace position before matching (since Match advances the token)
+                int leftBracePos;
+                
                 delimiterDepth++; // Enter delimiter
+                Match(TokenType.LEFT_BRACE); // Consume the opening brace
+                leftBracePos = PreviousToken().Position; // Get position of the opening brace we just consumed
                 
                 // Check if this is a form specifier (empty braces followed by $)
                 if (CurrentToken().Type == TokenType.RIGHT_BRACE && 
@@ -1697,7 +1702,7 @@ namespace K3CSharp
                 }
                 
                 // Parse function body
-                int leftBracePos = CurrentToken().Position; // Position of the opening brace
+                // leftBracePos was already captured before matching the opening brace
                 int bodyStartTokenIndex = current; // Store the token index where body starts
                 ASTNode body;
                 if (CurrentToken().Type == TokenType.RIGHT_BRACE)
@@ -1759,6 +1764,9 @@ namespace K3CSharp
                     }
                 }
                 
+                // Store the closing brace position before matching (since Match advances the token)
+                int rightBracePos = CurrentToken().Position; // Position of the closing brace
+                
                 if (!Match(TokenType.RIGHT_BRACE))
                 {
                     throw new Exception("Expected '}' after function body");
@@ -1767,7 +1775,6 @@ namespace K3CSharp
                 delimiterDepth--; // Exit delimiter
                 
                 // Extract the source text of the function body
-                int rightBracePos = PreviousToken().Position; // Position of the closing brace
                 string? bodyText = "";
                 List<Token>? preParsedTokens = null;
                 
@@ -1883,7 +1890,15 @@ namespace K3CSharp
                 result = ASTNode.MakeFunction(parameters, body);
                 result.StartPosition = leftBracePos;
                 result.EndPosition = rightBracePos;
-                result.Value = new FunctionValue(bodyText ?? "", parameters, preParsedTokens ?? new List<Token>());
+                
+                // Extract original source text for serialization
+                string originalSourceText = "";
+                if (leftBracePos >= 0 && rightBracePos > leftBracePos && rightBracePos <= sourceText.Length)
+                {
+                    originalSourceText = sourceText.Substring(leftBracePos, rightBracePos - leftBracePos + 1);
+                }
+                
+                result.Value = new FunctionValue(bodyText ?? "", parameters, preParsedTokens ?? new List<Token>(), originalSourceText);
             }
             else if (Match(TokenType.TYPE))
             {

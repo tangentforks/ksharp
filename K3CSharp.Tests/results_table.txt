@@ -29,7 +29,7 @@
 ║ adverb_scan_with_initialization_divide.k           │ 2 %\ 1 2 3 4         │ (2;2;1;0.333333...   │                      ║
 ║ adverb_scan_with_initialization_minus.k            │ 2 -\ 1 2 3 4         │ 2 1 -1 -4 -8         │                      ║
 ║ adverb_scan_with_initialization.k                  │ 2 *\ 1 2 3           │ 2 2 4 12             │                      ║
-║ anonymous_function_double_param.k                  │ {[op1;op2] op1 * op2} │ {[op1;op2] op1*...   │                      ║
+║ anonymous_function_double_param.k                  │ {[op1;op2] op1 * op2} │ {[op1;op2] op1 ...   │                      ║
 ║ anonymous_function_empty.k                         │ {}                   │ {}                   │                      ║
 ║ anonymous_function_simple.k                        │ {4+5}                │ {4+5}                │                      ║
 ║ anonymous_function_single_param.k                  │ {[arg1] arg1+6}      │ {[arg1] arg1+6}      │                      ║
@@ -178,7 +178,7 @@
 ║ square_bracket_vector_multiple.k                   │ v:10 11 12 13 14 15 16 │ 14 16                │                      ║
 ║ square_bracket_vector_single.k                     │ v:10 11 12 13 14 15 16 │ 14                   │                      ║
 ║ string_representation_int.k                        │ 5:42                 │ "42"                 │                      ║
-║ string_representation_mixed.k                      │ 5:(1;2.5;"a")        │ "(1;2.5;"a")"        │ "(1;2.5;\"a\")"      ║
+║ string_representation_mixed.k                      │ 5:(1;2.5;"a")        │ "(1;2.5;\"a\")"      │                      ║
 ║ string_representation_symbol.k                     │ 5:`symbol            │ "`symbol"            │                      ║
 ║ string_representation_vector.k                     │ 5:(1 2 3)            │ "1 2 3"              │                      ║
 ║ symbol_quoted.k                                    │ `"a symbol"          │ `"a symbol"          │                      ║
@@ -205,9 +205,9 @@
 ║ multiline_function_single.k                        │ test: {[x] a:x*2; a+10} │ 20                   │                      ║
 ║ null_vector.k                                      │ (;1;2)               │ (;1;2)               │                      ║
 ║ scoping_single.k                                   │ globalVar: 100       │ 60                   │                      ║
-║ semicolon_simple.k                                 │ (3 + 4; 5 + 6; -20.45) │ Error: Cannot a...   │ (7;11;-20.45)        ║
+║ semicolon_simple.k                                 │ (3 + 4; 5 + 6; -20.45) │ (7;14;-17.45)        │ (7;11;-20.45)        ║
 ║ semicolon_vars.k                                   │ a: 10                │ 30 210 0             │ 30 200 -10           ║
-║ semicolon_vector.k                                 │ a: 1 2               │ Error: Cannot a...   │ (7;3 4;-20.45)       ║
+║ semicolon_vector.k                                 │ a: 1 2               │ (7;6 7;-17.45)       │ (7;3 4;-20.45)       ║
 ║ simple_scalar_div.k                                │ 5 % 2                │ 2.5                  │                      ║
 ║ single_no_semicolon.k                              │ (42)                 │ 42                   │                      ║
 ║ smart_division1.k                                  │ 5 10 % 2             │ 2.5 5.0              │                      ║
@@ -288,13 +288,13 @@
 ║ form_character_charvector.k                        │ " "$"aaa"            │ ""aaa""              │ "aaa"                ║
 ║ dot_execute_variables.k                            │ a:1.5                │ 0.6                  │                      ║
 ║ form_braces_expressions.k                          │ a:5                  │ 8 15 2               │                      ║
-║ form_braces_nested_expr.k                          │ x:10                 │ Error: Error ev...   │ (12 20;(7;3.333...   ║
+║ form_braces_nested_expr.k                          │ x:10                 │ (12 30;(7;6.666...   │ (12 20;(7;3.333...   ║
 ║ form_braces_complex.k                              │ a:1.5                │ 8.25 12.0 9.0        │                      ║
 ║ form_braces_string.k                               │ name:"John"          │ ("John";"is";25...   │                      ║
 ║ form_braces_mixed_type.k                           │ num:42               │ (42;"hello";`te...   │                      ║
 ║ form_braces_simple.k                               │ a:5                  │ 8                    │                      ║
 ║ form_braces_arith.k                                │ a:5                  │ 8 15 2 12 20 5       │                      ║
-║ form_braces_nested_arith.k                         │ a:5                  │ Error: Error ev...   │ (7 10;(2;2.5);5...   ║
+║ form_braces_nested_arith.k                         │ a:5                  │ (7 15;(2;2.5);5 1)   │ (7 10;(2;2.5);5...   ║
 ║ form_braces_float.k                                │ a:1.5                │ 4.0 3.75 0.6 -1.0    │                      ║
 ║ form_braces_mixed_arith.k                          │ x:10                 │ 17.5 32.5 4.5        │                      ║
 ║ form_braces_example.k                              │ a:5                  │ 8 9                  │                      ║
@@ -323,8 +323,7 @@
 ║ list_sv_mixed.k                                    │ 10 10 10 10 _sv 1 9 9 5 │ 1995                 │                      ║
 ║ list_getenv.k                                      │ _getenv "PATH"       │ "C:\Program Fil...   │ "C:\Program Fil...   ║
 ║ list_setenv.k                                      │ `TESTVAR _setenv "hello world" │ `TESTVAR             │                      ║
-║ list_size.k                                        │ _size "README.md"    │ Error: _size: e...   │ Error - _size: ...   ║
-║ list_size_existing.k                               │ _size "t:/_src/github.com/ERufian/ksharp/K3CSharp.csproj" │ 1061.0               │ 872.0                ║
+║ list_size_existing.k                               │ _size "C:\\Windows\\System32\\write.exe" │ 11264.0              │                      ║
 ║ test_ci_basic.k                                    │ _ci 65               │ "A"                  │                      ║
 ║ test_ci_vector.k                                   │ _ci 65 66 67         │ "ABC"                │                      ║
 ║ test_ic_basic.k                                    │ _ic "A"              │ 65                   │                      ║
@@ -340,10 +339,10 @@
 ║ search_bin_basic.k                                 │ 3 4 5 6 _bin 4       │ 1                    │                      ║
 ║ search_binl_eachleft.k                             │ 1 3 5 _binl 1 2 3 4 5 │ 0 1 1 2 2            │                      ║
 ║ search_lin_intersection.k                          │ 1 3 5 7 9 _lin 1 2 3 4 5 │ 1 1 1 0 0            │                      ║
-║ amend_item_basic.k                                 │ @[1 2 3; 1; +; 10]   │ 1                    │ 1 12 3               ║
-║ amend_item_multiple.k                              │ @[1 2 3; 0 2; +; 10] │ 1                    │ 11 2 13              ║
-║ amend_item_monadic.k                               │ @[1 2 3; 1; {x*2}]   │ 1                    │ 1 4 3                ║
-║ amend_test.k                                       │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)  // Amend: add 10 to elements at indices 0 and 2 │ Error: Dictiona...   │ 1 12 3 4 5           ║
+║ amend_item_basic.k                                 │ @[1 2 3; 1; +; 10]   │ Error: List ind...   │ 1 12 3               ║
+║ amend_item_multiple.k                              │ @[1 2 3; 0 2; +; 10] │ Error: List ind...   │ 11 2 13              ║
+║ amend_item_monadic.k                               │ @[1 2 3; 1; {x*2}]   │ Error: List ind...   │ 1 4 3                ║
+║ amend_test.k                                       │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)  // Amend: add 10 to elements at indices 0 and 2 │ Error: Index 2 ...   │ 1 12 3 4 5           ║
 ║ amend_simple.k                                     │ 1 12 3 4 5           │ 1 12 3 4 5           │                      ║
 ║ find_basic.k                                       │ 9 8 7 6 5 4 3 ? 7  // Find operator - basic functionality │ 2                    │                      ║
 ║ find_notfound.k                                    │ 9 8 7 6 5 4 3 ? 1  // Find operator - not found case │ 7                    │                      ║
@@ -356,7 +355,7 @@
 ║ vector_notation_functions.k                        │ double: {[x] x * 2}  │ 10 20 30             │                      ║
 ║ vector_notation_mixed_types.k                      │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
 ║ vector_notation_nested.k                           │ ((1 + 2); (3 + 4); (5 + 6)) │ 3 7 11               │                      ║
-║ vector_notation_semicolon.k                        │ (3 + 4; 5 + 6; -20.45) │ Error: Cannot a...   │ (7;11;-20.45)        ║
+║ vector_notation_semicolon.k                        │ (3 + 4; 5 + 6; -20.45) │ (7;14;-17.45)        │ (7;11;-20.45)        ║
 ║ vector_notation_single_group.k                     │ (42)                 │ 42                   │                      ║
 ║ vector_notation_space.k                            │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
 ║ vector_notation_variables.k                        │ a: 10                │ 30 210 0             │ 30 200 -10           ║
@@ -377,15 +376,15 @@
 ║ adverb_backslash_colon_basic.k                     │ 1 2 3 +\: 4 5 6      │ (5 6 7;6 7 8;7 ...   │                      ║
 ║ adverb_slash_colon_basic.k                         │ 1 2 3 +/: 4 5 6      │ (5 6 7;6 7 8;7 ...   │                      ║
 ║ adverb_tick_colon_basic.k                          │ -': 4 8 9 12 20      │ 4 1 3 8              │                      ║
-║ amend_apply.k                                      │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10) │ Error: Dictiona...   │ (1 2 13 4 5
+║ amend_apply.k                                      │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10) │ Error: Index 2 ...   │ (1 2 13 4 5
 6 7...   ║
 ║ amend_dot_test.k                                   │ .[1 2 3; 1; +; 10]   │ Error: Dictiona...   │ 1 12 3 4 5           ║
 ║ amend_item_simple.k                                │ @[1 2 3]             │ Error: For atom...   │ @[1 2 3]             ║
 ║ amend_item_single.k                                │ @[1]                 │ 1                    │ @[1 2 3]             ║
-║ amend_minimal.k                                    │ (.) . (1 2 3; 0; +; 10) │ Error: Dictiona...   │ @[1 2 3]             ║
-║ amend_parenthesized.k                              │ (.) . (1 2 3; 0; +; 10) │ Error: Dictiona...   │ @[1 2 3]             ║
-║ amend_test_anonymous_func.k                        │ f:{x+y}              │ Error: Dictiona...   │ 1 12 3 4 5           ║
-║ amend_test_func_var.k                              │ f:{x+y}              │ Error: Dictiona...   │ 11 2 3               ║
+║ amend_minimal.k                                    │ (.) . (1 2 3; 0; +; 10) │ Error: Indices ...   │ @[1 2 3]             ║
+║ amend_parenthesized.k                              │ (.) . (1 2 3; 0; +; 10) │ Error: Indices ...   │ @[1 2 3]             ║
+║ amend_test_anonymous_func.k                        │ f:{x+y}              │ Error: Indices ...   │ 1 12 3 4 5           ║
+║ amend_test_func_var.k                              │ f:{x+y}              │ Error: Indices ...   │ 11 2 3               ║
 ║ conditional_bracket_test.k                         │ :[1 < 2; "true"; "false"]  // Test conditional evaluation with bracket notation │ Error: Undefine...   │ "true"               ║
 ║ conditional_false.k                                │ :[0; "true"; "false"]  // Conditional evaluation - condition false │ Error: Undefine...   │ "false"              ║
 ║ conditional_simple_test.k                          │ :[1; "true"; "false"] │ Error: Undefine...   │ "true"               ║
@@ -424,7 +423,7 @@
 ║ in_simple.k                                        │ 5 _in 1 2 3          │ 0                    │                      ║
 ║ isolated.k                                         │ a:1.5                │ 0.6                  │                      ║
 ║ modulo.k                                           │ a:1.5                │ 0.6                  │                      ║
-║ monadic_format_mixed_vector.k                      │ $(1;2.5;"hello";`symbol) │ "(1;2.5;"hello"...   │ (,"1";"2.5";"he...   ║
+║ monadic_format_mixed_vector.k                      │ $(1;2.5;"hello";`symbol) │ (,"1";"2.5";"he...   │                      ║
 ║ over_plus_empty.k                                  │ +/!0                 │ 0                    │                      ║
 ║ simple_division.k                                  │ 8 % 2                │ 4                    │                      ║
 ║ simple_subtraction.k                               │ 5 - 3                │ 2                    │                      ║
@@ -450,18 +449,17 @@
 ║ serialization_bd_db_float.k                        │ // Test _bd and _db for Float serialization │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_character.k                    │ // Test _bd and _db for Character serialization │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_symbol.k                       │ // Test _bd and _db for Symbol serialization │ "\001\000\000\0...   │                      ║
-║ serialization_bd_db_null.k                         │ // Test _bd and _db for Null serialization │ "\001\000\000\0...   │ "\001\000\000\0...   ║
-║ serialization_bd_db_integervector.k                │ _bd 1 2 3            │ "\001\000\000\0...   │                      ║
-║ serialization_bd_db_floatvector.k                  │ _bd 1.1 2.2 3.3      │ "\001\000\000\0...   │                      ║
-║ serialization_bd_db_charactervector.k              │ _bd "hello"          │ "\001\000\000\0...   │                      ║
-║ serialization_bd_db_symbolvector.k                 │ _bd `a`b`c           │ "\001\000\000\0...   │                      ║
-║ serialization_bd_db_list.k                         │ // Test _bd and _db for List serialization │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_null.k                         │ // Test _bd and _db for Null serialization │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_integervector.k                │ _bd 1 2 3            │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_db_floatvector.k                  │ _bd 1.1 2.2 3.3      │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_db_charactervector.k              │ _bd "hello"          │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_db_symbolvector.k                 │ _bd `a`b`c           │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_db_list.k                         │ _bd (1;2.5;"a")      │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_dictionary.k                   │ _bd .((`a;`"1");(`b;`"2")) │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_db_anonymousfunction.k            │ _bd {[x] x+1}        │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_roundtrip_integer.k            │ // Test _bd and _db round-trip serialization │ 42                   │                      ║
 ║ serialization_bd_db_roundtrip_list.k               │ _db _bd (1;2.5;"a")  │ Error: _db (dat...   │ (1;2.5;"a")          ║
-║ test_mixed_serialization.k                         │ [File not found]     │ File not found       │ "\001\000\000\0...   ║
-║ serialization_bd_null_edge_0.k                     │ _bd _n               │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_null_edge_0.k                     │ _bd _n               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_0.k                  │ _bd 0                │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_1.k                  │ _bd 1                │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_-1.k                 │ _bd -1               │ "\001\000\000\0...   │                      ║
@@ -501,31 +499,31 @@
 ║ serialization_bd_character_edge_001.k              │ _bd "\001"           │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_character_edge_377.k              │ _bd "\377"           │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_character_edge_backspace.k        │ _bd "\b"             │ "\001\000\000\0...   │                      ║
-║ serialization_bd_charactervector_edge_empty.k      │ _bd ""               │ "\001\000\000\0...   │                      ║
+║ serialization_bd_charactervector_edge_empty.k      │ _bd ""               │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_charactervector_edge_a.k          │ _bd "a"              │ "\001\000\000\0...   │                      ║
-║ serialization_bd_charactervector_edge_hello.k      │ _bd "hello"          │ "\001\000\000\0...   │                      ║
-║ serialization_bd_charactervector_edge_whitespace.k │ _bd "\n\t\r"         │ "\001\000\000\0...   │                      ║
-║ serialization_bd_integervector_edge_empty.k        │ _bd !0               │ "\001\000\000\0...   │                      ║
-║ serialization_bd_integervector_edge_single.k       │ _bd ,1               │ "\001\000\000\0...   │                      ║
-║ serialization_bd_integervector_edge_123.k          │ _bd 1 2 3            │ "\001\000\000\0...   │                      ║
-║ serialization_bd_integervector_edge_special.k      │ _bd 0N 0I -0I        │ "\001\000\000\0...   │                      ║
+║ serialization_bd_charactervector_edge_hello.k      │ _bd "hello"          │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_charactervector_edge_whitespace.k │ _bd "\n\t\r"         │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_integervector_edge_empty.k        │ _bd !0               │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_integervector_edge_single.k       │ _bd ,1               │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_integervector_edge_123.k          │ _bd 1 2 3            │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_integervector_edge_special.k      │ _bd 0N 0I -0I        │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_list_edge_empty.k                 │ _bd ()               │ "\001\000\000\0...   │                      ║
-║ serialization_bd_list_edge_null.k                  │ _bd ,_n              │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_list_edge_null.k                  │ _bd ,_n              │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_list_edge_mixed.k                 │ _bd (1;2.5;"a")      │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_list_edge_complex.k               │ _bd (_n;`symbol;{[]}) │ "\001\000\000\0...   │ "\001\000\000\0...   ║
-║ serialization_bd_list_edge_nested.k                │ _bd ((1;2);(3;4))    │ "\001\000\000\0...   │                      ║
-║ serialization_bd_list_edge_dicts.k                 │ _bd (.,(`a;1);.,(`b;2)) │ Error: _bd (byt...   │ "\001\000\000\0...   ║
-║ serialization_bd_anonymousfunction_random_1.k      │ _bd {[x] x+7;x$1;x<=2} │ "\001\000\000\0...   │ "\001\000\000\0...   ║
-║ serialization_bd_anonymousfunction_random_2.k      │ _bd {[] 0|4;0&3}     │ "\001\000\000\0...   │ "\001\000\000\0...   ║
-║ serialization_bd_anonymousfunction_random_3.k      │ _bd {[xyz] xy|3}     │ "\001\000\000\0...   │ "\001\000\000\0...   ║
-║ serialization_bd_floatvector_random_1.k            │ _bd 196825.27335627712 -326371.90292283031 -214498.92985862558 11655.819143220946 │ "\001\000\000\0...   │                      ║
+║ serialization_bd_list_edge_nested.k                │ _bd ((1;2);(3;4))    │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_list_edge_dicts.k                 │ _bd (.,(`a;1);.,(`b;2)) │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_anonymousfunction_random_1.k      │ _bd {[x] x+7;x$1;x<=2} │ "\001\000\000\0...   │                      ║
+║ serialization_bd_anonymousfunction_random_2.k      │ _bd {[] 0|4;0&3}     │ "\001\000\000\0...   │                      ║
+║ serialization_bd_anonymousfunction_random_3.k      │ _bd {[xyz] xy|3}     │ "\001\000\000\0...   │                      ║
+║ serialization_bd_floatvector_random_1.k            │ _bd 196825.27335627712 -326371.90292283031 -214498.92985862558 11655.819143220946 │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_floatvector_random_2.k            │ _bd 148812.33236087282 │ "\001\000\000\0...   │                      ║
-║ serialization_bd_floatvector_random_3.k            │ _bd 585267.57816312299 -569668.94176055992 37200.312770306708 397004.01885714347 │ "\001\000\000\0...   │                      ║
-║ serialization_bd_symbolvector_random_1.k           │ _bd `qzUM7 `g8X6P `"iay" `KgNQ5i `"< +" `b5 │ "\001\000\000\0...   │                      ║
-║ serialization_bd_symbolvector_random_2.k           │ _bd `"O 0" `D `qCBI1b `"*H " `"SS" `ULsyI `"F~" `"C" `Mont `O25B │ "\001\000\000\0...   │                      ║
-║ serialization_bd_symbolvector_random_3.k           │ _bd `o3 `EE5ijP `trD0LuE `OW `"." `y │ "\001\000\000\0...   │                      ║
+║ serialization_bd_floatvector_random_3.k            │ _bd 585267.57816312299 -569668.94176055992 37200.312770306708 397004.01885714347 │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_symbolvector_random_1.k           │ _bd `qzUM7 `g8X6P `"iay" `KgNQ5i `"< +" `b5 │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_symbolvector_random_2.k           │ _bd `"O 0" `D `qCBI1b `"*H " `"SS" `ULsyI `"F~" `"C" `Mont `O25B │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_symbolvector_random_3.k           │ _bd `o3 `EE5ijP `trD0LuE `OW `"." `y │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 443/514 tests passed (86.2%)                                                                               ║
+║ SUMMARY: 435/512 tests passed (85.0%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -540,15 +538,10 @@ Input: _n
 Expected: _n
 Actual: 
 ──────────────────────────────────────────────────────────────────────────
-Test: string_representation_mixed.k
-Input: 5:(1;2.5;"a")
-Expected: "(1;2.5;\"a\")"
-Actual: "(1;2.5;"a")"
-──────────────────────────────────────────────────────────────────────────
 Test: semicolon_simple.k
 Input: (3 + 4; 5 + 6; -20.45)
 Expected: (7;11;-20.45)
-Actual: Error: Cannot add Integer and List
+Actual: (7;14;-17.45)
 ──────────────────────────────────────────────────────────────────────────
 Test: semicolon_vars.k
 Input: a: 10
@@ -558,7 +551,7 @@ Actual: 30 210 0
 Test: semicolon_vector.k
 Input: a: 1 2
 Expected: (7;3 4;-20.45)
-Actual: Error: Cannot add Integer and List
+Actual: (7;6 7;-17.45)
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
@@ -603,12 +596,12 @@ Actual: ""aaa""
 Test: form_braces_nested_expr.k
 Input: x:10
 Expected: (12 20;(7;3.333333))
-Actual: Error: Error evaluating string expression '(x-z;x%z)': Cannot subtract Integer and List
+Actual: (12 30;(7;6.666667))
 ──────────────────────────────────────────────────────────────────────────
 Test: form_braces_nested_arith.k
 Input: a:5
 Expected: (7 10;(2;2.5);5 -1)
-Actual: Error: Error evaluating string expression '(a-c;a%b)': Cannot subtract Integer and List
+Actual: (7 15;(2;2.5);5 1)
 ──────────────────────────────────────────────────────────────────────────
 Test: rand_draw_vector_deal.k
 Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
@@ -628,17 +621,7 @@ Actual: -3251
 Test: list_getenv.k
 Input: _getenv "PATH"
 Expected: "C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\euseb\bin;C:\Program Files\Microsoft MPI\Bin\;C:\Program Files\Eclipse Adoptium\jdk-8.0.382.5-hotspot\bin;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\ia32;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\Intel64;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\HP\HP Performance Advisor;C:\Program Files (x86)\QuickTime\QTSystem\;C:\Program Files (x86)\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\CMake\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\Microsoft Emulator Manager\1.0\;C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Pages\v1.0\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Users\euseb\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files (x86)\nodejs\;C:\Program Files\Common Files\Avid\Eucon;C:\Program Files (x86)\Common Files\Avid\Eucon;C:\Program Files\Avid\Avid Link\jre\bin;C:\Program Files (x86)\dotnet\;c:\Windows\SysWOW64\;c:\Windows\Sysnative\;c:\program files (x86)\iracing\d3dgear;C:\Program Files (x86)\Common Files\DivX Shared\DesktopService;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\gs\gs10.00.0\bin;C:\Program Files (x86)\Windows Kits\10\Microsoft Application Virtualization\Sequencer\;C:\Program Files\Calibre2\;C:\Program Files\NVIDIA Corporation\Nsight Compute 2020.1.1\;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files\Git LFS;C:\Program Files\GitHub CLI\;C:\Program Files (x86)\Incredibuild;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\Acustica\Medusa Framework\;C:\Program Files\Git\cmd;C:\Users\euseb\.local\bin;C:\Progra~1\NVIDIA~2\CUDA\v11.0\libnvvp;C:\Progra~1\NVIDIA~2\CUDA\v11.0\bin;C:\Progra~2\Common~1\Intel\Shared~1\redist\intel6~1\compiler;C:\Users\euseb\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Imaginando\DLYM;C:\Users\euseb\.dotnet\tools;C:\Users\euseb\AppData\Roaming\npm;C:\Users\euseb\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Imaginando\K7D;C:\Program Files\Imaginando\FRMS;C:\Program Files\Imaginando\DRC;C:\Users\euseb\AppData\Local\Programs\Ollama;C:\Users\euseb\.local\bin;C:\Users\euseb\.dotnet\tools"
-Actual: "C:\Program Files\Microsoft MPI\Bin\;C:\Program Files\Eclipse Adoptium\jdk-8.0.382.5-hotspot\bin;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\ia32;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\Intel64;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\HP\HP Performance Advisor;C:\Program Files (x86)\QuickTime\QTSystem\;C:\Program Files (x86)\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\CMake\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\Microsoft Emulator Manager\1.0\;C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Pages\v1.0\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Users\euseb\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files (x86)\nodejs\;C:\Program Files\Common Files\Avid\Eucon;C:\Program Files (x86)\Common Files\Avid\Eucon;C:\Program Files\Avid\Avid Link\jre\bin;C:\Program Files (x86)\dotnet\;c:\Windows\SysWOW64\;c:\Windows\Sysnative\;c:\program files (x86)\iracing\d3dgear;C:\Program Files (x86)\Common Files\DivX Shared\DesktopService;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\gs\gs10.00.0\bin;C:\Program Files (x86)\Windows Kits\10\Microsoft Application Virtualization\Sequencer\;C:\Program Files\Calibre2\;C:\Program Files\NVIDIA Corporation\Nsight Compute 2020.1.1\;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files\Git LFS;C:\Program Files\GitHub CLI\;C:\Program Files (x86)\Incredibuild;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\Acustica\Medusa Framework\;C:\Program Files\Git\cmd;C:\Users\euseb\.local\bin;C:\Progra~1\NVIDIA~2\CUDA\v11.0\libnvvp;C:\Progra~1\NVIDIA~2\CUDA\v11.0\bin;C:\Progra~2\Common~1\Intel\Shared~1\redist\intel6~1\compiler;C:\Users\euseb\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Imaginando\DLYM;C:\Users\euseb\.dotnet\tools;C:\Users\euseb\AppData\Roaming\npm;C:\Users\euseb\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Imaginando\K7D;C:\Program Files\Imaginando\FRMS;C:\Program Files\Imaginando\DRC;C:\Users\euseb\AppData\Local\Programs\Ollama;C:\Users\euseb\.local\bin;C:\Users\euseb\.dotnet\tools"
-──────────────────────────────────────────────────────────────────────────
-Test: list_size.k
-Input: _size "README.md"
-Expected: Error - _size: error accessing file 'README.md': _size: file 'README.md' not found
-Actual: Error: _size: error accessing file 'README.md': _size: file 'README.md' not found
-──────────────────────────────────────────────────────────────────────────
-Test: list_size_existing.k
-Input: _size "t:/_src/github.com/ERufian/ksharp/K3CSharp.csproj"
-Expected: 872.0
-Actual: 1061.0
+Actual: "C:\Program Files\Microsoft MPI\Bin\;C:\Program Files\Eclipse Adoptium\jdk-8.0.382.5-hotspot\bin;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\ia32;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\Intel64;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\HP\HP Performance Advisor;C:\Program Files (x86)\QuickTime\QTSystem\;C:\Program Files (x86)\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\CMake\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\Microsoft Emulator Manager\1.0\;C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Pages\v1.0\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Users\euseb\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files (x86)\nodejs\;C:\Program Files\Common Files\Avid\Eucon;C:\Program Files (x86)\Common Files\Avid\Eucon;C:\Program Files\Avid\Avid Link\jre\bin;C:\Program Files (x86)\dotnet\;c:\Windows\SysWOW64\;c:\Windows\Sysnative\;c:\program files (x86)\iracing\d3dgear;C:\Program Files (x86)\Common Files\DivX Shared\DesktopService;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\gs\gs10.00.0\bin;C:\Program Files (x86)\Windows Kits\10\Microsoft Application Virtualization\Sequencer\;C:\Program Files\Calibre2\;C:\Program Files\NVIDIA Corporation\Nsight Compute 2020.1.1\;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files\Git LFS;C:\Program Files\GitHub CLI\;C:\Program Files (x86)\Incredibuild;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\Acustica\Medusa Framework\;C:\Program Files\Git\cmd;C:\Users\euseb\.local\bin;C:\Progra~1\NVIDIA~2\CUDA\v11.0\libnvvp;C:\Progra~1\NVIDIA~2\CUDA\v11.0\bin;C:\Progra~2\Common~1\Intel\Shared~1\redist\intel6~1\compiler;C:\Users\euseb\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Imaginando\DLYM;C:\Users\euseb\.dotnet\tools;C:\Users\euseb\AppData\Roaming\npm;C:\Users\euseb\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Imaginando\K7D;C:\Program Files\Imaginando\FRMS;C:\Program Files\Imaginando\DRC;C:\Users\euseb\AppData\Local\Programs\Ollama;C:\Users\euseb\.local\bin;C:\Users\euseb\.dotnet\tools;c:\Users\euseb\.windsurf\extensions\ms-python.debugpy-2025.18.0-win32-x64\bundled\scripts\noConfigScripts"
 ──────────────────────────────────────────────────────────────────────────
 Test: test_semicolon.k
 Input: 1 2; 3 4
@@ -648,22 +631,22 @@ Actual: 3 4
 Test: amend_item_basic.k
 Input: @[1 2 3; 1; +; 10]
 Expected: 1 12 3
-Actual: 1
+Actual: Error: List indices must be integers
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_item_multiple.k
 Input: @[1 2 3; 0 2; +; 10]
 Expected: 11 2 13
-Actual: 1
+Actual: Error: List indices must be integers
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_item_monadic.k
 Input: @[1 2 3; 1; {x*2}]
 Expected: 1 4 3
-Actual: 1
+Actual: Error: List indices must be integers
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_test.k
 Input: (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)  // Amend: add 10 to elements at indices 0 and 2
 Expected: 1 12 3 4 5
-Actual: Error: Dictionary key must be a symbol
+Actual: Error: Index 2 out of bounds for list of length 2
 ──────────────────────────────────────────────────────────────────────────
 Test: lsq.k
 Input: _lsq
@@ -673,7 +656,7 @@ Actual: Error: Binary operator must have exactly 2 children, got 0
 Test: vector_notation_semicolon.k
 Input: (3 + 4; 5 + 6; -20.45)
 Expected: (7;11;-20.45)
-Actual: Error: Cannot add Integer and List
+Actual: (7;14;-17.45)
 ──────────────────────────────────────────────────────────────────────────
 Test: vector_notation_variables.k
 Input: a: 10
@@ -684,7 +667,7 @@ Test: amend_apply.k
 Input: (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)
 Expected: (1 2 13 4 5
 6 7 8 9 10)
-Actual: Error: Dictionary key must be a symbol
+Actual: Error: Index 2 out of bounds for list of length 2
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_dot_test.k
 Input: .[1 2 3; 1; +; 10]
@@ -704,22 +687,22 @@ Actual: 1
 Test: amend_minimal.k
 Input: (.) . (1 2 3; 0; +; 10)
 Expected: @[1 2 3]
-Actual: Error: Dictionary key must be a symbol
+Actual: Error: Indices must be a vector or null
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_parenthesized.k
 Input: (.) . (1 2 3; 0; +; 10)
 Expected: @[1 2 3]
-Actual: Error: Dictionary key must be a symbol
+Actual: Error: Indices must be a vector or null
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_test_anonymous_func.k
 Input: f:{x+y}
 Expected: 1 12 3 4 5
-Actual: Error: Dictionary key must be a symbol
+Actual: Error: Indices must be a vector or null
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_test_func_var.k
 Input: f:{x+y}
 Expected: 11 2 3
-Actual: Error: Dictionary key must be a symbol
+Actual: Error: Indices must be a vector or null
 ──────────────────────────────────────────────────────────────────────────
 Test: conditional_bracket_test.k
 Input: :[1 < 2; "true"; "false"]  // Test conditional evaluation with bracket notation
@@ -815,11 +798,6 @@ Input: a: 10; if[1 < 2; a: 20]  // If statement - condition true
 Expected: 
 Actual: Error: Cannot compare Integer and Vector with <
 ──────────────────────────────────────────────────────────────────────────
-Test: monadic_format_mixed_vector.k
-Input: $(1;2.5;"hello";`symbol)
-Expected: (,"1";"2.5";"hello";"symbol")
-Actual: "(1;2.5;"hello";`symbol)"
-──────────────────────────────────────────────────────────────────────────
 Test: while_bracket_test.k
 Input: i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation
 Expected: 
@@ -835,35 +813,70 @@ Input: while[0; 42]
 Expected: 
 Actual: Error: While function requires at least 2 arguments: condition and expression(s)
 ──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_db_null.k
-Input: // Test _bd and _db for Null serialization
-Expected: "\001\000\000\000\b\000\000\000\006\000\000\000\000\000\000\000"
-Actual: "\001\000\000\000\014\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000"
+Test: serialization_bd_db_integervector.k
+Input: _bd 1 2 3
+Expected: "\001\000\000\000\024\000\000\000\377\377\377\377\003\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000"
+Actual: "\001\000\000\000 \000\000\000\000\000\000\000\003\000\000\000\001\000\000\000\001\000\000\000\001\000\000\000\002\000\000\000\001\000\000\000\003\000\000\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_db_floatvector.k
+Input: _bd 1.1 2.2 3.3
+Expected: "\001\000\000\000 \000\000\000\376\377\377\377\003\000\000\000\232\231\231\231\231\231\361?\232\231\231\231\231\231\001@ffffff\n@"
+Actual: "\001\000\000\0008\000\000\000\000\000\000\000\003\000\000\000\002\000\000\000\001\000\000\000\232\231\231\231\231\231\361?\002\000\000\000\001\000\000\000\232\231\231\231\231\231\001@\002\000\000\000\001\000\000\000ffffff\n@"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_db_charactervector.k
+Input: _bd "hello"
+Expected: "\001\000\000\000\016\000\000\000\375\377\377\377\005\000\000\000hello\000"
+Actual: "\001\000\000\0000\000\000\000\000\000\000\000\005\000\000\000\003\000\000\000h\000\000\000\003\000\000\000e\000\000\000\003\000\000\000l\000\000\000\003\000\000\000l\000\000\000\003\000\000\000o\000\000\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_db_symbolvector.k
+Input: _bd `a`b`c
+Expected: "\001\000\000\000\016\000\000\000\374\377\377\377\003\000\000\000a\000b\000c\000"
+Actual: "\001\000\000\000\032\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\004\000\000\000b\000\004\000\000\000c\000"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_db_dictionary.k
 Input: _bd .((`a;`"1");(`b;`"2"))
 Expected: "\001\000\000\000H\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\004\000\000\0001\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\004\000\000\0002\000\000\000\006\000\000\000\000\000"
-Actual: "\001\000\000\000\014\000\000\000\005\000\000\000\002\000\000\000a1b2"
+Actual: "\001\000\000\000@\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\004\000\000\0001\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\004\000\000\0002\000\006\000\000\000\000\000\000\000"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_db_roundtrip_list.k
 Input: _db _bd (1;2.5;"a")
 Expected: (1;2.5;"a")
 Actual: Error: _db (data from bytes) operation failed: Unsupported scalar subtype: 0
 ──────────────────────────────────────────────────────────────────────────
-Test: test_mixed_serialization.k
-Input: [File not found]
-Expected: "\001\000\000\000*\000\000\000\000\000\000\000\003\000\000\000\001\000\000\000\001\000\000\000\002\000\000\000\000\000\000\000\000\000\004@\003\000\000\000a\000\000\000"
-Actual: File not found
+Test: serialization_bd_charactervector_edge_empty.k
+Input: _bd ""
+Expected: "\001\000\000\000\b\000\000\000\377\377\377\377\000\000\000\000"
+Actual: "\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000\000"
 ──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_null_edge_0.k
-Input: _bd _n
-Expected: "\001\000\000\000\b\000\000\000\006\000\000\000\000\000\000\000"
-Actual: "\001\000\000\000\014\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000"
+Test: serialization_bd_charactervector_edge_hello.k
+Input: _bd "hello"
+Expected: "\001\000\000\000\016\000\000\000\375\377\377\377\005\000\000\000hello\000"
+Actual: "\001\000\000\0000\000\000\000\000\000\000\000\005\000\000\000\003\000\000\000h\000\000\000\003\000\000\000e\000\000\000\003\000\000\000l\000\000\000\003\000\000\000l\000\000\000\003\000\000\000o\000\000\000"
 ──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_list_edge_null.k
-Input: _bd ,_n
-Expected: "\001\000\000\000\020\000\000\000\000\000\000\000\001\000\000\000\006\000\000\000\000\000\000\000"
-Actual: "\001\000\000\000\024\000\000\000\000\000\000\000\001\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000"
+Test: serialization_bd_charactervector_edge_whitespace.k
+Input: _bd "\n\t\r"
+Expected: "\001\000\000\000\014\000\000\000\375\377\377\377\003\000\000\000\n\t\r\000"
+Actual: "\001\000\000\000 \000\000\000\000\000\000\000\003\000\000\000\003\000\000\000\n\000\000\000\003\000\000\000\t\000\000\000\003\000\000\000\r\000\000\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_integervector_edge_empty.k
+Input: _bd !0
+Expected: "\001\000\000\000\b\000\000\000\377\377\377\377\000\000\000\000"
+Actual: "\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_integervector_edge_single.k
+Input: _bd ,1
+Expected: "\001\000\000\000\014\000\000\000\377\377\377\377\001\000\000\000\001\000\000\000"
+Actual: "\001\000\000\000\020\000\000\000\000\000\000\000\001\000\000\000\001\000\000\000\001\000\000\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_integervector_edge_123.k
+Input: _bd 1 2 3
+Expected: "\001\000\000\000\024\000\000\000\377\377\377\377\003\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000"
+Actual: "\001\000\000\000 \000\000\000\000\000\000\000\003\000\000\000\001\000\000\000\001\000\000\000\001\000\000\000\002\000\000\000\001\000\000\000\003\000\000\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_integervector_edge_special.k
+Input: _bd 0N 0I -0I
+Expected: "\001\000\000\000\024\000\000\000\377\377\377\377\003\000\000\000\000\000\000\200\377\377\377\177\001\000\000\200"
+Actual: "\001\000\000\000 \000\000\000\000\000\000\000\003\000\000\000\001\000\000\000\000\000\000\200\001\000\000\000\377\377\377\177\001\000\000\000\001\000\000\200"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_list_edge_mixed.k
 Input: _bd (1;2.5;"a")
@@ -873,25 +886,40 @@ Actual: "\001\000\000\000(\000\000\000\000\000\000\000\003\000\000\000\001\000\0
 Test: serialization_bd_list_edge_complex.k
 Input: _bd (_n;`symbol;{[]})
 Expected: "\001\000\000\0000\000\000\000\000\000\000\000\003\000\000\000\006\000\000\000\000\000\000\000\004\000\000\000symbol\000\000\000\001\000\000\000\n\000\000\000\000{[]}\000\000\000\001\000\000\000"
-Actual: "\001\000\000\000*\000\000\000\000\000\000\000\003\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\004\000\000\000symbol\000\n\000\000\000\000{[] }\000"
+Actual: "\001\000\000\000%\000\000\000\000\000\000\000\003\000\000\000\006\000\000\000\000\000\000\000\004\000\000\000symbol\000\n\000\000\000\000{[]}\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_list_edge_nested.k
+Input: _bd ((1;2);(3;4))
+Expected: "\001\000\000\000(\000\000\000\000\000\000\000\002\000\000\000\377\377\377\377\002\000\000\000\001\000\000\000\002\000\000\000\377\377\377\377\002\000\000\000\003\000\000\000\004\000\000\000"
+Actual: "\001\000\000\0008\000\000\000\000\000\000\000\002\000\000\000\000\000\000\000\002\000\000\000\001\000\000\000\001\000\000\000\001\000\000\000\002\000\000\000\000\000\000\000\002\000\000\000\001\000\000\000\003\000\000\000\001\000\000\000\004\000\000\000"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_list_edge_dicts.k
 Input: _bd (.,(`a;1);.,(`b;2))
 Expected: "\001\000\000\000X\000\000\000\000\000\000\000\002\000\000\000\005\000\000\000\001\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000.\002\001\000\000\000\001\000\000\000\006\000\000\000\000\000\000\000\005\000\000\000\001\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000.\002\001\000\000\002\000\000\000\006\000\000\000\000\000\000"
-Actual: Error: _bd (bytes from data) operation failed: Unsupported element type: K3CSharp.DictionaryValue
+Actual: "\001\000\000\000T\000\000\000\000\000\000\000\002\000\000\000\005\000\000\000\001\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\001\000\000\000\001\000\000\000\006\000\000\000\000\000\000\000\005\000\000\000\001\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\001\000\000\000\002\000\000\000\006\000\000\000\000\000\000\000"
 ──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_anonymousfunction_random_1.k
-Input: _bd {[x] x+7;x$1;x<=2}
-Expected: "\001\000\000\000\030\000\000\000\n\000\000\000\000{[x] x+7;x$1;x<=2}\000"
-Actual: "\001\000\000\000 \000\000\000\n\000\000\000\000{[x] x+7 ; x $ 1 ; x< = 2}\000"
+Test: serialization_bd_floatvector_random_1.k
+Input: _bd 196825.27335627712 -326371.90292283031 -214498.92985862558 11655.819143220946
+Expected: "\001\000\000\000(\000\000\000\376\377\377\377\004\000\000\000sj\325/\312\006\bAl\315\227\234\217\353\023\301\026\270Yp\027/\n\301Z`\257\331\350\303\306@"
+Actual: "\001\000\000\000H\000\000\000\000\000\000\000\004\000\000\000\002\000\000\000\001\000\000\000sj\325/\312\006\bA\002\000\000\000\001\000\000\000l\315\227\234\217\353\023\301\002\000\000\000\001\000\000\000\026\270Yp\027/\n\301\002\000\000\000\001\000\000\000Z`\257\331\350\303\306@"
 ──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_anonymousfunction_random_2.k
-Input: _bd {[] 0|4;0&3}
-Expected: "\001\000\000\000\022\000\000\000\n\000\000\000\000{[] 0|4;0&3}\000"
-Actual: "\001\000\000\000\024\000\000\000\n\000\000\000\000{[] 0|4 ; 0&3}\000"
+Test: serialization_bd_floatvector_random_3.k
+Input: _bd 585267.57816312299 -569668.94176055992 37200.312770306708 397004.01885714347
+Expected: "\001\000\000\000(\000\000\000\376\377\377\377\004\000\000\0002\377\004(g\334!A\253p.\342\211b!\301\317\3376\002\n*\342@zIO\0230;\030A"
+Actual: "\001\000\000\000H\000\000\000\000\000\000\000\004\000\000\000\002\000\000\000\001\000\000\0002\377\004(g\334!A\002\000\000\000\001\000\000\000\253p.\342\211b!\301\002\000\000\000\001\000\000\000\317\3376\002\n*\342@\002\000\000\000\001\000\000\000zIO\0230;\030A"
 ──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_anonymousfunction_random_3.k
-Input: _bd {[xyz] xy|3}
-Expected: "\001\000\000\000\024\000\000\000\n\000\000\000.k\000{[xyz] xy|3}\000"
-Actual: "\001\000\000\000\022\000\000\000\n\000\000\000\000{[xyz] xy|3}\000"
+Test: serialization_bd_symbolvector_random_1.k
+Input: _bd `qzUM7 `g8X6P `"iay" `KgNQ5i `"< +" `b5
+Expected: "\001\000\000\000&\000\000\000\374\377\377\377\006\000\000\000qzUM7\000g8X6P\000iay\000KgNQ5i\000< +\000b5\000"
+Actual: "\001\000\000\000>\000\000\000\000\000\000\000\006\000\000\000\004\000\000\000qzUM7\000\004\000\000\000g8X6P\000\004\000\000\000iay\000\004\000\000\000KgNQ5i\000\004\000\000\000< +\000\004\000\000\000b5\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_symbolvector_random_2.k
+Input: _bd `"O 0" `D `qCBI1b `"*H " `"SS" `ULsyI `"F~" `"C" `Mont `O25B
+Expected: "\001\000\000\0001\000\000\000\374\377\377\377\n\000\000\000O 0\000D\000qCBI1b\000*H \000SS\000ULsyI\000F~\000C\000Mont\000O25B\000"
+Actual: "\001\000\000\000Y\000\000\000\000\000\000\000\n\000\000\000\004\000\000\000O 0\000\004\000\000\000D\000\004\000\000\000qCBI1b\000\004\000\000\000*H \000\004\000\000\000SS\000\004\000\000\000ULsyI\000\004\000\000\000F~\000\004\000\000\000C\000\004\000\000\000Mont\000\004\000\000\000O25B\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_symbolvector_random_3.k
+Input: _bd `o3 `EE5ijP `trD0LuE `OW `"." `y
+Expected: "\001\000\000\000\035\000\000\000\374\377\377\377\004\000\000\000o3\000EE5ijP\000trD0LuE\000OW\000"
+Actual: "\001\000\000\000-\000\000\000\000\000\000\000\004\000\000\000\004\000\000\000o3\000\004\000\000\000EE5ijP\000\004\000\000\000trD0LuE\000\004\000\000\000OW\000"
 ──────────────────────────────────────────────────────────────────────────

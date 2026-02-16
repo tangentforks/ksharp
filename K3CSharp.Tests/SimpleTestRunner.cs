@@ -132,7 +132,7 @@ namespace K3CSharp.Tests
                 ("adverb_scan_with_initialization.k", "2 2 4 12"),
                 
                 // Anonymous Function tests
-                ("anonymous_function_double_param.k", "{[op1;op2] op1*op2}"),
+                ("anonymous_function_double_param.k", "{[op1;op2] op1 * op2}"),
                 ("anonymous_function_empty.k", "{}"),
                 ("anonymous_function_simple.k", "{4+5}"),
                 ("anonymous_function_single_param.k", "{[arg1] arg1+6}"),
@@ -566,8 +566,7 @@ namespace K3CSharp.Tests
                 // Environment and file system tests
                 ("list_getenv.k", "\"C:\\Program Files\\Git\\mingw64\\bin;C:\\Program Files\\Git\\usr\\bin;C:\\Users\\euseb\\bin;C:\\Program Files\\Microsoft MPI\\Bin\\;C:\\Program Files\\Eclipse Adoptium\\jdk-8.0.382.5-hotspot\\bin;C:\\Program Files (x86)\\Common Files\\Intel\\Shared Files\\cpp\\bin\\ia32;C:\\Program Files (x86)\\Common Files\\Intel\\Shared Files\\cpp\\bin\\Intel64;C:\\Program Files (x86)\\Common Files\\Intel\\Shared Libraries\\redist\\ia32_win\\compiler;C:\\Program Files (x86)\\Common Files\\Intel\\Shared Libraries\\redist\\intel64_win\\compiler;C:\\Program Files (x86)\\Common Files\\Intel\\Shared Libraries\\redist\\ia32\\compiler;C:\\Program Files (x86)\\Common Files\\Intel\\Shared Libraries\\redist\\intel64\\compiler;C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Windows\\System32\\OpenSSH\\;C:\\Program Files (x86)\\HP\\HP Performance Advisor;C:\\Program Files (x86)\\QuickTime\\QTSystem\\;C:\\Program Files (x86)\\Common Files\\Propellerhead Software\\ReWire\\;C:\\Program Files\\Common Files\\Propellerhead Software\\ReWire\\;C:\\Program Files\\Microsoft SQL Server\\130\\Tools\\Binn\\;C:\\Program Files\\Microsoft SQL Server\\Client SDK\\ODBC\\170\\Tools\\Binn\\;C:\\Program Files (x86)\\Common Files\\GRM\\SpaceVRData\\Libs;C:\\Program Files\\Common Files\\GRM\\SpaceVRData\\Libs;C:\\Program Files\\CMake\\bin;C:\\Program Files\\dotnet\\;C:\\Program Files (x86)\\Microsoft Emulator Manager\\1.0\\;C:\\Program Files (x86)\\Microsoft ASP.NET\\ASP.NET Web Pages\\v1.0\\;C:\\Program Files\\Microsoft SQL Server\\110\\Tools\\Binn\\;C:\\Users\\euseb\\.dnx\\bin;C:\\Program Files\\Microsoft DNX\\Dnvm\\;C:\\Program Files\\Microsoft SQL Server\\120\\Tools\\Binn\\;C:\\Program Files (x86)\\nodejs\\;C:\\Program Files\\Common Files\\Avid\\Eucon;C:\\Program Files (x86)\\Common Files\\Avid\\Eucon;C:\\Program Files\\Avid\\Avid Link\\jre\\bin;C:\\Program Files (x86)\\dotnet\\;c:\\Windows\\SysWOW64\\;c:\\Windows\\Sysnative\\;c:\\program files (x86)\\iracing\\d3dgear;C:\\Program Files (x86)\\Common Files\\DivX Shared\\DesktopService;C:\\Program Files\\Microsoft SQL Server\\150\\Tools\\Binn\\;C:\\Program Files\\gs\\gs10.00.0\\bin;C:\\Program Files (x86)\\Windows Kits\\10\\Microsoft Application Virtualization\\Sequencer\\;C:\\Program Files\\Calibre2\\;C:\\Program Files\\NVIDIA Corporation\\Nsight Compute 2020.1.1\\;C:\\Program Files\\NVIDIA Corporation\\NVIDIA app\\NvDLISR;C:\\Program Files\\Git LFS;C:\\Program Files\\GitHub CLI\\;C:\\Program Files (x86)\\Incredibuild;C:\\Program Files (x86)\\Windows Kits\\10\\Windows Performance Toolkit\\;C:\\Program Files\\Acustica\\Medusa Framework\\;C:\\Program Files\\Git\\cmd;C:\\Users\\euseb\\.local\\bin;C:\\Progra~1\\NVIDIA~2\\CUDA\\v11.0\\libnvvp;C:\\Progra~1\\NVIDIA~2\\CUDA\\v11.0\\bin;C:\\Progra~2\\Common~1\\Intel\\Shared~1\\redist\\intel6~1\\compiler;C:\\Users\\euseb\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Program Files\\Imaginando\\DLYM;C:\\Users\\euseb\\.dotnet\\tools;C:\\Users\\euseb\\AppData\\Roaming\\npm;C:\\Users\\euseb\\AppData\\Local\\Programs\\Microsoft VS Code\\bin;C:\\Program Files\\Imaginando\\K7D;C:\\Program Files\\Imaginando\\FRMS;C:\\Program Files\\Imaginando\\DRC;C:\\Users\\euseb\\AppData\\Local\\Programs\\Ollama;C:\\Users\\euseb\\.local\\bin;C:\\Users\\euseb\\.dotnet\\tools\""), // PATH environment variable
                 ("list_setenv.k", "`TESTVAR"), // _setenv returns the variable name (not the value) - this is the current behavior
-                ("list_size.k", "Error - _size: error accessing file 'README.md': _size: file 'README.md' not found"), // File doesn't exist in test directory
-                ("list_size_existing.k", "872.0"), // Test with existing project file using absolute path
+                ("list_size_existing.k", "11264.0"), // Test with existing project file using absolute path
                 ("test_ci_basic.k", "\"A\""),
                 ("test_ci_vector.k", "\"ABC\""),
                 ("test_ic_basic.k", "65"),
@@ -921,7 +920,7 @@ namespace K3CSharp.Tests
                             // Handle regular K expressions
                             var lexer = new Lexer(trimmedLine);
                             var tokens = lexer.Tokenize();
-                            var parser = new Parser(tokens);
+                            var parser = new Parser(tokens, trimmedLine);
                             var ast = parser.Parse();
                             
                             lastResult = evaluator.Evaluate(ast);

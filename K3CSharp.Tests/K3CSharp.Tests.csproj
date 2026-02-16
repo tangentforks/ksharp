@@ -8,6 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TestScripts\**" />
+    <EmbeddedResource Remove="TestScripts\**" />
+    <None Remove="TestScripts\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="results_table.txt" />
+    <None Remove="test_results.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\K3CSharp\K3CSharp.csproj" />
   </ItemGroup>
 

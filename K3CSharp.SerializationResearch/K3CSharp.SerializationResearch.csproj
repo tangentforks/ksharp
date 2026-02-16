@@ -7,4 +7,30 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="output\**" />
+    <EmbeddedResource Remove="output\**" />
+    <None Remove="output\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Documentation.md" />
+    <None Remove="hypothesis_anonymousfunction.md" />
+    <None Remove="hypothesis_character.md" />
+    <None Remove="hypothesis_charactervector.md" />
+    <None Remove="hypothesis_dictionary.md" />
+    <None Remove="hypothesis_floatvector.md" />
+    <None Remove="hypothesis_float_ieee754.md" />
+    <None Remove="hypothesis_IntegerVector.md" />
+    <None Remove="hypothesis_integer_32bit.md" />
+    <None Remove="hypothesis_list.md" />
+    <None Remove="hypothesis_null.md" />
+    <None Remove="hypothesis_symbol.md" />
+    <None Remove="hypothesis_symbolvector.md" />
+    <None Remove="hypothesis_unified_comprehensive.md" />
+    <None Remove="implementation_plan.md" />
+    <None Remove="Kx annotated serialization.htm" />
+    <None Remove="Scientific_Method_Demonstration.md" />
+  </ItemGroup>
+
 </Project>

@@ -57,6 +57,7 @@ namespace K3CSharp
         {
             var writer = new KBinaryWriter();
             writer.WriteInt32(2);  // Float flag
+            writer.WriteInt32(1);  // Subtype field (required for floats in k.exe)
             writer.WriteDouble(value); // Float value
             return writer.GetBuffer();
         }
@@ -87,7 +88,9 @@ namespace K3CSharp
         private byte[] SerializeSymbolData(string symbol)
         {
             var writer = new KBinaryWriter();
-            var symbolData = Encoding.UTF8.GetBytes(symbol);
+            // Remove initial backtick for serialization (k.exe stores symbol value without backtick)
+            var symbolValue = symbol.StartsWith("`") ? symbol.Substring(1) : symbol;
+            var symbolData = Encoding.UTF8.GetBytes(symbolValue);
             writer.WriteInt32(4);  // Symbol flag
             writer.WriteBytes(symbolData); // Symbol data
             writer.WriteByte(0); // Null terminator
@@ -228,14 +231,81 @@ namespace K3CSharp
         private byte[] SerializeAnonymousFunctionData(K3CSharp.FunctionValue func)
         {
             var writer = new KBinaryWriter();
-            var functionSource = Encoding.UTF8.GetBytes("{" + "[" + string.Join(";", func.Parameters) + "] " + func.BodyText + "}");
+            // Use the original source text if available, otherwise fall back to reconstructed text
+            var functionSourceText = !string.IsNullOrEmpty(func.OriginalSourceText) 
+                ? func.OriginalSourceText 
+                : "{" + "[" + string.Join(";", func.Parameters) + "]" + func.BodyText + "}";
+            
+            // Check for undefined variables (k.exe adds .k metadata when there are parsing errors)
+            var hasUndefinedVariables = HasUndefinedVariables(func);
+            
+            var functionSource = Encoding.UTF8.GetBytes(functionSourceText);
             
             writer.WriteInt32(10); // Function flag
-            writer.WriteByte(0); // Extra null byte to match k.exe
+            
+            // Add .k metadata if there are undefined variables (like k.exe does)
+            if (hasUndefinedVariables)
+            {
+                // k.exe writes exactly 3 bytes: ".k\0"
+                var metadata = Encoding.ASCII.GetBytes(".k\0");
+                writer.WriteBytes(metadata);
+            }
+            else
+            {
+                writer.WriteByte(0); // Extra null byte only when no metadata
+            }
             
             writer.WriteBytes(functionSource); // Function source
             writer.WriteByte(0); // Null terminator
+            
             return writer.ToArray();
+        }
+        
+        private bool HasUndefinedVariables(K3CSharp.FunctionValue func)
+        {
+            if (func.PreParsedTokens == null || func.PreParsedTokens.Count == 0)
+                return false;
+                
+            var parameterSet = new HashSet<string>(func.Parameters, StringComparer.Ordinal);
+            
+            foreach (var token in func.PreParsedTokens)
+            {
+                // Check for identifiers that are not parameters and not keywords
+                if (token.Type == TokenType.IDENTIFIER && 
+                    !parameterSet.Contains(token.Lexeme) &&
+                    !IsKKeyword(token.Lexeme))
+                {
+                    return true; // Found undefined variable
+                }
+            }
+            
+            return false;
+        }
+        
+        private bool IsKKeyword(string identifier)
+        {
+            // K keywords that should not be considered undefined variables
+            var keywords = new HashSet<string>
+            {
+                "if", "do", "while", "for", "select", "exec", "exit", "return",
+                "_in", "_sv", "_vs", "_ssr", "_bd", "_db", "_getenv", "_setenv",
+                "_host", "_size", "_exit", "_d", "_cd", "_env", "_pid", "_uid",
+                "_gid", "_time", "_date", "_year", "_month", "_day", "_hour",
+                "_minute", "_second", "_millis", "_unix", "_gmt", "_local",
+                "_abs", "_neg", "_sqrt", "_log", "_exp", "_sin", "_cos", "_tan",
+                "_asin", "_acos", "_atan", "_floor", "_ceil", "_round", "_sign",
+                "_recip", "_not", "_null", "_type", "_val", "_fill", "_rand",
+                "_first", "_last", "_count", "_sum", "_avg", "_min", "_max",
+                "_dev", "_var", "_med", "_mode", "_rank", "_unique", "_distinct",
+                "_group", "_by", "_over", "_scan", "_each", "_prior", "_enlist",
+                "_flatten", "_reverse", "_sort", "_grade", "_iasc", "_idesc",
+                "_cross", "_join", "_union", "_intersect", "_except", "_in",
+                "_like", "_match", "_split", "_drop", "_take", "_cut", "_vs",
+                "_sv", "_ss", "_si", "_sc", "_sf", "_sl", "_sk", "_sp", "_sw",
+                "_st", "_sd", "_sm", "_sn", "_sq", "_sr", "_sx", "_sy", "_sz"
+            };
+            
+            return keywords.Contains(identifier);
         }
         
         private byte[] SerializeValue(object value)
