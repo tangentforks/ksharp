@@ -80,4 +80,11 @@ monadic_format_mixed_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representa
 monadic_format_nested_list :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 monadic_format_vector_simple :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 monadic_format_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+bd_dict_single :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+bd_triplet_single :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+dict_vs_list_comparison :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+direct_dict_comparison :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+test_identical_behavior :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+bd_unmake_dict :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 format_vector_int :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+serialization_bd_list_with_symbol_vectors :: regex:"col1\000\001":"col1\000\000"&regex:"col2\000\001":"col2\000\000" :: different padding

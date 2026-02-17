@@ -90,6 +90,292 @@ namespace K3CSharp.SerializationResearch
             return outputPath;
         }
 
+        public string RunCustomExperiments()
+        {
+            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            var listFilename = $"serialization_ListPaddingExperiments_List_{timestamp}.txt";
+            var dictFilename = $"serialization_ListPaddingExperiments_Dictionary_{timestamp}.txt";
+            var listOutputPath = Path.Combine(outputDirectory, listFilename);
+            var dictOutputPath = Path.Combine(outputDirectory, dictFilename);
+
+            try
+            {
+                var listResults = new List<SerializationResult>();
+                var dictResults = new List<SerializationResult>();
+                
+                Console.WriteLine("Running custom padding experiments...");
+
+                // Experiment 1: Symbol + Vector Size Correlation
+                Console.WriteLine("Experiment 1: Symbol + Vector Size Correlation");
+                var exp1Tests = new[]
+                {
+                    "(`test;1 2 3 4)",
+                    "(`test;1 2 3 4 5)",
+                    "(`test;1 2 3 4 5 6)",
+                    "(`test;1 2 3 4 5 6 7)",
+                    "(`test;1 2 3 4 5 6 7 8)"
+                };
+                
+                foreach (var test in exp1Tests)
+                {
+                    var result = ProcessExample(test, DataType.List);
+                    if (result != null) listResults.Add(result);
+                }
+
+                // Experiment 2: Symbol Type Variations
+                Console.WriteLine("Experiment 2: Symbol Type Variations");
+                var exp2Tests = new[]
+                {
+                    "(`sym;1 2 3)",
+                    "(`sym;\"hello\")",
+                    "(`sym;`a `b `c)",
+                    "(`sym;1.5 2.5 3.5)",
+                    "(`sym;\"abc\")"
+                };
+                
+                foreach (var test in exp2Tests)
+                {
+                    var result = ProcessExample(test, DataType.List);
+                    if (result != null) listResults.Add(result);
+                }
+
+                // Experiment 3: Alignment Boundary Testing
+                Console.WriteLine("Experiment 3: Alignment Boundary Testing");
+                var exp3Tests = new[]
+                {
+                    "(`a;1 2)",
+                    "(`ab;1 2 3)",
+                    "(`abc;1 2 3 4)",
+                    "(`abcd;1 2 3 4 5)",
+                    "(`abcde;1 2 3 4 5 6)",
+                    "(`abcdef;1 2 3 4 5 6 7)",
+                    "(`abcdefg;1 2 3 4 5 6 7 8)",
+                    "(`abcdefgh;1 2 3 4 5 6 7 8 9)"
+                };
+                
+                foreach (var test in exp3Tests)
+                {
+                    var result = ProcessExample(test, DataType.List);
+                    if (result != null) listResults.Add(result);
+                }
+
+                // Experiment 4: Dictionary Triplet Padding (as lists)
+                Console.WriteLine("Experiment 4: Dictionary Triplet Padding (as lists)");
+                var exp4Tests = new[]
+                {
+                    "((`col1;1 2 3 4);(`col2;5 6 7 8))",
+                    "((`longsymbolname;1 2 3 4 5);(`short;5 6 7 8))",
+                    "((`x;1 2);(`y;3 4 5 6 7 8 9))",
+                    "((`test;`a `b `c);(`other;1 2 3))"
+                };
+                
+                foreach (var test in exp4Tests)
+                {
+                    var result = ProcessExample(test, DataType.List);
+                    if (result != null) listResults.Add(result);
+                }
+
+                // Experiment 5: Mixed List Structure Variations
+                Console.WriteLine("Experiment 5: Mixed List Structure Variations");
+                var exp5Tests = new[]
+                {
+                    "(`sym;1)",
+                    "(`sym;1 2)",
+                    "(`sym;1 2 3)",
+                    "(`sym;1 2 3 4)",
+                    "(`sym;1 2 3 4 5)",
+                    "(1;`sym;2 3 4)",
+                    "(1;2;`sym;3 4 5)",
+                    "(1;2;3;`sym;4 5 6)"
+                };
+                
+                foreach (var test in exp5Tests)
+                {
+                    var result = ProcessExample(test, DataType.List);
+                    if (result != null) listResults.Add(result);
+                }
+
+                // Experiment 6: Function-Containing Mixed Lists
+                Console.WriteLine("Experiment 6: Function-Containing Mixed Lists");
+                var exp6Tests = new[]
+                {
+                    ",{[]}", // 1-item list of functions
+                    "(`sym;{[]})",
+                    "(1;{[]})",
+                    "(1;`sym;{[]})",
+                    "({[]};1)",
+                    "({[]};`sym)",
+                    "({[]};1;2)",
+                    "({[]};`sym;1)"
+                };
+                
+                foreach (var test in exp6Tests)
+                {
+                    var result = ProcessExample(test, DataType.List);
+                    if (result != null) listResults.Add(result);
+                }
+
+                // Experiment 7: Complex Mixed List Alignment
+                Console.WriteLine("Experiment 7: Complex Mixed List Alignment");
+                var exp7Tests = new[]
+                {
+                    "(_n;`symbol;{[]})",
+                    "(_n;`symbol;{[]};1)",
+                    "(_n;`symbol;1;{[]})",
+                    "(`symbol;{[]};_n)",
+                    "(1;`symbol;{[]};2)",
+                    "(`a;{[]};`b;{[]})",
+                    "(_n;`a;{[]};`b;{[]})",
+                    "({[]};`symbol;_n)"
+                };
+                
+                foreach (var test in exp7Tests)
+                {
+                    var result = ProcessExample(test, DataType.List);
+                    if (result != null) listResults.Add(result);
+                }
+
+                // Experiment 8: Dictionary Symbol Vector Alignment
+                Console.WriteLine("Experiment 8: Dictionary Symbol Vector Alignment");
+                var exp8Tests = new[]
+                {
+                    ".,(`a;`b `c `d)",
+                    ".,(`short;`x `y)",
+                    ".,(`verylongsymbolname;`a `b `c `d `e)",
+                    ".,(`x;`a `b `c `d `e `f `g `h)",
+                    ".,(`test;`a `b `c `d `e `f `g `h `i `j)"
+                };
+                
+                foreach (var test in exp8Tests)
+                {
+                    var result = ProcessExample(test, DataType.Dictionary);
+                    if (result != null) dictResults.Add(result);
+                }
+
+                // Experiment 9: Dictionary Mixed Content Alignment
+                Console.WriteLine("Experiment 9: Dictionary Mixed Content Alignment");
+                var exp9Tests = new[]
+                {
+                    ".,(`sym;1 2 3)",
+                    ".,(`sym;`a `b `c)",
+                    ".,(`sym;1.5 2.5 3.5)",
+                    ".,(`sym;\"abc\")",
+                    ".,(`sym;1 2 3 4 5 6 7 8 9 10)"
+                };
+                
+                foreach (var test in exp9Tests)
+                {
+                    var result = ProcessExample(test, DataType.Dictionary);
+                    if (result != null) dictResults.Add(result);
+                }
+
+                // Experiment 10: Complex Dictionary Structure Analysis
+                Console.WriteLine("Experiment 10: Complex Dictionary Structure Analysis");
+                var exp10Tests = new[]
+                {
+                    ".((`colA;`a `b `c);(`colB;`dd `eee `ffff))",
+                    ".((`x;`a `b);(`y;`c `d `e `f);(`z;`g `h `i `j))",
+                    ".((`short;`a);(`verylongsymbolname;`x `y `z))",
+                    ".((`num;1 2 3 4 5);(`sym;`a `b `c `d `e);(`char;\"abc\"))"
+                };
+                
+                foreach (var test in exp10Tests)
+                {
+                    var result = ProcessExample(test, DataType.Dictionary);
+                    if (result != null) dictResults.Add(result);
+                }
+
+                // Experiment 11: Dictionary vs List Comparison - Same Structure
+                Console.WriteLine("Experiment 11: Dictionary vs List Comparison - Same Structure");
+                var exp11Tests = new[]
+                {
+                    // Dictionary versions
+                    ".,(`a;1 2 3)",
+                    ".,(`ab;1 2 3 4)",
+                    ".,(`abc;1 2 3 4 5)",
+                    ".,(`abcd;1 2 3 4 5 6)",
+                    ".,(`test;`x `y `z)",
+                    ".,(`longsymbol;`a `b `c `d `e)",
+                    // List equivalents (triplets)
+                    ",(`a;1 2 3;)",
+                    ",(`ab;1 2 3 4;)",
+                    ",(`abc;1 2 3 4 5;)",
+                    ",(`abcd;1 2 3 4 5 6;)",
+                    ",(`test;`x `y `z;)",
+                    ",(`longsymbol;`a `b `c `d `e;)"
+                };
+                
+                foreach (var test in exp11Tests)
+                {
+                    var dataType = test.StartsWith(".") ? DataType.Dictionary : DataType.List;
+                    var result = ProcessExample(test, dataType);
+                    if (result != null)
+                    {
+                        if (dataType == DataType.Dictionary)
+                            dictResults.Add(result);
+                        else
+                            listResults.Add(result);
+                    }
+                }
+
+                // Experiment 12: Symbol Length Variations in Dictionaries
+                Console.WriteLine("Experiment 12: Symbol Length Variations in Dictionaries");
+                var exp12Tests = new[]
+                {
+                    ".,(`a;1)",           // 1-char symbol
+                    ".,(`ab;1 2)",        // 2-char symbol  
+                    ".,(`abc;1 2 3)",      // 3-char symbol
+                    ".,(`abcd;1 2 3 4)",   // 4-char symbol
+                    ".,(`abcde;1 2 3 4 5)", // 5-char symbol
+                    ".,(`abcdef;1 2 3 4 5 6)", // 6-char symbol
+                    ".,(`abcdefgh;1 2 3 4 5 6 7 8)" // 8-char symbol
+                };
+                
+                foreach (var test in exp12Tests)
+                {
+                    var result = ProcessExample(test, DataType.Dictionary);
+                    if (result != null) dictResults.Add(result);
+                }
+
+                // Experiment 13: Multiple Entry Dictionary Analysis
+                Console.WriteLine("Experiment 13: Multiple Entry Dictionary Analysis");
+                var exp13Tests = new[]
+                {
+                    ".,(`a;1)",
+                    ".((`a;1);(`b;2))",
+                    ".((`a;1);(`b;2);(`c;3))",
+                    ".((`a;1);(`b;2);(`c;3);(`d;4))",
+                    ".((`a;1);(`b;2);(`c;3);(`d;4);(`e;5))"
+                };
+                
+                foreach (var test in exp13Tests)
+                {
+                    var result = ProcessExample(test, DataType.Dictionary);
+                    if (result != null) dictResults.Add(result);
+                }
+
+                // Write results to separate files
+                WriteResultsFile(listOutputPath, DataType.List, listResults, false);
+                WriteResultsFile(dictOutputPath, DataType.Dictionary, dictResults, false);
+                
+                var totalResults = listResults.Count + dictResults.Count;
+                Console.WriteLine($"Generated {totalResults} successful experiment results");
+                Console.WriteLine($"List results saved to: {listOutputPath}");
+                Console.WriteLine($"Dictionary results saved to: {dictOutputPath}");
+
+                return listOutputPath; // Return primary file path
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during custom experiments: {ex.Message}");
+                throw;
+            }
+            finally
+            {
+                wrapper.CleanupTempDirectory();
+            }
+        }
+
         private SerializationResult? ProcessExample(string example, DataType dataType)
         {
             try

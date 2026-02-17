@@ -23,7 +23,12 @@ namespace K3CSharp.SerializationResearch
                 {
                     string outputPath;
                     
-                    if (!string.IsNullOrEmpty(options.HypothesisTest))
+                    if (options.CustomExperiments)
+                    {
+                        // Custom experiments mode
+                        outputPath = explorer.RunCustomExperiments();
+                    }
+                    else if (!string.IsNullOrEmpty(options.HypothesisTest))
                     {
                         // Hypothesis testing mode - use specified type or default to Integer
                         var testType = options.HypothesisTestType ?? DataType.Integer;
@@ -104,6 +109,11 @@ namespace K3CSharp.SerializationResearch
                         options.HypothesisTestType = ParseDataType(args[++i]);
                         break;
 
+                    case "--custom-experiments":
+                    case "-X":
+                        options.CustomExperiments = true;
+                        break;
+
                     case "--help":
                     case "-h":
                     case "/?":
@@ -114,8 +124,8 @@ namespace K3CSharp.SerializationResearch
                 }
             }
 
-            // Validate required parameters - either DataType for generation OR HypothesisTest for testing
-            if (options.DataType == null && string.IsNullOrEmpty(options.HypothesisTest))
+            // Validate required parameters - either DataType for generation OR HypothesisTest for testing OR CustomExperiments
+            if (options.DataType == null && string.IsNullOrEmpty(options.HypothesisTest) && !options.CustomExperiments)
                 return null;
 
             // If edge cases are specified, count is ignored (per spec)
@@ -163,6 +173,8 @@ namespace K3CSharp.SerializationResearch
             Console.WriteLine("  --edge-cases, -e  Generate edge cases only (ignores --count)");
             Console.WriteLine("  --kexe, -k        Path to k.exe executable (default: c:\\k\\k.exe)");
             Console.WriteLine("  --output, -o      Output directory (default: output)");
+            Console.WriteLine("  --test, -x <data>     Test hypothesis with specific data");
+            Console.WriteLine("  --custom-experiments, -X  Run custom padding experiments");
             Console.WriteLine("  --help, -h        Show this help message");
             Console.WriteLine();
             Console.WriteLine("Supported Data Types:");
@@ -184,6 +196,7 @@ namespace K3CSharp.SerializationResearch
             Console.WriteLine("  Generate 100 random integers:    dotnet run -- --type integer");
             Console.WriteLine("  Generate edge cases for chars:   dotnet run -- --type character --edge-cases");
             Console.WriteLine("  Test hypothesis with value:    dotnet run -- --test \"123456789\"");
+            Console.WriteLine("  Run custom padding experiments:  dotnet run -- --custom-experiments");
             Console.WriteLine();
             Console.WriteLine("  The tool returns the path to the generated output file.");
             Console.WriteLine("  Output format: '_bd <input> → <serialized_result>' per line");
@@ -199,5 +212,6 @@ namespace K3CSharp.SerializationResearch
         public string OutputDir { get; set; } = "output";
         public string? HypothesisTest { get; set; }
         public DataType? HypothesisTestType { get; set; }
+        public bool CustomExperiments { get; set; } = false;
     }
 }

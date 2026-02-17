@@ -627,7 +627,7 @@ namespace K3CSharp
                 {
                     charVector.Add(new CharacterValue(c.ToString()));
                 }
-                result = ASTNode.MakeLiteral(new VectorValue(charVector));
+                result = ASTNode.MakeLiteral(new VectorValue(charVector, "empty_charvec"));
             }
             else if (Match(TokenType.SYMBOL))
             {

@@ -106,7 +106,7 @@ namespace K3CSharp
             return message.Concat(data).ToArray();
         }
         
-        private byte[] SerializeSymbolData(string symbol)
+        private byte[] SerializeSymbolData(string symbol, bool isInMixedList = false)
         {
             var writer = new KBinaryWriter();
             // Remove initial backtick for serialization (k.exe stores symbol value without backtick)
@@ -115,6 +115,15 @@ namespace K3CSharp
             writer.WriteInt32(4);  // Symbol flag
             writer.WriteBytes(symbolData); // Symbol data
             writer.WriteByte(0); // Null terminator
+            
+            // Pad to 4-byte boundary for symbols in mixed lists
+            if (isInMixedList)
+            {
+                int totalSize = 5 + symbolData.Length; // 4 bytes flag + symbol data + null
+                int paddingNeeded = (4 - (totalSize % 4)) % 4;
+                writer.WritePadding(paddingNeeded);
+            }
+            
             return writer.GetBuffer();
         }
         
@@ -201,22 +210,75 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Use full serialization for mixed lists only
-                    var serialized = SerializeElementData(element);
-                    elementData.AddRange(serialized);
+                    // Use full serialization for mixed lists
+                // Symbols in mixed lists need 4-byte alignment
+                var serialized = SerializeElementData(element, true);
+                elementData.AddRange(serialized);
                 }
             }
             
-            // Special case: add null terminator for character vectors
             if (vectorType == -3)
             {
                 elementData.Add(0); // Null terminator
             }
             
+            // Apply 8-byte alignment to mixed lists containing complex structures
+            // Based on experimental results: apply to ALL mixed lists containing VectorValue objects
+            // NEW: Mixed lists with functions require 8-byte alignment for EACH element
+            // Dictionaries (vectorType == 5) should use the same processing as general lists
+            if (vectorType == 0 || vectorType == 5)
+            {
+                bool hasFunctions = list.Elements.Any(e => e is FunctionValue);
+                bool hasVectors = list.Elements.Any(e => e is VectorValue);
+                
+                if (hasFunctions || hasVectors)
+                {
+                    // For mixed lists with functions or vectors: align each element to 8-byte boundaries
+                    var alignedElementData = new List<byte>();
+                    int currentOffset = 8; // Start after type+count header
+                    
+                    foreach (var element in list.Elements)
+                    {
+                        var serialized = SerializeElementData(element, true);
+                        
+                        // Add padding to align element to 8-byte boundary
+                        int paddingNeeded = (8 - (currentOffset % 8)) % 8;
+                        if (paddingNeeded > 0)
+                        {
+                            alignedElementData.AddRange(new byte[paddingNeeded]);
+                            currentOffset += paddingNeeded;
+                        }
+                        
+                        alignedElementData.AddRange(serialized);
+                        currentOffset += serialized.Length;
+                        
+                        // Add padding after element to align next element to 8-byte boundary
+                        if (element != list.Elements.Last())
+                        {
+                            int postPaddingNeeded = (8 - (currentOffset % 8)) % 8;
+                            if (postPaddingNeeded > 0)
+                            {
+                                alignedElementData.AddRange(new byte[postPaddingNeeded]);
+                                currentOffset += postPaddingNeeded;
+                            }
+                        }
+                    }
+                    
+                    // Add final padding to align total list to 8-byte boundary
+                    int finalPaddingNeeded = (8 - (currentOffset % 8)) % 8;
+                    if (finalPaddingNeeded > 0)
+                    {
+                        alignedElementData.AddRange(new byte[finalPaddingNeeded]);
+                    }
+                    
+                    elementData = alignedElementData;
+                }
+            }
+            
             var writer = new KBinaryWriter();
-            writer.WriteInt32(vectorType);  // Vector type: -1=int, -2=float, -3=char, -4=symbol, 0=mixed
-            writer.WriteInt32(list.Elements.Count); // Element count
-            writer.WriteBytes(elementData.ToArray()); // Element data
+            writer.WriteInt32(vectorType);
+            writer.WriteInt32(list.Elements.Count);
+            writer.WriteBytes(elementData.ToArray());
             return writer.ToArray();
         }
         
@@ -242,6 +304,7 @@ namespace K3CSharp
                 if (list.CreationMethod.Contains("int")) return -1;
                 if (list.CreationMethod.Contains("float")) return -2;
                 if (list.CreationMethod.Contains("char")) return -3;
+                if (list.CreationMethod.Contains("charvec")) return -3;
                 if (list.CreationMethod.Contains("symbol")) return -4;
                 return 0; // Default to mixed list
             }
@@ -260,7 +323,7 @@ namespace K3CSharp
                 return 0; // Mixed list
         }
         
-        private byte[] SerializeElementData(object element)
+        private byte[] SerializeElementData(object element, bool isInMixedList = false)
         {
             return element switch
             {
@@ -275,7 +338,7 @@ namespace K3CSharp
                 K3CSharp.IntegerValue iv => SerializeIntegerData(iv.Value),
                 K3CSharp.FloatValue fv => SerializeFloatData(fv.Value),
                 K3CSharp.CharacterValue cv => SerializeCharacterData(cv.Value[0]),
-                K3CSharp.SymbolValue sv => SerializeSymbolData(sv.Value),
+                K3CSharp.SymbolValue sv => SerializeSymbolData(sv.Value, isInMixedList),
                 K3CSharp.NullValue => SerializeNullData(),
                 
                 _ => throw new NotSupportedException($"Unsupported element type: {element.GetType()}")
