@@ -2511,11 +2511,19 @@ namespace K3CSharp
                 // Convert back to K3Value
                 return result switch
                 {
+                    IntegerValue iv => iv,
+                    FloatValue fv => fv,
+                    CharacterValue cv => cv,
+                    SymbolValue sv => sv,
+                    VectorValue vv => vv,
+                    DictionaryValue dv => dv,
+                    FunctionValue fv => fv,
+                    NullValue nv => nv,
                     int i => new IntegerValue(i),
                     double d => new FloatValue(d),
                     char c => new CharacterValue(c.ToString()),
+                    string s when s.StartsWith("`") => new SymbolValue(s),
                     string s => new CharacterValue(s),
-                    Array arr => new VectorValue(arr.Cast<object>().Select(ConvertToK3Value).ToList()),
                     null => new NullValue(),
                     _ => throw new Exception($"Unsupported deserialized type: {result.GetType()}")
                 };

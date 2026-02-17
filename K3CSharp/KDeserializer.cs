@@ -15,35 +15,44 @@ namespace K3CSharp
             if (data.Length < 8) throw new ArgumentException("Invalid data - minimum 8 bytes required");
             
             var reader = new KSerializationReader(data);
-            var typeId = reader.ReadInt32();
-            var length = reader.ReadInt32();
+            var messageType = reader.ReadInt32();  // First 4 bytes: Message Type (always 1)
+            var messageLength = reader.ReadInt32(); // Next 4 bytes: Message Length
             
-            return typeId switch
-            {
-                1 => DeserializeScalar(reader, length),
-                -1 => DeserializeIntegerVector(reader, length),
-                -2 => DeserializeFloatVector(reader, length),
-                -3 => DeserializeCharacterVector(reader, length),
-                -4 => DeserializeSymbolVector(reader, length),
-                0 => DeserializeList(reader, length),
-                5 => DeserializeDictionary(reader, length),
-                7 => DeserializeAnonymousFunction(reader, length),
-                _ => throw new NotSupportedException($"Unsupported type: {typeId}")
-            };
+            // Message Type should always be 1 for serialized data from _bd
+            if (messageType != 1) 
+                throw new ArgumentException($"Invalid message type: {messageType}");
+            
+            // Read the actual serialized data payload
+            var payloadData = reader.ReadBytes(messageLength);
+            var payloadReader = new KSerializationReader(payloadData);
+            
+            return DeserializeValue(payloadReader);
         }
         
-        private object DeserializeScalar(KSerializationReader reader, int length)
+        private object DeserializeScalar(KSerializationReader reader)
         {
-            var subtype = reader.ReadInt32();
-            return subtype switch
+            return new IntegerValue(reader.ReadInt32()); // Integer value as K3Value
+        }
+        
+        private object DeserializeFloat(KSerializationReader reader)
+        {
+            return new FloatValue(reader.ReadDouble()); // Float value as K3Value
+        }
+        
+        private object DeserializeCharacter(KSerializationReader reader)
+        {
+            return new CharacterValue(((char)reader.ReadByte()).ToString()); // Character as K3Value
+        }
+        
+        private object DeserializeSymbol(KSerializationReader reader)
+        {
+            var bytes = new List<byte>();
+            byte b;
+            while ((b = reader.ReadByte()) != 0)
             {
-                1 => reader.ReadInt32(), // Integer
-                2 => reader.ReadDouble(), // Float
-                3 => (char)reader.ReadByte(), // Character
-                4 => ReadSymbol(reader, length), // Symbol
-                6 => new NullValue(), // Null
-                _ => throw new NotSupportedException($"Unsupported scalar subtype: {subtype}")
-            };
+                bytes.Add(b);
+            }
+            return new SymbolValue("`" + Encoding.UTF8.GetString(bytes.ToArray())); // Symbol as K3Value
         }
         
         private string ReadSymbol(KSerializationReader reader, int length)
@@ -53,9 +62,8 @@ namespace K3CSharp
             return Encoding.UTF8.GetString(symbolBytes);
         }
         
-        private object DeserializeIntegerVector(KSerializationReader reader, int length)
+        private object DeserializeIntegerVector(KSerializationReader reader)
         {
-            var vectorFlag = reader.ReadInt32();
             var elementCount = reader.ReadInt32();
             var elements = new List<int>();
             
@@ -64,12 +72,11 @@ namespace K3CSharp
                 elements.Add(reader.ReadInt32());
             }
             
-            return elements.ToArray();
+            return new VectorValue(elements.Select(x => (K3Value)new IntegerValue(x)).ToList());
         }
         
-        private object DeserializeFloatVector(KSerializationReader reader, int length)
+        private object DeserializeFloatVector(KSerializationReader reader)
         {
-            var vectorFlag = reader.ReadInt32();
             var elementCount = reader.ReadInt32();
             var elements = new List<double>();
             
@@ -78,12 +85,11 @@ namespace K3CSharp
                 elements.Add(reader.ReadDouble());
             }
             
-            return elements.ToArray();
+            return new VectorValue(elements.Select(x => (K3Value)new FloatValue(x)).ToList());
         }
         
-        private object DeserializeCharacterVector(KSerializationReader reader, int length)
+        private object DeserializeCharacterVector(KSerializationReader reader)
         {
-            var vectorFlag = reader.ReadInt32();
             var elementCount = reader.ReadInt32();
             var elements = new List<char>();
             
@@ -95,60 +101,107 @@ namespace K3CSharp
             // Read and discard null terminator
             if (reader.HasMoreData) reader.ReadByte();
             
-            return elements.ToArray();
+            return new VectorValue(elements.Select(x => (K3Value)new CharacterValue(x.ToString())).ToList());
         }
         
-        private object DeserializeSymbolVector(KSerializationReader reader, int length)
+        private object DeserializeSymbolVector(KSerializationReader reader)
         {
-            var vectorFlag = reader.ReadInt32();
             var elementCount = reader.ReadInt32();
             var elements = new List<string>();
             
+            // Symbol vectors store symbols concatenated with null terminators
             for (int i = 0; i < elementCount; i++)
             {
-                var symbol = ReadSymbol(reader, length);
-                elements.Add(symbol);
+                var bytes = new List<byte>();
+                byte b;
+                while ((b = reader.ReadByte()) != 0)
+                {
+                    bytes.Add(b);
+                }
+                var symbol = Encoding.UTF8.GetString(bytes.ToArray());
+                elements.Add("`" + symbol);
             }
             
-            return elements.ToArray();
+            return new VectorValue(elements.Select(x => (K3Value)new SymbolValue(x)).ToList());
         }
         
-        private object DeserializeList(KSerializationReader reader, int length)
+        private object DeserializeList(KSerializationReader reader)
         {
             var listFlag = reader.ReadInt32();
             var elementCount = reader.ReadInt32();
-            var elements = new List<object>();
+            var elements = new List<K3Value>();
             
+            // For now, assume simple list without complex alignment
             for (int i = 0; i < elementCount; i++)
             {
-                // Recursively deserialize each element
-                var element = DeserializeValue(reader);
+                var element = (K3Value)DeserializeValue(reader);
                 elements.Add(element);
             }
             
-            return elements.ToArray();
+            return new VectorValue(elements);
         }
         
-        private object DeserializeDictionary(KSerializationReader reader, int length)
+        private int GetElementSize(K3Value element)
+        {
+            // Simplified size calculation for alignment purposes
+            return element switch
+            {
+                IntegerValue => 8, // 4 bytes type + 4 bytes value
+                FloatValue => 12, // 4 bytes type + 8 bytes value
+                CharacterValue => 5, // 4 bytes type + 1 byte value
+                SymbolValue sv => 5 + sv.Value.Length - 1, // 4 bytes type + symbol data + null
+                NullValue => 4, // 4 bytes type only
+                VectorValue vv => 8 + GetVectorSize(vv), // 8 bytes header + element data
+                DictionaryValue => 8 + GetDictionarySize((DictionaryValue)element),
+                _ => 8 // Default
+            };
+        }
+        
+        private int GetVectorSize(VectorValue vector)
+        {
+            int size = 0;
+            foreach (var element in vector.Elements)
+            {
+                size += GetElementSize(element);
+            }
+            return size;
+        }
+        
+        private int GetDictionarySize(DictionaryValue dict)
+        {
+            // Simplified - dictionaries are serialized as lists of triplets
+            var elements = dict.Entries.SelectMany(kvp => 
+                new K3Value[] { kvp.Key, kvp.Value.Value, kvp.Value.Attribute ?? new DictionaryValue() }).ToList();
+            return GetVectorSize(new VectorValue(elements));
+        }
+        private object DeserializeDictionary(KSerializationReader reader)
         {
             var dictFlag = reader.ReadInt32();
-            var pairCount = reader.ReadInt32();
-            var pairs = new List<KeyValuePair<object, object>>();
+            var elementCount = reader.ReadInt32();
+            var entries = new Dictionary<SymbolValue, (K3Value, DictionaryValue)>();
             
-            for (int i = 0; i < pairCount; i++)
+            // Dictionaries are serialized as lists of triplets: (key, value, attributes)
+            // For now, we'll handle simple 2-element entries (key, value with implicit null attributes)
+            for (int i = 0; i < elementCount; i += 3)
             {
-                var key = DeserializeValue(reader);
-                var value = DeserializeValue(reader);
-                pairs.Add(new KeyValuePair<object, object>(key, value));
+                var key = (K3Value)DeserializeValue(reader);
+                var value = (K3Value)DeserializeValue(reader);
+                var attributes = (K3Value)DeserializeValue(reader); // Could be null or dict
+                
+                if (key is SymbolValue symbolKey)
+                {
+                    var attrDict = attributes as DictionaryValue ?? new DictionaryValue();
+                    entries[symbolKey] = (value, attrDict);
+                }
             }
             
-            return pairs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            return new DictionaryValue(entries);
         }
         
-        private object DeserializeAnonymousFunction(KSerializationReader reader, int length)
+        private object DeserializeAnonymousFunction(KSerializationReader reader)
         {
             var functionFlag = reader.ReadInt32();
-            var functionLength = length - 8; // Subtract header
+            var functionLength = reader.ReadInt32();
             
             // Check for error metadata
             var hasErrorMetadata = false;
@@ -161,10 +214,16 @@ namespace K3CSharp
                 functionLength -= 4; // Adjust for metadata
             }
             
+            // Ensure we have enough data for function content
+            if (functionLength < 0)
+            {
+                functionLength = 0; // Handle empty function
+            }
+            
             var functionBytes = reader.ReadBytes(functionLength);
             var functionSource = Encoding.UTF8.GetString(functionBytes);
             
-            return new { Source = functionSource, HasParseErrors = hasErrorMetadata };
+            return new FunctionValue(functionSource, new List<string>());
         }
         
         private object DeserializeValue(KSerializationReader reader)
@@ -172,21 +231,22 @@ namespace K3CSharp
             // Save current position to peek at type
             var startPos = reader.Position;
             var typeId = reader.ReadInt32();
-            var length = reader.ReadInt32();
-            
-            // Reset position to read the actual value
-            reader.Position = startPos;
             
             return typeId switch
             {
-                1 => DeserializeScalar(reader, length),
-                -1 => DeserializeIntegerVector(reader, length),
-                -2 => DeserializeFloatVector(reader, length),
-                -3 => DeserializeCharacterVector(reader, length),
-                -4 => DeserializeSymbolVector(reader, length),
-                0 => DeserializeList(reader, length),
-                5 => DeserializeDictionary(reader, length),
-                7 => DeserializeAnonymousFunction(reader, length),
+                1 => DeserializeScalar(reader),
+                2 => DeserializeFloat(reader),
+                3 => DeserializeCharacter(reader),
+                4 => DeserializeSymbol(reader),
+                6 => new NullValue(),
+                -1 => DeserializeIntegerVector(reader),
+                -2 => DeserializeFloatVector(reader),
+                -3 => DeserializeCharacterVector(reader),
+                -4 => DeserializeSymbolVector(reader),
+                0 => DeserializeList(reader),
+                5 => DeserializeDictionary(reader),
+                7 => DeserializeAnonymousFunction(reader),
+                10 => DeserializeList(reader), // Type 10 is also used for lists
                 _ => throw new NotSupportedException($"Unsupported type: {typeId}")
             };
         }

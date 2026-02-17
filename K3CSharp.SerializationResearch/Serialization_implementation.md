@@ -8,8 +8,8 @@ This document provides a complete specification for K3CSharp's serialization for
 
 ### Header Format
 ```
-[4 bytes] Message Length (excluding header)
 [4 bytes] Message Type (always 1 for serialized data)
+[4 bytes] Message Length (excluding header)
 [Variable] Serialized Data
 ```
 
