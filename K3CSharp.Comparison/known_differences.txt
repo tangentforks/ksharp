@@ -60,6 +60,8 @@ smart_division3 :: regex:\.0\b: :: smart integer division, inverse and exponenti
 form_braces_arith :: regex:\(|\)|\.0\b: &regex:[;]:space :: smart integer division, inverse and exponentiation
 anonymous_function_double_param :: regex:\s*\*\s*:* :: Compact representation
 attribute_handle_vector :: regex:\s*`:` :: Compact representation
+db_symbol_vector_longer :: regex:\s*`:` :: Compact representation
+db_enlist_single_symbol :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 cut_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 dictionary_index_attr :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 dictionary_multiple :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
@@ -139,4 +141,6 @@ db_dict_with_null_attrs :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_dict_two_entries_simple :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_dict_with_empty_attrs :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 format_vector_int :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+test_dict_larger :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+db_dict_larger.k :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 serialization_bd_list_with_symbol_vectors :: regex:"col1\000\001":"col1\000\000"&regex:"col2\000\001":"col2\000\000" :: different padding

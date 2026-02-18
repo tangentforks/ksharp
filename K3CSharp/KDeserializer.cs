@@ -131,7 +131,7 @@ namespace K3CSharp
                     bytes.Add(b);
                 }
                 var symbol = Encoding.UTF8.GetString(bytes.ToArray());
-                elements.Add("`" + symbol);
+                elements.Add(symbol); // Don't add backtick here - SymbolValue.ToString() will add it
             }
             
             return new VectorValue(elements.Select(x => (K3Value)new SymbolValue(x)).ToList());
@@ -139,23 +139,25 @@ namespace K3CSharp
         
         private object DeserializeList(KSerializationReader reader)
         {
-            var listFlag = reader.ReadInt32();
+            // Note: typeId (listFlag) was already read by DeserializeValue
+            // We only need to read the elementCount here
             var elementCount = reader.ReadInt32();
             var elements = new List<K3Value>();
             
-            // For now, assume simple list without complex alignment
+            // For empty lists, just return an empty VectorValue
             for (int i = 0; i < elementCount; i++)
             {
                 var element = (K3Value)DeserializeValue(reader);
                 elements.Add(element);
             }
             
-            return new VectorValue(elements);
+            return new VectorValue(elements, "mixed"); // Mark as mixed vector
         }
         
         private int GetElementSize(K3Value element)
         {
-            // Simplified size calculation for alignment purposes
+            // For mixed lists, we need to calculate the actual serialized size
+            // This is complex because elements can be nested structures
             return element switch
             {
                 IntegerValue => 8, // 4 bytes type + 4 bytes value
@@ -164,8 +166,8 @@ namespace K3CSharp
                 SymbolValue sv => 5 + sv.Value.Length - 1, // 4 bytes type + symbol data + null
                 NullValue => 4, // 4 bytes type only
                 VectorValue vv => 8 + GetVectorSize(vv), // 8 bytes header + element data
-                DictionaryValue => 8 + GetDictionarySize((DictionaryValue)element),
-                _ => 8 // Default
+                DictionaryValue dv => 8 + GetDictionarySize((DictionaryValue)element),
+                _ => 8 // Default for complex nested structures
             };
         }
         
@@ -183,27 +185,45 @@ namespace K3CSharp
         {
             // Simplified - dictionaries are serialized as lists of triplets
             var elements = dict.Entries.SelectMany(kvp => 
-                new K3Value[] { kvp.Key, kvp.Value.Value, kvp.Value.Attribute ?? new DictionaryValue() }).ToList();
+            {
+                var (val, attr) = kvp.Value;
+                var elementList = new List<K3Value> { kvp.Key, val };
+                // Only add attribute if it's not null
+                if (attr != null)
+                {
+                    elementList.Add(attr);
+                }
+                return elementList;
+            }).ToList();
             return GetVectorSize(new VectorValue(elements));
         }
         private object DeserializeDictionary(KSerializationReader reader)
         {
-            var dictFlag = reader.ReadInt32();
+            // The reader is positioned after typeId (5) has been read by DeserializeValue
+            // Dictionaries are serialized as: [type(5)][count][element1][element2][element3][element4]...
+            // So we need to read the elementCount directly
             var elementCount = reader.ReadInt32();
             var entries = new Dictionary<SymbolValue, (K3Value, DictionaryValue)>();
             
-            // Dictionaries are serialized as lists of triplets: (key, value, attributes)
-            // For now, we'll handle simple 2-element entries (key, value with implicit null attributes)
-            for (int i = 0; i < elementCount; i += 3)
+            // Dictionaries are serialized as lists of triplet vectors: [(key;value;attr), (key;value;attr), ...]
+            // elementCount is the number of triplet vectors (same as list.Elements.Count in serialization)
+            for (int i = 0; i < elementCount; i++)
             {
-                var key = (K3Value)DeserializeValue(reader);
-                var value = (K3Value)DeserializeValue(reader);
-                var attributes = (K3Value)DeserializeValue(reader); // Could be null or dict
+                // Each element is a triplet vector (key; value; attributes)
+                // The triplet is serialized as a list, so deserialize it as such
+                var triplet = (K3Value)DeserializeValue(reader);
                 
-                if (key is SymbolValue symbolKey)
+                if (triplet is VectorValue vector && vector.Elements.Count >= 2)
                 {
-                    var attrDict = attributes as DictionaryValue ?? new DictionaryValue();
-                    entries[symbolKey] = (value, attrDict);
+                    var key = vector.Elements[0];
+                    var value = vector.Elements[1];
+                    var attributes = vector.Elements.Count > 2 ? vector.Elements[2] : new NullValue();
+                    
+                    if (key is SymbolValue symbolKey)
+                    {
+                        var attrDict = attributes as DictionaryValue ?? new DictionaryValue();
+                        entries[symbolKey] = (value, attrDict);
+                    }
                 }
             }
             

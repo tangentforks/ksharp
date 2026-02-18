@@ -341,15 +341,23 @@ int finalPadding = (8 - (currentOffset % 8)) % 8;
 2. **Read Vector Header:** Get vector type and element count
 3. **Determine Serialization Strategy:**
    - Homogeneous vector → Use raw data reading
-   - Mixed list/dictionary → Use element-wise parsing
+   - Mixed list/dictionary → Use element-wise parsing with alignment handling
 4. **Parse Elements:** Apply appropriate type handlers
 5. **Handle Alignment:** Skip padding bytes as needed
 
 ### Key Challenges
 1. **Alignment Detection:** Determine when to apply 4-byte vs 8-byte alignment
-2. **Dictionary Recognition:** Type 5 indicates dictionary structure
-3. **Element Boundary Detection:** Use alignment rules to find element boundaries
-4. **Implicit Attributes:** 2-element dictionary entries need implicit null attribute
+2. **Padding Calculation:** Correctly calculate and skip padding bytes during deserialization
+3. **Type Boundary Issues:** Ensure type IDs are read from correct positions, not padding bytes
+
+### Current Issue
+The serializer uses element-wise 8-byte alignment for mixed lists containing dictionaries, but the deserializer (`DeserializeList`) assumes simple sequential reading without alignment handling. This causes type IDs to be read from padding bytes, resulting in corrupted type values like 97, 25185, etc.
+
+### Solution
+Update `DeserializeList` to handle 8-byte alignment by:
+1. Reading element count
+2. For each element: calculate and skip pre-padding, read element, skip post-padding
+3. Only apply to mixed lists (vectorType == 0) containing complex structures
 
 ### Implementation Order
 1. **Primitive Types:** Integer, Float, Character, Symbol, Null

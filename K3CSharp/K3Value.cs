@@ -1012,13 +1012,6 @@ namespace K3CSharp
                 return result;
             }
             
-            // Check if this is a symbol vector - display in compact format without spaces
-            if (Elements.All(e => e is SymbolValue))
-            {
-                var symbols = Elements.Select(e => ((SymbolValue)e).ToString());
-                return string.Concat(symbols);
-            }
-            
             // Check if this is a mixed vector - keep parentheses and semicolons for clarity
             var elementTypes = Elements.Select(e => e.GetType()).Distinct().ToList();
             var hasNestedVectors = Elements.Any(e => e is VectorValue);
@@ -1050,6 +1043,11 @@ namespace K3CSharp
                         {
                             return "," + vec.ToString(false, true); // Add comma prefix, but skip inner comma logic
                         }
+                        // Special handling for character vectors (enlisted strings)
+                        if (vec.Elements.All(x => x is CharacterValue))
+                        {
+                            return "," + vec.ToString(false, true); // Add comma prefix for enlisted strings
+                        }
                         // For simple homogeneous vectors (like integer vectors), don't add inner parentheses
                         if (vec.Elements.All(x => x is IntegerValue) ||
                             vec.Elements.All(x => x is FloatValue) ||
@@ -1061,11 +1059,28 @@ namespace K3CSharp
                     }
                     return e.ToString();
                 }));
+                
+                // Special case: single-element mixed list with enlisted string - don't add parentheses
+                if (Elements.Count == 1 && Elements[0] is VectorValue vec && vec.Elements.All(x => x is CharacterValue))
+                {
+                    return elementsStr; // Return just the enlisted string without parentheses
+                }
+                
                 return "(" + elementsStr + ")";
             }
             
-            // For homogeneous vectors (except characters), use space-separated format
-            var vectorStr = string.Join(" ", Elements.Select(e => e.ToString()));
+            // For homogeneous vectors, handle different types appropriately
+            string vectorStr;
+            if (Elements.All(e => e is SymbolValue))
+            {
+                // Symbol vectors use compact format without spaces
+                vectorStr = string.Concat(Elements.Select(e => e.ToString()));
+            }
+            else
+            {
+                // Other vectors use space-separated format
+                vectorStr = string.Join(" ", Elements.Select(e => e.ToString()));
+            }
             
             // Add enlist comma for any single-element vector (unless skipped)
             if (Elements.Count == 1 && !skipComma)

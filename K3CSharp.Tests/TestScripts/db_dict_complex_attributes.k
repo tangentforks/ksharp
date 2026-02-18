@@ -1,1 +1,1 @@
-_db _bd .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col01; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer)))
+_db _bd .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col01; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer))))
