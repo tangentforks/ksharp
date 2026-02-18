@@ -57,24 +57,25 @@ Based on binary output and K20.h, Dictionary follows this pattern:
 - **Structure**: Each pair serialized as [key_data][value_data]
 - **Attributes**: Third element in each triple (symbol-value-attributes)
 
-### Binary Structure Breakdown
+### **🔍 Simplified Dictionary Serialization Pattern**
 
-#### Empty Dictionary: `.()`
-```
-\001\000\000\000  \b\000\000\000  \005\000\000\000  \000\000\000\000  \000\000\000
-[type_id:4]      [length:4]     [subtype:4]    [pair_count:4] [padding:3]
-= 1              = 8            = 5            = 0             = 0
-```
+**Core Principle:** Dictionaries use the **exact same serialization logic** as general mixed lists (Type 0) with simplified padding rules applied at the element level.
 
-#### Single Pair: `.(`key;1)`
-```
-\001\000\000\000  (\000\000\000   \005\000\000\000  \001\000\000\000  \000\000\000\000
-[type_id:4]      [length:4]     [subtype:4]    [pair_count:4]  [padding:3]
-= 1              = 40           = 5            = 1             = 0
+**Simplified Padding Rules for Dictionaries:**
+1. **Null Termination First**: Apply all required null termination rules before padding calculations
+2. **8-byte Boundary Padding**: Serialized data of nulls and anonymous functions must be padded to 8-byte boundaries
+3. **Element-wise Padding**: Every leaf or simple vector (types -1, -2, -3, -4) must have its data padded to 8-byte boundaries
+4. **No Deep Descent**: Do not descend into individual items of simple vectors for padding purposes
 
-\003\000\000\000  \004\000\000\000 key\000      \001\000\000\000  \001\000\000\000
-[key_type:4]     [key_len:4]    [key_data]     [value_type:4]  [value_data]
-= 3              = 4            "key"          = 1             1
+**Implementation:**
+```csharp
+// Dictionaries use same processing as general lists with simplified padding
+if (vectorType == 0 || vectorType == 5)
+{
+    // Apply simplified element-wise 8-byte alignment rules
+    // Each element (leaf or simple vector) padded to 8-byte boundary
+    // No complex pre/post padding calculations needed
+}
 ```
 
 ## Hypothesis Formulation

@@ -132,50 +132,8 @@ int paddingNeeded = (4 - (totalSize % 4)) % 4;
 
 ### Mixed Lists (Type 0)
 
-#### Element-wise 8-byte Alignment
-Mixed lists containing vectors or functions require element-wise 8-byte alignment:
-
-```csharp
-if (hasFunctions || hasVectors)
-{
-    var alignedElementData = new List<byte>();
-    int currentOffset = 8; // Start after type+count header
-    
-    foreach (var element in list.Elements)
-    {
-        var serialized = SerializeElementData(element, true);
-        
-        // Pre-element padding
-        int paddingNeeded = (8 - (currentOffset % 8)) % 8;
-        if (paddingNeeded > 0)
-        {
-            alignedElementData.AddRange(new byte[paddingNeeded]);
-            currentOffset += paddingNeeded;
-        }
-        
-        alignedElementData.AddRange(serialized);
-        currentOffset += serialized.Length;
-        
-        // Inter-element padding (except for last element)
-        if (element != list.Elements.Last())
-        {
-            int postPaddingNeeded = (8 - (currentOffset % 8)) % 8;
-            if (postPaddingNeeded > 0)
-            {
-                alignedElementData.AddRange(new byte[postPaddingNeeded]);
-                currentOffset += postPaddingNeeded;
-            }
-        }
-    }
-    
-    // Final 8-byte boundary alignment
-    int finalPaddingNeeded = (8 - (currentOffset % 8)) % 8;
-    if (finalPaddingNeeded > 0)
-    {
-        alignedElementData.AddRange(new byte[finalPaddingNeeded]);
-    }
-}
-```
+### **Element-wise 8-byte Alignment (Simplified)**
+Mixed lists and dictionaries containing complex structures apply element-wise 8-byte alignment using the simplified rules above.
 
 #### Raw Serialization (Simple Lists)
 Lists containing only primitives use raw serialization:
@@ -187,7 +145,7 @@ Lists containing only primitives use raw serialization:
 
 ### Dictionaries (Type 5)
 
-**Critical Insight:** Dictionaries use the **exact same serialization logic** as general mixed lists (Type 0). They are internally represented as lists of triplets.
+**Critical Insight:** Dictionaries use the **exact same serialization logic** as general mixed lists (Type 0) with simplified padding rules applied at the element level.
 
 #### Dictionary Structure
 Each dictionary entry is a triplet:
@@ -199,17 +157,12 @@ Each dictionary entry is a triplet:
 
 #### Serialization Process
 ```csharp
-// Dictionaries use same processing as general lists
+// Dictionaries use same processing as general lists with simplified padding
 if (vectorType == 0 || vectorType == 5)
 {
-    bool hasFunctions = list.Elements.Any(e => e is FunctionValue);
-    bool hasVectors = list.Elements.Any(e => e is VectorValue);
-    
-    if (hasFunctions || hasVectors)
-    {
-        // Apply element-wise 8-byte alignment (identical to mixed lists)
-        // ... same alignment logic as Type 0 lists
-    }
+    // Apply simplified element-wise 8-byte alignment rules
+    // Each element (leaf or simple vector) padded to 8-byte boundary
+    // No complex pre/post padding calculations needed
 }
 ```
 
@@ -297,41 +250,46 @@ Breakdown:
 - `{[xyz] xy|3}` - Function source
 - `\000` - Null terminator
 
-## Alignment Rules Summary
+## Simplified Padding Rules
 
-### 4-byte Alignment
-- **Symbols in mixed lists:** Always aligned to 4-byte boundaries
-- **Vector headers:** Always aligned
-- **Primitive types:** Naturally aligned
+### **Core Padding Principles**
 
-### 8-byte Alignment
-- **Mixed lists with vectors/functions:** Element-wise alignment
-- **Mixed lists with dictionaries:** Element-wise alignment  
-- **Dictionaries:** Element-wise alignment (same as mixed lists)
+1. **Null Termination First**: Apply all required null termination rules before padding calculations
+2. **8-byte Boundary Padding**: Serialized data of nulls and anonymous functions must be padded to 8-byte boundaries
+3. **Element-wise Padding**: When serializing mixed vectors or dictionaries, every leaf or simple vector (types -1, -2, -3, -4) must have its data padded to 8-byte boundaries
+4. **No Deep Descent**: For padding purposes, do not descend into individual items of simple vectors (types -1, -2, -3, -4)
 
-### Alignment Algorithm
+### **Implementation Rules**
+
 ```csharp
-// Element-wise 8-byte alignment for complex structures
-int currentOffset = 8; // After type+count header
+// Rule 1: Apply null termination before padding
+// (Handled by individual serialization methods)
 
-foreach (var element)
+// Rule 2: Pad nulls and functions to 8-byte boundaries
+K3CSharp.NullValue => PadTo8ByteBoundary(SerializeNullData()),
+K3CSharp.FunctionValue func => PadTo8ByteBoundary(SerializeAnonymousFunctionData(func)),
+
+// Rule 3: Element-wise 8-byte padding for mixed structures
+K3CSharp.VectorValue nestedList => 
+    GetVectorType(nestedList) <= -1 && GetVectorType(nestedList) >= -4 
+    ? PadTo8ByteBoundary(SerializeListData(nestedList)) 
+    : SerializeListData(nestedList),
+
+// Rule 4: Simple vectors padded as whole units
+IntegerValue, FloatValue, CharacterValue, SymbolValue => PadTo8ByteBoundary(SerializeXData())
+```
+
+### **Padding Algorithm**
+```csharp
+private byte[] PadTo8ByteBoundary(byte[] data)
 {
-    // Pre-element alignment
-    int prePadding = (8 - (currentOffset % 8)) % 8;
-    
-    // Add serialized element
-    currentOffset += prePadding + elementSize;
-    
-    // Inter-element alignment (except last)
-    if (!isLastElement)
-    {
-        int postPadding = (8 - (currentOffset % 8)) % 8;
-        currentOffset += postPadding;
-    }
+    int currentLength = data.Length;
+    int paddingNeeded = (8 - (currentLength % 8)) % 8;
+    if (paddingNeeded == 0) return data;
+    byte[] padded = new byte[currentLength + paddingNeeded];
+    Array.Copy(data, 0, padded, 0, currentLength);
+    return padded;
 }
-
-// Final alignment
-int finalPadding = (8 - (currentOffset % 8)) % 8;
 ```
 
 ## Deserialization Implementation Guide

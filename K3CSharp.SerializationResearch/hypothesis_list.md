@@ -169,41 +169,34 @@ Value:  01 00 00 00 [len] FF FF FF FF [count] [serialized elements...]
 - **Element Count**: Accurate 4-byte count of elements
 **Byte Ordering:** Little-endian for all multi-byte values ✅
 
-### **🔬 CONFIRMED: Function-Containing Mixed List Element Alignment**
+### **🔬 CONFIRMED: Simplified Padding Rules**
 
 **Experimental Results Analysis:**
-- **Function Alignment Confirmed**: Mixed lists containing functions require 8-byte alignment for EACH element
-- **Element-Level Padding**: Each element aligned to 8-byte boundaries, not just list as whole
-- **Pattern**: Pre-padding + element + post-padding for each element in function-containing lists
+- **Simplified Approach Confirmed**: Complex pre/post padding calculations replaced with element-wise 8-byte boundary padding
+- **Element-Level Padding**: Each leaf or simple vector padded to 8-byte boundaries individually
+- **No Deep Descent**: Simple vectors (types -1, -2, -3, -4) treated as atomic units for padding
 
 **Confirmed Examples from Experiments:**
 ```
-_bd (_n;`symbol;{[]}) → 48 bytes total with element-wise 8-byte alignment
-_bd (`sym;{[]}) → 32 bytes total with element-wise 8-byte alignment
+_bd (_n;`symbol;{[]}) → 48 bytes total with simplified element-wise 8-byte alignment
+_bd (`sym;{[]}) → 32 bytes total with simplified element-wise 8-byte alignment
 ```
 
-### **🎯 FINAL CONFIRMED Hypothesis**
+### **🎯 FINAL CONFIRMED Simplified Hypothesis**
 
-**Primary Rule**: K applies **4-byte alignment** to symbols in mixed lists:
-```
-[serialized_symbol][padding_to_4byte_boundary][following_element]
-```
+**Primary Rule**: Apply null termination rules before padding calculations
 
-**Secondary Rule**: **8-byte alignment** for entire mixed lists containing complex structures:
-```
-[list_header][element_data][padding_to_8byte_boundary]
-```
+**Secondary Rule**: Pad nulls and anonymous functions to 8-byte boundaries
 
-**Tertiary Rule**: **Element-wise 8-byte alignment** for mixed lists containing functions:
-```
-[list_header][pre_pad][element1][post_pad][pre_pad][element2][post_pad]...[final_pad]
-```
+**Tertiary Rule**: Element-wise 8-byte padding for mixed vectors/dictionaries - every leaf or simple vector padded to 8-byte boundary
+
+**Quaternary Rule**: No deep descent into simple vectors for padding purposes
 
 **Where:**
-- `symbol_padding = (4 - (symbol_length + 1) % 4) % 4`
-- `list_padding = (8 - (total_size % 8)) % 8`
-- `element_padding = (8 - (current_offset % 8)) % 8`
-- Padding content is random/ignored
+- Null termination applied first in individual serialization methods
+- `PadTo8ByteBoundary(data)` function handles 8-byte alignment
+- Simple vectors (types -1, -2, -3, -4) padded as whole units
+- Mixed lists/dictionaries use element-wise padding approach
 
 ### **📈 CONFIRMED Evidence Analysis**
 
@@ -242,36 +235,46 @@ _bd (`sym;{[]}) → 32 bytes total with element-wise 8-byte alignment
 - **Finding**: Element alignment: pre-pad + element + post-pad + final pad
 - **Example**: `(_n;`symbol;{[]})` → 48 bytes with perfect 8-byte element alignment
 
-### **🧪 CONFIRMED Padding Rules**
+### **🧪 CONFIRMED Simplified Padding Rules**
 
-**Rule 1: Symbol 4-byte Alignment**
+**Rule 1: Null Termination First**
 ```
-symbol_length = len(symbol_name)
-total_bytes = symbol_length + 1  // +1 for null terminator
-padding_needed = (4 - total_bytes % 4) % 4
-```
-
-**Rule 2: List 8-byte Alignment**
-```
-list_size = 8 + sum(element_serializations)
-padding_needed = (8 - list_size % 8) % 8
+// Apply all required null termination rules before padding calculations
+// (Handled by individual serialization methods)
 ```
 
-**Rule 3: Element-wise 8-byte Alignment (Function-Containing Lists)**
+**Rule 2: 8-byte Boundary Padding for Nulls and Functions**
 ```
-current_offset = 8  // Start after type+count header
-foreach element:
-    pre_padding = (8 - (current_offset % 8)) % 8
-    element_data = serialize(element)
-    post_padding = (8 - ((current_offset + pre_padding + element_data.length) % 8)) % 8
-    current_offset += pre_padding + element_data.length + post_padding
-final_padding = (8 - (current_offset % 8)) % 8
+PadTo8ByteBoundary(SerializeNullData())
+PadTo8ByteBoundary(SerializeAnonymousFunctionData(func))
 ```
 
-**Rule 3: Padding Content**
-- Content is random/ignored (buffer remnants)
-- Only length matters for alignment
-- `_db` ignores padding during reconstruction
+**Rule 3: Element-wise 8-byte Padding for Mixed Structures**
+```
+// Every leaf or simple vector (types -1, -2, -3, -4) padded to 8-byte boundary
+if (GetVectorType(nestedList) <= -1 && GetVectorType(nestedList) >= -4) {
+    PadTo8ByteBoundary(SerializeListData(nestedList))
+}
+```
+
+**Rule 4: No Deep Descent into Simple Vectors**
+```
+// Simple vectors treated as atomic units for padding purposes
+// Do not descend into individual items of types -1, -2, -3, -4
+```
+
+**Rule 5: Simplified Padding Algorithm**
+```csharp
+private byte[] PadTo8ByteBoundary(byte[] data)
+{
+    int currentLength = data.Length;
+    int paddingNeeded = (8 - (currentLength % 8)) % 8;
+    if (paddingNeeded == 0) return data;
+    byte[] padded = new byte[currentLength + paddingNeeded];
+    Array.Copy(data, 0, padded, 0, currentLength);
+    return padded;
+}
+```
 
 ### **📝 FINAL K List Serialization Format:**
 

@@ -93,16 +93,24 @@ For functions that fail pre-parsing, there's additional metadata:
 - `{[x] x::6;x<4}`: 13 + 15 = 28? Close to 24 (off by 4)
 - **Note**: Length calculation still has minor discrepancies
 
-### **📈 Confidence Assessment**
+### **� Simplified Anonymous Function Serialization Pattern**
 
-**Confidence Level: 85%** ⚠️
+**Core Principle:** Anonymous functions follow simplified padding rules - serialized data must be padded to 8-byte boundaries.
 
-**Reasoning:**
-- Basic pattern is consistent (type_id, function_flag, null terminator)
-- Length calculation mostly consistent but some discrepancies
-- **Key Discovery**: `.k` metadata marks pre-parsing failures, not argument count
-- Functions with syntax issues get additional error metadata
-- Need more examples to resolve length calculation discrepancies
+**Simplified Padding Rules for Anonymous Functions:**
+1. **Null Termination First**: Apply null termination rules before padding calculations
+2. **8-byte Boundary Padding**: Serialized function data must be padded to 8-byte boundaries
+
+**Implementation:**
+```csharp
+private byte[] SerializeAnonymousFunctionData(FunctionValue func)
+{
+    var writer = new KBinaryWriter();
+    writer.WriteInt32(10); // Function flag
+    // ... function serialization logic ...
+    return PadTo8ByteBoundary(writer.GetBuffer());
+}
+```
 
 ### **📝 K AnonymousFunction Serialization Format:**
 

@@ -49,15 +49,23 @@ From analyzing the single Null example, I identified a clear pattern:
 - **Subtype**: 6 (unique null identifier)
 - **Padding**: 3 bytes (8-byte alignment)
 
-### **📈 Confidence Assessment**
+### **� Simplified Null Serialization Pattern**
 
-**Confidence Level: 100%** ✅
+**Core Principle:** Null values follow simplified padding rules - serialized data must be padded to 8-byte boundaries.
 
-**Reasoning:**
-- Null has only one possible value in K
-- Pattern is simple and unambiguous
-- Structure consistent with other K type formats
-- No variability to analyze (single value type)
+**Simplified Padding Rules for Nulls:**
+1. **Null Termination First**: Apply null termination rules before padding calculations
+2. **8-byte Boundary Padding**: Serialized null data must be padded to 8-byte boundaries
+
+**Implementation:**
+```csharp
+private byte[] SerializeNullData()
+{
+    var writer = new KBinaryWriter();
+    writer.WriteInt32(6);  // Null subtype
+    return PadTo8ByteBoundary(writer.GetBuffer());
+}
+```
 
 ### **📝 K Null Serialization Format:**
 
