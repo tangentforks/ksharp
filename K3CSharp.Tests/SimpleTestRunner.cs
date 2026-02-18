@@ -949,26 +949,27 @@ namespace K3CSharp.Tests
 
                     var script = File.ReadAllText(scriptPath);
                     var lines = script.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-                    
+
                     var evaluator = new Evaluator();
-                    
+
                     // Reset K tree before each test to ensure isolation
                     evaluator.ResetKTree();
-                    
+
                     K3Value? lastResult = null;
-                    
+                    string accumulatedLine = "";
+
                     // Process each line in the script
                     foreach (var line in lines)
                     {
                         var trimmedLine = line.Trim();
                         if (string.IsNullOrEmpty(trimmedLine)) continue;
-                        
+
                         // Handle REPL commands (starting with \)
-                        if (trimmedLine.StartsWith("\\"))
+                        if (string.IsNullOrEmpty(accumulatedLine) && trimmedLine.StartsWith("\\"))
                         {
                             // Handle REPL command directly
                             var parts = trimmedLine.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                            
+
                             switch (parts[0])
                             {
                                 case "\\r":
@@ -993,13 +994,34 @@ namespace K3CSharp.Tests
                         }
                         else
                         {
+                            // Accumulate lines for multiline expressions (unbalanced braces/brackets/parens)
+                            if (string.IsNullOrEmpty(accumulatedLine))
+                            {
+                                accumulatedLine = trimmedLine;
+                            }
+                            else
+                            {
+                                accumulatedLine += "\n" + trimmedLine;
+                            }
+
+                            // Check if expression is complete (all delimiters balanced)
+                            var checkLexer = new Lexer(accumulatedLine);
+                            var checkTokens = checkLexer.Tokenize();
+                            var checkParser = new Parser(checkTokens, accumulatedLine);
+                            if (checkParser.IsIncompleteExpression())
+                            {
+                                // Expression is incomplete - continue accumulating
+                                continue;
+                            }
+
                             // Handle regular K expressions
-                            var lexer = new Lexer(trimmedLine);
+                            var lexer = new Lexer(accumulatedLine);
                             var tokens = lexer.Tokenize();
-                            var parser = new Parser(tokens, trimmedLine);
+                            var parser = new Parser(tokens, accumulatedLine);
                             var ast = parser.Parse();
-                            
+
                             lastResult = evaluator.Evaluate(ast);
+                            accumulatedLine = "";
                         }
                     }
                     

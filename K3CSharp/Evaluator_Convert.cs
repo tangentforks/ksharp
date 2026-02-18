@@ -47,8 +47,17 @@ namespace K3CSharp
             }
             else if (typeSpec is CharacterValue charSpec && charSpec.Value == " ")
             {
-                // Convert to string representation
-                return new CharacterValue(value.ToString());
+                // Convert to string/character representation
+                // If already a character vector, return as-is
+                if (value is VectorValue vecVal && vecVal.Elements.Count > 0 && vecVal.Elements.All(e => e is CharacterValue))
+                {
+                    return vecVal;
+                }
+                else if (value is CharacterValue)
+                {
+                    return value;
+                }
+                return ConvertToString(value);
             }
             else if (typeSpec is FunctionValue funcSpec && funcSpec.BodyText == "")
             {
