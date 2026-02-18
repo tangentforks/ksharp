@@ -979,9 +979,29 @@ namespace K3CSharp
                     return $"({elementsStr})";
                 }
                 
-                // For simple character vectors, display as quoted string
-                var chars = Elements.Select(e => ((CharacterValue)e).Value);
-                var result = $"\"{string.Concat(chars)}\"";
+                // For simple character vectors, display as quoted string with escape sequences for non-printable chars
+                var sb = new System.Text.StringBuilder("\"");
+                foreach (var e in Elements)
+                {
+                    foreach (var c in ((CharacterValue)e).Value)
+                    {
+                        switch (c)
+                        {
+                            case '\b': sb.Append("\\b"); break;
+                            case '\t': sb.Append("\\t"); break;
+                            case '\n': sb.Append("\\n"); break;
+                            case '\r': sb.Append("\\r"); break;
+                            default:
+                                if (c >= 32 && c <= 126)
+                                    sb.Append(c);
+                                else
+                                    sb.Append($"\\{Convert.ToString(c, 8).PadLeft(3, '0')}");
+                                break;
+                        }
+                    }
+                }
+                sb.Append('"');
+                var result = sb.ToString();
                 
                 // Add enlist comma for single-element character vectors (unless skipped or string representation)
                 if (Elements.Count == 1 && !skipComma && CreationMethod != "string_representation")
