@@ -1823,7 +1823,7 @@ namespace K3CSharp
                         // Tuple (key; value) - attribute is null
                         if (entryElements[0] is SymbolValue key)
                         {
-                            newDict[key] = (entryElements[1], new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue Attribute)>()));
+                            newDict[key] = (entryElements[1], new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue?)>()));
                         }
                         else
                         {
@@ -1836,7 +1836,7 @@ namespace K3CSharp
                         if (entryElements[0] is SymbolValue key)
                         {
                             var attribute = entryElements[2] as DictionaryValue;
-                            newDict[key] = (entryElements[1], attribute ?? new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue Attribute)>()));
+                            newDict[key] = (entryElements[1], attribute ?? new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue?)>()));
                         }
                         else
                         {
@@ -1897,7 +1897,7 @@ namespace K3CSharp
                         {
                             if (entry.Key.Equals(keySymbol))
                             {
-                                return entry.Value.Attribute; // Return Attribute from tuple
+                                return (K3Value?)entry.Value.Attribute ?? new NullValue(); // Return Attribute from tuple
                             }
                         }
                         throw new Exception($"Key '{keyName}' not found in dictionary");

@@ -143,16 +143,16 @@ namespace K3CSharp
         private K3Value AmendDictionary(DictionaryValue dict, K3Value indices, K3Value function, K3Value value)
         {
             // Create a copy of the dictionary to modify
-            var result = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue Attribute)>(dict.Entries);
+            var result = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue?)>(dict.Entries);
             
             if (indices is SymbolValue symbol)
             {
                 // Single key amendment
-                if (result.ContainsKey(symbol))
+                if (result.TryGetValue(symbol, out var current))
                 {
-                    var currentValue = result[symbol].Value;
+                    var currentValue = current.Value;
                     var newValue = ApplyAmendFunction(currentValue, function, value);
-                    result[symbol] = (newValue, result[symbol].Attribute);
+                    result[symbol] = (newValue, current.Item2);
                 }
                 else
                 {
@@ -167,11 +167,11 @@ namespace K3CSharp
                     var index = indexVec.Elements[i];
                     if (index is SymbolValue keySymbol)
                     {
-                        if (result.ContainsKey(keySymbol))
+                        if (result.TryGetValue(keySymbol, out var current))
                         {
-                            var currentValue = result[keySymbol].Value;
+                            var currentValue = current.Value;
                             var newValue = ApplyAmendFunction(currentValue, function, value);
-                            result[keySymbol] = (newValue, result[keySymbol].Attribute);
+                            result[keySymbol] = (newValue, current.Item2);
                         }
                         else
                         {

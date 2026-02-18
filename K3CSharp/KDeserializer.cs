@@ -56,7 +56,7 @@ namespace K3CSharp
             return new CharacterValue(((char)reader.ReadByte()).ToString()); // Character as K3Value
         }
         
-        private object DeserializeSymbol(KSerializationReader reader)
+        private object DeserializeSymbol(KSerializationReader reader, bool isInMixedList = false)
         {
             var bytes = new List<byte>();
             byte b;
@@ -64,7 +64,10 @@ namespace K3CSharp
             {
                 bytes.Add(b);
             }
-            return new SymbolValue(Encoding.UTF8.GetString(bytes.ToArray())); // Symbol as K3Value
+            
+            // No padding read here - handled at list level
+            
+            return new SymbolValue(Encoding.UTF8.GetString(bytes.ToArray()));
         }
         
         private string ReadSymbol(KSerializationReader reader, int length)
@@ -90,14 +93,14 @@ namespace K3CSharp
         private object DeserializeFloatVector(KSerializationReader reader)
         {
             var elementCount = reader.ReadInt32();
-            var elements = new List<double>();
+            var elementList = new List<K3Value>();
             
             for (int i = 0; i < elementCount; i++)
             {
-                elements.Add(reader.ReadDouble());
+                elementList.Add(new FloatValue(reader.ReadDouble()));
             }
             
-            return new VectorValue(elements.Select(x => (K3Value)new FloatValue(x)).ToList());
+            return new VectorValue(elementList);
         }
         
         private object DeserializeCharacterVector(KSerializationReader reader)
@@ -137,7 +140,14 @@ namespace K3CSharp
             return new VectorValue(elements.Select(x => (K3Value)new SymbolValue(x)).ToList());
         }
         
-        private object DeserializeList(KSerializationReader reader)
+        private object DeserializeListEntry(KSerializationReader reader)
+        {
+            // For dictionary entries, we don't want the list-level padding logic
+            // Pass isDictionaryContext=true to DeserializeValue so it passes it to DeserializeList
+            return DeserializeValue(reader, true);
+        }
+
+        private object DeserializeList(KSerializationReader reader, bool isInMixedList = false)
         {
             // Note: typeId (listFlag) was already read by DeserializeValue
             // We only need to read the elementCount here
@@ -147,8 +157,30 @@ namespace K3CSharp
             // For empty lists, just return an empty VectorValue
             for (int i = 0; i < elementCount; i++)
             {
-                var element = (K3Value)DeserializeValue(reader);
+                // Skip pre-element padding for mixed lists (except first element)
+                if (i > 0)
+                {
+                    int currentPos = reader.Position;
+                    int prePaddingNeeded = (8 - (currentPos % 8)) % 8;
+                    if (prePaddingNeeded > 0 && prePaddingNeeded < 8)
+                    {
+                        reader.ReadBytes(prePaddingNeeded);
+                    }
+                }
+                
+                var element = (K3Value)DeserializeValue(reader, isInMixedList);
                 elements.Add(element);
+                
+                // For mixed lists, skip post-element padding to align to 8-byte boundary
+                if (isInMixedList && i < elementCount - 1)
+                {
+                    int currentPos = reader.Position;
+                    int postPaddingNeeded = (8 - (currentPos % 8)) % 8;
+                    if (postPaddingNeeded > 0 && postPaddingNeeded < 8)
+                    {
+                        reader.ReadBytes(postPaddingNeeded);
+                    }
+                }
             }
             
             return new VectorValue(elements, "mixed"); // Mark as mixed vector
@@ -187,7 +219,9 @@ namespace K3CSharp
             var elements = dict.Entries.SelectMany(kvp => 
             {
                 var (val, attr) = kvp.Value;
-                var elementList = new List<K3Value> { kvp.Key, val };
+                var elementList = new List<K3Value>();
+                var tripletVector = new VectorValue(new List<K3Value> { kvp.Key, val });
+                elementList.Add(tripletVector);
                 // Only add attribute if it's not null
                 if (attr != null)
                 {
@@ -199,11 +233,8 @@ namespace K3CSharp
         }
         private object DeserializeDictionary(KSerializationReader reader)
         {
-            // The reader is positioned after typeId (5) has been read by DeserializeValue
-            // Dictionaries are serialized as: [type(5)][count][element1][element2][element3][element4]...
-            // So we need to read the elementCount directly
             var elementCount = reader.ReadInt32();
-            var entries = new Dictionary<SymbolValue, (K3Value, DictionaryValue)>();
+            var entries = new Dictionary<SymbolValue, (K3Value, DictionaryValue?)>();
             
             // Dictionaries are serialized as lists of triplet vectors: [(key;value;attr), (key;value;attr), ...]
             // elementCount is the number of triplet vectors (same as list.Elements.Count in serialization)
@@ -211,28 +242,46 @@ namespace K3CSharp
             {
                 // Each element is a triplet vector (key; value; attributes)
                 // The triplet is serialized as a list, so deserialize it as such
-                var triplet = (K3Value)DeserializeValue(reader);
+                var triplet = (K3Value)DeserializeValue(reader, false);
                 
-                if (triplet is VectorValue vector && vector.Elements.Count >= 2)
+                if (triplet is VectorValue vectorValue && vectorValue.Elements.Count >= 2)
                 {
-                    var key = vector.Elements[0];
-                    var value = vector.Elements[1];
-                    var attributes = vector.Elements.Count > 2 ? vector.Elements[2] : new NullValue();
+                    var key = vectorValue.Elements[0];
+                    var value = vectorValue.Elements[1];
+                    K3Value? attr = vectorValue.Elements.Count >= 3 ? vectorValue.Elements[2] : null;
                     
+                    // Ensure key is a SymbolValue (dictionary keys are always symbols)
                     if (key is SymbolValue symbolKey)
                     {
-                        var attrDict = attributes as DictionaryValue ?? new DictionaryValue();
-                        entries[symbolKey] = (value, attrDict);
+                        // Convert attribute to DictionaryValue if it exists and is a dictionary, otherwise null
+                        DictionaryValue? dictAttr = null;
+                        if (attr is DictionaryValue dv)
+                            dictAttr = dv;
+                        
+                        entries.Add(symbolKey, (value, dictAttr));
                     }
+                    else
+                    {
+                        throw new InvalidOperationException($"Dictionary key must be a symbol, got {key.GetType().Name}");
+                    }
+                }
+                else
+                {
+                    throw new InvalidOperationException("Invalid dictionary triplet format during deserialization.");
                 }
             }
             
             return new DictionaryValue(entries);
         }
         
+        private object DeserializeNull(KSerializationReader reader)
+        {
+            reader.ReadBytes(4); // Skip padding that SerializeNullData writes
+            return new NullValue();
+        }
+        
         private object DeserializeAnonymousFunction(KSerializationReader reader, int typeId)
         {
-            // Check for .k metadata (undefined variables)
             var hasErrorMetadata = false;
             if (reader.HasMoreData)
             {
@@ -268,7 +317,7 @@ namespace K3CSharp
             return new FunctionValue(functionSource, new List<string>(), null!, functionSource);
         }
         
-        private object DeserializeValue(KSerializationReader reader)
+        private object DeserializeValue(KSerializationReader reader, bool isInMixedList = false)
         {
             // Save current position to peek at type
             var startPos = reader.Position;
@@ -279,13 +328,13 @@ namespace K3CSharp
                 1 => DeserializeScalar(reader),
                 2 => DeserializeFloat(reader, typeId),
                 3 => DeserializeCharacter(reader),
-                4 => DeserializeSymbol(reader),
-                6 => new NullValue(),
+                4 => DeserializeSymbol(reader, isInMixedList),
+                6 => DeserializeNull(reader),
                 -1 => DeserializeIntegerVector(reader),
                 -2 => DeserializeFloatVector(reader),
                 -3 => DeserializeCharacterVector(reader),
                 -4 => DeserializeSymbolVector(reader),
-                0 => DeserializeList(reader),
+                0 => DeserializeList(reader, isInMixedList),
                 5 => DeserializeDictionary(reader),
                 7 => DeserializeAnonymousFunction(reader, typeId), // Legacy type 7
                 10 => DeserializeAnonymousFunction(reader, typeId), // Functions use type 10

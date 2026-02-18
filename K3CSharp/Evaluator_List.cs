@@ -282,7 +282,7 @@ namespace K3CSharp
             // Handle dictionary case
             if (left is DictionaryValue leftDict)
             {
-                var newEntries = new List<KeyValuePair<SymbolValue, (K3Value Value, DictionaryValue Attribute)>>();
+                var newEntries = new List<KeyValuePair<SymbolValue, (K3Value Value, DictionaryValue?)>>();
                 
                 if (right is SymbolValue rightSymbol)
                 {
@@ -321,7 +321,7 @@ namespace K3CSharp
                     throw new Exception("_di: right argument must be a symbol or symbol vector when left is a dictionary");
                 }
                 
-                return new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue Attribute)>(newEntries));
+                return new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue?)>(newEntries));
             }
             
             // Handle vector case

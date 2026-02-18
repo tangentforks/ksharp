@@ -7,7 +7,7 @@ namespace K3CSharp
     class Program
     {
         private static readonly List<string> commandHistory = new List<string>();
-        private static int historyIndex = -1;
+        //private static int historyIndex = -1;
         
         static void Main(string[] args)
         {
@@ -60,7 +60,7 @@ namespace K3CSharp
                         commandHistory.RemoveAt(0);
                     }
                 }
-                historyIndex = -1;
+                //historyIndex = -1;
 
                 try
                 {

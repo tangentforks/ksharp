@@ -1236,15 +1236,15 @@ namespace K3CSharp
 
     public class DictionaryValue : K3Value
     {
-        public Dictionary<SymbolValue, (K3Value Value, DictionaryValue Attribute)> Entries { get; }
+        public Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)> Entries { get; }
 
         public DictionaryValue()
         {
             Type = ValueType.Dictionary;
-            Entries = new Dictionary<SymbolValue, (K3Value, DictionaryValue)>();
+            Entries = new Dictionary<SymbolValue, (K3Value, DictionaryValue?)>();
         }
 
-        public DictionaryValue(Dictionary<SymbolValue, (K3Value, DictionaryValue)> entries)
+        public DictionaryValue(Dictionary<SymbolValue, (K3Value, DictionaryValue?)> entries)
         {
             Type = ValueType.Dictionary;
             Entries = entries;
@@ -1284,13 +1284,13 @@ namespace K3CSharp
                 
                 var valueStr = value is NullValue ? "" : value.ToString();
                 
-                if (attr != null && attr.Entries.Count > 0)
+                if (attr != null)
                 {
                     entries.Add($"({key};{valueStr};{attr})");
                 }
                 else
                 {
-                    // Always show the semicolon for attributes, even when null
+                    // For null attributes, show semicolon
                     entries.Add($"({key};{valueStr};)");
                 }
             }

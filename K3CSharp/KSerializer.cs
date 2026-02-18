@@ -116,13 +116,7 @@ namespace K3CSharp
             writer.WriteBytes(symbolData); // Symbol data
             writer.WriteByte(0); // Null terminator
             
-            // Pad to 4-byte boundary for symbols in mixed lists
-            if (isInMixedList)
-            {
-                int totalSize = 5 + symbolData.Length; // 4 bytes flag + symbol data + null
-                int paddingNeeded = (4 - (totalSize % 4)) % 4;
-                writer.WritePadding(paddingNeeded);
-            }
+            // No padding added here - handled at list level if needed
             
             return writer.GetBuffer();
         }
@@ -222,57 +216,50 @@ namespace K3CSharp
                 elementData.Add(0); // Null terminator
             }
             
-            // Apply 8-byte alignment to mixed lists containing complex structures
             // Based on experimental results: apply to ALL mixed lists containing VectorValue objects
             // NEW: Mixed lists with functions require 8-byte alignment for EACH element
-            // Dictionaries (vectorType == 5) should use the same processing as general lists
-            if (vectorType == 0 || vectorType == 5)
+            // Dictionaries (vectorType == 5) do not use padding for triplets
+            if (vectorType == 0)
             {
-                bool hasFunctions = list.Elements.Any(e => e is FunctionValue);
-                bool hasVectors = list.Elements.Any(e => e is VectorValue);
+                // Always use aligned padding for mixed lists
+                var alignedElementData = new List<byte>();
+                int currentOffset = 8; // Start after type+count header
                 
-                if (hasFunctions || hasVectors)
+                foreach (var element in list.Elements)
                 {
-                    // For mixed lists with functions or vectors: align each element to 8-byte boundaries
-                    var alignedElementData = new List<byte>();
-                    int currentOffset = 8; // Start after type+count header
+                    var serialized = SerializeElementData(element, true);
                     
-                    foreach (var element in list.Elements)
+                    // Add padding to align element to 8-byte boundary
+                    int paddingNeeded = (8 - (currentOffset % 8)) % 8;
+                    if (paddingNeeded > 0)
                     {
-                        var serialized = SerializeElementData(element, true);
-                        
-                        // Add padding to align element to 8-byte boundary
-                        int paddingNeeded = (8 - (currentOffset % 8)) % 8;
-                        if (paddingNeeded > 0)
-                        {
-                            alignedElementData.AddRange(new byte[paddingNeeded]);
-                            currentOffset += paddingNeeded;
-                        }
-                        
-                        alignedElementData.AddRange(serialized);
-                        currentOffset += serialized.Length;
-                        
-                        // Add padding after element to align next element to 8-byte boundary
-                        if (element != list.Elements.Last())
-                        {
-                            int postPaddingNeeded = (8 - (currentOffset % 8)) % 8;
-                            if (postPaddingNeeded > 0)
-                            {
-                                alignedElementData.AddRange(new byte[postPaddingNeeded]);
-                                currentOffset += postPaddingNeeded;
-                            }
-                        }
+                        alignedElementData.AddRange(new byte[paddingNeeded]);
+                        currentOffset += paddingNeeded;
                     }
                     
-                    // Add final padding to align total list to 8-byte boundary
-                    int finalPaddingNeeded = (8 - (currentOffset % 8)) % 8;
-                    if (finalPaddingNeeded > 0)
-                    {
-                        alignedElementData.AddRange(new byte[finalPaddingNeeded]);
-                    }
+                    alignedElementData.AddRange(serialized);
+                    currentOffset += serialized.Length;
                     
-                    elementData = alignedElementData;
+                    // Add padding after element to align next element to 8-byte boundary
+                    if (element != list.Elements.Last())
+                    {
+                        int postPaddingNeeded = (8 - (currentOffset % 8)) % 8;
+                        if (postPaddingNeeded > 0)
+                        {
+                            alignedElementData.AddRange(new byte[postPaddingNeeded]);
+                            currentOffset += postPaddingNeeded;
+                        }
+                    }
                 }
+                
+                // Add final padding to align total list to 8-byte boundary
+                int finalPaddingNeeded = (8 - (currentOffset % 8)) % 8;
+                if (finalPaddingNeeded > 0)
+                {
+                    alignedElementData.AddRange(new byte[finalPaddingNeeded]);
+                }
+                
+                elementData = alignedElementData;
             }
             
             var writer = new KBinaryWriter();
