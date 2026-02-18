@@ -1117,7 +1117,7 @@ namespace K3CSharp
         private K3Value Enlist(K3Value a)
         {
             var elements = new List<K3Value> { a };
-            return new VectorValue(elements);
+            return new VectorValue(elements, "enlist");
         }
 
         private K3Value Count(K3Value a)

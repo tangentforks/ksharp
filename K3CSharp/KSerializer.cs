@@ -240,6 +240,21 @@ namespace K3CSharp
             // Check CreationMethod for specific vector types
             switch (list.CreationMethod)
             {
+                case "enlist":
+                    // For enlisted vectors, determine type based on the single element
+                    if (list.Elements.Count == 1)
+                    {
+                        var element = list.Elements[0];
+                        if (element is IntegerValue || element is LongValue)
+                            return -1; // Integer vector
+                        else if (element is FloatValue)
+                            return -2; // Float vector  
+                        else if (element is CharacterValue)
+                            return -3; // Character vector
+                        else if (element is SymbolValue)
+                            return -4; // Symbol vector
+                    }
+                    return 0; // Mixed list for complex enlisted elements
                 case "enumerate_int":
                 case "enumerate_long":
                     return -1; // Integer vector

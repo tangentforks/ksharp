@@ -256,10 +256,11 @@ cd K3CSharp.Comparison && dotnet run
 - ✅ **Compact Symbol Vectors**: `` `a`b`c `` (no spaces)
 - ✅ **Compact Dictionary Display**: Semicolon-separated format
 - ✅ **Enhanced Function Display**: Cleaner representation
-- ✅ **K Serialization**: Complete `_bd`/`_db` binary format support
+- ✅ **Improvements inspired on 64-bit e**: _P _o _c _r _m _y
+- ✅ **No denorm dictionaries**:   ``.((`a;1);(`a;2)) is .,(`a;2;) and not .((`a;1;);(`a;2;))``
 
 ### **Recently Implemented Features:**
-- ✅ **K Serialization System**: Complete binary format with all 11 data types
+- ✅ **K Serialization System**: Complete binary format with all data types
 - ✅ **Character Vector Compliance**: `_bd` returns character vectors, not integers
 - ✅ **Dictionary Parsing Fix**: Fixed regression in dictionary entry recognition
 - ✅ **POWER Operator Fix**: Both monadic SHAPE and dyadic POWER working

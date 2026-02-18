@@ -1038,24 +1038,12 @@ namespace K3CSharp
                     }
                     else if (e is VectorValue vec)
                     {
-                        // Special handling for single-element vectors
-                        if (vec.Elements.Count == 1)
-                        {
-                            return "," + vec.ToString(false, true); // Add comma prefix, but skip inner comma logic
-                        }
-                        // Special handling for character vectors (enlisted strings)
-                        if (vec.Elements.All(x => x is CharacterValue))
-                        {
-                            return "," + vec.ToString(false, true); // Add comma prefix for enlisted strings
-                        }
-                        // For simple homogeneous vectors (like integer vectors), don't add inner parentheses
-                        if (vec.Elements.All(x => x is IntegerValue) ||
-                            vec.Elements.All(x => x is FloatValue) ||
-                            vec.Elements.All(x => x is LongValue))
-                        {
-                            return vec.ToString(false); // Don't add parentheses for simple vectors
-                        }
-                        return vec.ToString(true); // Add parentheses for complex vectors
+                        // Add comma prefix if the current vector is enlisted
+                        var vecStr = vec.Elements.Count == 1 
+                            ? vec.ToString(false, true) // Skip inner comma logic for single elements
+                            : vec.ToString(false); // Don't add inner parentheses for simple vectors
+                        
+                        return CreationMethod == "enlist" ? "," + vecStr : vecStr;
                     }
                     return e.ToString();
                 }));
@@ -1064,6 +1052,12 @@ namespace K3CSharp
                 if (Elements.Count == 1 && Elements[0] is VectorValue vec && vec.Elements.All(x => x is CharacterValue))
                 {
                     return elementsStr; // Return just the enlisted string without parentheses
+                }
+                
+                // Special case: single-element mixed list with enlisted vector - don't add parentheses
+                if (Elements.Count == 1 && Elements[0] is VectorValue)
+                {
+                    return elementsStr; // Return just the enlisted vector without parentheses
                 }
                 
                 return "(" + elementsStr + ")";
@@ -1082,14 +1076,15 @@ namespace K3CSharp
                 vectorStr = string.Join(" ", Elements.Select(e => e.ToString()));
             }
             
-            // Add enlist comma for any single-element vector (unless skipped)
-            if (Elements.Count == 1 && !skipComma)
+            // Add enlist comma for single-element vectors with enlist creation method (unless skipped)
+            if (Elements.Count == 1 && !skipComma && CreationMethod == "enlist")
             {
                 return "," + vectorStr;
             }
             
             // If this vector is an element of another vector, wrap it in parentheses
-            if (asElement)
+            // But don't wrap if it already has comma prefix (enlisted vectors)
+            if (asElement && !vectorStr.StartsWith(","))
             {
                 return "(" + vectorStr + ")";
             }

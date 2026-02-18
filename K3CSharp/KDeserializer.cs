@@ -87,7 +87,9 @@ namespace K3CSharp
                 elements.Add(reader.ReadInt32());
             }
             
-            return new VectorValue(elements.Select(x => (K3Value)new IntegerValue(x)).ToList());
+            var vectorElements = elements.Select(x => (K3Value)new IntegerValue(x)).ToList();
+            // Mark single-element vectors as enlisted to preserve display format
+            return new VectorValue(vectorElements, elementCount == 1 ? "enlist" : "standard");
         }
         
         private object DeserializeFloatVector(KSerializationReader reader)
@@ -100,7 +102,8 @@ namespace K3CSharp
                 elementList.Add(new FloatValue(reader.ReadDouble()));
             }
             
-            return new VectorValue(elementList);
+            // Mark single-element vectors as enlisted to preserve display format
+            return new VectorValue(elementList, elementCount == 1 ? "enlist" : "standard");
         }
         
         private object DeserializeCharacterVector(KSerializationReader reader)
@@ -116,7 +119,9 @@ namespace K3CSharp
             // Read and discard null terminator
             if (reader.HasMoreData) reader.ReadByte();
             
-            return new VectorValue(elements.Select(x => (K3Value)new CharacterValue(x.ToString())).ToList());
+            var vectorElements = elements.Select(x => (K3Value)new CharacterValue(x.ToString())).ToList();
+            // Mark single-element vectors as enlisted to preserve display format
+            return new VectorValue(vectorElements, elementCount == 1 ? "enlist" : "standard");
         }
         
         private object DeserializeSymbolVector(KSerializationReader reader)
@@ -127,17 +132,13 @@ namespace K3CSharp
             // Symbol vectors store symbols concatenated with null terminators
             for (int i = 0; i < elementCount; i++)
             {
-                var bytes = new List<byte>();
-                byte b;
-                while ((b = reader.ReadByte()) != 0)
-                {
-                    bytes.Add(b);
-                }
-                var symbol = Encoding.UTF8.GetString(bytes.ToArray());
+                var symbol = reader.ReadString();
                 elements.Add(symbol); // Don't add backtick here - SymbolValue.ToString() will add it
             }
             
-            return new VectorValue(elements.Select(x => (K3Value)new SymbolValue(x)).ToList());
+            var vectorElements = elements.Select(x => (K3Value)new SymbolValue(x)).ToList();
+            // Mark single-element vectors as enlisted to preserve display format
+            return new VectorValue(vectorElements, elementCount == 1 ? "enlist" : "standard");
         }
         
         private object DeserializeListEntry(KSerializationReader reader)
@@ -170,7 +171,7 @@ namespace K3CSharp
                 }
             }
             
-            return new VectorValue(elements, "mixed"); // Mark as mixed vector
+            return new VectorValue(elements, elementCount == 1 ? "enlist" : "mixed"); // Mark single-element lists as enlisted
         }
         
         private int GetElementSize(K3Value element)

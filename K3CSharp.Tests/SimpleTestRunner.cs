@@ -775,7 +775,7 @@ namespace K3CSharp.Tests
                 ("db_dict_symbol_8char.k", ".,(`abcdefgh;1 2 3 4 5 6 7 8;)"),
                 ("db_dict_multi_entry.k", ".((`a;1;);(`b;2;))"),
                 ("db_dict_five_entries.k", ".((`a;1;);(`b;2;);(`c;3;);(`d;4;);(`e;5;))"),
-                ("db_dict_complex_attributes.k", ".((`col01; 11 12 13 14 15;.((`format;,`\"n\");(`name;`ID)));(`col01; `yellow`white`blue`red`black;.((`format;,`\"c\");(`name;`Color)));(`col03; (\"Home Depot\";\"Lowes\";\"Ace\";\"Neighborhood Paints\";\"Supply Co.\");.((`format;,`\"c\");(`name;`Retailer)))"),
+                ("db_dict_complex_attributes.k", ".((`col01; 11 12 13 14 15;.((`format;,`\"n\");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`\"c\");(`name;`Color)));(`col03; (\"Home Depot\";\"Lowes\";\"Ace\";\"Neighborhood Paints\";\"Supply Co.\");.((`format;,`\"c\");(`name;`Retailer)))"),
                 ("db_dict_empty.k", ".()"),
                 ("db_dict_with_null_attrs.k", ".,(`a;1;.())"),
                 ("db_dict_two_entries_simple.k", ".((`a;1);(`b;2))"),
@@ -783,7 +783,7 @@ namespace K3CSharp.Tests
                 ("db_enlist_single_int.k", ",5"),
                 ("db_enlist_single_symbol.k", ",`test"),
                 ("db_enlist_single_string.k", ",\"hello\""),
-                ("db_enlist_vector.k", ",(1 2 3)"),
+                ("db_enlist_vector.k", ",1 2 3"),
                 
                 // Comprehensive _bd serialization tests - Edge cases and random examples
                 ("serialization_bd_null_edge_0.k", "\"\\001\\000\\000\\000\\b\\000\\000\\000\\006\\000\\000\\000\\000\\000\\000\\000\""),
