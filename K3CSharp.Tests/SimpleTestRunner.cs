@@ -738,6 +738,7 @@ namespace K3CSharp.Tests
                 ("serialization_bd_db_anonymousfunction.k", "\"\\001\\000\\000\\000\\017\\000\\000\\000\\n\\000\\000\\000\\000{[x] x+1}\\000\""),
                 ("serialization_bd_db_roundtrip_integer.k", "42"),
                 ("serialization_bd_db_roundtrip_list.k", "(1;2.5;\"a\")"),
+                ("serialization_bd_ic_symbol.k", "1 0 0 0 6 0 0 0 4 0 0 0 65 0"),
                 
                 // Comprehensive _db deserialization tests - Edge cases and examples from SerializationExplorer
                 ("db_basic_integer.k", "42"),
