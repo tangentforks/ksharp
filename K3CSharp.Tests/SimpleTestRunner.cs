@@ -381,7 +381,10 @@ namespace K3CSharp.Tests
                 ("take_operator_empty_symbol.k", "0#`"),
                 ("take_operator_overflow.k", "1 2 3 1 2 3 1 2 3 1"),
                 ("take_operator_scalar.k", "42 42 42"),
-                
+
+                // Reshape operator tests (vector left arg to #)
+                ("reshape_basic.k", "(0 1 2 3\n 4 5 6 7\n 8 9 10 11)"),
+
                 // Test division rules
                 ("division_float_4_2.0.k", "2.0"),
                 ("division_float_5_2.5.k", "2.0"),
