@@ -1030,7 +1030,14 @@ namespace K3CSharp
             
             if (isTrulyMixed)
             {
-                var elementsStr = string.Join(";", Elements.Select(e => 
+                // Reshape results display with newline+space separator in K3
+                if (CreationMethod == "reshape" && Elements.All(e => e is VectorValue))
+                {
+                    var rowStrs = Elements.Select(e => ((VectorValue)e).ToString(false)).ToList();
+                    return "(" + string.Join("\n ", rowStrs) + ")";
+                }
+
+                var elementsStr = string.Join(";", Elements.Select(e =>
                 {
                     if (e is NullValue)
                     {
@@ -1044,7 +1051,7 @@ namespace K3CSharp
                             return "," + vec.ToString(false, true); // Add comma prefix, but skip inner comma logic
                         }
                         // For simple homogeneous vectors (like integer vectors), don't add inner parentheses
-                        if (vec.Elements.All(x => x is IntegerValue) || 
+                        if (vec.Elements.All(x => x is IntegerValue) ||
                             vec.Elements.All(x => x is FloatValue) ||
                             vec.Elements.All(x => x is LongValue))
                         {

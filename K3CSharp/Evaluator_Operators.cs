@@ -524,9 +524,57 @@ namespace K3CSharp
                 // Handle long count by converting to integer
                 return Take(new IntegerValue((int)longCount.Value), data);
             }
+            else if (count is VectorValue shapeVec)
+            {
+                // Reshape: vector left arg specifies shape dimensions
+                // e.g., 3 4 # !12 → 3 rows of 4 elements
+                var shape = shapeVec.Elements.Select(e =>
+                {
+                    if (e is IntegerValue iv) return iv.Value;
+                    if (e is LongValue lv) return (int)lv.Value;
+                    throw new Exception("Reshape dimensions must be integers");
+                }).ToList();
+
+                // Flatten the data source into a list of elements
+                var flatData = new List<K3Value>();
+                if (data is VectorValue dataVec2)
+                    flatData.AddRange(dataVec2.Elements);
+                else
+                    flatData.Add(data);
+
+                // Build the reshaped result from innermost dimension outward
+                // For 2+ dimensions, recursively build nested vectors
+                return ReshapeBuild(shape, 0, flatData, new int[] { 0 });
+            }
             else
             {
                 throw new Exception("Take count must be an integer");
+            }
+        }
+
+        private K3Value ReshapeBuild(List<int> shape, int dim, List<K3Value> flatData, int[] index)
+        {
+            int size = shape[dim];
+            if (dim == shape.Count - 1)
+            {
+                // Innermost dimension: take individual elements with cycling
+                var elements = new List<K3Value>();
+                for (int i = 0; i < size; i++)
+                {
+                    elements.Add(flatData[index[0] % flatData.Count]);
+                    index[0]++;
+                }
+                return new VectorValue(elements, "standard");
+            }
+            else
+            {
+                // Outer dimension: build sub-vectors
+                var rows = new List<K3Value>();
+                for (int i = 0; i < size; i++)
+                {
+                    rows.Add(ReshapeBuild(shape, dim + 1, flatData, index));
+                }
+                return new VectorValue(rows, dim == 0 ? "reshape" : "standard");
             }
         }
 
