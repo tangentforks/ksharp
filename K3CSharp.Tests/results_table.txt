@@ -553,7 +553,7 @@
 ║ serialization_bd_list_edge_empty.k                 │ _bd ()               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_list_edge_null.k                  │ _bd ,_n              │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_list_edge_mixed.k                 │ _bd (1;2.5;"a")      │ "\001\000\000\0...   │                      ║
-║ serialization_bd_list_edge_complex.k               │ _bd (_n;`symbol;{[]}) │ "\001\000\000\0...   │                      ║
+║ serialization_bd_list_edge_complex.k               │ _bd (_n;`symbol;{[]}) │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_list_edge_nested.k                │ _bd ((1;2);(3;4))    │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_list_edge_dicts.k                 │ _bd (.,(`a;1);.,(`b;2)) │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_anonymousfunction_random_1.k      │ _bd {[x] x+7;x$1;x<=2} │ "\001\000\000\0...   │                      ║
@@ -587,7 +587,7 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 502/575 tests passed (87.3%)                                                                               ║
+║ SUMMARY: 501/575 tests passed (87.1%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -946,6 +946,11 @@ Test: db_enlist_vector.k
 Input: _db _bd ,(1 2 3)
 Expected: ,(1 2 3)
 Actual: (1 2 3)
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_list_edge_complex.k
+Input: _bd (_n;`symbol;{[]})
+Expected: "\001\000\000\0000\000\000\000\000\000\000\000\003\000\000\000\006\000\000\000\000\000\000\000\004\000\000\000symbol\000\000\000\000\000\000\n\000\000\000\000{[]}\000\000\000\000\000\000\000"
+Actual: "\001\000\000\000*\000\000\000\000\000\000\000\003\000\000\000\006\000\000\000\000\000\000\000\004\000\000\000symbol\000\000\000\000\000\000\n\000\000\000\000{[]}\000"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_dictionary_with_symbol_vectors.k
 Input: _bd .((`colA;`a `b `c);(`colB;`dd `eee `ffff))

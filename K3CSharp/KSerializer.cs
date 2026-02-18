@@ -38,6 +38,16 @@ namespace K3CSharp
             return writer.ToArray();
         }
         
+        private byte[] PadTo8ByteBoundary(byte[] data)
+        {
+            int currentLength = data.Length;
+            int paddingNeeded = (8 - (currentLength % 8)) % 8;
+            if (paddingNeeded == 0) return data;
+            byte[] padded = new byte[currentLength + paddingNeeded];
+            Array.Copy(data, 0, padded, 0, currentLength);
+            return padded;
+        }
+        
         private byte[] SerializeIntegerData(int value)
         {
             var writer = new KBinaryWriter();
@@ -159,8 +169,7 @@ namespace K3CSharp
         {
             var writer = new KBinaryWriter();
             writer.WriteInt32(6);  // Null subtype
-            writer.WritePadding(4); // 4 bytes padding to match k.exe
-            return writer.ToArray();
+            return PadTo8ByteBoundary(writer.GetBuffer());
         }
         
         private byte[] SerializeNull()
@@ -216,51 +225,8 @@ namespace K3CSharp
                 elementData.Add(0); // Null terminator
             }
             
-            // Based on experimental results: apply to ALL mixed lists containing VectorValue objects
-            // NEW: Mixed lists with functions require 8-byte alignment for EACH element
-            // Dictionaries (vectorType == 5) do not use padding for triplets
-            if (vectorType == 0)
-            {
-                // Always use aligned padding for mixed lists
-                var alignedElementData = new List<byte>();
-                int currentOffset = 8; // Start after type+count header
-                
-                foreach (var element in list.Elements)
-                {
-                    var serialized = SerializeElementData(element, true);
-                    
-                    // Add padding to align element to 8-byte boundary
-                    int paddingNeeded = (8 - (currentOffset % 8)) % 8;
-                    if (paddingNeeded > 0)
-                    {
-                        alignedElementData.AddRange(new byte[paddingNeeded]);
-                        currentOffset += paddingNeeded;
-                    }
-                    
-                    alignedElementData.AddRange(serialized);
-                    currentOffset += serialized.Length;
-                    
-                    // Add padding after element to align next element to 8-byte boundary
-                    if (element != list.Elements.Last())
-                    {
-                        int postPaddingNeeded = (8 - (currentOffset % 8)) % 8;
-                        if (postPaddingNeeded > 0)
-                        {
-                            alignedElementData.AddRange(new byte[postPaddingNeeded]);
-                            currentOffset += postPaddingNeeded;
-                        }
-                    }
-                }
-                
-                // Add final padding to align total list to 8-byte boundary
-                int finalPaddingNeeded = (8 - (currentOffset % 8)) % 8;
-                if (finalPaddingNeeded > 0)
-                {
-                    alignedElementData.AddRange(new byte[finalPaddingNeeded]);
-                }
-                
-                elementData = alignedElementData;
-            }
+            // Padding now handled at element level for leaves and simple vectors
+            // Removed complex padding for mixed lists
             
             var writer = new KBinaryWriter();
             writer.WriteInt32(vectorType);
@@ -315,18 +281,18 @@ namespace K3CSharp
             return element switch
             {
                 // Handle nested lists (for dictionary triplets)
-                K3CSharp.VectorValue nestedList => SerializeListData(nestedList),
+                K3CSharp.VectorValue nestedList => GetVectorType(nestedList) <= -1 && GetVectorType(nestedList) >= -4 ? PadTo8ByteBoundary(SerializeListData(nestedList)) : SerializeListData(nestedList),
                 
                 // Handle complex types that can be list elements - return only data, not full message
                 K3CSharp.DictionaryValue dict => SerializeDictionaryData(dict),
                 K3CSharp.FunctionValue func => SerializeAnonymousFunctionData(func),
                 
-                // Handle primitive K3Value objects
-                K3CSharp.IntegerValue iv => SerializeIntegerData(iv.Value),
-                K3CSharp.FloatValue fv => SerializeFloatData(fv.Value),
-                K3CSharp.CharacterValue cv => SerializeCharacterData(cv.Value[0]),
-                K3CSharp.SymbolValue sv => SerializeSymbolData(sv.Value, isInMixedList),
-                K3CSharp.NullValue => SerializeNullData(),
+                // Handle primitive K3Value objects - pad to 8-byte boundary
+                K3CSharp.IntegerValue iv => PadTo8ByteBoundary(SerializeIntegerData(iv.Value)),
+                K3CSharp.FloatValue fv => PadTo8ByteBoundary(SerializeFloatData(fv.Value)),
+                K3CSharp.CharacterValue cv => PadTo8ByteBoundary(SerializeCharacterData(cv.Value[0])),
+                K3CSharp.SymbolValue sv => PadTo8ByteBoundary(SerializeSymbolData(sv.Value, isInMixedList)),
+                K3CSharp.NullValue => PadTo8ByteBoundary(SerializeNullData()),
                 
                 _ => throw new NotSupportedException($"Unsupported element type: {element.GetType()}")
             };
