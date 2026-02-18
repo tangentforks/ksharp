@@ -12,7 +12,7 @@ namespace K3CSharp.Tests
 
         public static void Main(string[] args)
         {
-            RunAllTests();
+            RunAllTests(args.Length > 0 ? args[0] : null);
         }
         
         private static void WriteResultsTable(List<TestResult> testResults)
@@ -94,10 +94,10 @@ namespace K3CSharp.Tests
             public bool Passed { get; set; }
         }
         
-        public static void RunAllTests()
+        public static void RunAllTests(string? filter = null)
         {
             // Comprehensive test list with expected results from K.exe
-            var tests = new[]
+            var allTests = new[]
             {
                 // Adverb Each tests (from K.exe results)
                 ("adverb_each_vector_minus.k", "9 18 27"),
@@ -862,55 +862,74 @@ namespace K3CSharp.Tests
                 ("serialization_bd_list_with_vectors.k","\"\\001\\000\\000\\000h\\000\\000\\000\\000\\000\\000\\000\\002\\000\\000\\000\\000\\000\\000\\000\\002\\000\\000\\000\\004\\000\\000\\000col1\\000\\001\\000\\000\\000\\000\\000\\000\\377\\377\\377\\377\\004\\000\\000\\000\\001\\000\\000\\000\\002\\000\\000\\000\\003\\000\\000\\000\\004\\000\\000\\000\\000\\000\\000\\000\\002\\000\\000\\000\\004\\000\\000\\000col2\\000\\001\\000\\000\\000\\000\\000\\000\\377\\377\\377\\377\\004\\000\\000\\000\\005\\000\\000\\000\\006\\000\\000\\000\\007\\000\\000\\000\\b\\000\\000\\000\"")
             };
 
+            // Filter tests if a pattern was provided
+            var tests = filter != null
+                ? allTests.Where(t => t.Item1.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToArray()
+                : allTests;
+
+            if (filter != null)
+            {
+                Console.WriteLine($"Filter: '{filter}' — matched {tests.Length} of {allTests.Length} tests");
+                if (tests.Length == 0)
+                {
+                    Console.WriteLine("No tests matched the filter.");
+                    return;
+                }
+                Console.WriteLine("=========================");
+            }
+
             var testResults = new List<TestResult>();
             var testScriptsPath = Path.Combine(Directory.GetCurrentDirectory(), "TestScripts");
 
-            // Validate test count vs actual test files
-            var actualTestFiles = Directory.GetFiles(testScriptsPath, "*.k", SearchOption.AllDirectories)
-                .Select(Path.GetFileName)
-                .OrderBy(f => f)
-                .ToList();
-            
-            var expectedTestFiles = tests.Select(t => t.Item1).ToList();
-            var missingFromRunner = actualTestFiles.Except(expectedTestFiles).ToList();
-            var extraInRunner = expectedTestFiles.Except(actualTestFiles).ToList();
+            // Validate test count vs actual test files (skip when filtering)
+            if (filter == null)
+            {
+                var actualTestFiles = Directory.GetFiles(testScriptsPath, "*.k", SearchOption.AllDirectories)
+                    .Select(Path.GetFileName)
+                    .OrderBy(f => f)
+                    .ToList();
 
-            Console.WriteLine($"Test File Validation:");
-            Console.WriteLine($"  Expected tests: {tests.Length}");
-            Console.WriteLine($"  Actual .k files: {actualTestFiles.Count}");
-            
-            if (missingFromRunner.Any())
-            {
-                Console.WriteLine($"  ❌ MISSING FROM RUNNER ({missingFromRunner.Count}):");
-                foreach (var missing in missingFromRunner.Take(10))
-                {
-                    Console.WriteLine($"    - {missing}");
-                }
-                if (missingFromRunner.Count > 10)
-                {
-                    Console.WriteLine($"    ... and {missingFromRunner.Count - 10} more");
-                }
-                Console.WriteLine();
-                Console.WriteLine("ERROR: Test files exist but are not included in test runner!");
-                Console.WriteLine("Please add missing test cases to the test runner or remove duplicate files.");
-                return;
-            }
-            
-            if (extraInRunner.Any())
-            {
-                Console.WriteLine($"  ⚠️  EXTRA IN RUNNER ({extraInRunner.Count}):");
-                foreach (var extra in extraInRunner)
-                {
-                    Console.WriteLine($"    - {extra}");
-                }
-                Console.WriteLine();
-            }
+                var expectedTestFiles = allTests.Select(t => t.Item1).ToList();
+                var missingFromRunner = actualTestFiles.Except(expectedTestFiles).ToList();
+                var extraInRunner = expectedTestFiles.Except(actualTestFiles).ToList();
 
-            if (missingFromRunner.Count == 0 && extraInRunner.Count == 0)
-            {
-                Console.WriteLine($"  ✅ Test counts match perfectly!");
+                Console.WriteLine($"Test File Validation:");
+                Console.WriteLine($"  Expected tests: {allTests.Length}");
+                Console.WriteLine($"  Actual .k files: {actualTestFiles.Count}");
+
+                if (missingFromRunner.Any())
+                {
+                    Console.WriteLine($"  ❌ MISSING FROM RUNNER ({missingFromRunner.Count}):");
+                    foreach (var missing in missingFromRunner.Take(10))
+                    {
+                        Console.WriteLine($"    - {missing}");
+                    }
+                    if (missingFromRunner.Count > 10)
+                    {
+                        Console.WriteLine($"    ... and {missingFromRunner.Count - 10} more");
+                    }
+                    Console.WriteLine();
+                    Console.WriteLine("ERROR: Test files exist but are not included in test runner!");
+                    Console.WriteLine("Please add missing test cases to the test runner or remove duplicate files.");
+                    return;
+                }
+
+                if (extraInRunner.Any())
+                {
+                    Console.WriteLine($"  ⚠️  EXTRA IN RUNNER ({extraInRunner.Count}):");
+                    foreach (var extra in extraInRunner)
+                    {
+                        Console.WriteLine($"    - {extra}");
+                    }
+                    Console.WriteLine();
+                }
+
+                if (missingFromRunner.Count == 0 && extraInRunner.Count == 0)
+                {
+                    Console.WriteLine($"  ✅ Test counts match perfectly!");
+                }
+                Console.WriteLine("=========================");
             }
-            Console.WriteLine("=========================");
 
             Console.WriteLine($"Running K3CSharp Tests...");
             Console.WriteLine($"Total tests: {tests.Length}");
