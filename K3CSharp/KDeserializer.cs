@@ -34,9 +34,21 @@ namespace K3CSharp
             return new IntegerValue(reader.ReadInt32()); // Integer value as K3Value
         }
         
-        private object DeserializeFloat(KSerializationReader reader)
+        private object DeserializeFloat(KSerializationReader reader, int typeId)
         {
-            return new FloatValue(reader.ReadDouble()); // Float value as K3Value
+            // typeId is already read and should be 2
+            if (typeId != 2)
+                throw new ArgumentException($"Invalid type flag for float: {typeId}");
+            
+            // Read subtype flag (4 bytes)
+            var subtypeFlag = reader.ReadInt32();
+            if (subtypeFlag != 1)
+                throw new ArgumentException($"Invalid subtype flag for float: {subtypeFlag}");
+            
+            // Read the actual double value (8 bytes)
+            var doubleValue = reader.ReadDouble();
+            
+            return new FloatValue(doubleValue);
         }
         
         private object DeserializeCharacter(KSerializationReader reader)
@@ -52,7 +64,7 @@ namespace K3CSharp
             {
                 bytes.Add(b);
             }
-            return new SymbolValue("`" + Encoding.UTF8.GetString(bytes.ToArray())); // Symbol as K3Value
+            return new SymbolValue(Encoding.UTF8.GetString(bytes.ToArray())); // Symbol as K3Value
         }
         
         private string ReadSymbol(KSerializationReader reader, int length)
@@ -235,7 +247,7 @@ namespace K3CSharp
             return typeId switch
             {
                 1 => DeserializeScalar(reader),
-                2 => DeserializeFloat(reader),
+                2 => DeserializeFloat(reader, typeId),
                 3 => DeserializeCharacter(reader),
                 4 => DeserializeSymbol(reader),
                 6 => new NullValue(),

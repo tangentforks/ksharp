@@ -50,6 +50,7 @@ This document provides a complete specification for K3CSharp's serialization for
 ### Float (Type 2)
 ```
 [4 bytes] Type Flag (2)
+[4 bytes] Subtype Flag (1)
 [8 bytes] Double Value (IEEE 754, little-endian)
 ```
 

@@ -78,7 +78,7 @@ namespace K3CSharp
         
         private byte[] SerializeFloat(double value)
         {
-            var data = SerializeFloatData(value);
+            var data = SerializeFloatData(value); // Use format with subtype flag
             var message = SerializeMessage(data.Length);
             return message.Concat(data).ToArray();
         }

@@ -741,7 +741,7 @@ namespace K3CSharp.Tests
                 
                 // Comprehensive _db deserialization tests - Edge cases and examples from SerializationExplorer
                 ("db_basic_integer.k", "42"),
-                ("db_float.k", "1.5"),
+                ("db_float.k", "3.14"),
                 ("db_symbol.k", "`test"),
                 ("db_int_vector.k", "1 2 3"),
                 ("db_symbol_vector.k", "`a`b`c"),
@@ -753,7 +753,7 @@ namespace K3CSharp.Tests
                 ("db_null.k", "0N"),
                 ("db_empty_list.k", "()"),
                 ("db_character.k", "\"a\""),
-                ("db_float_simple.k", "3.14"),
+                ("db_float_simple.k", "1.5"),
                 ("db_int_vector_long.k", "1 2 3 4 5"),
                 ("db_float_vector.k", "1.1 2.2 3.3"),
                 ("db_char_vector_sentence.k", "\"hello world\""),

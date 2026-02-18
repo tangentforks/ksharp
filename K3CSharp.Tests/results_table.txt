@@ -181,7 +181,7 @@
 ║ string_representation_mixed.k                      │ 5:(1;2.5;"a")        │ "(1;2.5;\"a\")"      │                      ║
 ║ string_representation_symbol.k                     │ 5:`symbol            │ "`symbol"            │                      ║
 ║ string_representation_vector.k                     │ 5:(1 2 3)            │ "1 2 3"              │                      ║
-║ symbol_quoted.k                                    │ `"a symbol"          │ `"a symbol"          │                      ║
+║ symbol_quoted.k                                    │ `"a symbol"          │ `a symbol            │ `"a symbol"          ║
 ║ symbol_simple.k                                    │ `foo                 │ `foo                 │                      ║
 ║ symbol_vector_compact.k                            │ `a`b`c               │ `a`b`c               │                      ║
 ║ symbol_vector_spaces.k                             │ `a `b `c             │ `a`b`c               │                      ║
@@ -446,7 +446,7 @@
 ║ while_safe_test.k                                  │ i: 0                 │ Error: Cannot c...   │                      ║
 ║ while_simple_test.k                                │ while[0; 42]         │ Error: While fu...   │                      ║
 ║ serialization_bd_db_integer.k                      │ // Test _bd and _db for Integer serialization │ "\001\000\000\0...   │                      ║
-║ serialization_bd_db_float.k                        │ // Test _bd and _db for Float serialization │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_float.k                        │ _bd 3.14159          │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_character.k                    │ // Test _bd and _db for Character serialization │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_symbol.k                       │ // Test _bd and _db for Symbol serialization │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_null.k                         │ // Test _bd and _db for Null serialization │ "\001\000\000\0...   │                      ║
@@ -460,10 +460,10 @@
 ║ serialization_bd_db_roundtrip_integer.k            │ // Test _bd and _db round-trip serialization │ 42                   │                      ║
 ║ serialization_bd_db_roundtrip_list.k               │ _db _bd (1;2.5;"a")  │ ,2                   │ (1;2.5;"a")          ║
 ║ db_basic_integer.k                                 │ _db _bd 42           │ 42                   │                      ║
-║ db_float.k                                         │ _db _bd 3.14         │ 4.2769805e+086       │ 1.5                  ║
-║ db_symbol.k                                        │ _db _bd `test        │ `"`test"             │ `test                ║
+║ db_float.k                                         │ _db _bd 3.14         │ 3.14                 │                      ║
+║ db_symbol.k                                        │ _db _bd `test        │ `test                │                      ║
 ║ db_int_vector.k                                    │ _db _bd 1 2 3        │ 1 2 3                │                      ║
-║ db_symbol_vector.k                                 │ _db _bd `a`b`c       │ `"`a"`"`b"`"`c"      │ `a`b`c               ║
+║ db_symbol_vector.k                                 │ _db _bd `a`b`c       │ ``a``b``c            │ `a`b`c               ║
 ║ db_char_vector.k                                   │ _db _bd "hello"      │ "hello"              │                      ║
 ║ db_list_simple.k                                   │ _db _bd (1;2;3)      │ 1 2 3                │                      ║
 ║ db_dict_simple.k                                   │ _db _bd {`a:1;`b:2;`c:3} │ Error: _db (dat...   │ .(`a;1;`b:2;`c:3)    ║
@@ -472,16 +472,16 @@
 ║ db_null.k                                          │ _db _bd 0N           │ 0N                   │                      ║
 ║ db_empty_list.k                                    │ _db _bd ()           │ Error: _db (dat...   │ ()                   ║
 ║ db_character.k                                     │ _db _bd "a"          │ "a"                  │                      ║
-║ db_float_simple.k                                  │ _db _bd 1.5          │ 4.9406565e-324       │ 3.14                 ║
+║ db_float_simple.k                                  │ _db _bd 1.5          │ 1.5                  │                      ║
 ║ db_int_vector_long.k                               │ _db _bd 1 2 3 4 5    │ 1 2 3 4 5            │                      ║
 ║ db_float_vector.k                                  │ _db _bd 1.1 2.2 3.3  │ 1.1 2.2 3.3          │                      ║
 ║ db_char_vector_sentence.k                          │ _db _bd "hello world" │ "hello world"        │                      ║
-║ db_symbol_simple.k                                 │ _db _bd `hello       │ `"`hello"            │ `hello               ║
-║ db_symbol_hello.k                                  │ _db _bd `hello       │ `"`hello"            │ `hello               ║
+║ db_symbol_simple.k                                 │ _db _bd `hello       │ `hello               │                      ║
+║ db_symbol_hello.k                                  │ _db _bd `hello       │ `hello               │                      ║
 ║ db_string_hello.k                                  │ _db _bd "hello"      │ "hello"              │                      ║
 ║ db_int_vector_longer.k                             │ _db _bd 1 2 3 4 5 6 7 8 9 10 │ 1 2 3 4 5 6 7 8...   │                      ║
 ║ db_float_vector_longer.k                           │ _db _bd 1.1 2.2 3.3 4.4 5.5 │ 1.1 2.2 3.3 4.4...   │                      ║
-║ db_symbol_vector_longer.k                          │ _db _bd `hello`world`test │ `"`hello"`"`wor...   │ `hello`world`test    ║
+║ db_symbol_vector_longer.k                          │ _db _bd `hello`world`test │ ``hello``world`...   │ `hello`world`test    ║
 ║ db_dict_larger.k                                   │ _db _bd {`a:1;`b:2;`c:3;`d:4} │ Error: _db (dat...   │ {`a:1;`b:2;`c:3...   ║
 ║ db_dict_mixed_types.k                              │ _db _bd {`key1:`value1;`key2:42;`key3:3.14} │ Error: _db (dat...   │ {`key1:`value1;...   ║
 ║ db_list_longer.k                                   │ _db _bd (1;2;3;4;5)  │ 1 2 3 4 5            │ 1;2;3;4;5            ║
@@ -503,7 +503,7 @@
 ║ db_dict_two_entries_simple.k                       │ _db _bd .,(`a;1);(`b;2) │ Error: _db (dat...   │ .,(`a;1);(`b;2))     ║
 ║ db_dict_with_empty_attrs.k                         │ _db _bd .((`a;1);(`b;2;.())) │ .()                  │ .((`a;1);(`b;2;...   ║
 ║ db_enlist_single_int.k                             │ _db _bd ,5           │ ,5                   │                      ║
-║ db_enlist_single_symbol.k                          │ _db _bd ,`test       │ `"`test"             │ ,`test               ║
+║ db_enlist_single_symbol.k                          │ _db _bd ,`test       │ ``test               │ ,`test               ║
 ║ db_enlist_single_string.k                          │ _db _bd ,"hello"     │ ()                   │ ,"hello"             ║
 ║ db_enlist_vector.k                                 │ _db _bd ,(1 2 3)     │ ()                   │ ,(1 2 3)             ║
 ║ serialization_bd_null_edge_0.k                     │ _bd _n               │ "\001\000\000\0...   │                      ║
@@ -575,7 +575,7 @@
 ║ serialization_bd_list_with_symbol_vectors.k        │ _bd ((`colA;`a `b `c);(`colB;`dd `eee `ffff)) │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_list_with_vectors.k               │ _bd ((`col1;1 2 3 4);(`col2;5 6 7 8)) │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 469/564 tests passed (83.2%)                                                                               ║
+║ SUMMARY: 473/564 tests passed (83.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -589,6 +589,11 @@ Test: special_null.k
 Input: _n
 Expected: _n
 Actual: 
+──────────────────────────────────────────────────────────────────────────
+Test: symbol_quoted.k
+Input: `"a symbol"
+Expected: `"a symbol"
+Actual: `a symbol
 ──────────────────────────────────────────────────────────────────────────
 Test: semicolon_simple.k
 Input: (3 + 4; 5 + 6; -20.45)
@@ -870,20 +875,10 @@ Input: _db _bd (1;2.5;"a")
 Expected: (1;2.5;"a")
 Actual: ,2
 ──────────────────────────────────────────────────────────────────────────
-Test: db_float.k
-Input: _db _bd 3.14
-Expected: 1.5
-Actual: 4.2769805e+086
-──────────────────────────────────────────────────────────────────────────
-Test: db_symbol.k
-Input: _db _bd `test
-Expected: `test
-Actual: `"`test"
-──────────────────────────────────────────────────────────────────────────
 Test: db_symbol_vector.k
 Input: _db _bd `a`b`c
 Expected: `a`b`c
-Actual: `"`a"`"`b"`"`c"
+Actual: ``a``b``c
 ──────────────────────────────────────────────────────────────────────────
 Test: db_dict_simple.k
 Input: _db _bd {`a:1;`b:2;`c:3}
@@ -905,25 +900,10 @@ Input: _db _bd ()
 Expected: ()
 Actual: Error: _db (data from bytes) operation failed: Insufficient data for Int32
 ──────────────────────────────────────────────────────────────────────────
-Test: db_float_simple.k
-Input: _db _bd 1.5
-Expected: 3.14
-Actual: 4.9406565e-324
-──────────────────────────────────────────────────────────────────────────
-Test: db_symbol_simple.k
-Input: _db _bd `hello
-Expected: `hello
-Actual: `"`hello"
-──────────────────────────────────────────────────────────────────────────
-Test: db_symbol_hello.k
-Input: _db _bd `hello
-Expected: `hello
-Actual: `"`hello"
-──────────────────────────────────────────────────────────────────────────
 Test: db_symbol_vector_longer.k
 Input: _db _bd `hello`world`test
 Expected: `hello`world`test
-Actual: `"`hello"`"`world"`"`test"
+Actual: ``hello``world``test
 ──────────────────────────────────────────────────────────────────────────
 Test: db_dict_larger.k
 Input: _db _bd {`a:1;`b:2;`c:3;`d:4}
@@ -1028,7 +1008,7 @@ Actual: .()
 Test: db_enlist_single_symbol.k
 Input: _db _bd ,`test
 Expected: ,`test
-Actual: `"`test"
+Actual: ``test
 ──────────────────────────────────────────────────────────────────────────
 Test: db_enlist_single_string.k
 Input: _db _bd ,"hello"

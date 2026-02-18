@@ -601,21 +601,11 @@ namespace K3CSharp
 
         public override string ToString()
         {
-            // Check if the symbol is empty - in K, empty symbols display as nothing
+            // Check if symbol is empty - in K, empty symbols display as nothing
             if (string.IsNullOrEmpty(Value))
-            {
                 return "";
-            }
             
-            // Check if the symbol contains spaces or special characters
-            if (SymbolValue.ContainsSpecialCharacters(Value))
-            {
-                return $"`\"{Value}\"";
-            }
-            else
-            {
-                return $"`{Value}";
-            }
+            return "`" + Value;
         }
         
         public string ToStringForFormat()

@@ -2496,17 +2496,11 @@ namespace K3CSharp
                 }
                 charString += "\"";
                 
-                Console.WriteLine($"DbFunction: charString = {charString}");
-                
                 // Parse character string with escape sequences back to bytes
                 var bytes = ParseCharacterStringToBytes(charString);
                 
-                Console.WriteLine($"DbFunction: parsed {bytes.Count} bytes: {string.Join(",", bytes.Select(b => b.ToString()))}");
-                
                 var deserializer = new KDeserializer();
                 var result = deserializer.Deserialize(bytes.ToArray());
-                
-                Console.WriteLine($"DbFunction: deserialized result = {result} (type: {result?.GetType().Name})");
                 
                 // Convert back to K3Value
                 return result switch
