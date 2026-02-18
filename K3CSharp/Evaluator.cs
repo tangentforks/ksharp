@@ -2410,14 +2410,11 @@ namespace K3CSharp
                 var serializer = new KSerializer();
                 var bytes = serializer.Serialize(primitiveValue!);
                 
-                // Convert bytes to character vector with proper escape sequences
-                var charString = ConvertBytesToCharacterString(bytes);
-                
-                // Convert to a VectorValue of individual CharacterValue elements
+                // Convert raw bytes directly to character vector
                 var charElements = new List<K3Value>();
-                for (int i = 1; i < charString.Length - 1; i++) // Skip opening and closing quotes
+                for (int i = 0; i < bytes.Length; i++)
                 {
-                    charElements.Add(new CharacterValue(charString[i].ToString()));
+                    charElements.Add(new CharacterValue(((char)bytes[i]).ToString()));
                 }
                 
                 return new VectorValue(charElements);
