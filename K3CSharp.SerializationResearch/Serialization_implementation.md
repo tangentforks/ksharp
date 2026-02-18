@@ -255,7 +255,7 @@ Breakdown:
 ### **Core Padding Principles**
 
 1. **Null Termination First**: Apply all required null termination rules before padding calculations
-2. **8-byte Boundary Padding**: Serialized data of nulls and anonymous functions must be padded to 8-byte boundaries
+2. **8-byte Boundary Padding**: Serialized data of nulls must be padded to 8-byte boundaries
 3. **Element-wise Padding**: When serializing mixed vectors or dictionaries, every leaf or simple vector (types -1, -2, -3, -4) must have its data padded to 8-byte boundaries
 4. **No Deep Descent**: For padding purposes, do not descend into individual items of simple vectors (types -1, -2, -3, -4)
 
@@ -265,9 +265,8 @@ Breakdown:
 // Rule 1: Apply null termination before padding
 // (Handled by individual serialization methods)
 
-// Rule 2: Pad nulls and functions to 8-byte boundaries
+// Rule 2: Pad nulls to 8-byte boundaries
 K3CSharp.NullValue => PadTo8ByteBoundary(SerializeNullData()),
-K3CSharp.FunctionValue func => PadTo8ByteBoundary(SerializeAnonymousFunctionData(func)),
 
 // Rule 3: Element-wise 8-byte padding for mixed structures
 K3CSharp.VectorValue nestedList => 

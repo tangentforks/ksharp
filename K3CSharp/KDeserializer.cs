@@ -154,32 +154,19 @@ namespace K3CSharp
             var elementCount = reader.ReadInt32();
             var elements = new List<K3Value>();
             
-            // For empty lists, just return an empty VectorValue
+            // Simplified deserialization using the same padding rules as serialization
+            // Each element is padded to 8-byte boundaries, so we can read sequentially
             for (int i = 0; i < elementCount; i++)
             {
-                // Skip pre-element padding for mixed lists (except first element)
-                if (i > 0)
-                {
-                    int currentPos = reader.Position;
-                    int prePaddingNeeded = (8 - (currentPos % 8)) % 8;
-                    if (prePaddingNeeded > 0 && prePaddingNeeded < 8)
-                    {
-                        reader.ReadBytes(prePaddingNeeded);
-                    }
-                }
-                
                 var element = (K3Value)DeserializeValue(reader, isInMixedList);
                 elements.Add(element);
                 
-                // For mixed lists, skip post-element padding to align to 8-byte boundary
-                if (isInMixedList && i < elementCount - 1)
+                // Skip padding to 8-byte boundary after each element
+                int currentPos = reader.Position;
+                int paddingNeeded = (8 - (currentPos % 8)) % 8;
+                if (paddingNeeded > 0 && paddingNeeded < 8)
                 {
-                    int currentPos = reader.Position;
-                    int postPaddingNeeded = (8 - (currentPos % 8)) % 8;
-                    if (postPaddingNeeded > 0 && postPaddingNeeded < 8)
-                    {
-                        reader.ReadBytes(postPaddingNeeded);
-                    }
+                    reader.ReadBytes(paddingNeeded);
                 }
             }
             
@@ -276,11 +263,17 @@ namespace K3CSharp
         
         private object DeserializeNull(KSerializationReader reader)
         {
-            reader.ReadBytes(4); // Skip padding that SerializeNullData writes
+            // Null data is padded to 8-byte boundaries, skip the padding
+            int currentPos = reader.Position;
+            int paddingNeeded = (8 - (currentPos % 8)) % 8;
+            if (paddingNeeded > 0 && paddingNeeded < 8)
+            {
+                reader.ReadBytes(paddingNeeded);
+            }
             return new NullValue();
         }
         
-        private object DeserializeAnonymousFunction(KSerializationReader reader, int typeId)
+        private object DeserializeAnonymousFunction(KSerializationReader reader, int typeId, bool isInMixedList = false)
         {
             var hasErrorMetadata = false;
             if (reader.HasMoreData)
@@ -300,8 +293,8 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // This is the start of the function source, put it back
-                    reader.Position -= 1;
+                    // Put the byte back if it's not .k metadata
+                    reader.Position--;
                 }
             }
             
@@ -313,6 +306,17 @@ namespace K3CSharp
                 functionBytes.Add(b);
             }
             var functionSource = Encoding.UTF8.GetString(functionBytes.ToArray());
+            
+            // Skip padding to 8-byte boundary after function data if in mixed list
+            if (isInMixedList)
+            {
+                int currentPos = reader.Position;
+                int paddingNeeded = (8 - (currentPos % 8)) % 8;
+                if (paddingNeeded > 0 && paddingNeeded < 8)
+                {
+                    reader.ReadBytes(paddingNeeded);
+                }
+            }
             
             return new FunctionValue(functionSource, new List<string>(), null!, functionSource);
         }
@@ -336,8 +340,8 @@ namespace K3CSharp
                 -4 => DeserializeSymbolVector(reader),
                 0 => DeserializeList(reader, isInMixedList),
                 5 => DeserializeDictionary(reader),
-                7 => DeserializeAnonymousFunction(reader, typeId), // Legacy type 7
-                10 => DeserializeAnonymousFunction(reader, typeId), // Functions use type 10
+                7 => DeserializeAnonymousFunction(reader, typeId, isInMixedList), // Legacy type 7
+                10 => DeserializeAnonymousFunction(reader, typeId, isInMixedList), // Functions use type 10
                 _ => throw new NotSupportedException($"Unsupported type: {typeId}")
             };
         }

@@ -285,7 +285,7 @@ namespace K3CSharp
                 
                 // Handle complex types that can be list elements - return only data, not full message
                 K3CSharp.DictionaryValue dict => SerializeDictionaryData(dict),
-                K3CSharp.FunctionValue func => PadTo8ByteBoundary(SerializeAnonymousFunctionData(func)),
+                K3CSharp.FunctionValue func => isInMixedList ? PadTo8ByteBoundary(SerializeAnonymousFunctionData(func)) : SerializeAnonymousFunctionData(func),
                 
                 // Handle primitive K3Value objects - pad to 8-byte boundary
                 K3CSharp.IntegerValue iv => PadTo8ByteBoundary(SerializeIntegerData(iv.Value)),
