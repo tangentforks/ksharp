@@ -237,14 +237,65 @@ if (vectorType == 0 || vectorType == 5)
 
 ## Anonymous Functions (Type 7)
 
-### Function Structure
+### Function Message Structure
 ```
-[4 bytes] Type Flag (7)
-[4 bytes] Function Type (1 = verb, 2 = adverb, 3 = projection)
-[Variable] Function Data (implementation-specific)
+[4 bytes] Message Type (always 1 for serialized data)
+[4 bytes] Message Length (excluding header)
+[4 bytes] Function Flag (always 10)
+[1 byte] Metadata Flag (0 or .k metadata)
+[Variable] Function Source (UTF-8)
+[1 byte] Null Terminator (0)
 ```
 
-**Note:** Function serialization is complex and implementation-dependent. Focus on core types for deserialization.
+**Total Message:** `13 bytes + function_source_length` (without .k metadata)  
+**Total Message:** `16 bytes + function_source_length` (with .k metadata)
+
+### Function Data Format
+```
+[4 bytes] Function Flag (10)
+[1 byte] Metadata Indicator:
+  - 0x00: No undefined variables
+  - 0x2E 0x6B 0x00: ".k\0" when undefined variables present
+[Variable] Function Source Text (UTF-8, reconstructed from AST)
+[1 byte] Null Terminator (0)
+```
+
+### Function Source Reconstruction
+The function source is reconstructed as:
+```
+{[param1;param2;...] body_expression}
+```
+
+### Undefined Variable Detection (.k metadata)
+The `.k\0` metadata is added when:
+- Function contains undefined variables (variables not in parameter list)
+- k.exe uses this to flag parsing errors or unresolved references
+
+### Examples
+
+**Simple Function (no undefined variables):**
+```
+{+} → "\001\000\000\000\016\000\000\000\n\000\000\000\000{+}\000"
+```
+Breakdown:
+- `\001\000\000\000` - Message type (1)
+- `\016\000\000\000` - Message length (24 bytes)
+- `\n\000\000\000` - Function flag (10)
+- `\000` - No undefined variables
+- `{+}` - Function source
+- `\000` - Null terminator
+
+**Function with Undefined Variables:**
+```
+{[xyz] xy|3} → "\001\000\000\000\024\000\000\000\n\000\000\000.k\000{[xyz] xy|3}\000"
+```
+Breakdown:
+- `\001\000\000\000` - Message type (1)
+- `\024\000\000\000` - Message length (28 bytes)
+- `\n\000\000\000` - Function flag (10)
+- `.k\000` - Undefined variables present
+- `{[xyz] xy|3}` - Function source
+- `\000` - Null terminator
 
 ## Alignment Rules Summary
 

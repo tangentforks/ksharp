@@ -190,6 +190,8 @@
 ║ take_operator_empty_symbol.k                       │ 0#``                 │ 0#`                  │                      ║
 ║ take_operator_overflow.k                           │ 10#1 2 3             │ 1 2 3 1 2 3 1 2...   │                      ║
 ║ take_operator_scalar.k                             │ 3#42                 │ 42 42 42             │                      ║
+║ reshape_basic.k                                    │ 3 4 # !12            │ (0 1 2 3
+ 4 5 6...   │                      ║
 ║ division_float_4_2.0.k                             │ 4 % 2.0              │ 2.0                  │                      ║
 ║ division_float_5_2.5.k                             │ 5 % 2.5              │ 2.0                  │                      ║
 ║ division_int_4_2.k                                 │ 4 % 2                │ 2                    │                      ║
@@ -459,6 +461,7 @@
 ║ serialization_bd_db_anonymousfunction.k            │ _bd {[x] x+1}        │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_roundtrip_integer.k            │ // Test _bd and _db round-trip serialization │ 42                   │                      ║
 ║ serialization_bd_db_roundtrip_list.k               │ _db _bd (1;2.5;"a")  │ ,2                   │ (1;2.5;"a")          ║
+║ serialization_bd_ic_symbol.k                       │ _ic _bd `A           │ 1 0 0 0 6 0 0 0...   │                      ║
 ║ db_basic_integer.k                                 │ _db _bd 42           │ 42                   │                      ║
 ║ db_float.k                                         │ _db _bd 3.14         │ 3.14                 │                      ║
 ║ db_symbol.k                                        │ _db _bd `test        │ `test                │                      ║
@@ -466,9 +469,9 @@
 ║ db_symbol_vector.k                                 │ _db _bd `a`b`c       │ ``a``b``c            │ `a`b`c               ║
 ║ db_char_vector.k                                   │ _db _bd "hello"      │ "hello"              │                      ║
 ║ db_list_simple.k                                   │ _db _bd (1;2;3)      │ 1 2 3                │                      ║
-║ db_dict_simple.k                                   │ _db _bd {`a:1;`b:2;`c:3} │ Error: _db (dat...   │ .(`a;1;`b:2;`c:3)    ║
-║ db_function_simple.k                               │ _db _bd {+}          │ Error: _db (dat...   │ {+}                  ║
-║ db_function_params.k                               │ _db _bd {x+y}        │ Error: _db (dat...   │ {x+y}                ║
+║ db_dict_simple.k                                   │ _db _bd {`a:1;`b:2;`c:3} │ {`a:1;`b:2;`c:3}     │ .(`a;1;`b:2;`c:3)    ║
+║ db_function_simple.k                               │ _db _bd {+}          │ {+}                  │                      ║
+║ db_function_params.k                               │ _db _bd {x+y}        │ {x+y}                │                      ║
 ║ db_null.k                                          │ _db _bd 0N           │ 0N                   │                      ║
 ║ db_empty_list.k                                    │ _db _bd ()           │ Error: _db (dat...   │ ()                   ║
 ║ db_character.k                                     │ _db _bd "a"          │ "a"                  │                      ║
@@ -482,16 +485,16 @@
 ║ db_int_vector_longer.k                             │ _db _bd 1 2 3 4 5 6 7 8 9 10 │ 1 2 3 4 5 6 7 8...   │                      ║
 ║ db_float_vector_longer.k                           │ _db _bd 1.1 2.2 3.3 4.4 5.5 │ 1.1 2.2 3.3 4.4...   │                      ║
 ║ db_symbol_vector_longer.k                          │ _db _bd `hello`world`test │ ``hello``world`...   │ `hello`world`test    ║
-║ db_dict_larger.k                                   │ _db _bd {`a:1;`b:2;`c:3;`d:4} │ Error: _db (dat...   │ {`a:1;`b:2;`c:3...   ║
-║ db_dict_mixed_types.k                              │ _db _bd {`key1:`value1;`key2:42;`key3:3.14} │ Error: _db (dat...   │ {`key1:`value1;...   ║
+║ db_dict_larger.k                                   │ _db _bd {`a:1;`b:2;`c:3;`d:4} │ {`a:1;`b:2;`c:3...   │                      ║
+║ db_dict_mixed_types.k                              │ _db _bd {`key1:`value1;`key2:42;`key3:3.14} │ {`key1:`value1;...   │                      ║
 ║ db_list_longer.k                                   │ _db _bd (1;2;3;4;5)  │ 1 2 3 4 5            │ 1;2;3;4;5            ║
 ║ db_list_mixed_types.k                              │ _db _bd (1;`test;3.14;"hello") │ ,4                   │ (1;`test;3.14;"...   ║
-║ db_function_complex.k                              │ _db _bd {[x;y] x*y+z} │ Error: _db (dat...   │ {[x;y] x*y+z}        ║
-║ db_function_simple_math.k                          │ _db _bd {x+y}        │ Error: _db (dat...   │ {x+y}                ║
-║ db_nested_dict_vectors.k                           │ _db _bd {`a:(1;2;3);`b:(`hello;`world;`test)} │ Error: _db (dat...   │ {`a:(1;2;3);`b:...   ║
+║ db_function_complex.k                              │ _db _bd {[x;y] x*y+z} │ {[x;y] x*y+z}        │                      ║
+║ db_function_simple_math.k                          │ _db _bd {x+y}        │ {x+y}                │                      ║
+║ db_nested_dict_vectors.k                           │ _db _bd {`a:(1;2;3);`b:(`hello;`world;`test)} │ {`a:(1;2;3);`b:...   │                      ║
 ║ db_nested_lists.k                                  │ _db _bd ((1;2;3);(`hello;`world;`test);(4.5;6.7)) │ ()                   │ ((1;2;3);(`hell...   ║
 ║ db_mixed_list.k                                    │ _db _bd (1;`test;3.14) │ ,4                   │ (1;`test;3.14)       ║
-║ db_nested_structures.k                             │ _db _bd {`a:(1;2;3);`b:(4;5;6)} │ Error: _db (dat...   │ {`a:(1;2;3);`b:...   ║
+║ db_nested_structures.k                             │ _db _bd {`a:(1;2;3);`b:(4;5;6)} │ {`a:(1;2;3);`b:...   │                      ║
 ║ db_dict_single_entry.k                             │ _db _bd .,(`a;1)     │ .()                  │ .,(`a;1;)            ║
 ║ db_dict_symbol_2char.k                             │ _db _bd .,(`ab;1 2)  │ .()                  │ .,(`ab;1 2;)         ║
 ║ db_dict_symbol_8char.k                             │ _db _bd .,(`abcdefgh;1 2 3 4 5 6 7 8) │ .()                  │ .,(`abcdefgh;1 ...   ║
@@ -575,7 +578,7 @@
 ║ serialization_bd_list_with_symbol_vectors.k        │ _bd ((`colA;`a `b `c);(`colB;`dd `eee `ffff)) │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_list_with_vectors.k               │ _bd ((`col1;1 2 3 4);(`col2;5 6 7 8)) │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 473/564 tests passed (83.9%)                                                                               ║
+║ SUMMARY: 483/566 tests passed (85.3%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -883,17 +886,7 @@ Actual: ``a``b``c
 Test: db_dict_simple.k
 Input: _db _bd {`a:1;`b:2;`c:3}
 Expected: .(`a;1;`b:2;`c:3)
-Actual: Error: _db (data from bytes) operation failed: Unsupported type: 979525691
-──────────────────────────────────────────────────────────────────────────
-Test: db_function_simple.k
-Input: _db _bd {+}
-Expected: {+}
-Actual: Error: _db (data from bytes) operation failed: Insufficient data for Int32
-──────────────────────────────────────────────────────────────────────────
-Test: db_function_params.k
-Input: _db _bd {x+y}
-Expected: {x+y}
-Actual: Error: _db (data from bytes) operation failed: Insufficient data for Int32
+Actual: {`a:1;`b:2;`c:3}
 ──────────────────────────────────────────────────────────────────────────
 Test: db_empty_list.k
 Input: _db _bd ()
@@ -905,16 +898,6 @@ Input: _db _bd `hello`world`test
 Expected: `hello`world`test
 Actual: ``hello``world``test
 ──────────────────────────────────────────────────────────────────────────
-Test: db_dict_larger.k
-Input: _db _bd {`a:1;`b:2;`c:3;`d:4}
-Expected: {`a:1;`b:2;`c:3;`d:4}
-Actual: Error: _db (data from bytes) operation failed: Unsupported type: 979525691
-──────────────────────────────────────────────────────────────────────────
-Test: db_dict_mixed_types.k
-Input: _db _bd {`key1:`value1;`key2:42;`key3:3.14}
-Expected: {`key1:`value1;`key2:42;`key3:3.14}
-Actual: Error: _db (data from bytes) operation failed: Unsupported type: 1986017841
-──────────────────────────────────────────────────────────────────────────
 Test: db_list_longer.k
 Input: _db _bd (1;2;3;4;5)
 Expected: 1;2;3;4;5
@@ -925,21 +908,6 @@ Input: _db _bd (1;`test;3.14;"hello")
 Expected: (1;`test;3.14;"hello")
 Actual: ,4
 ──────────────────────────────────────────────────────────────────────────
-Test: db_function_complex.k
-Input: _db _bd {[x;y] x*y+z}
-Expected: {[x;y] x*y+z}
-Actual: Error: _db (data from bytes) operation failed: Unsupported type: 712515677
-──────────────────────────────────────────────────────────────────────────
-Test: db_function_simple_math.k
-Input: _db _bd {x+y}
-Expected: {x+y}
-Actual: Error: _db (data from bytes) operation failed: Insufficient data for Int32
-──────────────────────────────────────────────────────────────────────────
-Test: db_nested_dict_vectors.k
-Input: _db _bd {`a:(1;2;3);`b:(`hello;`world;`test)}
-Expected: {`a:(1;2;3);`b:(`hello;`world;`test)}
-Actual: Error: _db (data from bytes) operation failed: Unsupported type: 993147697
-──────────────────────────────────────────────────────────────────────────
 Test: db_nested_lists.k
 Input: _db _bd ((1;2;3);(`hello;`world;`test);(4.5;6.7))
 Expected: ((1;2;3);(`hello;`world;`test);(4.5;6.7))
@@ -949,11 +917,6 @@ Test: db_mixed_list.k
 Input: _db _bd (1;`test;3.14)
 Expected: (1;`test;3.14)
 Actual: ,4
-──────────────────────────────────────────────────────────────────────────
-Test: db_nested_structures.k
-Input: _db _bd {`a:(1;2;3);`b:(4;5;6)}
-Expected: {`a:(1;2;3);`b:(4;5;6)}
-Actual: Error: _db (data from bytes) operation failed: Unsupported type: 993147697
 ──────────────────────────────────────────────────────────────────────────
 Test: db_dict_single_entry.k
 Input: _db _bd .,(`a;1)

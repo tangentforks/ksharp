@@ -210,32 +210,42 @@ namespace K3CSharp
             return new DictionaryValue(entries);
         }
         
-        private object DeserializeAnonymousFunction(KSerializationReader reader)
+        private object DeserializeAnonymousFunction(KSerializationReader reader, int typeId)
         {
-            var functionFlag = reader.ReadInt32();
-            var functionLength = reader.ReadInt32();
-            
-            // Check for error metadata
+            // Check for .k metadata (undefined variables)
             var hasErrorMetadata = false;
-            if (functionLength >= 4)
+            if (reader.HasMoreData)
             {
-                var currentPos = reader.Position;
-                var errorBytes = reader.ReadBytes(4);
-                var errorStr = Encoding.ASCII.GetString(errorBytes);
-                hasErrorMetadata = errorStr == ".k\0";
-                functionLength -= 4; // Adjust for metadata
+                var nextByte = reader.ReadByte();
+                if (nextByte == 0x2E) // '.' character
+                {
+                    // Read the rest of .k metadata
+                    var kByte = reader.ReadByte();
+                    var nullByte = reader.ReadByte();
+                    hasErrorMetadata = (kByte == 0x6B && nullByte == 0x00); // "k\0"
+                }
+                else if (nextByte == 0x00)
+                {
+                    // This is the null byte for functions without undefined variables
+                    // Continue to read function source
+                }
+                else
+                {
+                    // This is the start of the function source, put it back
+                    reader.Position -= 1;
+                }
             }
             
-            // Ensure we have enough data for function content
-            if (functionLength < 0)
+            // Read function source until null terminator
+            var functionBytes = new List<byte>();
+            byte b;
+            while (reader.HasMoreData && (b = reader.ReadByte()) != 0)
             {
-                functionLength = 0; // Handle empty function
+                functionBytes.Add(b);
             }
+            var functionSource = Encoding.UTF8.GetString(functionBytes.ToArray());
             
-            var functionBytes = reader.ReadBytes(functionLength);
-            var functionSource = Encoding.UTF8.GetString(functionBytes);
-            
-            return new FunctionValue(functionSource, new List<string>());
+            return new FunctionValue(functionSource, new List<string>(), null!, functionSource);
         }
         
         private object DeserializeValue(KSerializationReader reader)
@@ -257,8 +267,8 @@ namespace K3CSharp
                 -4 => DeserializeSymbolVector(reader),
                 0 => DeserializeList(reader),
                 5 => DeserializeDictionary(reader),
-                7 => DeserializeAnonymousFunction(reader),
-                10 => DeserializeList(reader), // Type 10 is also used for lists
+                7 => DeserializeAnonymousFunction(reader, typeId), // Legacy type 7
+                10 => DeserializeAnonymousFunction(reader, typeId), // Functions use type 10
                 _ => throw new NotSupportedException($"Unsupported type: {typeId}")
             };
         }
