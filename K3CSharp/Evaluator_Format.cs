@@ -33,11 +33,13 @@ namespace K3CSharp
                     }
                 }
                 
-                // Regular vector - recursively format each element
+                // Regular vector - recursively format each element and enlist result
                 var result = new List<K3Value>();
                 foreach (var element in vec.Elements)
                 {
-                    result.Add(FormatRecursive(element));
+                    var formattedElement = FormatRecursive(element);
+                    // Enlist the formatted element as a single-element vector
+                    result.Add(new VectorValue(new List<K3Value> { formattedElement }));
                 }
                 return new VectorValue(result);
             }
@@ -115,11 +117,24 @@ namespace K3CSharp
             }
             else if (value is VectorValue regularVec)
             {
-                // Apply formatting to each element of the vector
+                // Apply formatting to each element of vector and enlist each result
                 var result = new List<K3Value>();
                 foreach (var element in regularVec.Elements)
                 {
-                    result.Add(FormatElement(formatSpec, element));
+                    var formattedElement = FormatElement(formatSpec, element);
+                    // Enlist the formatted element as a single-element vector
+                    if (formattedElement is CharacterValue charVal)
+                    {
+                        result.Add(new VectorValue(new List<K3Value> { charVal }));
+                    }
+                    else if (formattedElement is VectorValue formattedVec)
+                    {
+                        result.Add(new VectorValue(new List<K3Value> { formattedVec }));
+                    }
+                    else
+                    {
+                        result.Add(new VectorValue(new List<K3Value> { formattedElement }));
+                    }
                 }
                 return new VectorValue(result);
             }
@@ -202,11 +217,24 @@ namespace K3CSharp
             }
             else if (value is VectorValue regularVec)
             {
-                // Apply formatting to each element of the vector
+                // Apply formatting to each element of vector and enlist each result
                 var result = new List<K3Value>();
                 foreach (var element in regularVec.Elements)
                 {
-                    result.Add(FormatFloatElement(formatSpec, element));
+                    var formattedElement = FormatFloatElement(formatSpec, element);
+                    // Enlist the formatted element as a single-element vector
+                    if (formattedElement is CharacterValue charVal)
+                    {
+                        result.Add(new VectorValue(new List<K3Value> { charVal }));
+                    }
+                    else if (formattedElement is VectorValue formattedVec)
+                    {
+                        result.Add(new VectorValue(new List<K3Value> { formattedVec }));
+                    }
+                    else
+                    {
+                        result.Add(new VectorValue(new List<K3Value> { formattedElement }));
+                    }
                 }
                 return new VectorValue(result);
             }

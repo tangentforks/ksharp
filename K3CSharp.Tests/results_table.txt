@@ -268,16 +268,16 @@
 ║ dictionary_dot_apply.k                             │ d: .((`a;1;.());(`b;2;.())) │ 1                    │                      ║
 ║ monadic_format_basic.k                             │ $1                   │ ,"1"                 │                      ║
 ║ monadic_format_types.k                             │ $42.5                │ "42.5"               │                      ║
-║ monadic_format_vector.k                            │ $1 2 3               │ ("1";"2";"3")        │ (,"1";,"2";,"3")     ║
+║ monadic_format_vector.k                            │ $1 2 3               │ (,"1";,"2";,"3")     │                      ║
 ║ monadic_format_string_hello.k                      │ $"hello"             │ "hello"              │                      ║
 ║ monadic_format_string_a.k                          │ $"a"                 │ ,"a"                 │                      ║
 ║ monadic_format_symbol_hello.k                      │ $`hello              │ "hello"              │                      ║
 ║ monadic_format_symbol_simple.k                     │ $`test               │ "test"               │                      ║
 ║ monadic_format_dictionary.k                        │ $.((`a;1);(`b;2);(`c;3)) │ ".((`a;1;);(`b;...   │                      ║
-║ monadic_format_nested_list.k                       │ $((1;2;3);(4;5;6))   │ (("1";"2";"3");...   │ ((,"1";,"2";,"3...   ║
+║ monadic_format_nested_list.k                       │ $((1;2;3);(4;5;6))   │ ((,"1";,"2";,"3...   │                      ║
 ║ monadic_format_integer.k                           │ $42                  │ "42"                 │                      ║
 ║ monadic_format_float.k                             │ $3.14                │ "3.14"               │                      ║
-║ monadic_format_vector_simple.k                     │ $1 2 3               │ ("1";"2";"3")        │ (,"1";,"2";,"3")     ║
+║ monadic_format_vector_simple.k                     │ $1 2 3               │ (,"1";,"2";,"3")     │                      ║
 ║ format_integer.k                                   │ 0$1                  │ ""                   │                      ║
 ║ format_float_numeric.k                             │ 0.0$1                │ ,"1"                 │                      ║
 ║ form_long.k                                        │ 0j$"42"              │ 42j                  │                      ║
@@ -355,10 +355,10 @@
 ║ find_basic.k                                       │ 9 8 7 6 5 4 3 ? 7  // Find operator - basic functionality │ 2                    │                      ║
 ║ find_notfound.k                                    │ 9 8 7 6 5 4 3 ? 1  // Find operator - not found case │ 7                    │                      ║
 ║ lsq.k                                              │ _lsq                 │ Error: _lsq (le...   │ Error - _lsq (l...   ║
-║ format_float_precision_vector_simple.k             │ 10.1$(1.5;2.5)       │ "       1.5    ...   │ ("       1.5";"...   ║
-║ format_float_precision_mixed_vector.k              │ 7.2$(1.5;2.7;3.14159;4.2) │ "   1.50   2.70...   │ ("   1.50";"   ...   ║
-║ format_pad_mixed_vector.k                          │ 10$(1;2;3)           │ "         1    ...   │ ("         1";"...   ║
-║ format_pad_negative_mixed_vector.k                 │ -10$(1;2;3)          │ "1         2   ...   │ ("1         ";"...   ║
+║ format_float_precision_vector_simple.k             │ 10.1$(1.5;2.5)       │ ("       1.5";"...   │                      ║
+║ format_float_precision_mixed_vector.k              │ 7.2$(1.5;2.7;3.14159;4.2) │ ("   1.50";"   ...   │                      ║
+║ format_pad_mixed_vector.k                          │ 10$(1;2;3)           │ ("         1";"...   │                      ║
+║ format_pad_negative_mixed_vector.k                 │ -10$(1;2;3)          │ ("1         ";"...   │                      ║
 ║ vector_notation_empty.k                            │ ()                   │ ()                   │                      ║
 ║ vector_notation_functions.k                        │ double: {[x] x * 2}  │ 10 20 30             │                      ║
 ║ vector_notation_mixed_types.k                      │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
@@ -408,11 +408,8 @@
 ║ empty_brackets_dictionary.k                        │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
 ║ empty_brackets_vector.k                            │ v: 1 2 3 4           │ 1 2 3 4              │                      ║
 ║ form_braces_complex_expressions.k                  │ sum:{[a;b] a+b}      │ 14 20 10             │                      ║
-║ format_float_precision_complex_mixed.k             │ 10.3$(1.234;2.567;3.890;4.123) │ "     1.234    ...   │ ("     1.234"
- ...   ║
-║ format_float_vector.k                              │ 0.0$(1;2.5;3.14;42)  │ ("1";"2";"3";"42")   │ (,"1"
- ,"2"
- ,"...   ║
+║ format_float_precision_complex_mixed.k             │ 10.3$(1.234;2.567;3.890;4.123) │ ("     1.234";"...   │                      ║
+║ format_float_vector.k                              │ 0.0$(1;2.5;3.14;42)  │ (,"1";,"2";,"3"...   │                      ║
 ║ format_int_vector.k                                │ 0$(1;2.5;3.14;42)    │ ""                   │ (""
  ""
  ""
@@ -430,7 +427,7 @@
 ║ in_simple.k                                        │ 5 _in 1 2 3          │ 0                    │                      ║
 ║ isolated.k                                         │ a:1.5                │ 0.6                  │                      ║
 ║ modulo.k                                           │ a:1.5                │ 0.6                  │                      ║
-║ monadic_format_mixed_vector.k                      │ $(1;2.5;"hello";`symbol) │ ("1";"2.5";"hel...   │ (,"1";"2.5";"he...   ║
+║ monadic_format_mixed_vector.k                      │ $(1;2.5;"hello";`symbol) │ (,"1";"2.5";"he...   │                      ║
 ║ over_plus_empty.k                                  │ +/!0                 │ 0                    │                      ║
 ║ simple_division.k                                  │ 8 % 2                │ 4                    │                      ║
 ║ simple_subtraction.k                               │ 5 - 3                │ 2                    │                      ║
@@ -593,7 +590,7 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 549/583 tests passed (94.2%)                                                                               ║
+║ SUMMARY: 559/583 tests passed (95.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -623,21 +620,6 @@ Input: globalVar: 100  // Test nested functions
 Expected: 25
 Actual: 140
 ──────────────────────────────────────────────────────────────────────────
-Test: monadic_format_vector.k
-Input: $1 2 3
-Expected: (,"1";,"2";,"3")
-Actual: ("1";"2";"3")
-──────────────────────────────────────────────────────────────────────────
-Test: monadic_format_nested_list.k
-Input: $((1;2;3);(4;5;6))
-Expected: ((,"1";,"2";,"3");(,"4";,"5";,"6"))
-Actual: (("1";"2";"3");("4";"5";"6"))
-──────────────────────────────────────────────────────────────────────────
-Test: monadic_format_vector_simple.k
-Input: $1 2 3
-Expected: (,"1";,"2";,"3")
-Actual: ("1";"2";"3")
-──────────────────────────────────────────────────────────────────────────
 Test: rand_draw_vector_deal.k
 Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
 Expected: .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
@@ -653,26 +635,6 @@ Input: _lsq
 Expected: Error - _lsq (least squares) operation reserved for future use
 Actual: Error: _lsq (least squares) operation reserved for future use
 ──────────────────────────────────────────────────────────────────────────
-Test: format_float_precision_vector_simple.k
-Input: 10.1$(1.5;2.5)
-Expected: ("       1.5";"       2.5")
-Actual: "       1.5       2.5"
-──────────────────────────────────────────────────────────────────────────
-Test: format_float_precision_mixed_vector.k
-Input: 7.2$(1.5;2.7;3.14159;4.2)
-Expected: ("   1.50";"   2.70";"   3.14";"   4.20")
-Actual: "   1.50   2.70   3.14   4.20"
-──────────────────────────────────────────────────────────────────────────
-Test: format_pad_mixed_vector.k
-Input: 10$(1;2;3)
-Expected: ("         1";"         2";"         3")
-Actual: "         1         2         3"
-──────────────────────────────────────────────────────────────────────────
-Test: format_pad_negative_mixed_vector.k
-Input: -10$(1;2;3)
-Expected: ("1         ";"2         ";"3         ")
-Actual: "1         2         3         "
-──────────────────────────────────────────────────────────────────────────
 Test: amend_item_simple.k
 Input: @[1 2 3]
 Expected: @[1 2 3]
@@ -682,22 +644,6 @@ Test: amend_item_single.k
 Input: @[1]
 Expected: @[1 2 3]
 Actual: 1
-──────────────────────────────────────────────────────────────────────────
-Test: format_float_precision_complex_mixed.k
-Input: 10.3$(1.234;2.567;3.890;4.123)
-Expected: ("     1.234"
- "     2.567"
- "     3.890"
- "     4.123")
-Actual: "     1.234     2.567     3.890     4.123"
-──────────────────────────────────────────────────────────────────────────
-Test: format_float_vector.k
-Input: 0.0$(1;2.5;3.14;42)
-Expected: (,"1"
- ,"2"
- ,"3"
- "42")
-Actual: ("1";"2";"3";"42")
 ──────────────────────────────────────────────────────────────────────────
 Test: format_int_vector.k
 Input: 0$(1;2.5;3.14;42)
@@ -716,11 +662,6 @@ Test: group_operator.k
 Input: a: 3 3 8 7 5 7 3 8 4 4 9 2 7 6 0 7 8 7 0 1
 Expected: (0 1 6;2 7 16;3 5 12 15 17;,4;8 9;,10;,11;,13;14 18;,19)
 Actual: (0 1 6;2 7 16;3 5 12 15 17;4;8 9;10;11;13;14 18;19)
-──────────────────────────────────────────────────────────────────────────
-Test: monadic_format_mixed_vector.k
-Input: $(1;2.5;"hello";`symbol)
-Expected: (,"1";"2.5";"hello";"symbol")
-Actual: ("1";"2.5";"hello";"symbol")
 ──────────────────────────────────────────────────────────────────────────
 Test: db_symbol_vector.k
 Input: _db _bd `a`b`c

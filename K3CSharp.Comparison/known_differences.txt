@@ -141,6 +141,8 @@ db_dict_with_null_attrs :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_dict_two_entries_simple :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_dict_with_empty_attrs :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 format_vector_int :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+format_float_precision_complex_mixed :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+format_float_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 test_dict_larger :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_dict_larger :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 test_dict_simple :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation

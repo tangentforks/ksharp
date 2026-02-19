@@ -686,8 +686,8 @@ namespace K3CSharp.Tests
                 
                 // Format tests
                 ("form_braces_complex_expressions.k", "14 20 10"),
-                ("format_float_precision_complex_mixed.k", "(\"     1.234\"\n \"     2.567\"\n \"     3.890\"\n \"     4.123\")"),
-                ("format_float_vector.k", "(,\"1\"\n ,\"2\"\n ,\"3\"\n \"42\")"),
+                ("format_float_precision_complex_mixed.k", "(\"     1.234\";\"     2.567\";\"     3.890\";\"     4.123\")"),
+                ("format_float_vector.k", "(,\"1\";,\"2\";,\"3\";\"42\")"),
                 ("format_int_vector.k", "(\"\"\n \"\"\n \"\"\n \"\")"),
                 
                 // Final missing tests
