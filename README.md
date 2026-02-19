@@ -275,8 +275,8 @@ cd K3CSharp.Comparison && dotnet run
 - **Matrix**: `_dot`, `_mul`, `_inv` (basic implementation)
 
 ### **K Serialization System** ✅
-- **Binary Serialize (`_db`)**: Convert K data structures to binary format
-- **Binary Deserialize (`_bd`)**: Convert binary data back to K data structures
+- **Binary Serialize (`_bd`)**: Convert K data structures to binary format
+- **Binary Deserialize (`_db`)**: Convert binary data back to K data structures
 - **Complete Type Support**: All 11 K data types (atomic, vectors, lists, dictionaries, functions)
 - **K Specification Compliance**: Exact binary format compatibility with other K implementations
 - **Round-Trip Validation**: Perfect data preservation through serialize/deserialize cycles
