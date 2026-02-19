@@ -604,7 +604,12 @@ namespace K3CSharp
             // Check if symbol is empty - in K, empty symbols display as nothing
             if (string.IsNullOrEmpty(Value))
                 return "";
-            
+
+            // Quoted symbols: if the value contains spaces or special characters,
+            // display with surrounding quotes (e.g., `"a symbol")
+            if (ContainsSpecialCharacters(Value))
+                return "`\"" + Value + "\"";
+
             return "`" + Value;
         }
         
