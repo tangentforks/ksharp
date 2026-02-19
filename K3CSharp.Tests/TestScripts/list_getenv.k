@@ -1,1 +1,1 @@
-_getenv "PATH"
+_getenv "PROMPT"
