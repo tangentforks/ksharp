@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-02-19 01:11:01
+Generated: 2026-02-19 01:34:55
 
 SUMMARY:
 --------
 Total Tests:     582
-✅ Matched:       529
-❌ Differed:      47
+✅ Matched:       528
+❌ Differed:      48
 ⚠️  Skipped:       0
 💥 Errors:        6
-Success Rate:    90.9%
+Success Rate:    90.7%
 
 DETAILED RESULTS:
 -----------------
@@ -285,7 +285,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   list_di_multiple.k                                 3 4                            3 4                                                                              
 ✅ PASS   list_dv_basic.k                                    3 5                            3 5                                                                              
 ✅ PASS   list_dv_nomatch.k                                  3 4 4 5                        3 4 4 5                                                                          
-✅ PASS   list_getenv.k                                      "$P$G"                         "$P$G"                                                                           
+❌ FAIL   list_getenv.k                                      ()                             "$P$G"                                                                           
 ❌ FAIL   list_setenv.k                                      `TESTVAR                                                                                                        
 ✅ PASS   list_size_existing.k                               11264.0                        11264.0                                                                          
 ✅ PASS   list_sv_base10.k                                   1995                           1995                                                                             
@@ -658,7 +658,7 @@ File: form_braces_complex.k
 K3Sharp: 8.25 12.0 9.0
 k.exe:   8.25 12 9
 
-... and 37 more failed tests
+... and 38 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------

@@ -352,6 +352,28 @@ Update `DeserializeList` to handle 8-byte alignment by:
 - **Vectors:** Linear with element count
 - **Complex Structures:** Quadratic in worst case (deep nesting)
 
+## Recent Implementation Insights (Feb 2026)
+
+### Empty String Parsing Fix
+**Issue:** Empty strings `""` were being parsed as generic empty lists (type 0) instead of empty character vectors (type -3).
+
+**Root Cause:** The parser was creating `VectorValue` objects without specifying the `VectorType` parameter for character vectors, resulting in `null` type for empty vectors.
+
+**Solution:** Modified `Parser.ParsePrimary()` to use the `VectorValue` constructor that includes the vector type:
+```csharp
+result = ASTNode.MakeLiteral(new VectorValue(charVector, -3)); // -3 = character vector type
+```
+
+**Behavior:**
+- `""` (without backtick) → empty character vector (type -3) ✅
+- `""` (with backtick) → symbol (existing behavior preserved) ✅
+
+### Character Vector Type Consistency
+**Key Learning:** Empty vectors must preserve their intended type through the `VectorType` property to ensure:
+- Correct type operator (`4:`) results
+- Proper binary serialization format
+- Accurate display representation
+
 ---
 
 **This specification provides complete information for implementing `_db` deserialization with full compatibility to the K3CSharp serialization format.**

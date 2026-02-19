@@ -1,9 +1,779 @@
-╔════════════════════════════════════════════════════════════════════════════════════════════╗
-║                                 K3 INTERPRETER TEST RESULTS TABLE║
-╠════════════════════════════════════════════════════════════════════════════════════════════╣
-║ Test File                 │ Input                │ Actual Output        │ Expected             ║
-╠════════════════════════════════════════════════════════════════════════════════════════════╣
-║ bd_symbol_vector_longer.k │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
-╠════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 1/1 tests passed (100.0%)                                                         ║
-╚════════════════════════════════════════════════════════════════════════════════════════════╝
+╔═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                                             K3 INTERPRETER TEST RESULTS TABLE║
+╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║ Test File                                          │ Input                │ Actual Output        │ Expected             ║
+╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║ adverb_each_vector_minus.k                         │ (10 20 30) -' (1 2 3)  // Test each adverb with equal length vectors (now implemented) - Each should apply the operation element-wise between corresponding vectors │ 9 18 27              │                      ║
+║ adverb_each_vector_multiply.k                      │ (1 2 3) *' (4 5 6)  // Test each adverb with equal length vectors (now implemented) - Each should apply the operation element-wise between corresponding vectors │ 4 10 18              │                      ║
+║ adverb_each_vector_plus.k                          │ (1 2 3 4) +' (5 6 7 8)  // Test each adverb with equal length vectors (now implemented) - Each should apply the operation element-wise between corresponding vectors │ 6 8 10 12            │                      ║
+║ adverb_over_divide.k                               │ %/ 100 2 5           │ 10                   │                      ║
+║ adverb_over_max.k                                  │ |/ 1 3 2 5 4         │ 5                    │                      ║
+║ adverb_over_min.k                                  │ &/ 5 3 4 1 2         │ 1                    │                      ║
+║ adverb_over_minus.k                                │ -/ 10 2 3 1          │ 4                    │                      ║
+║ adverb_over_multiply.k                             │ */ 1 2 3 4           │ 24                   │                      ║
+║ adverb_over_plus.k                                 │ +/ 1 2 3 4 5         │ 15                   │                      ║
+║ plus_over_empty.k                                  │ +/!0                 │ 0                    │                      ║
+║ multiply_over_empty.k                              │ */!0                 │ 1                    │                      ║
+║ adverb_over_power.k                                │ ^/ 2 3 2             │ 64                   │                      ║
+║ adverb_over_with_initialization_1.k                │ 1 +/ 2 3 4 5         │ 15                   │                      ║
+║ adverb_over_with_initialization_2.k                │ 2 +/ 1 2 3 4         │ 12                   │                      ║
+║ adverb_scan_divide.k                               │ %\ 100 2 5           │ 100 50 10            │                      ║
+║ adverb_scan_max.k                                  │ |\ 1 3 2 5 4         │ 1 3 3 5 5            │                      ║
+║ adverb_scan_min.k                                  │ &\ 5 3 4 1 2         │ 5 3 3 1 1            │                      ║
+║ adverb_scan_minus.k                                │ -\ 10 2 3 1          │ 10 8 5 4             │                      ║
+║ adverb_scan_multiply.k                             │ *\ 1 2 3 4           │ 1 2 6 24             │                      ║
+║ adverb_scan_plus.k                                 │ +\ 1 2 3 4 5         │ 1 3 6 10 15          │                      ║
+║ adverb_scan_power.k                                │ ^\ 2 3 2             │ 2 8 64               │                      ║
+║ adverb_scan_with_initialization_1.k                │ 1 +\ 2 3 4 5         │ 1 3 6 10 15          │                      ║
+║ adverb_scan_with_initialization_2.k                │ 2 +\ 1 2 3 4         │ 2 3 5 8 12           │                      ║
+║ adverb_scan_with_initialization_divide.k           │ 2 %\ 1 2 3 4         │ (2;2;1;0.333333...   │                      ║
+║ adverb_scan_with_initialization_minus.k            │ 2 -\ 1 2 3 4         │ 2 1 -1 -4 -8         │                      ║
+║ adverb_scan_with_initialization.k                  │ 2 *\ 1 2 3           │ 2 2 4 12             │                      ║
+║ anonymous_function_double_param.k                  │ {[op1;op2] op1 * op2} │ {[op1;op2] op1 ...   │                      ║
+║ anonymous_function_empty.k                         │ {}                   │ {}                   │                      ║
+║ anonymous_function_simple.k                        │ {4+5}                │ {4+5}                │                      ║
+║ anonymous_function_single_param.k                  │ {[arg1] arg1+6}      │ {[arg1] arg1+6}      │                      ║
+║ atom_scalar.k                                      │ @42                  │ 1                    │                      ║
+║ atom_vector.k                                      │ @1 2 3               │ 0                    │                      ║
+║ attribute_handle_symbol.k                          │ ~`a                  │ `a.                  │                      ║
+║ attribute_handle_vector.k                          │ ~(`a`b`c)            │ `a.`b.`c.            │                      ║
+║ character_single.k                                 │ "f"                  │ "f"                  │                      ║
+║ character_vector.k                                 │ "hello"              │ "hello"              │                      ║
+║ complex_function.k                                 │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2} │ 205                  │                      ║
+║ count_operator.k                                   │ # (1 2 3)            │ 3                    │                      ║
+║ cut_vector.k                                       │ (0 2 4) _ (0 1 2 3 4 5 6 7) │ (0 1;2 3;4 5 6 7)    │                      ║
+║ dictionary_empty.k                                 │ .()                  │ .()                  │                      ║
+║ dictionary_index.k                                 │ (.((`a;1);(`b;2))) @ `a │ 1                    │                      ║
+║ dictionary_index_attr.k                            │ (.((`a;1);(`b;2;.((`c;3);(`d;4))))) @ `b. │ Error: Undefine...   │ .((`c;3;);(`d;4;))   ║
+║ dictionary_index_value.k                           │ (.((`a;1);(`b;2))) @ `a │ 1                    │                      ║
+║ dictionary_index_value2.k                          │ (.((`a;1);(`b;2))) @ `b │ 2                    │                      ║
+║ dictionary_multiple.k                              │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
+║ dictionary_null_attributes.k                       │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
+║ dictionary_single.k                                │ .,(`a;`b)            │ .,(`a;`b;)           │                      ║
+║ dictionary_type.k                                  │ 4:.((`a;1);(`b;2))   │ 5                    │                      ║
+║ dictionary_with_null_value.k                       │ .((`a;1);(`b;_n);(`c;3)) │ .((`a;1;);(`b;;...   │                      ║
+║ empty_char_vector.k                                │ 0#"abc"              │ ""                   │                      ║
+║ empty_float_vector_test.k                          │ 0#1.0 2.0 3.0        │ 0#0.0                │                      ║
+║ empty_symbol_atomic.k                              │ 0#`test              │ 0#`                  │                      ║
+║ empty_dictionary.k                                 │ .()                  │ .()                  │                      ║
+║ empty_list.k                                       │ ()                   │ ()                   │                      ║
+║ test_symbol_take.k                                 │ 0 # `test`           │ 0#`                  │                      ║
+║ test_symbol_parsing.k                              │ 0#`test`             │ 0#`                  │                      ║
+║ drop_negative.k                                    │ -4 _ 0 1 2 3 4 5 6 7 │ 0 1 2 3              │                      ║
+║ drop_positive.k                                    │ 4 _ 0 1 2 3 4 5 6 7  │ 4 5 6 7              │                      ║
+║ empty_mixed_vector.k                               │ ()                   │ ()                   │                      ║
+║ enlist_operator.k                                  │ ,5                   │ ,5                   │                      ║
+║ enumerate_empty_int.k                              │ !0                   │ !0                   │                      ║
+║ enumerate_operator.k                               │ !5                   │ 0 1 2 3 4            │                      ║
+║ equal_operator.k                                   │ 3 = 5                │ 0                    │                      ║
+║ first_operator.k                                   │ * (1 2 3)            │ 1                    │                      ║
+║ float_decimal_point.k                              │ 10.                  │ 10.0                 │                      ║
+║ float_exponential.k                                │ 0.17e03              │ 170.0                │                      ║
+║ float_exponential_large.k                          │ 1e15                 │ 1e+015               │                      ║
+║ float_exponential_small.k                          │ 1e-20                │ 1e-020               │                      ║
+║ float_types.k                                      │ 3.14                 │ 3.14                 │                      ║
+║ function_add7.k                                    │ add7:{[arg1] arg1+7} │ 12                   │                      ║
+║ function_call_anonymous.k                          │ {[arg1] arg1+6} . 7  │ 13                   │                      ║
+║ function_call_chain.k                              │ mul:{[op1;op2] op1 * op2} │ 20                   │                      ║
+║ function_call_double.k                             │ mul:{[op1;op2] op1 * op2} │ 32                   │                      ║
+║ function_call_simple.k                             │ add7:{[arg1] arg1+7} │ 12                   │                      ║
+║ function_foo_chain.k                               │ mul:{[op1;op2] op1 * op2} │ 20                   │                      ║
+║ function_mul.k                                     │ mul:{[op1;op2] op1 * op2} │ 32                   │                      ║
+║ generate_operator.k                                │ &4                   │ 0 0 0 0              │                      ║
+║ grade_down_operator.k                              │ > (3 11 9 9 4)       │ 1 2 3 4 0            │                      ║
+║ grade_up_operator.k                                │ < (3 11 9 9 4)       │ 0 4 2 3 1            │                      ║
+║ greater_than_operator.k                            │ 3 > 5                │ 0                    │                      ║
+║ integer_types_int.k                                │ 42                   │ 42                   │                      ║
+║ integer_types_long.k                               │ 123456789j           │ 123456789j           │                      ║
+║ join_operator.k                                    │ 3 , 5                │ 3 5                  │                      ║
+║ less_than_operator.k                               │ 3 < 5                │ 1                    │                      ║
+║ math_abs.k                                         │ _abs -5              │ 5.0                  │                      ║
+║ math_exp.k                                         │ _exp 2               │ 7.389056             │                      ║
+║ math_log.k                                         │ _log 10              │ 2.302585             │                      ║
+║ math_sin.k                                         │ _sin 0               │ 0.0                  │                      ║
+║ math_sqrt.k                                        │ _sqrt 16             │ 4.0                  │                      ║
+║ math_vector.k                                      │ _sin 1 2 3           │ 0.841471 0.9092...   │                      ║
+║ maximum_operator.k                                 │ 3 | 5                │ 5                    │                      ║
+║ minimum_operator.k                                 │ 3 & 5                │ 3                    │                      ║
+║ mixed_list_with_null.k                             │ (1;_n;`test;42.5)    │ (1;;`test;42.5)      │                      ║
+║ mixed_vector_empty_position.k                      │ (1;;2)               │ (1;;2)               │                      ║
+║ mixed_vector_multiple_empty.k                      │ (1;;;3)              │ (1;;;3)              │                      ║
+║ mixed_vector_whitespace_position.k                 │ (1; ;2)              │ (1;;2)               │                      ║
+║ mod_integer.k                                      │ 7!3                  │ 1                    │                      ║
+║ mod_rotate.k                                       │ 2 ! 1 2 3 4          │ 3 4 1 2              │                      ║
+║ mod_vector.k                                       │ 1 2 3 4 ! 2          │ 1 0 1 0              │                      ║
+║ modulus_operator.k                                 │ 7 ! 3                │ 1                    │                      ║
+║ negate_operator.k                                  │ ~0                   │ 1                    │                      ║
+║ nested_vector_test.k                               │ ((1 2 3);(4 5 6))    │ (1 2 3;4 5 6)        │                      ║
+║ overflow_int_max_plus1.k                           │ 2147483647 + 1       │ 0N                   │                      ║
+║ overflow_int_neg_inf.k                             │ -0I - 1              │ 0N                   │                      ║
+║ overflow_int_neg_inf_minus2.k                      │ -0I - 2              │ 0I                   │                      ║
+║ overflow_int_null_minus1.k                         │ 0N - 1               │ 0I                   │                      ║
+║ overflow_int_pos_inf.k                             │ 0I + 1               │ 0N                   │                      ║
+║ overflow_int_pos_inf_plus2.k                       │ 0I + 2               │ -0I                  │                      ║
+║ overflow_long_max_plus1.k                          │ 9223372036854775807j + 1 │ 0Nj                  │                      ║
+║ overflow_long_min_minus1.k                         │ -9223372036854775808j - 1 │ 0Ij                  │                      ║
+║ overflow_long_neg_inf.k                            │ -0Ij - 1             │ 0Nj                  │                      ║
+║ overflow_long_neg_inf_minus2.k                     │ -0Ij - 2             │ 0Ij                  │                      ║
+║ overflow_long_pos_inf.k                            │ 0Ij + 1              │ 0Nj                  │                      ║
+║ overflow_long_pos_inf_plus2.k                      │ 0Ij + 2              │ -0Ij                 │                      ║
+║ overflow_regular_int.k                             │ 2147483637 + 20      │ -2147483639          │                      ║
+║ underflow_regular_int.k                            │ -2147483639 - 40     │ 2147483617           │                      ║
+║ parentheses_basic.k                                │ 1 + 2 * 3            │ 7                    │                      ║
+║ parentheses_grouping.k                             │ (1 + 2) * 3          │ 9                    │                      ║
+║ parentheses_nested.k                               │ (1 + (2 * 3))        │ 7                    │                      ║
+║ parentheses_nested1.k                              │ ((1 + 2) * (3 + 4))  │ 21                   │                      ║
+║ parentheses_nested2.k                              │ (10 % (2 + (3 * 4))) │ 0.7142857            │                      ║
+║ parentheses_nested3.k                              │ (((1 + 2) + 3) * 4)  │ 24                   │                      ║
+║ parentheses_nested4.k                              │ (1 + (2 + (3 + (4 + 5)))) │ 15                   │                      ║
+║ parentheses_nested5.k                              │ ((1 * 2) + (3 * (4 + 5))) │ 29                   │                      ║
+║ parentheses_precedence.k                           │ 1 + (2 * 3)          │ 7                    │                      ║
+║ parenthesized_vector.k                             │ (1;2;3;4)            │ 1 2 3 4              │                      ║
+║ power_operator.k                                   │ 2 ^ 3                │ 8                    │                      ║
+║ precedence_chain1.k                                │ 10 + 20 * 30 + 40    │ 1410                 │                      ║
+║ precedence_chain2.k                                │ 100 % 10 + 20 * 30 + 40 │ 0.07092199           │                      ║
+║ precedence_complex1.k                              │ 10 % 2 + 3 * 4       │ 0.7142857            │                      ║
+║ precedence_complex2.k                              │ 10 + 20 % 30 * 40    │ 10.01667             │                      ║
+║ precedence_mixed1.k                                │ 5 - 2 + 3            │ 0                    │                      ║
+║ precedence_mixed2.k                                │ 5 * 2 + 3            │ 25                   │                      ║
+║ precedence_mixed3.k                                │ 5 + 2 * 3            │ 11                   │                      ║
+║ precedence_power1.k                                │ 2 ^ 3 + 4            │ 128                  │                      ║
+║ precedence_power2.k                                │ 2 + 3 ^ 4            │ 83                   │                      ║
+║ precedence_spec1.k                                 │ 81 % 1 + 2 * 3       │ 11.57143             │                      ║
+║ precedence_spec2.k                                 │ 120 % 4 * 2 + 3      │ 6                    │                      ║
+║ reciprocal_operator.k                              │ %4                   │ 0.25                 │                      ║
+║ reverse_operator.k                                 │ | (1 2 3)            │ 3 2 1                │                      ║
+║ scalar_vector_addition.k                           │ 1 2 + 3              │ 4 5                  │                      ║
+║ scalar_vector_multiplication.k                     │ 1 2 * 3              │ 3 6                  │                      ║
+║ shape_operator.k                                   │ ^ (1 2 3)            │ ,3                   │                      ║
+║ shape_operator_empty_vector.k                      │ ^ ()                 │ ,0                   │                      ║
+║ shape_operator_jagged.k                            │ ^ ((1 2 3); (4 5); (6 7 8 9))  // Test shape operator on non-rectangular matrix (jagged array) - Current implementation returns number of rows │ ,3                   │                      ║
+║ shape_operator_jagged_3d.k                         │ ^ (((1 2); (3 4 5)); ((6 7); (8 9 10))) │ 2 2                  │                      ║
+║ shape_operator_jagged_matrix.k                     │ ^ ((1 2 3); (4 5); (6 7 8 9)) │ ,3                   │                      ║
+║ shape_operator_matrix.k                            │ ^ ((1 2 3); (4 5 6); (7 8 9))  // Test shape operator on rectangular matrix (3x3) - Current implementation returns number of rows │ 3 3                  │                      ║
+║ shape_operator_matrix_2x3.k                        │ ^ ((1 2 3); (4 5 6)) │ 2 3                  │                      ║
+║ shape_operator_matrix_3x3.k                        │ ^ ((1 2 3); (4 5 6); (7 8 9)) │ 3 3                  │                      ║
+║ shape_operator_scalar.k                            │ ^ 42                 │ !0                   │                      ║
+║ shape_operator_tensor_2x2x3.k                      │ ^ (((1 2 3); (4 5 6)); ((7 8 9); (10 11 12))) │ 2 2 3                │                      ║
+║ shape_operator_tensor_3d.k                         │ ^ (((1 2); (3 4)); ((5 6); (7 8)); ((9 10); (11 12))) │ 3 2 2                │                      ║
+║ shape_operator_vector.k                            │ ^ (1 2 3 4 5)        │ ,5                   │                      ║
+║ simple_addition.k                                  │ 1 + 2                │ 3                    │                      ║
+║ divide_float.k                                     │ a:1.5                │ 0.6                  │                      ║
+║ divide_integer.k                                   │ a:5                  │ 2.5                  │                      ║
+║ simple_multiplication.k                            │ 4 * 3                │ 12                   │                      ║
+║ simple_nested_test.k                               │ (1 2 3)              │ 1 2 3                │                      ║
+║ minus_integer.k                                    │ a:5                  │ 2                    │                      ║
+║ special_float_neg_inf.k                            │ -0i                  │ -0i                  │                      ║
+║ special_float_null.k                               │ 0n                   │ 0n                   │                      ║
+║ special_float_pos_inf.k                            │ 0i                   │ 0i                   │                      ║
+║ special_int_neg_inf.k                              │ -0I                  │ -0I                  │                      ║
+║ special_int_null.k                                 │ 0N                   │ 0N                   │                      ║
+║ special_int_pos_inf.k                              │ 0I                   │ 0I                   │                      ║
+║ special_long_neg_inf.k                             │ -0Ij                 │ -0Ij                 │                      ║
+║ special_long_null.k                                │ 0Nj                  │ 0Nj                  │                      ║
+║ special_long_pos_inf.k                             │ 0Ij                  │ 0Ij                  │                      ║
+║ special_null.k                                     │ _n                   │                      │ _n                   ║
+║ special_int_pos_inf_plus_1.k                       │ 0I + 1               │ 0N                   │                      ║
+║ special_int_null_plus_1.k                          │ 0N + 1               │ -0I                  │                      ║
+║ special_int_neg_inf_plus_1.k                       │ -0I + 1              │ -2147483646          │                      ║
+║ special_float_null_plus_1.k                        │ 0n + 1               │ 0n                   │                      ║
+║ special_1_plus_int_pos_inf.k                       │ 1 + 0I               │ 0N                   │                      ║
+║ special_1_plus_int_null.k                          │ 1 + 0N               │ -0I                  │                      ║
+║ special_int_vector.k                               │ 0I 0N -0I            │ 0I 0N -0I            │                      ║
+║ special_float_vector.k                             │ 0i 0n -0i            │ 0i 0n -0i            │                      ║
+║ square_bracket_function.k                          │ div:{[op1;op2] op1%op2} │ 2                    │                      ║
+║ square_bracket_vector_multiple.k                   │ v:10 11 12 13 14 15 16 │ 14 16                │                      ║
+║ square_bracket_vector_single.k                     │ v:10 11 12 13 14 15 16 │ 14                   │                      ║
+║ string_representation_int.k                        │ 5:42                 │ "42"                 │                      ║
+║ string_representation_mixed.k                      │ 5:(1;2.5;"a")        │ "(1;2.5;\"a\")"      │                      ║
+║ string_representation_symbol.k                     │ 5:`symbol            │ "`symbol"            │                      ║
+║ string_representation_vector.k                     │ 5:(1 2 3)            │ "1 2 3"              │                      ║
+║ symbol_quoted.k                                    │ `"a symbol"          │ `a symbol            │ `"a symbol"          ║
+║ symbol_simple.k                                    │ `foo                 │ `foo                 │                      ║
+║ symbol_vector_compact.k                            │ `a`b`c               │ `a`b`c               │                      ║
+║ symbol_vector_spaces.k                             │ `a `b `c             │ `a`b`c               │                      ║
+║ take_operator_basic.k                              │ 3#1 2 3 4 5          │ 1 2 3                │                      ║
+║ take_operator_empty_float.k                        │ 0#0.0                │ 0#0.0                │                      ║
+║ take_operator_empty_symbol.k                       │ 0#``                 │ 0#`                  │                      ║
+║ take_operator_overflow.k                           │ 10#1 2 3             │ 1 2 3 1 2 3 1 2...   │                      ║
+║ take_operator_scalar.k                             │ 3#42                 │ 42 42 42             │                      ║
+║ reshape_basic.k                                    │ 3 4 # !12            │ (0 1 2 3;4 5 6 ...   │                      ║
+║ division_float_4_2.0.k                             │ 4 % 2.0              │ 2.0                  │                      ║
+║ division_float_5_2.5.k                             │ 5 % 2.5              │ 2.0                  │                      ║
+║ division_int_4_2.k                                 │ 4 % 2                │ 2                    │                      ║
+║ division_int_5_2.k                                 │ 5 % 2                │ 2.5                  │                      ║
+║ division_rules_10_3.k                              │ 10 % 3               │ 3.333333             │                      ║
+║ division_rules_12_4.k                              │ 12 % 4               │ 3                    │                      ║
+║ division_rules_4_2.k                               │ 4 % 2                │ 2                    │                      ║
+║ division_rules_5_2.k                               │ 5 % 2                │ 2.5                  │                      ║
+║ enumerate.k                                        │ ! 2                  │ 0 1                  │                      ║
+║ grade_down_no_parens.k                             │ > 3 11 9 9 4         │ 1 2 3 4 0            │                      ║
+║ grade_up_no_parens.k                               │ < 3 11 9 9 4         │ 0 4 2 3 1            │                      ║
+║ mixed_types.k                                      │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
+║ multiline_function_single.k                        │ test: {[x] a:x*2; a+10} │ 20                   │                      ║
+║ null_vector.k                                      │ (;1;2)               │ (;1;2)               │                      ║
+║ scoping_single.k                                   │ globalVar: 100       │ 60                   │                      ║
+║ semicolon_simple.k                                 │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
+║ semicolon_vars.k                                   │ a: 10                │ 30 200 -10           │                      ║
+║ semicolon_vector.k                                 │ a: 1 2               │ (7;3 4;-20.45)       │                      ║
+║ simple_scalar_div.k                                │ 5 % 2                │ 2.5                  │                      ║
+║ single_no_semicolon.k                              │ (42)                 │ 42                   │                      ║
+║ smart_division1.k                                  │ 5 10 % 2             │ 2.5 5.0              │                      ║
+║ smart_division2.k                                  │ 4 8 % 2              │ 2 4                  │                      ║
+║ smart_division3.k                                  │ 6 12 18 % 3          │ 2 4 6                │                      ║
+║ special_0i_plus_1.k                                │ 0I + 1               │ 0N                   │                      ║
+║ special_0n_plus_1.k                                │ 0N + 1               │ -0I                  │                      ║
+║ special_1_plus_neg0i.k                             │ 1 + -0I              │ -2147483646          │                      ║
+║ special_neg0i_plus_1.k                             │ -0I + 1              │ -2147483646          │                      ║
+║ special_underflow.k                                │ -0I - 27             │ 2147483622           │                      ║
+║ special_underflow_2.k                              │ -0I - 100            │ 2147483549           │                      ║
+║ special_underflow_3.k                              │ -0I - 1000           │ 2147482649           │                      ║
+║ type_char.k                                        │ 4: "a"               │ 3                    │                      ║
+║ type_float.k                                       │ 4: 3.14              │ 2                    │                      ║
+║ type_null.k                                        │ 4: _n                │ 6                    │                      ║
+║ type_space.k                                       │ 4: " "               │ 3                    │                      ║
+║ type_symbol.k                                      │ 4: `symbol           │ 4                    │                      ║
+║ type_vector.k                                      │ 4: (1 2 3)           │ -1                   │                      ║
+║ vector.k                                           │ 1 2 3                │ 1 2 3                │                      ║
+║ type_operator_char.k                               │ 4: "a"               │ 3                    │                      ║
+║ type_operator_float.k                              │ 4: 3.14              │ 2                    │                      ║
+║ type_operator_null.k                               │ 4: _n                │ 6                    │                      ║
+║ type_operator_symbol.k                             │ 4: `symbol           │ 4                    │                      ║
+║ type_operator_vector_char.k                        │ 4: ("abc")           │ -3                   │                      ║
+║ type_operator_vector_float.k                       │ 4: (1.0 2.0 3.0)     │ -2                   │                      ║
+║ type_operator_vector_int.k                         │ 4: (1 2 3)           │ -1                   │                      ║
+║ type_operator_vector_mixed.k                       │ 4: (1;2.0;"a")       │ 0                    │                      ║
+║ type_operator_vector_symbol.k                      │ 4: "abc"             │ -3                   │                      ║
+║ type_promotion_float_int.k                         │ 1.5 + 2              │ 3.5                  │                      ║
+║ type_promotion_float_long.k                        │ 1.5 + 1j             │ 2.5                  │                      ║
+║ type_promotion_int_float.k                         │ 2 + 1.5              │ 3.5                  │                      ║
+║ type_promotion_int_long.k                          │ 2 + 1j               │ 3j                   │                      ║
+║ type_promotion_long_float.k                        │ 1j + 1.5             │ 2.5                  │                      ║
+║ type_promotion_long_int.k                          │ 1j + 2               │ 3j                   │                      ║
+║ unary_minus_operator.k                             │ - 5                  │ -5                   │                      ║
+║ unique_operator.k                                  │ ? (1 2 1 3)          │ 1 2 3                │                      ║
+║ amend_item_simple_no_semicolon.k                   │ 1 12 3               │ 1 12 3               │                      ║
+║ variable_assignment.k                              │ foo:7                │ 7                    │                      ║
+║ variable_reassignment.k                            │ foo:7                │ 7.2 4.5              │                      ║
+║ variable_scoping_global_access.k                   │ globalVar: 100  // Test function accessing global variable │ 150                  │                      ║
+║ variable_scoping_global_assignment.k               │ globalVar: 100  // Test global assignment from nested function │ 100                  │ 10                   ║
+║ variable_scoping_global_unchanged.k                │ globalVar: 100  // Test verify global variable unchanged │ 100                  │                      ║
+║ variable_scoping_local_hiding.k                    │ globalVar: 100  // Test function with local variable hiding global │ 60                   │                      ║
+║ variable_scoping_nested_functions.k                │ globalVar: 100  // Test nested functions │ 140                  │ 25                   ║
+║ variable_usage.k                                   │ x:10                 │ 30                   │                      ║
+║ dot_execute.k                                      │ ."2+2"               │ 4                    │                      ║
+║ dot_execute_context.k                              │ foo:7                │ 8                    │                      ║
+║ dictionary_enumerate.k                             │ d: .((`a;1);(`b;2))  │ `a`b                 │                      ║
+║ null_operations.k                                  │ _n@7                 │ 7                    │                      ║
+║ dictionary_dot_apply.k                             │ d: .((`a;1;.());(`b;2;.())) │ 1                    │                      ║
+║ monadic_format_basic.k                             │ $1                   │ ,"1"                 │                      ║
+║ monadic_format_types.k                             │ $42.5                │ "42.5"               │                      ║
+║ monadic_format_vector.k                            │ $1 2 3               │ ("1";"2";"3")        │ (,"1";,"2";,"3")     ║
+║ monadic_format_string_hello.k                      │ $"hello"             │ "hello"              │                      ║
+║ monadic_format_string_a.k                          │ $"a"                 │ ,"a"                 │                      ║
+║ monadic_format_symbol_hello.k                      │ $`hello              │ "hello"              │                      ║
+║ monadic_format_symbol_simple.k                     │ $`test               │ "test"               │                      ║
+║ monadic_format_dictionary.k                        │ $.((`a;1);(`b;2);(`c;3)) │ ".((`a;1;);(`b;...   │                      ║
+║ monadic_format_nested_list.k                       │ $((1;2;3);(4;5;6))   │ (("1";"2";"3");...   │ ((,"1";,"2";,"3...   ║
+║ monadic_format_integer.k                           │ $42                  │ "42"                 │                      ║
+║ monadic_format_float.k                             │ $3.14                │ "3.14"               │                      ║
+║ monadic_format_vector_simple.k                     │ $1 2 3               │ ("1";"2";"3")        │ (,"1";,"2";,"3")     ║
+║ format_integer.k                                   │ 0$1                  │ ""                   │                      ║
+║ format_float_numeric.k                             │ 0.0$1                │ ,"1"                 │                      ║
+║ form_long.k                                        │ 0j$"42"              │ 42j                  │                      ║
+║ format_numeric.k                                   │ 5$1                  │ "    1"              │                      ║
+║ form_string_pad_left.k                             │ 7$"hello"            │ "  hello"            │                      ║
+║ format_symbol_pad_left.k                           │ 10$`hello            │ "     hello"         │                      ║
+║ format_symbol_pad_left_8.k                         │ 8$`hello             │ "   hello"           │                      ║
+║ format_pad_left.k                                  │ 5$42                 │ "   42"              │                      ║
+║ format_pad_right.k                                 │ -5$42                │ "42   "              │                      ║
+║ format_float_width_precision.k                     │ 10.2$3.14159         │ "      3.14"         │                      ║
+║ format_float_precision.k                           │ 8.2$3.14159          │ "    3.14"           │                      ║
+║ format_0_1.k                                       │ 0$1.0                │ ""                   │                      ║
+║ format_1_1.k                                       │ 1$1.0                │ ,"1"                 │                      ║
+║ format_symbol_string_mixed_vector.k                │ `$("hello";"world";"test") │ `hello`world`test    │                      ║
+║ form_integer_charvector.k                          │ 0$"42"               │ 42                   │                      ║
+║ form_character_charvector.k                        │ " "$"aaa"            │ "aaa"                │                      ║
+║ dot_execute_variables.k                            │ a:1.5                │ 0.6                  │                      ║
+║ form_braces_expressions.k                          │ a:5                  │ 8 15 2               │                      ║
+║ form_braces_nested_expr.k                          │ x:10                 │ (12 20;(7;3.333...   │                      ║
+║ form_braces_complex.k                              │ a:1.5                │ 8.25 12.0 9.0        │                      ║
+║ form_braces_string.k                               │ name:"John"          │ ("John";"is";25...   │                      ║
+║ form_braces_mixed_type.k                           │ num:42               │ (42;"hello";`te...   │                      ║
+║ form_braces_simple.k                               │ a:5                  │ 8                    │                      ║
+║ form_braces_arith.k                                │ a:5                  │ 8 15 2 12 20 5       │                      ║
+║ form_braces_nested_arith.k                         │ a:5                  │ (7 10;(2;2.5);5...   │                      ║
+║ form_braces_float.k                                │ a:1.5                │ 4.0 3.75 0.6 -1.0    │                      ║
+║ form_braces_mixed_arith.k                          │ x:10                 │ 17.5 32.5 4.5        │                      ║
+║ form_braces_example.k                              │ a:5                  │ 8 9                  │                      ║
+║ form_braces_function_calls.k                       │ sum:{[a;b] a+b}      │ 5 20 12              │                      ║
+║ form_braces_nested_function_calls.k                │ sum:{[a;b] a+b}      │ 5 8 25               │                      ║
+║ log.k                                              │ _log 10              │ 2.302585             │                      ║
+║ time_t.k                                           │ r:_t                 │ .((`type;1;);(`...   │                      ║
+║ rand_draw_select.k                                 │ r:10 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;-1;);(...   │                      ║
+║ rand_draw_deal.k                                   │ r:4 _draw -4; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;-1;);(...   │                      ║
+║ rand_draw_probability.k                            │ r:10 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;-2;);(...   │                      ║
+║ rand_draw_vector_select.k                          │ r:2 3 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
+║ rand_draw_vector_deal.k                            │ r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;0;);(`...   │ .((`type;0;);(`...   ║
+║ rand_draw_vector_probability.k                     │ r:2 3 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
+║ time_gtime.k                                       │ _gtime 0             │ 20350101 0           │                      ║
+║ time_lt.k                                          │ _lt 0                │ -18000               │                      ║
+║ time_jd.k                                          │ _jd 20260206         │ -3251                │                      ║
+║ time_dj.k                                          │ _dj 0                │ 20350101             │                      ║
+║ time_ltime.k                                       │ _ltime 0             │ 20341231 190000      │                      ║
+║ in.k                                               │ 4 _in 1 7 2 4 6 3    │ 4                    │                      ║
+║ list_dv_basic.k                                    │ 3 4 4 5 _dv 4        │ 3 5                  │                      ║
+║ list_dv_nomatch.k                                  │ 3 4 4 5 _dv 6        │ 3 4 4 5              │                      ║
+║ list_di_basic.k                                    │ 3 2 4 5 _di 1        │ 3 4 5                │                      ║
+║ list_di_multiple.k                                 │ 3 2 4 5 _di 1 3      │ 3 4                  │                      ║
+║ list_sv_base10.k                                   │ 10 _sv 1 9 9 5       │ 1995                 │                      ║
+║ list_sv_base2.k                                    │ 2 _sv 1 0 0 1        │ 9                    │                      ║
+║ list_sv_mixed.k                                    │ 10 10 10 10 _sv 1 9 9 5 │ 1995                 │                      ║
+║ list_getenv.k                                      │ _getenv "PROMPT"     │ ()                   │ "$P$G"               ║
+║ list_setenv.k                                      │ `TESTVAR _setenv "hello world" │ `TESTVAR             │                      ║
+║ list_size_existing.k                               │ _size "C:\\Windows\\System32\\write.exe" │ 11264.0              │                      ║
+║ test_ci_basic.k                                    │ _ci 65               │ "A"                  │                      ║
+║ test_ci_vector.k                                   │ _ci 65 66 67         │ "ABC"                │                      ║
+║ test_ic_basic.k                                    │ _ic "A"              │ 65                   │                      ║
+║ test_vs_dyadic.k                                   │ 10 _vs 1995          │ 1 9 9 5              │                      ║
+║ test_ic_vector.k                                   │ _ic "ABC"            │ 65 66 67             │                      ║
+║ test_monadic_colon.k                               │ : 42                 │ 42                   │                      ║
+║ test_sm_basic.k                                    │ `foo _sm `foo        │ 1                    │                      ║
+║ test_sm_simple.k                                   │ `a _sm `a            │ 1                    │                      ║
+║ test_ss_basic.k                                    │ "hello world" _ss "world" │ 7                    │                      ║
+║ test_semicolon.k                                   │ 1 2; 3 4             │ 3 4                  │                      ║
+║ search_in_basic.k                                  │ 4 _in 1 2 3 4 5      │ 4                    │                      ║
+║ search_in_notfound.k                               │ 6 _in 1 2 3 4 5      │ 0                    │                      ║
+║ search_bin_basic.k                                 │ 3 4 5 6 _bin 4       │ 1                    │                      ║
+║ search_binl_eachleft.k                             │ 1 3 5 _binl 1 2 3 4 5 │ 0 1 1 2 2            │                      ║
+║ search_lin_intersection.k                          │ 1 3 5 7 9 _lin 1 2 3 4 5 │ 1 1 1 0 0            │                      ║
+║ amend_item_basic.k                                 │ @[1 2 3; 1; +; 10]   │ 1 12 3               │                      ║
+║ amend_item_multiple.k                              │ @[1 2 3; 0 2; +; 10] │ 11 2 13              │                      ║
+║ amend_item_monadic.k                               │ @[1 2 3; 1; {x*2}]   │ 1 4 3                │                      ║
+║ amend_test.k                                       │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)  // Amend: add 10 to elements at indices 0 and 2 │ (1 2 13 4 5;6 7...   │                      ║
+║ amend_simple.k                                     │ 1 12 3 4 5           │ 1 12 3 4 5           │                      ║
+║ find_basic.k                                       │ 9 8 7 6 5 4 3 ? 7  // Find operator - basic functionality │ 2                    │                      ║
+║ find_notfound.k                                    │ 9 8 7 6 5 4 3 ? 1  // Find operator - not found case │ 7                    │                      ║
+║ lsq.k                                              │ _lsq                 │ Error: _lsq (le...   │ Error - _lsq (l...   ║
+║ format_float_precision_vector_simple.k             │ 10.1$(1.5;2.5)       │ "       1.5    ...   │ ("       1.5";"...   ║
+║ format_float_precision_mixed_vector.k              │ 7.2$(1.5;2.7;3.14159;4.2) │ "   1.50   2.70...   │ ("   1.50";"   ...   ║
+║ format_pad_mixed_vector.k                          │ 10$(1;2;3)           │ "         1    ...   │ ("         1";"...   ║
+║ format_pad_negative_mixed_vector.k                 │ -10$(1;2;3)          │ "1         2   ...   │ ("1         ";"...   ║
+║ vector_notation_empty.k                            │ ()                   │ ()                   │                      ║
+║ vector_notation_functions.k                        │ double: {[x] x * 2}  │ 10 20 30             │                      ║
+║ vector_notation_mixed_types.k                      │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
+║ vector_notation_nested.k                           │ ((1 + 2); (3 + 4); (5 + 6)) │ 3 7 11               │                      ║
+║ vector_notation_semicolon.k                        │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
+║ vector_notation_single_group.k                     │ (42)                 │ 42                   │                      ║
+║ vector_notation_space.k                            │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
+║ vector_notation_variables.k                        │ a: 10                │ 30 200 -10           │                      ║
+║ vector_addition.k                                  │ 1 2 + 3 4            │ 4 6                  │                      ║
+║ vector_division.k                                  │ 1 2 % 3 4            │ 0.3333333 0.5        │                      ║
+║ vector_index_duplicate.k                           │ 5 8 4 9 @ 0 0        │ 5 5                  │                      ║
+║ vector_index_first.k                               │ 5 8 4 9 @ 0          │ 5                    │                      ║
+║ vector_index_multiple.k                            │ 5 8 4 9 @ 1 3        │ 8 9                  │                      ║
+║ vector_index_reverse.k                             │ 5 8 4 9 @ 3 1        │ 9 8                  │                      ║
+║ vector_index_single.k                              │ 5 8 4 9 @ 2          │ 4                    │                      ║
+║ vector_multiplication.k                            │ 1 2 * 3 4            │ 3 8                  │                      ║
+║ vector_subtraction.k                               │ 1 2 - 3 4            │ -2 -2                │                      ║
+║ vector_with_null.k                                 │ (_n;1;2)             │ (;1;2)               │                      ║
+║ vector_with_null_middle.k                          │ (1;_n;3)             │ (1;;3)               │                      ║
+║ where_operator.k                                   │ & (1 0 1 1 0)        │ 0 2 3                │                      ║
+║ where_vector_counts.k                              │ & (3 2 1)            │ 0 0 0 1 1 2          │                      ║
+║ floor_operator.k                                   │ _3.7                 │ 3                    │                      ║
+║ adverb_backslash_colon_basic.k                     │ 1 2 3 +\: 4 5 6      │ (5 6 7;6 7 8;7 ...   │                      ║
+║ adverb_slash_colon_basic.k                         │ 1 2 3 +/: 4 5 6      │ (5 6 7;6 7 8;7 ...   │                      ║
+║ adverb_tick_colon_basic.k                          │ -': 4 8 9 12 20      │ 4 1 3 8              │                      ║
+║ amend_apply.k                                      │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10) │ (1 2 13 4 5;6 7...   │                      ║
+║ amend_dot_test.k                                   │ .[1 2 3; 1; +; 10]   │ 1 12 3               │                      ║
+║ amend_item_simple.k                                │ @[1 2 3]             │ Error: For atom...   │ @[1 2 3]             ║
+║ amend_item_single.k                                │ @[1]                 │ 1                    │ @[1 2 3]             ║
+║ amend_minimal.k                                    │ (.) . (1 2 3; 0; +; 10) │ 11 2 3               │                      ║
+║ amend_parenthesized.k                              │ (.) . (1 2 3; 0; +; 10) │ 11 2 3               │                      ║
+║ amend_test_anonymous_func.k                        │ f:{x+y}              │ 11 2 3               │                      ║
+║ amend_test_func_var.k                              │ f:{x+y}              │ 11 2 3               │                      ║
+║ conditional_bracket_test.k                         │ :[1 < 2; "true"; "false"]  // Test conditional evaluation with bracket notation │ "true"               │                      ║
+║ conditional_false.k                                │ :[0; "true"; "false"]  // Conditional evaluation - condition false │ "false"              │                      ║
+║ conditional_simple_test.k                          │ :[1; "true"; "false"] │ "true"               │                      ║
+║ conditional_true.k                                 │ :[1; "true"; "false"]  // Conditional evaluation - condition true │ "true"               │                      ║
+║ dictionary_null_index.k                            │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
+║ dictionary_unmake.k                                │ d: .((`a;1);(`b;2))  │ ((`a;1;);(`b;2;))    │                      ║
+║ do_bracket_test.k                                  │ do[3; 42]  // Do function with bracket notation │                      │                      ║
+║ do_loop.k                                          │ i: 0; do[3; i+: 1]  // Do loop - increment i 3 times │                      │                      ║
+║ do_simple.k                                        │ do[3; 42]  // Do loop - simple test │                      │                      ║
+║ dyadic_divide_bracket.k                            │ %[20; 4]  // Dyadic division with bracket notation │ 5                    │                      ║
+║ dyadic_minus_bracket.k                             │ -[10; 3]  // Dyadic subtraction with bracket notation │ 7                    │                      ║
+║ dyadic_multiply_bracket.k                          │ *[4; 6]  // Dyadic multiplication with bracket notation │ 24                   │                      ║
+║ dyadic_plus_bracket.k                              │ +[3; 5]  // Dyadic addition with bracket notation │ 8                    │                      ║
+║ empty_brackets_dictionary.k                        │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
+║ empty_brackets_vector.k                            │ v: 1 2 3 4           │ 1 2 3 4              │                      ║
+║ form_braces_complex_expressions.k                  │ sum:{[a;b] a+b}      │ 14 20 10             │                      ║
+║ format_float_precision_complex_mixed.k             │ 10.3$(1.234;2.567;3.890;4.123) │ "     1.234    ...   │ ("     1.234"
+ ...   ║
+║ format_float_vector.k                              │ 0.0$(1;2.5;3.14;42)  │ ("1";"2";"3";"42")   │ (,"1"
+ ,"2"
+ ,"...   ║
+║ format_int_vector.k                                │ 0$(1;2.5;3.14;42)    │ ""                   │ (""
+ ""
+ ""
+ "")     ║
+║ format_long_vector.k                               │ 0j$(1;2.5;3.14;42)   │ ""                   │                      ║
+║ format_string_pad_left.k                           │ 10$"hello"           │ "     hello"         │                      ║
+║ format_string_pad_right.k                          │ -10$"test"           │ "test      "         │                      ║
+║ format_vector_int.k                                │ 0$(1;2;3)            │ ""                   │ ("1";"2";"3")        ║
+║ group_operator.k                                   │ a: 3 3 8 7 5 7 3 8 4 4 9 2 7 6 0 7 8 7 0 1 │ (0 1 6;2 7 16;3...   │ (0 1 6;2 7 16;3...   ║
+║ if_bracket_test.k                                  │ if[1 < 2; a: 20]  // Test if function with bracket notation │                      │                      ║
+║ if_simple_test.k                                   │ if[3; 42]  // If function with bracket notation │                      │                      ║
+║ if_true.k                                          │ a: 10; if[1 < 2; a: 20]  // If statement - condition true │                      │                      ║
+║ in_basic.k                                         │ 4 _in 1 7 2 4 6 3    │ 4                    │                      ║
+║ in_notfound.k                                      │ 10 _in 1 7 2 4 6 3   │ 0                    │                      ║
+║ in_simple.k                                        │ 5 _in 1 2 3          │ 0                    │                      ║
+║ isolated.k                                         │ a:1.5                │ 0.6                  │                      ║
+║ modulo.k                                           │ a:1.5                │ 0.6                  │                      ║
+║ monadic_format_mixed_vector.k                      │ $(1;2.5;"hello";`symbol) │ ("1";"2.5";"hel...   │ (,"1";"2.5";"he...   ║
+║ over_plus_empty.k                                  │ +/!0                 │ 0                    │                      ║
+║ simple_division.k                                  │ 8 % 2                │ 4                    │                      ║
+║ simple_subtraction.k                               │ 5 - 3                │ 2                    │                      ║
+║ string_parse.k                                     │ a: 10                │ 30                   │                      ║
+║ k_tree_assignment_absolute_foo.k                   │ .k.foo: 42           │ 42                   │                      ║
+║ k_tree_retrieve_absolute_foo.k                     │ .k.foo: 42           │ 42                   │                      ║
+║ k_tree_retrieval_relative.k                        │ .k.foo: 42           │ 42                   │                      ║
+║ k_tree_enumerate.k                                 │ !`                   │ `k`t                 │                      ║
+║ k_tree_current_branch.k                            │ _d                   │ `.k                  │                      ║
+║ k_tree_dictionary_indexing.k                       │ .k.foo: 42           │ 42                   │                      ║
+║ k_tree_nested_indexing.k                           │ .k.dd: .((`a;1);(`b;2);(`c;3)) │ 2                    │                      ║
+║ k_tree_verify_root.k                               │ .k                   │                      │                      ║
+║ k_tree_flip_dictionary.k                           │ .+(`a`b`c;1 2 3)     │ .((`a;1;);(`b;2...   │                      ║
+║ k_tree_null_to_dict_conversion.k                   │ .k.foo: 42           │ .,(`foo;42;)         │                      ║
+║ k_tree_dictionary_assignment.k                     │ .k.dd: .((`a;1);(`b;2);(`c;3)) │ .((`a;1;);(`b;2...   │                      ║
+║ k_tree_test_bracket_indexing.k                     │ d: .((`a;1);(`b;2);(`c;3)) │ 2                    │                      ║
+║ k_tree_flip_test.k                                 │ +(`a`b`c;1 2 3)      │ ((`a;1);(`b;2);...   │                      ║
+║ vector_null_index.k                                │ v: 1 2 3 4           │ 1 2 3 4              │                      ║
+║ while_bracket_test.k                               │ i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation │                      │                      ║
+║ while_safe_test.k                                  │ i: 0                 │                      │                      ║
+║ while_simple_test.k                                │ while[0; 42]         │                      │                      ║
+║ serialization_bd_db_integer.k                      │ // Test _bd and _db for Integer serialization │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_float.k                        │ _bd 3.14159          │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_character.k                    │ // Test _bd and _db for Character serialization │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_symbol.k                       │ // Test _bd and _db for Symbol serialization │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_null.k                         │ // Test _bd and _db for Null serialization │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_integervector.k                │ _bd 1 2 3            │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_floatvector.k                  │ _bd 1.1 2.2 3.3      │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_charactervector.k              │ _bd "hello"          │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_symbolvector.k                 │ _bd `a`b`c           │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_list.k                         │ _bd (1;2.5;"a")      │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_dictionary.k                   │ _bd .((`a;`"1");(`b;`"2")) │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_anonymousfunction.k            │ _bd {[x] x+1}        │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_roundtrip_integer.k            │ // Test _bd and _db round-trip serialization │ 42                   │                      ║
+║ serialization_bd_db_roundtrip_list.k               │ _db _bd (1;2.5;"a")  │ (1;2.5;"a")          │                      ║
+║ serialization_bd_ic_symbol.k                       │ _ic _bd `A           │ 1 0 0 0 6 0 0 0...   │                      ║
+║ db_basic_integer.k                                 │ _db _bd 42           │ 42                   │                      ║
+║ db_float.k                                         │ _db _bd 3.14         │ 3.14                 │                      ║
+║ db_symbol.k                                        │ _db _bd `test        │ `test                │                      ║
+║ db_int_vector.k                                    │ _db _bd 1 2 3        │ 1 2 3                │                      ║
+║ db_symbol_vector.k                                 │ _db _bd `a`b`c       │ `a                   │ `a`b`c               ║
+║ db_char_vector.k                                   │ _db _bd "hello"      │ "hello"              │                      ║
+║ db_list_simple.k                                   │ _db _bd (1;2;3)      │ 1 2 3                │                      ║
+║ db_dict_simple.k                                   │ _db _bd .((`a;1);(`b;2);(`c;3;)) │ .((`a;1;);(`b;2...   │                      ║
+║ db_function_simple.k                               │ _db _bd {+}          │ {+}                  │                      ║
+║ db_function_params.k                               │ _db _bd {x+y}        │ {x+y}                │                      ║
+║ db_null.k                                          │ _db _bd 0N           │ 0N                   │                      ║
+║ db_empty_list.k                                    │ _db _bd ()           │ ()                   │                      ║
+║ db_character.k                                     │ _db _bd "a"          │ "a"                  │                      ║
+║ db_float_simple.k                                  │ _db _bd 1.5          │ 1.5                  │                      ║
+║ db_int_vector_long.k                               │ _db _bd 1 2 3 4 5    │ 1 2 3 4 5            │                      ║
+║ db_float_vector.k                                  │ _db _bd 1.1 2.2 3.3  │ 1.1 2.2 3.3          │                      ║
+║ db_char_vector_sentence.k                          │ _db _bd "hello world" │ "hello world"        │                      ║
+║ db_symbol_simple.k                                 │ _db _bd `hello       │ `hello               │                      ║
+║ db_list_longer.k                                   │ _db _bd (1;2;3;4;5)  │ 1 2 3 4 5            │                      ║
+║ db_list_mixed_types.k                              │ _db _bd (1;`test;3.14;"hello") │ (1;`test;3.14;"...   │                      ║
+║ db_function_complex.k                              │ _db _bd {[x;y] x*y+z} │ {[x;y] x*y+z}        │                      ║
+║ db_function_simple_math.k                          │ _db _bd {x+y}        │ {x+y}                │                      ║
+║ db_nested_dict_vectors.k                           │ _db _bd .((`a;(1;2;3));(`b;(`hello;`world;`test))) │ Error: _db (dat...   │ {`a:(1;2;3);`b:...   ║
+║ db_nested_lists.k                                  │ _db _bd ((1;2;3);(`hello;`world;`test);(4.5;6.7)) │ Error: _db (dat...   │ ((1;2;3);(`hell...   ║
+║ db_mixed_list.k                                    │ _db _bd (1;`test;3.14) │ (1;`test;3.14)       │                      ║
+║ db_dict_simple.k                                   │ _db _bd .((`a;1);(`b;2);(`c;3;)) │ .((`a;1;);(`b;2...   │                      ║
+║ db_dict_single_entry.k                             │ _db _bd .,(`a;1)     │ .,(`a;1;)            │                      ║
+║ db_dict_symbol_2char.k                             │ _db _bd .,(`ab;1 2)  │ .,(`ab;1 2;)         │                      ║
+║ db_dict_symbol_8char.k                             │ _db _bd .,(`abcdefgh;1 2 3 4 5 6 7 8) │ .,(`abcdefgh;1 ...   │                      ║
+║ db_dict_multi_entry.k                              │ _db _bd .((`a;1);(`b;2)) │ .((`a;1;);(`b;2;))   │                      ║
+║ db_dict_five_entries.k                             │ _db _bd .((`a;1);(`b;2);(`c;3);(`d;4);(`e;5)) │ .((`a;1;);(`b;2...   │                      ║
+║ db_dict_complex_attributes.k                       │ _db _bd .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer)))) │ Error: _db (dat...   │ .((`col01; 11 1...   ║
+║ db_dict_empty.k                                    │ _db _bd .()          │ .()                  │                      ║
+║ db_dict_with_null_attrs.k                          │ _db _bd .,(`a;1;.()) │ .,(`a;1;)            │ .,(`a;1;.())         ║
+║ db_dict_two_entries_simple.k                       │ _db _bd .,(`a;1);(`b;2) │ (`b;2)               │ .((`a;1);(`b;2))     ║
+║ db_dict_with_empty_attrs.k                         │ _db _bd .((`a;1);(`b;2;.())) │ .((`a;1;);(`b;2;))   │ .((`a;1);(`b;2))     ║
+║ db_enlist_single_int.k                             │ _db _bd ,5           │ ,5                   │                      ║
+║ db_enlist_single_symbol.k                          │ _db _bd ,`test       │ ,`test               │                      ║
+║ db_enlist_single_string.k                          │ _db _bd ,"hello"     │ ,"hello"             │                      ║
+║ db_enlist_vector.k                                 │ _db _bd ,(1 2 3)     │ ,1 2 3               │                      ║
+║ serialization_bd_null_edge_0.k                     │ _bd _n               │ "\001\000\000\0...   │                      ║
+║ serialization_bd_integer_edge_0.k                  │ _bd 0                │ "\001\000\000\0...   │                      ║
+║ serialization_bd_integer_edge_1.k                  │ _bd 1                │ "\001\000\000\0...   │                      ║
+║ serialization_bd_integer_edge_-1.k                 │ _bd -1               │ "\001\000\000\0...   │                      ║
+║ serialization_bd_integer_edge_2147483647.k         │ _bd 2147483647       │ "\001\000\000\0...   │                      ║
+║ serialization_bd_integer_edge_-2147483648.k        │ _bd -2147483648      │ "\001\000\000\0...   │                      ║
+║ serialization_bd_integer_edge_0N.k                 │ _bd 0N               │ "\001\000\000\0...   │                      ║
+║ serialization_bd_integer_edge_0I.k                 │ _bd 0I               │ "\001\000\000\0...   │                      ║
+║ serialization_bd_integer_edge_-0I.k                │ _bd -0I              │ "\001\000\000\0...   │                      ║
+║ serialization_bd_float_edge_0.0.k                  │ _bd 0.0              │ "\001\000\000\0...   │                      ║
+║ serialization_bd_float_edge_1.0.k                  │ _bd 1.0              │ "\001\000\000\0...   │                      ║
+║ serialization_bd_float_edge_-1.0.k                 │ _bd -1.0             │ "\001\000\000\0...   │                      ║
+║ serialization_bd_float_edge_0.5.k                  │ _bd 0.5              │ "\001\000\000\0...   │                      ║
+║ serialization_bd_float_edge_-0.5.k                 │ _bd -0.5             │ "\001\000\000\0...   │                      ║
+║ serialization_bd_float_edge_0n.k                   │ _bd 0n               │ "\001\000\000\0...   │                      ║
+║ serialization_bd_float_edge_0i.k                   │ _bd 0i               │ "\001\000\000\0...   │                      ║
+║ serialization_bd_float_edge_-0i.k                  │ _bd -0i              │ "\001\000\000\0...   │                      ║
+║ serialization_bd_symbol_edge_a.k                   │ _bd `a               │ "\001\000\000\0...   │                      ║
+║ serialization_bd_symbol_edge_symbol.k              │ _bd `symbol          │ "\001\000\000\0...   │                      ║
+║ serialization_bd_symbol_edge_test123.k             │ _bd `test123         │ "\001\000\000\0...   │                      ║
+║ serialization_bd_symbol_edge_underscore.k          │ _bd `_underscore     │ "\001\000\000\0...   │                      ║
+║ serialization_bd_symbol_edge_hello.k               │ _bd `"hello"         │ "\001\000\000\0...   │                      ║
+║ serialization_bd_symbol_edge_newline_tab.k         │ _bd `"\n\t"          │ "\001\000\000\0...   │                      ║
+║ serialization_bd_symbol_edge_001.k                 │ _bd `"\001"          │ "\001\000\000\0...   │                      ║
+║ serialization_bd_symbol_edge_empty.k               │ _bd `                │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_a.k                │ _bd "a"              │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_b.k                │ _bd "b"              │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_z.k                │ _bd "z"              │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_A_upper.k          │ _bd "A"              │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_Z_upper.k          │ _bd "Z"              │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_0.k                │ _bd "0"              │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_9.k                │ _bd "9"              │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_space.k            │ _bd " "              │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_newline.k          │ _bd "\n"             │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_tab.k              │ _bd "\t"             │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_carriage.k         │ _bd "\r"             │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_null.k             │ _bd "\0"             │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_001.k              │ _bd "\001"           │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_377.k              │ _bd "\377"           │ "\001\000\000\0...   │                      ║
+║ serialization_bd_character_edge_backspace.k        │ _bd "\b"             │ "\001\000\000\0...   │                      ║
+║ serialization_bd_charactervector_edge_empty.k      │ _bd ""               │ "\001\000\000\0...   │                      ║
+║ serialization_bd_charactervector_edge_a.k          │ _bd "a"              │ "\001\000\000\0...   │                      ║
+║ serialization_bd_charactervector_edge_hello.k      │ _bd "hello"          │ "\001\000\000\0...   │                      ║
+║ serialization_bd_charactervector_edge_whitespace.k │ _bd "\n\t\r"         │ "\001\000\000\0...   │                      ║
+║ serialization_bd_integervector_edge_empty.k        │ _bd !0               │ "\001\000\000\0...   │                      ║
+║ serialization_bd_integervector_edge_single.k       │ _bd ,1               │ "\001\000\000\0...   │                      ║
+║ serialization_bd_integervector_edge_123.k          │ _bd 1 2 3            │ "\001\000\000\0...   │                      ║
+║ serialization_bd_integervector_edge_special.k      │ _bd 0N 0I -0I        │ "\001\000\000\0...   │                      ║
+║ serialization_bd_list_edge_empty.k                 │ _bd ()               │ "\001\000\000\0...   │                      ║
+║ serialization_bd_list_edge_null.k                  │ _bd ,_n              │ "\001\000\000\0...   │                      ║
+║ serialization_bd_list_edge_mixed.k                 │ _bd (1;2.5;"a")      │ "\001\000\000\0...   │                      ║
+║ serialization_bd_list_edge_complex.k               │ _bd (_n;`symbol;{[]}) │ "\001\000\000\0...   │                      ║
+║ serialization_bd_list_edge_nested.k                │ _bd ((1;2);(3;4))    │ "\001\000\000\0...   │                      ║
+║ serialization_bd_list_edge_dicts.k                 │ _bd (.,(`a;1);.,(`b;2)) │ "\001\000\000\0...   │                      ║
+║ serialization_bd_anonymousfunction_random_1.k      │ _bd {[x] x+7;x$1;x<=2} │ "\001\000\000\0...   │                      ║
+║ serialization_bd_anonymousfunction_random_2.k      │ _bd {[] 0|4;0&3}     │ "\001\000\000\0...   │                      ║
+║ serialization_bd_anonymousfunction_random_3.k      │ _bd {[xyz] xy|3}     │ "\001\000\000\0...   │                      ║
+║ serialization_bd_floatvector_random_1.k            │ _bd 196825.27335627712 -326371.90292283031 -214498.92985862558 11655.819143220946 │ "\001\000\000\0...   │                      ║
+║ serialization_bd_floatvector_random_2.k            │ _bd 148812.33236087282 │ "\001\000\000\0...   │                      ║
+║ serialization_bd_floatvector_random_3.k            │ _bd 585267.57816312299 -569668.94176055992 37200.312770306708 397004.01885714347 │ "\001\000\000\0...   │                      ║
+║ serialization_bd_symbolvector_random_1.k           │ _bd `qzUM7 `g8X6P `"iay" `KgNQ5i `"< +" `b5 │ "\001\000\000\0...   │                      ║
+║ serialization_bd_symbolvector_random_2.k           │ _bd `"O 0" `D `qCBI1b `"*H " `"SS" `ULsyI `"F~" `"C" `Mont `O25B │ "\001\000\000\0...   │                      ║
+║ serialization_bd_symbolvector_random_3.k           │ _bd `o3 `EE5ijP `trD0LuE `OW `"." `y │ "\001\000\000\0...   │                      ║
+║ serialization_bd_dictionary_with_symbol_vectors.k  │ _bd .((`colA;`a `b `c);(`colB;`dd `eee `ffff)) │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_dictionary_with_vectors.k         │ _bd .((`col1;1 2 3 4);(`col2;5 6 7 8)) │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_list_with_explicit_nulls.k        │ _bd ((`a;`"1";);(`b;`"2";)) │ "\001\000\000\0...   │                      ║
+║ serialization_bd_list_with_vectors.k               │ _bd ((`col1;1 2 3 4);(`col2;5 6 7 8)) │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_list_with_symbol_vectors.k        │ _bd ((`colA;`a `b `c);(`colB;`dd `eee `ffff)) │ "\001\000\000\0...   │                      ║
+║ bd_dict_single_entry.k                             │ _bd .,(`a;1)         │ "\001\000\000\0...   │                      ║
+║ db_dict_larger.k                                   │ _db _bd .((`a;1);(`b;2;);(`c;3;);(`d;4;)) │ .((`a;1;);(`b;2...   │                      ║
+║ db_dict_mixed_types.k                              │ _db _bd .((`key1;`value1;);(`key2;42;);(`key3;3.14)) │ .((`key1;`value...   │                      ║
+║ db_float_vector_longer.k                           │ _db _bd 1.1 2.2 3.3 4.4 5.5 │ 1.1 2.2 3.3 4.4...   │                      ║
+║ db_int_vector_longer.k                             │ _db _bd 1 2 3 4 5 6 7 8 9 10 │ 1 2 3 4 5 6 7 8...   │                      ║
+║ db_nested_structures.k                             │ _db _bd .((`a;(1;2;3));(`b;(4;5;6))) │ .((`a;1 2 3;);(...   │                      ║
+║ db_string_hello.k                                  │ _db _bd "hello"      │ "hello"              │                      ║
+║ db_symbol_hello.k                                  │ _db _bd `hello       │ `hello               │                      ║
+║ db_symbol_vector_longer.k                          │ _db _bd `hello`world`test │ `hello               │ `hello`world`test    ║
+║ test_dict_larger.k                                 │ .((`a;1;);(`b;2;);(`c;3;);(`d;4;)) │ .((`a;1;);(`b;2...   │                      ║
+║ test_dict_simple.k                                 │ .((`a;1);(`b;2);(`c;3;)) │ .((`a;1;);(`b;2...   │                      ║
+║ type_empty_int_vector.k                            │ 4: !0                │ -1                   │                      ║
+║ bd_empty_list.k                                    │ _bd ()               │ "\001\000\000\0...   │                      ║
+║ bd_enlist_single_int.k                             │ _bd ,5               │ "\001\000\000\0...   │                      ║
+║ bd_enlist_single_string.k                          │ _bd ,"hello"         │ "\001\000\000\0...   │                      ║
+║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
+║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
+╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║ SUMMARY: 549/583 tests passed (94.2%)                                                                               ║
+╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+FAILING TESTS DETAILS:
+═════════════════════════════════════════════════════════════════════════════════════
+Test: dictionary_index_attr.k
+Input: (.((`a;1);(`b;2;.((`c;3);(`d;4))))) @ `b.
+Expected: .((`c;3;);(`d;4;))
+Actual: Error: Undefined variable: b.
+──────────────────────────────────────────────────────────────────────────
+Test: special_null.k
+Input: _n
+Expected: _n
+Actual: 
+──────────────────────────────────────────────────────────────────────────
+Test: symbol_quoted.k
+Input: `"a symbol"
+Expected: `"a symbol"
+Actual: `a symbol
+──────────────────────────────────────────────────────────────────────────
+Test: variable_scoping_global_assignment.k
+Input: globalVar: 100  // Test global assignment from nested function
+Expected: 10
+Actual: 100
+──────────────────────────────────────────────────────────────────────────
+Test: variable_scoping_nested_functions.k
+Input: globalVar: 100  // Test nested functions
+Expected: 25
+Actual: 140
+──────────────────────────────────────────────────────────────────────────
+Test: monadic_format_vector.k
+Input: $1 2 3
+Expected: (,"1";,"2";,"3")
+Actual: ("1";"2";"3")
+──────────────────────────────────────────────────────────────────────────
+Test: monadic_format_nested_list.k
+Input: $((1;2;3);(4;5;6))
+Expected: ((,"1";,"2";,"3");(,"4";,"5";,"6"))
+Actual: (("1";"2";"3");("4";"5";"6"))
+──────────────────────────────────────────────────────────────────────────
+Test: monadic_format_vector_simple.k
+Input: $1 2 3
+Expected: (,"1";,"2";,"3")
+Actual: ("1";"2";"3")
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_vector_deal.k
+Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
+Expected: .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
+Actual: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
+──────────────────────────────────────────────────────────────────────────
+Test: list_getenv.k
+Input: _getenv "PROMPT"
+Expected: "$P$G"
+Actual: ()
+──────────────────────────────────────────────────────────────────────────
+Test: lsq.k
+Input: _lsq
+Expected: Error - _lsq (least squares) operation reserved for future use
+Actual: Error: _lsq (least squares) operation reserved for future use
+──────────────────────────────────────────────────────────────────────────
+Test: format_float_precision_vector_simple.k
+Input: 10.1$(1.5;2.5)
+Expected: ("       1.5";"       2.5")
+Actual: "       1.5       2.5"
+──────────────────────────────────────────────────────────────────────────
+Test: format_float_precision_mixed_vector.k
+Input: 7.2$(1.5;2.7;3.14159;4.2)
+Expected: ("   1.50";"   2.70";"   3.14";"   4.20")
+Actual: "   1.50   2.70   3.14   4.20"
+──────────────────────────────────────────────────────────────────────────
+Test: format_pad_mixed_vector.k
+Input: 10$(1;2;3)
+Expected: ("         1";"         2";"         3")
+Actual: "         1         2         3"
+──────────────────────────────────────────────────────────────────────────
+Test: format_pad_negative_mixed_vector.k
+Input: -10$(1;2;3)
+Expected: ("1         ";"2         ";"3         ")
+Actual: "1         2         3         "
+──────────────────────────────────────────────────────────────────────────
+Test: amend_item_simple.k
+Input: @[1 2 3]
+Expected: @[1 2 3]
+Actual: Error: For atomic data, indices must be empty list
+──────────────────────────────────────────────────────────────────────────
+Test: amend_item_single.k
+Input: @[1]
+Expected: @[1 2 3]
+Actual: 1
+──────────────────────────────────────────────────────────────────────────
+Test: format_float_precision_complex_mixed.k
+Input: 10.3$(1.234;2.567;3.890;4.123)
+Expected: ("     1.234"
+ "     2.567"
+ "     3.890"
+ "     4.123")
+Actual: "     1.234     2.567     3.890     4.123"
+──────────────────────────────────────────────────────────────────────────
+Test: format_float_vector.k
+Input: 0.0$(1;2.5;3.14;42)
+Expected: (,"1"
+ ,"2"
+ ,"3"
+ "42")
+Actual: ("1";"2";"3";"42")
+──────────────────────────────────────────────────────────────────────────
+Test: format_int_vector.k
+Input: 0$(1;2.5;3.14;42)
+Expected: (""
+ ""
+ ""
+ "")
+Actual: ""
+──────────────────────────────────────────────────────────────────────────
+Test: format_vector_int.k
+Input: 0$(1;2;3)
+Expected: ("1";"2";"3")
+Actual: ""
+──────────────────────────────────────────────────────────────────────────
+Test: group_operator.k
+Input: a: 3 3 8 7 5 7 3 8 4 4 9 2 7 6 0 7 8 7 0 1
+Expected: (0 1 6;2 7 16;3 5 12 15 17;,4;8 9;,10;,11;,13;14 18;,19)
+Actual: (0 1 6;2 7 16;3 5 12 15 17;4;8 9;10;11;13;14 18;19)
+──────────────────────────────────────────────────────────────────────────
+Test: monadic_format_mixed_vector.k
+Input: $(1;2.5;"hello";`symbol)
+Expected: (,"1";"2.5";"hello";"symbol")
+Actual: ("1";"2.5";"hello";"symbol")
+──────────────────────────────────────────────────────────────────────────
+Test: db_symbol_vector.k
+Input: _db _bd `a`b`c
+Expected: `a`b`c
+Actual: `a
+──────────────────────────────────────────────────────────────────────────
+Test: db_nested_dict_vectors.k
+Input: _db _bd .((`a;(1;2;3));(`b;(`hello;`world;`test)))
+Expected: {`a:(1;2;3);`b:(`hello;`world;`test)}
+Actual: Error: _db (data from bytes) operation failed: Unsupported type: 6581362
+──────────────────────────────────────────────────────────────────────────
+Test: db_nested_lists.k
+Input: _db _bd ((1;2;3);(`hello;`world;`test);(4.5;6.7))
+Expected: ((1;2;3);(`hello;`world;`test);(4.5;6.7))
+Actual: Error: _db (data from bytes) operation failed: Unsupported type: 6581362
+──────────────────────────────────────────────────────────────────────────
+Test: db_dict_complex_attributes.k
+Input: _db _bd .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer))))
+Expected: .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer)))
+Actual: Error: _db (data from bytes) operation failed: Unsupported type: 1702127976
+──────────────────────────────────────────────────────────────────────────
+Test: db_dict_with_null_attrs.k
+Input: _db _bd .,(`a;1;.())
+Expected: .,(`a;1;.())
+Actual: .,(`a;1;)
+──────────────────────────────────────────────────────────────────────────
+Test: db_dict_two_entries_simple.k
+Input: _db _bd .,(`a;1);(`b;2)
+Expected: .((`a;1);(`b;2))
+Actual: (`b;2)
+──────────────────────────────────────────────────────────────────────────
+Test: db_dict_with_empty_attrs.k
+Input: _db _bd .((`a;1);(`b;2;.()))
+Expected: .((`a;1);(`b;2))
+Actual: .((`a;1;);(`b;2;))
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_dictionary_with_symbol_vectors.k
+Input: _bd .((`colA;`a `b `c);(`colB;`dd `eee `ffff))
+Expected: "\001\000\000\000p\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000colA\000\000\000\000\001\000\000\000\374\377\377\377\003\000\000\000a\000b\000c\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000colB\000\000\000\000\000\000\000\000\374\377\377\377\003\000\000\000dd\000eee\000ffff\000\001\000\000\000\006\000\000\000\000\000\000\000"
+Actual: "\001\000\000\000p\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000colA\000\000\000\000\000\000\000\000\374\377\377\377\003\000\000\000a\000b\000c\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000colB\000\000\000\000\000\000\000\000\374\377\377\377\003\000\000\000dd\000eee\000ffff\000\000\000\000\000\006\000\000\000\000\000\000\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_dictionary_with_vectors.k
+Input: _bd .((`col1;1 2 3 4);(`col2;5 6 7 8))
+Expected: "\001\000\000\000x\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000col1\000\001\000\000\000\000\000\000\377\377\377\377\004\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000\004\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000col2\000\001\000\000\000\000\000\000\377\377\377\377\004\000\000\000\005\000\000\000\006\000\000\000\007\000\000\000\b\000\000\000\006\000\000\000\000\000\000\000"
+Actual: "\001\000\000\000x\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000col1\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000\004\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000col2\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\005\000\000\000\006\000\000\000\007\000\000\000\b\000\000\000\006\000\000\000\000\000\000\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_list_with_vectors.k
+Input: _bd ((`col1;1 2 3 4);(`col2;5 6 7 8))
+Expected: "\001\000\000\000h\000\000\000\000\000\000\000\002\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000col1\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000\004\000\000\000\000\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000col2\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\005\000\000\000\006\000\000\000\007\000\000\000\b\000\000\000"
+Actual: "\001\000\000\000h\000\000\000\000\000\000\000\002\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000col1\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000\004\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000col2\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\005\000\000\000\006\000\000\000\007\000\000\000\b\000\000\000"
+──────────────────────────────────────────────────────────────────────────
+Test: db_symbol_vector_longer.k
+Input: _db _bd `hello`world`test
+Expected: `hello`world`test
+Actual: `hello
+──────────────────────────────────────────────────────────────────────────
