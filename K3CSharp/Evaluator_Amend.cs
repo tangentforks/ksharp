@@ -86,7 +86,7 @@ namespace K3CSharp
             }
         }
         
-        private K3Value AmendList(VectorValue list, K3Value indices, K3Value function, K3Value value)
+        private K3Value AmendList(VectorValue list, K3Value indices, K3Value function, K3Value? value)
         {
             // Create a copy of the list to modify
             var result = new List<K3Value>(list.Elements);
@@ -139,7 +139,7 @@ namespace K3CSharp
             return new VectorValue(result);
         }
         
-        private K3Value AmendDictionary(DictionaryValue dict, K3Value indices, K3Value function, K3Value value)
+        private K3Value AmendDictionary(DictionaryValue dict, K3Value indices, K3Value function, K3Value? value)
         {
             // Create a copy of the dictionary to modify
             var result = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue?)>(dict.Entries);
@@ -191,7 +191,7 @@ namespace K3CSharp
             return new DictionaryValue(result);
         }
         
-        private K3Value AmendAtPath(K3Value data, List<K3Value> path, int pathIndex, K3Value function, K3Value value)
+        private K3Value AmendAtPath(K3Value data, List<K3Value> path, int pathIndex, K3Value function, K3Value? value)
         {
             if (pathIndex >= path.Count)
             {
@@ -269,13 +269,13 @@ namespace K3CSharp
             }
         }
 
-        private K3Value AmendAtom(K3Value atom, K3Value function, K3Value value)
+        private K3Value AmendAtom(K3Value atom, K3Value function, K3Value? value)
         {
             // For atoms, just apply the function directly
             return ApplyAmendFunction(atom, function, value);
         }
         
-        private K3Value ApplyAmendFunction(K3Value currentValue, K3Value function, K3Value value)
+        private K3Value ApplyAmendFunction(K3Value currentValue, K3Value function, K3Value? value)
         {
             // Apply function to current value
             if (value != null)

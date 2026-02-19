@@ -1099,7 +1099,7 @@ namespace K3CSharp
                 {
                     // Parse parenthesized expression - inside parentheses, semicolons create lists
                     // Handle leading semicolons for null elements: (;1;2)
-                    ASTNode firstExpr = null;
+                    ASTNode? firstExpr = null;
                     bool hasSemicolon = false;
 
                     if (CurrentToken().Type == TokenType.SEMICOLON)
@@ -1122,7 +1122,7 @@ namespace K3CSharp
                     if (hasSemicolon)
                     {
                         // Semicolon-separated list
-                        var elements = new List<ASTNode> { firstExpr };
+                        var elements = new List<ASTNode> { firstExpr! };
                         do
                         {
                             // Check for empty position (consecutive semicolons or trailing)
@@ -1153,7 +1153,7 @@ namespace K3CSharp
                         {
                             throw new Exception("Expected ')' after expression");
                         }
-                        result = firstExpr;
+                        result = firstExpr!;
                     }
                 }
                 

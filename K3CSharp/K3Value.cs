@@ -1010,9 +1010,9 @@ namespace K3CSharp
             var hasNestedVectors = Elements.Any(e => e is VectorValue);
             var hasNullValues = Elements.Any(e => e is NullValue);
             
-            // Check if this is truly mixed (different types) OR has nested vectors OR has null values
+            // Check if this is truly mixed (different types) OR has null values OR has nested vectors
             // For homogeneous vectors with nulls, we should display as mixed with semicolons
-            var isTrulyMixed = elementTypes.Count > 1 || hasNullValues;
+            var isTrulyMixed = elementTypes.Count > 1 || hasNullValues || hasNestedVectors;
             
             // Special case: if we have a single-element vector containing another vector,
             // we want comma prefix but not mixed list formatting
@@ -1020,6 +1020,7 @@ namespace K3CSharp
             
             if (isTrulyMixed && !isSingleVectorWithVector)
             {
+                // For mixed vectors with multiple elements (including nested vectors), use semicolon separation
                 var elementsStr = string.Join(";", Elements.Select(e =>
                 {
                     if (e is NullValue)
@@ -1028,21 +1029,11 @@ namespace K3CSharp
                     }
                     else if (e is VectorValue vec)
                     {
-                        // Add comma prefix if this is a single-element vector (enlisted)
-                        var vecStr = vec.Elements.Count == 1 
-                            ? vec.ToString(false, true) // Skip inner comma logic for single elements
-                            : vec.ToString(false); // Don't add inner parentheses for simple vectors
-                        
-                        return vec.Elements.Count == 1 ? "," + vecStr : vecStr;
+                        // For nested vectors in mixed lists, always show with parentheses
+                        return vec.ToString(false, true);
                     }
                     return e.ToString();
                 }));
-                
-                // Special case: single-element mixed list with enlisted string - don't add parentheses
-                if (Elements.Count == 1 && Elements[0] is VectorValue vec && vec.Elements.All(x => x is CharacterValue))
-                {
-                    return elementsStr; // Return just the enlisted string without parentheses
-                }
                 
                 return "(" + elementsStr + ")";
             }

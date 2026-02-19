@@ -1067,6 +1067,11 @@ namespace K3CSharp
         {
             if (a is IntegerValue intA)
             {
+                if (intA.Value == 0)
+                {
+                    return new VectorValue(new List<K3Value>(), -1); // Empty integer vector
+                }
+                
                 var elements = new List<K3Value>();
                 for (int i = 0; i < intA.Value; i++)
                 {
@@ -1076,6 +1081,11 @@ namespace K3CSharp
             }
             else if (a is LongValue longA)
             {
+                if (longA.Value == 0)
+                {
+                    return new VectorValue(new List<K3Value>(), -1); // Empty integer vector
+                }
+                
                 var elements = new List<K3Value>();
                 for (long i = 0; i < longA.Value; i++)
                 {
