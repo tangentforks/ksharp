@@ -81,16 +81,43 @@ namespace K3CSharp
             // Otherwise, this is a format operation with numeric specifier
             if (left is IntegerValue intFormat)
             {
-                // Special case: k.exe treats format specifier 0 as always returning empty string
+                // Format specifier 0: converts non-character vectors
+                // For homogeneous non-char vectors: string conversion per element
+                // For mixed-type vectors: empty string per element
+                // For scalars: empty string
                 if (intFormat.Value == 0)
                 {
+                    if (right is VectorValue vec0 && vec0.Elements.Count > 0 &&
+                        !vec0.Elements.All(e => e is CharacterValue))
+                    {
+                        var elementTypes = vec0.Elements.Select(e => e.GetType()).Distinct().ToList();
+                        if (elementTypes.Count == 1)
+                        {
+                            // Homogeneous non-character vector: convert each to string
+                            var result = new List<K3Value>();
+                            foreach (var element in vec0.Elements)
+                            {
+                                result.Add(Format(element));
+                            }
+                            return new VectorValue(result);
+                        }
+                        else
+                        {
+                            // Mixed-type vector: return empty string per element
+                            var result = new List<K3Value>();
+                            foreach (var element in vec0.Elements)
+                            {
+                                result.Add(new VectorValue(new List<K3Value>(), -3)); // empty char vector
+                            }
+                            return new VectorValue(result);
+                        }
+                    }
                     return new CharacterValue("");
                 }
                 return FormatWithSpecifier(intFormat.Value, right);
             }
             else if (left is LongValue longFormat)
             {
-                // Special case: k.exe treats format specifier 0j as always returning empty string
                 if (longFormat.Value == 0)
                 {
                     return new CharacterValue("");
