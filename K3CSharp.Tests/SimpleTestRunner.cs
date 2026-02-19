@@ -1066,8 +1066,17 @@ namespace K3CSharp.Tests
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"✗ {fileName}: Error - {ex.Message}");
-                    testResults.Add(new TestResult { FileName = fileName, ActualOutput = $"Error: {ex.Message}", Expected = expected, Passed = false });
+                    var errorOutput = $"Error - {ex.Message}";
+                    var errorPassed = errorOutput == expected;
+                    if (errorPassed)
+                    {
+                        Console.WriteLine($"✓ {fileName}: {errorOutput}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"✗ {fileName}: Expected '{expected}', got '{errorOutput}'");
+                    }
+                    testResults.Add(new TestResult { FileName = fileName, ActualOutput = errorOutput, Expected = expected, Passed = errorPassed });
                 }
             }
 
