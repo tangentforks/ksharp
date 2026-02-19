@@ -619,7 +619,7 @@ namespace K3CSharp
                 {
                     charVector.Add(new CharacterValue(c.ToString()));
                 }
-                result = ASTNode.MakeLiteral(new VectorValue(charVector));
+                result = ASTNode.MakeLiteral(new VectorValue(charVector, -3)); // -3 = character vector type
             }
             else if (Match(TokenType.SYMBOL))
             {
