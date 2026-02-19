@@ -1885,7 +1885,7 @@ namespace K3CSharp
                             // Dictionary entry with attribute: (key; value; attr)
                             var key = entryElements[0] as SymbolValue ?? throw new Exception("Dictionary key must be a symbol");
                             var val = entryElements[1];
-                            var attr = entryElements[2] as DictionaryValue ?? throw new Exception("Dictionary attribute must be a dictionary");
+                            var attr = entryElements[2] as DictionaryValue;
                             newDict[key] = (val, attr);
                         }
                         else

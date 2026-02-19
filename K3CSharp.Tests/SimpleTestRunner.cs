@@ -173,7 +173,7 @@ namespace K3CSharp.Tests
                 // Empty value tests
                 ("empty_char_vector.k", "\"\""),
                 ("empty_float_vector_test.k", "0#0.0"),
-                ("empty_symbol_vector.k", "0#`"),
+                ("empty_symbol_atomic.k", "0#`"),
                 ("empty_dictionary.k", ".()"),
                 ("empty_list.k", "()"),
                 ("test_symbol_take.k", "0#`"),

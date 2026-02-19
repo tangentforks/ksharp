@@ -245,13 +245,16 @@ namespace K3CSharp
             {
                 if (index is SymbolValue sym)
                 {
-                    var result = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue Attribute)>(dict.Entries);
+                    var result = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue?)>(dict.Entries);
                     if (!result.ContainsKey(sym))
                     {
                         throw new Exception($"Key '{sym.Value}' not found in dictionary");
                     }
-                    var newVal = AmendAtPath(result[sym].Value, path, pathIndex + 1, function, value);
-                    result[sym] = (newVal, result[sym].Attribute);
+                    if (result.TryGetValue(sym, out var current))
+                    {
+                        var newVal = AmendAtPath(current.Value, path, pathIndex + 1, function, value);
+                        result[sym] = (newVal, current.Item2);
+                    }
                     return new DictionaryValue(result);
                 }
                 else

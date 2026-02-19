@@ -497,7 +497,9 @@ namespace K3CSharp
                         result.Add(data);
                     }
                     
-                    return new VectorValue(result);
+                    // Determine vector type from scalar type
+                    int vectorType = GetScalarVectorType(data);
+                    return new VectorValue(result, vectorType);
                 }
             }
             else if (count is LongValue longCount)
@@ -1131,6 +1133,20 @@ namespace K3CSharp
         {
             return value is IntegerValue || value is LongValue || value is FloatValue || 
                    value is CharacterValue || value is SymbolValue || value is NullValue;
+        }
+        
+        private int GetScalarVectorType(K3Value scalar)
+        {
+            if (scalar is IntegerValue || scalar is LongValue)
+                return -1; // Integer vector
+            else if (scalar is FloatValue)
+                return -2; // Float vector  
+            else if (scalar is CharacterValue)
+                return -3; // Character vector
+            else if (scalar is SymbolValue)
+                return -4; // Symbol vector
+            else
+                return 0; // Default to mixed list
         }
         
         private int GetVectorType(VectorValue vec)
