@@ -18,9 +18,9 @@ namespace K3CSharp
         
         private K3Value NullFunction(K3Value operand)
         {
-            // _n - null value
-            // Return singleton null value for optimization purposes
-            return new NullValue();
+            // _n - null value literal
+            // Returns a null that displays as "_n" (the K3 null literal form)
+            return new NullValue("_n");
         }
         
         private K3Value VarFunction(K3Value operand)

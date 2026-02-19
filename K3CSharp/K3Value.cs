@@ -1183,9 +1183,18 @@ namespace K3CSharp
 
     public class NullValue : K3Value
     {
+        public string DisplayForm { get; }
+
         public NullValue()
         {
             Type = ValueType.Null;
+            DisplayForm = "";
+        }
+
+        public NullValue(string displayForm)
+        {
+            Type = ValueType.Null;
+            DisplayForm = displayForm;
         }
 
         public override K3Value Add(K3Value other)
@@ -1210,7 +1219,7 @@ namespace K3CSharp
 
         public override string ToString()
         {
-            return "";
+            return DisplayForm;
         }
     }
 

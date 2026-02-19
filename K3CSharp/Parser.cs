@@ -603,7 +603,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.NULL))
             {
-                result = ASTNode.MakeLiteral(new NullValue());
+                result = ASTNode.MakeLiteral(new NullValue("_n"));
             }
             else if (Match(TokenType.CHARACTER))
             {
