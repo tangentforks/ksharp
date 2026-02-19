@@ -197,8 +197,7 @@
 ║ take_operator_empty_symbol.k                       │ 0#``                 │ 0#`                  │                      ║
 ║ take_operator_overflow.k                           │ 10#1 2 3             │ 1 2 3 1 2 3 1 2...   │                      ║
 ║ take_operator_scalar.k                             │ 3#42                 │ 42 42 42             │                      ║
-║ reshape_basic.k                                    │ 3 4 # !12            │ (0 1 2 3;4 5 6 ...   │ (0 1 2 3
- 4 5 6...   ║
+║ reshape_basic.k                                    │ 3 4 # !12            │ (0 1 2 3;4 5 6 ...   │                      ║
 ║ division_float_4_2.0.k                             │ 4 % 2.0              │ 2.0                  │                      ║
 ║ division_float_5_2.5.k                             │ 5 % 2.5              │ 2.0                  │                      ║
 ║ division_int_4_2.k                                 │ 4 % 2                │ 2                    │                      ║
@@ -319,7 +318,7 @@
 ║ rand_draw_vector_probability.k                     │ r:2 3 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
 ║ time_gtime.k                                       │ _gtime 0             │ 20350101 0           │                      ║
 ║ time_lt.k                                          │ _lt 0                │ -18000               │                      ║
-║ time_jd.k                                          │ _jd 20260206         │ -3251                │ 0N                   ║
+║ time_jd.k                                          │ _jd 20260206         │ -3251                │                      ║
 ║ time_dj.k                                          │ _dj 0                │ 20350101             │                      ║
 ║ time_ltime.k                                       │ _ltime 0             │ 20341231 190000      │                      ║
 ║ in.k                                               │ 4 _in 1 7 2 4 6 3    │ 4                    │                      ║
@@ -342,7 +341,7 @@
 ║ test_sm_basic.k                                    │ `foo _sm `foo        │ 1                    │                      ║
 ║ test_sm_simple.k                                   │ `a _sm `a            │ 1                    │                      ║
 ║ test_ss_basic.k                                    │ "hello world" _ss "world" │ 7                    │                      ║
-║ test_semicolon.k                                   │ 1 2; 3 4             │ 3 4                  │ 1 2 3 4              ║
+║ test_semicolon.k                                   │ 1 2; 3 4             │ 3 4                  │                      ║
 ║ search_in_basic.k                                  │ 4 _in 1 2 3 4 5      │ 4                    │                      ║
 ║ search_in_notfound.k                               │ 6 _in 1 2 3 4 5      │ 0                    │                      ║
 ║ search_bin_basic.k                                 │ 3 4 5 6 _bin 4       │ 1                    │                      ║
@@ -351,7 +350,7 @@
 ║ amend_item_basic.k                                 │ @[1 2 3; 1; +; 10]   │ 1 12 3               │                      ║
 ║ amend_item_multiple.k                              │ @[1 2 3; 0 2; +; 10] │ 11 2 13              │                      ║
 ║ amend_item_monadic.k                               │ @[1 2 3; 1; {x*2}]   │ 1 4 3                │                      ║
-║ amend_test.k                                       │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)  // Amend: add 10 to elements at indices 0 and 2 │ (1 2 13 4 5;6 7...   │ 1 12 3 4 5           ║
+║ amend_test.k                                       │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)  // Amend: add 10 to elements at indices 0 and 2 │ (1 2 13 4 5;6 7...   │                      ║
 ║ amend_simple.k                                     │ 1 12 3 4 5           │ 1 12 3 4 5           │                      ║
 ║ find_basic.k                                       │ 9 8 7 6 5 4 3 ? 7  // Find operator - basic functionality │ 2                    │                      ║
 ║ find_notfound.k                                    │ 9 8 7 6 5 4 3 ? 1  // Find operator - not found case │ 7                    │                      ║
@@ -381,18 +380,17 @@
 ║ vector_with_null_middle.k                          │ (1;_n;3)             │ (1;;3)               │                      ║
 ║ where_operator.k                                   │ & (1 0 1 1 0)        │ 0 2 3                │                      ║
 ║ where_vector_counts.k                              │ & (3 2 1)            │ 0 0 0 1 1 2          │                      ║
-║ floor_operator.k                                   │ _3.7                 │ 3                    │ 3.0                  ║
+║ floor_operator.k                                   │ _3.7                 │ 3                    │                      ║
 ║ adverb_backslash_colon_basic.k                     │ 1 2 3 +\: 4 5 6      │ (5 6 7;6 7 8;7 ...   │                      ║
 ║ adverb_slash_colon_basic.k                         │ 1 2 3 +/: 4 5 6      │ (5 6 7;6 7 8;7 ...   │                      ║
 ║ adverb_tick_colon_basic.k                          │ -': 4 8 9 12 20      │ 4 1 3 8              │                      ║
-║ amend_apply.k                                      │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10) │ (1 2 13 4 5;6 7...   │ (1 2 13 4 5
-6 7...   ║
-║ amend_dot_test.k                                   │ .[1 2 3; 1; +; 10]   │ 1 12 3               │ 1 12 3 4 5           ║
+║ amend_apply.k                                      │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10) │ (1 2 13 4 5;6 7...   │                      ║
+║ amend_dot_test.k                                   │ .[1 2 3; 1; +; 10]   │ 1 12 3               │                      ║
 ║ amend_item_simple.k                                │ @[1 2 3]             │ Error: For atom...   │ @[1 2 3]             ║
 ║ amend_item_single.k                                │ @[1]                 │ 1                    │ @[1 2 3]             ║
-║ amend_minimal.k                                    │ (.) . (1 2 3; 0; +; 10) │ 11 2 3               │ @[1 2 3]             ║
-║ amend_parenthesized.k                              │ (.) . (1 2 3; 0; +; 10) │ 11 2 3               │ @[1 2 3]             ║
-║ amend_test_anonymous_func.k                        │ f:{x+y}              │ 11 2 3               │ 1 12 3 4 5           ║
+║ amend_minimal.k                                    │ (.) . (1 2 3; 0; +; 10) │ 11 2 3               │                      ║
+║ amend_parenthesized.k                              │ (.) . (1 2 3; 0; +; 10) │ 11 2 3               │                      ║
+║ amend_test_anonymous_func.k                        │ f:{x+y}              │ 11 2 3               │                      ║
 ║ amend_test_func_var.k                              │ f:{x+y}              │ 11 2 3               │                      ║
 ║ conditional_bracket_test.k                         │ :[1 < 2; "true"; "false"]  // Test conditional evaluation with bracket notation │ "true"               │                      ║
 ║ conditional_false.k                                │ :[0; "true"; "false"]  // Conditional evaluation - condition false │ "false"              │                      ║
@@ -408,7 +406,7 @@
 ║ dyadic_multiply_bracket.k                          │ *[4; 6]  // Dyadic multiplication with bracket notation │ 24                   │                      ║
 ║ dyadic_plus_bracket.k                              │ +[3; 5]  // Dyadic addition with bracket notation │ 8                    │                      ║
 ║ empty_brackets_dictionary.k                        │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
-║ empty_brackets_vector.k                            │ v: 1 2 3 4           │ 1 2 3 4              │ 1 2 3                ║
+║ empty_brackets_vector.k                            │ v: 1 2 3 4           │ 1 2 3 4              │                      ║
 ║ form_braces_complex_expressions.k                  │ sum:{[a;b] a+b}      │ 14 20 10             │                      ║
 ║ format_float_precision_complex_mixed.k             │ 10.3$(1.234;2.567;3.890;4.123) │ "     1.234    ...   │ ("     1.234"
  ...   ║
@@ -595,7 +593,7 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 536/583 tests passed (91.9%)                                                                               ║
+║ SUMMARY: 547/583 tests passed (93.8%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -614,13 +612,6 @@ Test: symbol_quoted.k
 Input: `"a symbol"
 Expected: `"a symbol"
 Actual: `a symbol
-──────────────────────────────────────────────────────────────────────────
-Test: reshape_basic.k
-Input: 3 4 # !12
-Expected: (0 1 2 3
- 4 5 6 7
- 8 9 10 11)
-Actual: (0 1 2 3;4 5 6 7;8 9 10 11)
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
@@ -652,25 +643,10 @@ Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
 Expected: .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
 Actual: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
 ──────────────────────────────────────────────────────────────────────────
-Test: time_jd.k
-Input: _jd 20260206
-Expected: 0N
-Actual: -3251
-──────────────────────────────────────────────────────────────────────────
 Test: list_getenv.k
 Input: _getenv "PATH"
 Expected: "C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\euseb\bin;C:\Program Files\Microsoft MPI\Bin\;C:\Program Files\Eclipse Adoptium\jdk-8.0.382.5-hotspot\bin;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\ia32;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\Intel64;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\HP\HP Performance Advisor;C:\Program Files (x86)\QuickTime\QTSystem\;C:\Program Files (x86)\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\CMake\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\Microsoft Emulator Manager\1.0\;C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Pages\v1.0\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Users\euseb\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files (x86)\nodejs\;C:\Program Files\Common Files\Avid\Eucon;C:\Program Files (x86)\Common Files\Avid\Eucon;C:\Program Files\Avid\Avid Link\jre\bin;C:\Program Files (x86)\dotnet\;c:\Windows\SysWOW64\;c:\Windows\Sysnative\;c:\program files (x86)\iracing\d3dgear;C:\Program Files (x86)\Common Files\DivX Shared\DesktopService;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\gs\gs10.00.0\bin;C:\Program Files (x86)\Windows Kits\10\Microsoft Application Virtualization\Sequencer\;C:\Program Files\Calibre2\;C:\Program Files\NVIDIA Corporation\Nsight Compute 2020.1.1\;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files\Git LFS;C:\Program Files\GitHub CLI\;C:\Program Files (x86)\Incredibuild;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\Acustica\Medusa Framework\;C:\Program Files\Git\cmd;C:\Users\euseb\.local\bin;C:\Progra~1\NVIDIA~2\CUDA\v11.0\libnvvp;C:\Progra~1\NVIDIA~2\CUDA\v11.0\bin;C:\Progra~2\Common~1\Intel\Shared~1\redist\intel6~1\compiler;C:\Users\euseb\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Imaginando\DLYM;C:\Users\euseb\.dotnet\tools;C:\Users\euseb\AppData\Roaming\npm;C:\Users\euseb\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Imaginando\K7D;C:\Program Files\Imaginando\FRMS;C:\Program Files\Imaginando\DRC;C:\Users\euseb\AppData\Local\Programs\Ollama;C:\Users\euseb\.local\bin;C:\Users\euseb\.dotnet\tools"
 Actual: "C:\Program Files\Microsoft MPI\Bin\;C:\Program Files\Eclipse Adoptium\jdk-8.0.382.5-hotspot\bin;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\ia32;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\Intel64;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\HP\HP Performance Advisor;C:\Program Files (x86)\QuickTime\QTSystem\;C:\Program Files (x86)\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\CMake\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\Microsoft Emulator Manager\1.0\;C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Pages\v1.0\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Users\euseb\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files (x86)\nodejs\;C:\Program Files\Common Files\Avid\Eucon;C:\Program Files (x86)\Common Files\Avid\Eucon;C:\Program Files\Avid\Avid Link\jre\bin;C:\Program Files (x86)\dotnet\;c:\Windows\SysWOW64\;c:\Windows\Sysnative\;c:\program files (x86)\iracing\d3dgear;C:\Program Files (x86)\Common Files\DivX Shared\DesktopService;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\gs\gs10.00.0\bin;C:\Program Files (x86)\Windows Kits\10\Microsoft Application Virtualization\Sequencer\;C:\Program Files\Calibre2\;C:\Program Files\NVIDIA Corporation\Nsight Compute 2020.1.1\;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files\Git LFS;C:\Program Files\GitHub CLI\;C:\Program Files (x86)\Incredibuild;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\Acustica\Medusa Framework\;C:\Program Files\Git\cmd;C:\Users\euseb\.local\bin;C:\Progra~1\NVIDIA~2\CUDA\v11.0\libnvvp;C:\Progra~1\NVIDIA~2\CUDA\v11.0\bin;C:\Progra~2\Common~1\Intel\Shared~1\redist\intel6~1\compiler;C:\Users\euseb\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Imaginando\DLYM;C:\Users\euseb\.dotnet\tools;C:\Users\euseb\AppData\Roaming\npm;C:\Users\euseb\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Imaginando\K7D;C:\Program Files\Imaginando\FRMS;C:\Program Files\Imaginando\DRC;C:\Users\euseb\AppData\Local\Programs\Ollama;C:\Users\euseb\.local\bin;C:\Users\euseb\.dotnet\tools;c:\Users\euseb\.windsurf\extensions\ms-python.debugpy-2025.18.0-win32-x64\bundled\scripts\noConfigScripts"
-──────────────────────────────────────────────────────────────────────────
-Test: test_semicolon.k
-Input: 1 2; 3 4
-Expected: 1 2 3 4
-Actual: 3 4
-──────────────────────────────────────────────────────────────────────────
-Test: amend_test.k
-Input: (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)  // Amend: add 10 to elements at indices 0 and 2
-Expected: 1 12 3 4 5
-Actual: (1 2 13 4 5;6 7 8 9 10)
 ──────────────────────────────────────────────────────────────────────────
 Test: lsq.k
 Input: _lsq
@@ -697,22 +673,6 @@ Input: -10$(1;2;3)
 Expected: ("1         ";"2         ";"3         ")
 Actual: "1         2         3         "
 ──────────────────────────────────────────────────────────────────────────
-Test: floor_operator.k
-Input: _3.7
-Expected: 3.0
-Actual: 3
-──────────────────────────────────────────────────────────────────────────
-Test: amend_apply.k
-Input: (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)
-Expected: (1 2 13 4 5
-6 7 8 9 10)
-Actual: (1 2 13 4 5;6 7 8 9 10)
-──────────────────────────────────────────────────────────────────────────
-Test: amend_dot_test.k
-Input: .[1 2 3; 1; +; 10]
-Expected: 1 12 3 4 5
-Actual: 1 12 3
-──────────────────────────────────────────────────────────────────────────
 Test: amend_item_simple.k
 Input: @[1 2 3]
 Expected: @[1 2 3]
@@ -722,26 +682,6 @@ Test: amend_item_single.k
 Input: @[1]
 Expected: @[1 2 3]
 Actual: 1
-──────────────────────────────────────────────────────────────────────────
-Test: amend_minimal.k
-Input: (.) . (1 2 3; 0; +; 10)
-Expected: @[1 2 3]
-Actual: 11 2 3
-──────────────────────────────────────────────────────────────────────────
-Test: amend_parenthesized.k
-Input: (.) . (1 2 3; 0; +; 10)
-Expected: @[1 2 3]
-Actual: 11 2 3
-──────────────────────────────────────────────────────────────────────────
-Test: amend_test_anonymous_func.k
-Input: f:{x+y}
-Expected: 1 12 3 4 5
-Actual: 11 2 3
-──────────────────────────────────────────────────────────────────────────
-Test: empty_brackets_vector.k
-Input: v: 1 2 3 4
-Expected: 1 2 3
-Actual: 1 2 3 4
 ──────────────────────────────────────────────────────────────────────────
 Test: format_float_precision_complex_mixed.k
 Input: 10.3$(1.234;2.567;3.890;4.123)

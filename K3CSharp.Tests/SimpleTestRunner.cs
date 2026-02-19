@@ -392,7 +392,7 @@ namespace K3CSharp.Tests
                 ("take_operator_scalar.k", "42 42 42"),
 
                 // Reshape operator tests (vector left arg to #)
-                ("reshape_basic.k", "(0 1 2 3\n 4 5 6 7\n 8 9 10 11)"),
+                ("reshape_basic.k", "(0 1 2 3;4 5 6 7;8 9 10 11)"),
 
                 // Test division rules
                 ("division_float_4_2.0.k", "2.0"),
@@ -561,7 +561,7 @@ namespace K3CSharp.Tests
                 ("rand_draw_vector_probability.k", ".((`type;0;);(`shape;,2;))"),
                 ("time_gtime.k", "20350101 0"),
                 ("time_lt.k", "-18000"),
-                ("time_jd.k", "0N"),
+                ("time_jd.k", "-3251"),
                 ("time_dj.k", "20350101"),
                 ("time_ltime.k", "20341231 190000"),
                 ("in.k", "4"),
@@ -588,7 +588,7 @@ namespace K3CSharp.Tests
                 ("test_sm_basic.k", "1"),
                 ("test_sm_simple.k", "1"),
                 ("test_ss_basic.k", "7"),
-                ("test_semicolon.k", "1 2 3 4"),
+                ("test_semicolon.k", "3 4"),
                 
                 // New search function tests
                 ("search_in_basic.k", "4"),
@@ -603,7 +603,7 @@ namespace K3CSharp.Tests
                 ("amend_item_monadic.k", "1 4 3"),
                 
                 // Existing amend tests - only valid cases with 3+ arguments
-                ("amend_test.k", "1 12 3 4 5"),
+                ("amend_test.k", "(1 2 13 4 5;6 7 8 9 10)"),
                 ("amend_simple.k", "1 12 3 4 5"),
                 
                 // Find operator tests
@@ -646,7 +646,7 @@ namespace K3CSharp.Tests
                 ("where_vector_counts.k", "0 0 0 1 1 2"),
                 
                 // Floor operator
-                ("floor_operator.k", "3.0"),
+                ("floor_operator.k", "3"),
                 
                 // Missing adverb tests
                 ("adverb_backslash_colon_basic.k", "(5 6 7;6 7 8;7 8 9)"),
@@ -654,13 +654,13 @@ namespace K3CSharp.Tests
                 ("adverb_tick_colon_basic.k", "4 1 3 8"),
                 
                 // Missing amend tests
-                ("amend_apply.k", "(1 2 13 4 5\n6 7 8 9 10)"),
-                ("amend_dot_test.k", "1 12 3 4 5"),
+                ("amend_apply.k", "(1 2 13 4 5;6 7 8 9 10)"),
+                ("amend_dot_test.k", "1 12 3"),
                 ("amend_item_simple.k", "@[1 2 3]"),
                 ("amend_item_single.k", "@[1 2 3]"),
-                ("amend_minimal.k", "@[1 2 3]"),
-                ("amend_parenthesized.k", "@[1 2 3]"),
-                ("amend_test_anonymous_func.k", "1 12 3 4 5"),
+                ("amend_minimal.k", "11 2 3"),
+                ("amend_parenthesized.k", "11 2 3"),
+                ("amend_test_anonymous_func.k", "11 2 3"),
                 
                 // More missing tests
                 ("amend_test_func_var.k", "11 2 3"),
@@ -682,7 +682,7 @@ namespace K3CSharp.Tests
                 
                 // Empty brackets tests
                 ("empty_brackets_dictionary.k", "1 2"),
-                ("empty_brackets_vector.k", "1 2 3"),
+                ("empty_brackets_vector.k", "1 2 3 4"),
                 
                 // Format tests
                 ("form_braces_complex_expressions.k", "14 20 10"),
