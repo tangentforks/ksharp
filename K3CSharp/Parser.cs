@@ -624,16 +624,18 @@ namespace K3CSharp
             else if (Match(TokenType.SYMBOL))
             {
                 var symbol = PreviousToken().Lexeme;
-                
+
                 // Check if this is a dotted notation for K tree access
-                if (symbol.Contains("."))
+                // Only treat as variable if dot is in the MIDDLE (e.g., "a.b"),
+                // not if dot is at the end (e.g., "b." = attribute access symbol)
+                if (symbol.Contains(".") && !symbol.EndsWith("."))
                 {
                     // This is a K tree dotted notation variable
                     result = ASTNode.MakeVariable(symbol);
                 }
                 else
                 {
-                    // Regular symbol
+                    // Regular symbol or attribute-access symbol (ending with .)
                     result = ASTNode.MakeLiteral(new SymbolValue(symbol));
                 }
             }

@@ -857,7 +857,7 @@ namespace K3CSharp.Tests
                 ("serialization_bd_floatvector_random_3.k", "\"\\001\\000\\000\\000(\\000\\000\\000\\376\\377\\377\\377\\004\\000\\000\\0002\\377\\004(g\\334!A\\253p.\\342\\211b!\\301\\317\\3376\\002\\n*\\342@zIO\\0230;\\030A\""),
                 ("serialization_bd_symbolvector_random_1.k", "\"\\001\\000\\000\\000&\\000\\000\\000\\374\\377\\377\\377\\006\\000\\000\\000qzUM7\\000g8X6P\\000iay\\000KgNQ5i\\000< +\\000b5\\000\""),
                 ("serialization_bd_symbolvector_random_2.k", "\"\\001\\000\\000\\0001\\000\\000\\000\\374\\377\\377\\377\\n\\000\\000\\000O 0\\000D\\000qCBI1b\\000*H \\000SS\\000ULsyI\\000F~\\000C\\000Mont\\000O25B\\000\""),
-                ("serialization_bd_symbolvector_random_3.k", "\"\\001\\000\\000\\000\\035\\000\\000\\000\\374\\377\\377\\377\\004\\000\\000\\000o3\\000EE5ijP\\000trD0LuE\\000OW\\000\""),
+                ("serialization_bd_symbolvector_random_3.k", "\"\\001\\000\\000\\000!\\000\\000\\000\\374\\377\\377\\377\\006\\000\\000\\000o3\\000EE5ijP\\000trD0LuE\\000OW\\000.\\000y\\000\""),
                 
                 // New tests for dictionary/list serialization patterns
                 ("serialization_bd_dictionary_with_symbol_vectors.k",
