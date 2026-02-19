@@ -589,16 +589,13 @@
 ║ test_dict_larger.k                                 │ .((`a;1;);(`b;2;);(`c;3;);(`d;4;)) │ .((`a;1;);(`b;2...   │                      ║
 ║ test_dict_simple.k                                 │ .((`a;1);(`b;2);(`c;3;)) │ .((`a;1;);(`b;2...   │                      ║
 ║ type_empty_int_vector.k                            │ 4: !0                │ -1                   │                      ║
-║ debug_enumerate.k                                  │ [File not found]     │ File not found       │ !0                   ║
-║ debug_type.k                                       │ [File not found]     │ File not found       │ -1                   ║
-║ debug_type_simple.k                                │ [File not found]     │ File not found       │ 1                    ║
 ║ bd_empty_list.k                                    │ _bd ()               │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ bd_enlist_single_int.k                             │ _bd ,5               │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_string.k                          │ _bd ,"hello"         │ "\001\000\000\0...   │                      ║
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 536/586 tests passed (91.5%)                                                                               ║
+║ SUMMARY: 536/583 tests passed (91.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -844,21 +841,6 @@ Test: db_symbol_vector_longer.k
 Input: _db _bd `hello`world`test
 Expected: `hello`world`test
 Actual: `hello
-──────────────────────────────────────────────────────────────────────────
-Test: debug_enumerate.k
-Input: [File not found]
-Expected: !0
-Actual: File not found
-──────────────────────────────────────────────────────────────────────────
-Test: debug_type.k
-Input: [File not found]
-Expected: -1
-Actual: File not found
-──────────────────────────────────────────────────────────────────────────
-Test: debug_type_simple.k
-Input: [File not found]
-Expected: 1
-Actual: File not found
 ──────────────────────────────────────────────────────────────────────────
 Test: bd_empty_list.k
 Input: _bd ()
