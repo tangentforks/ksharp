@@ -1029,8 +1029,18 @@ namespace K3CSharp
                     }
                     else if (e is VectorValue vec)
                     {
-                        // For nested vectors in mixed lists, always show with parentheses
-                        return vec.ToString(false, true);
+                        // For nested vectors in mixed lists:
+                        // - Single-element character vectors already handle their own comma prefix,
+                        //   so skip the extra comma to avoid double-comma
+                        // - Single-element non-character vectors need their enlist comma preserved
+                        bool skipCommaForNested = vec.Elements.Count == 1 && vec.Elements[0] is CharacterValue;
+                        // Also skip comma for vectors that contain nested VectorValues (like format results)
+                        // to avoid double-comma from wrapped character vectors
+                        if (!skipCommaForNested && vec.Elements.Count == 1 && vec.Elements[0] is VectorValue)
+                        {
+                            skipCommaForNested = true;
+                        }
+                        return vec.ToString(false, skipCommaForNested);
                     }
                     return e.ToString();
                 }));
