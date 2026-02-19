@@ -85,10 +85,9 @@ namespace K3CSharp
                     {
                         currentDict = dictValue;
                     }
-                    else if (entry.Value is NullValue && part == "k")
+                    else if (entry.Value is NullValue)
                     {
-                        // Special case: .k is null but we're accessing a sub-path
-                        // Convert .k to a dictionary automatically
+                        // Branch is null — promote to a dictionary on first use
                         var newDict = new DictionaryValue();
                         currentDict.Entries[key] = (newDict, null!);
                         currentDict = newDict;
@@ -188,6 +187,22 @@ namespace K3CSharp
         }
         
         /// <summary>
+        /// Gets the variable names in a given branch path.
+        /// </summary>
+        /// <param name="branchPath">Absolute path to the branch (e.g. ".k")</param>
+        /// <returns>List of variable name strings</returns>
+        public List<string> GetBranchVariableNames(string branchPath)
+        {
+            var dict = GetDictionaryFromPath(branchPath);
+            if (dict == null)
+                return new List<string>();
+
+            return dict.Entries.Keys
+                .Select(k => k.Value)
+                .ToList();
+        }
+
+        /// <summary>
         /// Gets a dictionary from a path string
         /// </summary>
         /// <param name="path">The path to the dictionary</param>
@@ -244,6 +259,45 @@ namespace K3CSharp
                 }
             }
             return false;
+        }
+        /// <summary>
+        /// Ensures that each component along the given branch path is a DictionaryValue,
+        /// promoting NullValue entries to empty dictionaries as needed.
+        /// </summary>
+        public void EnsureBranchIsDictionary(string path)
+        {
+            if (string.IsNullOrEmpty(path) || path == ".")
+                return;
+
+            string trimmed = path.StartsWith(".") ? path.Substring(1) : path;
+            string[] parts = trimmed.Split('.', StringSplitOptions.RemoveEmptyEntries);
+            DictionaryValue currentDict = root;
+
+            foreach (string part in parts)
+            {
+                var key = new SymbolValue(part);
+                if (currentDict.Entries.TryGetValue(key, out var entry))
+                {
+                    if (entry.Value is DictionaryValue dictValue)
+                    {
+                        currentDict = dictValue;
+                    }
+                    else
+                    {
+                        // Promote non-dictionary (e.g. NullValue) to an empty dictionary
+                        var newDict = new DictionaryValue();
+                        currentDict.Entries[key] = (newDict, entry.Attribute);
+                        currentDict = newDict;
+                    }
+                }
+                else
+                {
+                    // Create a new branch
+                    var newDict = new DictionaryValue();
+                    currentDict.Entries[key] = (newDict, null!);
+                    currentDict = newDict;
+                }
+            }
         }
     }
 }
