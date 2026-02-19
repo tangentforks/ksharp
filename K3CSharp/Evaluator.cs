@@ -1593,7 +1593,7 @@ namespace K3CSharp
             {
                 // Check vector type
                 if (vec.Elements.Count == 0)
-                    return new IntegerValue(0); // Empty vector is generic list
+                    return new IntegerValue(vec.VectorType ?? 0); // Use stored vector type, default to generic list
                 
                 // Check if all elements are the same type
                 var firstType = vec.Elements[0].Type;
@@ -1637,9 +1637,11 @@ namespace K3CSharp
         
         private K3Value StringRepresentation(K3Value value)
         {
-            // 5: verb - produce string representation of the argument with proper escaping
+            // 5: verb - produce string representation of argument with proper escaping
             string representation = ToStringWithEscaping(value);
-            return new VectorValue(new List<K3Value> { new CharacterValue(representation) });
+            // Create character vector with individual characters
+            var charElements = representation.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
+            return new VectorValue(charElements);
         }
         
         private string ToStringWithEscaping(K3Value value)

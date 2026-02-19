@@ -184,10 +184,10 @@
 ║ square_bracket_function.k                          │ div:{[op1;op2] op1%op2} │ 2                    │                      ║
 ║ square_bracket_vector_multiple.k                   │ v:10 11 12 13 14 15 16 │ 14 16                │                      ║
 ║ square_bracket_vector_single.k                     │ v:10 11 12 13 14 15 16 │ 14                   │                      ║
-║ string_representation_int.k                        │ 5:42                 │ ,"42"                │ "42"                 ║
-║ string_representation_mixed.k                      │ 5:(1;2.5;"a")        │ ,"(1;2.5;\"a\")"     │ "(1;2.5;\"a\")"      ║
-║ string_representation_symbol.k                     │ 5:`symbol            │ ,"`symbol"           │ "`symbol"            ║
-║ string_representation_vector.k                     │ 5:(1 2 3)            │ ,"1 2 3"             │ "1 2 3"              ║
+║ string_representation_int.k                        │ 5:42                 │ "42"                 │                      ║
+║ string_representation_mixed.k                      │ 5:(1;2.5;"a")        │ "(1;2.5;\"a\")"      │                      ║
+║ string_representation_symbol.k                     │ 5:`symbol            │ "`symbol"            │                      ║
+║ string_representation_vector.k                     │ 5:(1 2 3)            │ "1 2 3"              │                      ║
 ║ symbol_quoted.k                                    │ `"a symbol"          │ `a symbol            │ `"a symbol"          ║
 ║ symbol_simple.k                                    │ `foo                 │ `foo                 │                      ║
 ║ symbol_vector_compact.k                            │ `a`b`c               │ `a`b`c               │                      ║
@@ -553,7 +553,7 @@
 ║ serialization_bd_charactervector_edge_a.k          │ _bd "a"              │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_charactervector_edge_hello.k      │ _bd "hello"          │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_charactervector_edge_whitespace.k │ _bd "\n\t\r"         │ "\001\000\000\0...   │                      ║
-║ serialization_bd_integervector_edge_empty.k        │ _bd !0               │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_integervector_edge_empty.k        │ _bd !0               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integervector_edge_single.k       │ _bd ,1               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integervector_edge_123.k          │ _bd 1 2 3            │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integervector_edge_special.k      │ _bd 0N 0I -0I        │ "\001\000\000\0...   │                      ║
@@ -588,13 +588,17 @@
 ║ db_symbol_vector_longer.k                          │ _db _bd `hello`world`test │ `hello               │ `hello`world`test    ║
 ║ test_dict_larger.k                                 │ .((`a;1;);(`b;2;);(`c;3;);(`d;4;)) │ .((`a;1;);(`b;2...   │                      ║
 ║ test_dict_simple.k                                 │ .((`a;1);(`b;2);(`c;3;)) │ .((`a;1;);(`b;2...   │                      ║
-║ bd_empty_list.k                                    │ _bd ()               │ "\001\000\000\0...   │                      ║
+║ type_empty_int_vector.k                            │ 4: !0                │ -1                   │                      ║
+║ debug_enumerate.k                                  │ [File not found]     │ File not found       │ !0                   ║
+║ debug_type.k                                       │ [File not found]     │ File not found       │ -1                   ║
+║ debug_type_simple.k                                │ [File not found]     │ File not found       │ 1                    ║
+║ bd_empty_list.k                                    │ _bd ()               │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ bd_enlist_single_int.k                             │ _bd ,5               │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_string.k                          │ _bd ,"hello"         │ "\001\000\000\0...   │                      ║
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 531/582 tests passed (91.2%)                                                                               ║
+║ SUMMARY: 536/586 tests passed (91.5%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -608,26 +612,6 @@ Test: special_null.k
 Input: _n
 Expected: _n
 Actual: 
-──────────────────────────────────────────────────────────────────────────
-Test: string_representation_int.k
-Input: 5:42
-Expected: "42"
-Actual: ,"42"
-──────────────────────────────────────────────────────────────────────────
-Test: string_representation_mixed.k
-Input: 5:(1;2.5;"a")
-Expected: "(1;2.5;\"a\")"
-Actual: ,"(1;2.5;\"a\")"
-──────────────────────────────────────────────────────────────────────────
-Test: string_representation_symbol.k
-Input: 5:`symbol
-Expected: "`symbol"
-Actual: ,"`symbol"
-──────────────────────────────────────────────────────────────────────────
-Test: string_representation_vector.k
-Input: 5:(1 2 3)
-Expected: "1 2 3"
-Actual: ,"1 2 3"
 ──────────────────────────────────────────────────────────────────────────
 Test: symbol_quoted.k
 Input: `"a symbol"
@@ -841,11 +825,6 @@ Input: _bd ""
 Expected: "\001\000\000\000\t\000\000\000\375\377\377\377\000\000\000\000\000"
 Actual: "\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000\000"
 ──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_integervector_edge_empty.k
-Input: _bd !0
-Expected: "\001\000\000\000\b\000\000\000\377\377\377\377\000\000\000\000"
-Actual: "\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000\000"
-──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_dictionary_with_symbol_vectors.k
 Input: _bd .((`colA;`a `b `c);(`colB;`dd `eee `ffff))
 Expected: "\001\000\000\000p\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000colA\000\000\000\000\001\000\000\000\374\377\377\377\003\000\000\000a\000b\000c\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000colB\000\000\000\000\000\000\000\000\374\377\377\377\003\000\000\000dd\000eee\000ffff\000\001\000\000\000\006\000\000\000\000\000\000\000"
@@ -865,4 +844,24 @@ Test: db_symbol_vector_longer.k
 Input: _db _bd `hello`world`test
 Expected: `hello`world`test
 Actual: `hello
+──────────────────────────────────────────────────────────────────────────
+Test: debug_enumerate.k
+Input: [File not found]
+Expected: !0
+Actual: File not found
+──────────────────────────────────────────────────────────────────────────
+Test: debug_type.k
+Input: [File not found]
+Expected: -1
+Actual: File not found
+──────────────────────────────────────────────────────────────────────────
+Test: debug_type_simple.k
+Input: [File not found]
+Expected: 1
+Actual: File not found
+──────────────────────────────────────────────────────────────────────────
+Test: bd_empty_list.k
+Input: _bd ()
+Expected: "\001\000\000\000\b\000\000\000\000\000\000\000\000\000"
+Actual: "\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000\000"
 ──────────────────────────────────────────────────────────────────────────

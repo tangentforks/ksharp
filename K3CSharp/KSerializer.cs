@@ -237,14 +237,10 @@ namespace K3CSharp
         
         private int GetVectorType(K3CSharp.VectorValue list)
         {
-            // For empty vectors with no elements, determine from element types
+            // For empty vectors, use the VectorType property if available
             if (list.Elements.Count == 0)
             {
-                if (list.Elements.Count > 0 && list.Elements.All(e => e is IntegerValue || e is LongValue)) return -1; // Integer vector
-                if (list.Elements.Count > 0 && list.Elements.All(e => e is FloatValue)) return -2; // Float vector  
-                if (list.Elements.Count > 0 && list.Elements.All(e => e is CharacterValue)) return -3; // Character vector
-                if (list.Elements.Count > 0 && list.Elements.All(e => e is SymbolValue)) return -4; // Symbol vector
-                return 0; // Default to mixed list
+                return list.VectorType ?? 0; // Use stored type, default to mixed list if not set
             }
             
             // For non-empty vectors, determine from element types

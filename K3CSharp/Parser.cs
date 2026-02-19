@@ -1934,8 +1934,8 @@ namespace K3CSharp
             }
             else if (Match(TokenType.TYPE))
             {
-                // 4: operator is unary - parse the operand
-                var operand = ParsePrimary();
+                // 4: operator is unary - parse the operand with full expression parsing
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("TYPE");
                 if (operand != null) node.Children.Add(operand);
@@ -1943,8 +1943,8 @@ namespace K3CSharp
             }
             else if (Match(TokenType.STRING_REPRESENTATION))
             {
-                // 5: operator is unary - parse the operand
-                var operand = ParsePrimary();
+                // 5: operator is unary - parse the operand with full expression parsing
+                var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("STRING_REPRESENTATION");
                 if (operand != null) node.Children.Add(operand);
