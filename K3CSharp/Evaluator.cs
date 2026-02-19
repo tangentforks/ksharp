@@ -26,6 +26,22 @@ namespace K3CSharp
         {
             kTree.CurrentBranch = new SymbolValue(branchPath);
         }
+
+        /// <summary>
+        /// Returns the variable names in the current K-tree branch.
+        /// </summary>
+        public List<string> GetCurrentBranchVariableNames()
+        {
+            return kTree.GetBranchVariableNames(kTree.CurrentBranch?.Value ?? "");
+        }
+
+        /// <summary>
+        /// Returns the variable names in the specified K-tree branch.
+        /// </summary>
+        public List<string> GetBranchVariableNames(string branchPath)
+        {
+            return kTree.GetBranchVariableNames(branchPath);
+        }
         
         public void SetParentBranch()
         {
@@ -209,8 +225,18 @@ namespace K3CSharp
                 }
                 // If K tree assignment fails, fall back to local assignment
             }
-            
-            // Local assignment - always set in local scope
+
+            // At the top level REPL (not inside a function), simple assignment
+            // goes into the current k-tree branch.  Inside a function it is local.
+            if (!isInFunctionCall && !variableName.Contains('.'))
+            {
+                var branch = kTree.CurrentBranch?.Value ?? "";
+                var path = string.IsNullOrEmpty(branch) ? variableName : branch + "." + variableName;
+                kTree.SetValue(path, value);
+                return value;
+            }
+
+            // Local assignment inside a function
             localVariables[variableName] = value;
             return value;
         }
@@ -1795,26 +1821,9 @@ namespace K3CSharp
                 // IMPORTANT: Dot execute works in the current variable context (no new variable space)
                 var chars = charVec.Elements.Select(e => ((CharacterValue)e).Value);
                 var executeText = string.Concat(chars);
-                
-                // Create a new parser instance but use the current evaluator (current variable context)
-                var lexer = new Lexer(executeText);
-                var tokens = lexer.Tokenize();
-                var parser = new Parser(tokens, executeText);
-                
-                try
-                {
-                    var ast = parser.Parse();
-                    // Use current evaluator (this) to maintain variable context
-                    if (ast != null)
-                    {
-                        return Evaluate(ast) ?? new NullValue();
-                    }
-                    return new NullValue();
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception($"Execute operation failed: {ex.Message}", ex);
-                }
+
+                // Route through ExecuteLine so backslash commands (e.g. ."\\v") work
+                return Program.ExecuteLine(executeText, this);
             }
             else if (value is DictionaryValue dict)
             {

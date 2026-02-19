@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace K3CSharp
@@ -8,11 +9,20 @@ namespace K3CSharp
     {
         private static readonly List<string> commandHistory = new List<string>();
         //private static int historyIndex = -1;
-        
+
+        // Sentinel used in --mcp mode for reliable output framing.
+        public const string McpSentinel = "\x01\x02";
+
         static void Main(string[] args)
         {
+            bool mcpMode = args.Length > 0 && args[0] == "--mcp";
+            if (mcpMode)
+            {
+                args = args[1..]; // strip the flag
+            }
+
             var evaluator = new Evaluator();
-            
+
             if (args.Length > 0)
             {
                 // Execute file
@@ -29,6 +39,12 @@ namespace K3CSharp
                 return;
             }
 
+            if (mcpMode)
+            {
+                RunMcpRepl(evaluator);
+                return;
+            }
+
             // REPL mode
             Console.WriteLine("K3 Interpreter - Version 1.0");
             Console.WriteLine("Type \\\\ to quit, \\ to cancel input, or \\help for help");
@@ -38,11 +54,11 @@ namespace K3CSharp
             while (true)
             {
                 Console.Write("  "); // Default prompt: two spaces
-                
+
                 var input = ReadMultiLineInput();
-                
+
                 if (input == null) break;
-                
+
                 if (input == "\\\\" || input == "_exit")
                 {
                     Console.WriteLine("Goodbye!");
@@ -71,6 +87,44 @@ namespace K3CSharp
                 {
                     Console.WriteLine($"Error: {ex.Message}");
                 }
+            }
+        }
+
+        /// <summary>
+        /// MCP-friendly REPL: no banner, sentinel-delimited output, stdout flushed after each response.
+        /// </summary>
+        static void RunMcpRepl(Evaluator evaluator)
+        {
+            // Signal ready
+            Console.Out.Write(McpSentinel);
+            Console.Out.Flush();
+
+            string? line;
+            while ((line = Console.ReadLine()) != null)
+            {
+                if (line == "\\\\" || line == "_exit") break;
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    Console.Out.Write(McpSentinel);
+                    Console.Out.Flush();
+                    continue;
+                }
+
+                try
+                {
+                    var result = ExecuteLine(line, evaluator);
+                    var text = result.ToString() ?? "";
+                    if (text.Length > 0)
+                        Console.Out.Write(text);
+                }
+                catch (Exception ex)
+                {
+                    Console.Out.Write($"Error: {ex.Message}");
+                }
+
+                // Sentinel marks end of this response
+                Console.Out.Write(McpSentinel);
+                Console.Out.Flush();
             }
         }
 
@@ -103,12 +157,31 @@ namespace K3CSharp
 
         public static K3Value HandleReplCommand(string command, Evaluator evaluator)
         {
-            var parts = command.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            
-            switch (parts[0])
+            // Split only on the first space to preserve the rest as an argument
+            var parts = command.Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);
+            var cmd = parts[0];
+            var arg = parts.Length > 1 ? parts[1].Trim() : null;
+
+            switch (cmd)
             {
+                case "\\?":
+                    // Concise help listing of all system commands
+                    Console.WriteLine("\\?         help (this list)");
+                    Console.WriteLine("\\l path    load script");
+                    Console.WriteLine("\\d [path]  show/set k-tree directory");
+                    Console.WriteLine("\\v [path]  list variables");
+                    Console.WriteLine("\\t expr    time expression (ms)");
+                    Console.WriteLine("\\r [seed]  show/set random seed");
+                    Console.WriteLine("\\p [n]     show/set print precision");
+                    Console.WriteLine("\\cd [path] show/set OS directory");
+                    Console.WriteLine("\\9         reset k-tree & seed");
+                    Console.WriteLine("\\^         go to parent branch");
+                    Console.WriteLine("\\\\         exit");
+                    Console.WriteLine("\\cmd       execute OS command");
+                    break;
+
                 case "\\d":
-                    if (parts.Length == 1)
+                    if (arg == null)
                     {
                         // Display current branch
                         var currentBranch = evaluator.DirFunction(new NullValue());
@@ -116,119 +189,152 @@ namespace K3CSharp
                         {
                             Console.WriteLine(sym.Value);
                         }
-                        else
-                        {
-                            // Root branch - display nothing per spec
-                        }
-                    }
-                    else if (parts.Length == 2)
-                    {
-                        // Set current branch
-                        evaluator.SetCurrentBranch(parts[1]);
-                        Console.WriteLine($"Current branch set to: {parts[1]}");
+                        // Root branch - display nothing per spec
                     }
                     else
                     {
-                        Console.WriteLine("Usage: \\d [branch_path]");
+                        // Set current branch
+                        evaluator.SetCurrentBranch(arg);
                     }
-                    return new NullValue();
-                    
+                    break;
+
+                case "\\v":
+                    // List variable names in a k-tree branch (current branch if no arg)
+                    var names = arg != null
+                        ? evaluator.GetBranchVariableNames(arg)
+                        : evaluator.GetCurrentBranchVariableNames();
+                    if (names.Count > 0)
+                    {
+                        names.Sort(StringComparer.Ordinal);
+                        Console.WriteLine(string.Join(" ", names));
+                    }
+                    break;
+
+                case "\\l":
+                    // Load and execute a K script file
+                    if (arg == null)
+                    {
+                        Console.WriteLine("Usage: \\l path");
+                    }
+                    else
+                    {
+                        LoadScript(arg, evaluator);
+                    }
+                    break;
+
+                case "\\t":
+                    // Time expression execution
+                    if (arg == null)
+                    {
+                        Console.WriteLine("Usage: \\t expression");
+                    }
+                    else
+                    {
+                        var sw = Stopwatch.StartNew();
+                        try
+                        {
+                            // Execute the expression (result is discarded)
+                            var lexer = new Lexer(arg);
+                            var tokens = lexer.Tokenize();
+                            var parser = new Parser(tokens, arg);
+                            var ast = parser.Parse();
+                            evaluator.Evaluate(ast);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error: {ex.Message}");
+                        }
+                        sw.Stop();
+                        Console.WriteLine(sw.ElapsedMilliseconds);
+                    }
+                    break;
+
+                case "\\cd":
+                    if (arg == null)
+                    {
+                        // Display current OS working directory
+                        Console.WriteLine(Directory.GetCurrentDirectory());
+                    }
+                    else
+                    {
+                        // Change OS working directory
+                        try
+                        {
+                            Directory.SetCurrentDirectory(arg);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error: {ex.Message}");
+                        }
+                    }
+                    break;
+
                 case "\\9":
                     // Reset K tree to default state (for testing purposes)
-                    // Also reset random seed to -314159 for reproducible tests
                     evaluator.ResetKTree();
                     Evaluator.RandomSeed = -314159;
-                    Console.WriteLine("K tree reset to default state");
-                    return new NullValue();
-                    
+                    break;
+
                 case "\\^":
                     // Set current branch to parent
                     evaluator.SetParentBranch();
-                    var parentBranch = evaluator.DirFunction(new NullValue());
-                    if (parentBranch is SymbolValue parentSym && !string.IsNullOrEmpty(parentSym.Value))
+                    break;
+
+                case "\\p":
+                    if (arg == null)
                     {
-                        Console.WriteLine($"Current branch set to: {parentSym.Value}");
+                        Console.WriteLine(Evaluator.floatPrecision);
                     }
                     else
                     {
-                        Console.WriteLine("Current branch set to root");
-                    }
-                    return new NullValue();
-                    
-                case "\\p":
-                    if (parts.Length == 1)
-                    {
-                        // Display current precision
-                        Console.WriteLine($"Current precision: {Evaluator.floatPrecision} significant digits");
-                        Console.WriteLine("Usage: \\p <number> to set precision");
-                    }
-                    else if (parts.Length == 2)
-                    {
-                        // Set precision
-                        if (int.TryParse(parts[1], out int newPrecision))
+                        if (int.TryParse(arg, out int newPrecision))
                         {
                             Evaluator.floatPrecision = newPrecision;
-                            Console.WriteLine($"Precision set to: {newPrecision} significant digits");
                         }
                         else
                         {
-                            Console.WriteLine("Invalid precision value. Use: \\p <number>");
+                            Console.WriteLine("Usage: \\p [number]");
                         }
+                    }
+                    break;
+
+                case "\\r":
+                    if (arg == null)
+                    {
+                        Console.WriteLine(Evaluator.RandomSeed);
                     }
                     else
                     {
-                        Console.WriteLine("Usage: \\p [number]");
-                    }
-                    return new NullValue();
-                    
-                case "\\r":
-                    // Handle random seed get/set
-                    if (parts.Length == 1)
-                    {
-                        // Display current random seed
-                        Console.WriteLine(Evaluator.RandomSeed);
-                    }
-                    else if (parts.Length == 2)
-                    {
-                        // Set random seed
-                        if (int.TryParse(parts[1], out int newSeed))
+                        if (int.TryParse(arg, out int newSeed))
                         {
                             Evaluator.RandomSeed = newSeed;
                         }
                         else
                         {
-                            Console.WriteLine("Invalid seed value. Use: \\r <number>");
+                            Console.WriteLine("Usage: \\r [number]");
                         }
                     }
-                    else
-                    {
-                        Console.WriteLine("Usage: \\r [number]");
-                    }
-                    return new NullValue();
-                    
+                    break;
+
                 case "\\":
                     // Display top level help message
                     Console.WriteLine("\\  help (this page)");
+                    Console.WriteLine("\\? system commands");
                     Console.WriteLine("\\0 data types");
                     Console.WriteLine("\\+ arithmetic and basic verbs");
                     Console.WriteLine("\\' adverbs");
                     Console.WriteLine("\\. control flow, assignment and debug");
                     Console.WriteLine("\\_ underscore verbs (math, linear, etc.)");
-                    Console.WriteLine("\\p precision");
-                    Console.WriteLine("\\r random seed");
-                    Console.WriteLine("\\9 reset K tree and random seed (testing)");
                     Console.WriteLine("\\\\ exit");
                     break;
-                    
+
                 case "\\0":
-                    // Display constants, literals and data types information
                     Console.WriteLine("int long float char symbol vector dictionary null");
                     Console.WriteLine("4: type");
                     Console.WriteLine("0i 0n -0i inf NaN -inf");
                     break;
-                    
+
                 case "\\+":
-                    // Display arithmetic and basic verbs information
                     Console.WriteLine("arithmetic: + - * % < > = & | ^");
                     Console.WriteLine("Monadic: - + * % & | < > ^ ! , # _ ? ~ @ . = $");
                     Console.WriteLine("Dyadic: ! _ @ . :: $");
@@ -238,9 +344,8 @@ namespace K3CSharp
                     Console.WriteLine("assignment: :");
                     Console.WriteLine("see \\_ for math, linear algebra, and system information verbs");
                     break;
-                    
+
                 case "\\'":
-                    // Display adverbs information
                     Console.WriteLine("/ over reduce");
                     Console.WriteLine("\\ scan");
                     Console.WriteLine("' each");
@@ -248,35 +353,21 @@ namespace K3CSharp
                     Console.WriteLine("\\: each-left");
                     Console.WriteLine("': each-prior");
                     break;
-                    
+
                 case "\\.":
-                    // Display control flow, assignment and debug information
                     Console.WriteLine("assignment:");
-                    Console.WriteLine("  name: value        // local assignment");
-                    Console.WriteLine("  name:: value       // global assignment");
-                    Console.WriteLine("  {[x;y] x+y}        // function definition");
+                    Console.WriteLine("  name: value        / local assignment");
+                    Console.WriteLine("  name:: value       / global assignment");
+                    Console.WriteLine("  {[x;y] x+y}       / function definition");
                     Console.WriteLine();
-                    Console.WriteLine("control flow (bracket notation):");
-                    Console.WriteLine("  if[condition; expr]     // conditional execution");
-                    Console.WriteLine("  while[condition; expr]   // loop while condition true");
-                    Console.WriteLine("  do[count; expr]          // repeat count times");
-                    Console.WriteLine("  :[cond; true; false]     // conditional evaluation");
-                    Console.WriteLine();
-                    Console.WriteLine("control flow (apply notation):");
-                    Console.WriteLine("  if . (condition; expr)   // equivalent to bracket notation");
-                    Console.WriteLine("  while . (condition; expr)");
-                    Console.WriteLine("  do . (count; expr)");
-                    Console.WriteLine("  : . (cond; true; false)");
-                    Console.WriteLine();
-                    Console.WriteLine("debug:");
-                    Console.WriteLine("  \\p [number]  // set precision");
-                    Console.WriteLine("  \\r [number]  // set/get random seed");
-                    Console.WriteLine("  \\9            // reset K tree and random seed (testing)");
-                    Console.WriteLine("  \\help        // show this help");
+                    Console.WriteLine("control flow:");
+                    Console.WriteLine("  if[cond; expr]     / conditional");
+                    Console.WriteLine("  while[cond; expr]  / loop");
+                    Console.WriteLine("  do[n; expr]        / repeat");
+                    Console.WriteLine("  :[c; t; f]         / cond expression");
                     break;
-                    
+
                 case "\\_":
-                    // Display underscore verbs information
                     Console.WriteLine("Math:");
                     Console.WriteLine("  _log   _exp   _abs   _sqrt");
                     Console.WriteLine("  _sin   _cos   _tan");
@@ -298,13 +389,93 @@ namespace K3CSharp
                     Console.WriteLine();
                     Console.WriteLine("see \\+ for arithmetic and binary verbs");
                     break;
-                    
+
                 default:
-                    Console.WriteLine($"Unknown command: {command}");
-                    Console.WriteLine("Type \\ for help on available commands");
+                    // Any unrecognized backslash command: execute as OS shell command
+                    var shellCmd = command.Substring(1); // Strip leading backslash
+                    if (string.IsNullOrWhiteSpace(shellCmd))
+                        break;
+                    ExecuteShellCommand(shellCmd);
                     break;
             }
             return new NullValue();
+        }
+
+        private static void LoadScript(string path, Evaluator evaluator)
+        {
+            // Append .k extension if not present
+            if (!Path.HasExtension(path))
+                path = path + ".k";
+
+            if (!File.Exists(path))
+            {
+                Console.WriteLine($"Error: file not found: {path}");
+                return;
+            }
+
+            try
+            {
+                var content = File.ReadAllText(path);
+                // Execute the entire file content as a single unit (same as file execution mode)
+                var lexer = new Lexer(content);
+                var tokens = lexer.Tokenize();
+                var parser = new Parser(tokens, content);
+                var ast = parser.Parse();
+                var result = evaluator.Evaluate(ast);
+                // Print result only if non-null
+                if (result != null && !(result is NullValue))
+                {
+                    Console.WriteLine(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading {path}: {ex.Message}");
+            }
+        }
+
+        private static void ExecuteShellCommand(string command)
+        {
+            try
+            {
+                string shell, shellArgs;
+                if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+                        System.Runtime.InteropServices.OSPlatform.Windows))
+                {
+                    shell = "cmd.exe";
+                    shellArgs = "/c " + command;
+                }
+                else
+                {
+                    shell = "/bin/sh";
+                    shellArgs = "-c " + command;
+                }
+
+                var psi = new ProcessStartInfo(shell, shellArgs)
+                {
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using var proc = Process.Start(psi);
+                if (proc != null)
+                {
+                    var stdout = proc.StandardOutput.ReadToEnd();
+                    var stderr = proc.StandardError.ReadToEnd();
+                    proc.WaitForExit();
+
+                    if (!string.IsNullOrEmpty(stdout))
+                        Console.Write(stdout);
+                    if (!string.IsNullOrEmpty(stderr))
+                        Console.Write(stderr);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }
