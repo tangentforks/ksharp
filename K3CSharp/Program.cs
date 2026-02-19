@@ -8,11 +8,20 @@ namespace K3CSharp
     {
         private static readonly List<string> commandHistory = new List<string>();
         //private static int historyIndex = -1;
-        
+
+        // Sentinel used in --mcp mode for reliable output framing.
+        public const string McpSentinel = "\x01\x02";
+
         static void Main(string[] args)
         {
+            bool mcpMode = args.Length > 0 && args[0] == "--mcp";
+            if (mcpMode)
+            {
+                args = args[1..]; // strip the flag
+            }
+
             var evaluator = new Evaluator();
-            
+
             if (args.Length > 0)
             {
                 // Execute file
@@ -29,6 +38,12 @@ namespace K3CSharp
                 return;
             }
 
+            if (mcpMode)
+            {
+                RunMcpRepl(evaluator);
+                return;
+            }
+
             // REPL mode
             Console.WriteLine("K3 Interpreter - Version 1.0");
             Console.WriteLine("Type \\\\ to quit, \\ to cancel input, or \\help for help");
@@ -38,11 +53,11 @@ namespace K3CSharp
             while (true)
             {
                 Console.Write("  "); // Default prompt: two spaces
-                
+
                 var input = ReadMultiLineInput();
-                
+
                 if (input == null) break;
-                
+
                 if (input == "\\\\" || input == "_exit")
                 {
                     Console.WriteLine("Goodbye!");
@@ -71,6 +86,44 @@ namespace K3CSharp
                 {
                     Console.WriteLine($"Error: {ex.Message}");
                 }
+            }
+        }
+
+        /// <summary>
+        /// MCP-friendly REPL: no banner, sentinel-delimited output, stdout flushed after each response.
+        /// </summary>
+        static void RunMcpRepl(Evaluator evaluator)
+        {
+            // Signal ready
+            Console.Out.Write(McpSentinel);
+            Console.Out.Flush();
+
+            string? line;
+            while ((line = Console.ReadLine()) != null)
+            {
+                if (line == "\\\\" || line == "_exit") break;
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    Console.Out.Write(McpSentinel);
+                    Console.Out.Flush();
+                    continue;
+                }
+
+                try
+                {
+                    var result = ExecuteLine(line, evaluator);
+                    var text = result.ToString() ?? "";
+                    if (text.Length > 0)
+                        Console.Out.Write(text);
+                }
+                catch (Exception ex)
+                {
+                    Console.Out.Write($"Error: {ex.Message}");
+                }
+
+                // Sentinel marks end of this response
+                Console.Out.Write(McpSentinel);
+                Console.Out.Flush();
             }
         }
 
