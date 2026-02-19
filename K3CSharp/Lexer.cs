@@ -295,16 +295,16 @@ namespace K3CSharp
                 }
                 else if (c == ':')
                 {
-                    // Check for 4: type operator
-                    if (position > 0 && input[position - 1] == '4')
+                    // Check for 4: type operator (only when previous token is a standalone integer 4)
+                    if (position > 0 && input[position - 1] == '4' && tokens.Count > 0 && tokens[tokens.Count - 1].Type == TokenType.INTEGER && tokens[tokens.Count - 1].Lexeme == "4")
                     {
                         // Replace the previous token with TYPE operator
                         tokens.RemoveAt(tokens.Count - 1);
                         tokens.Add(new Token(TokenType.TYPE, "4:", position - 1));
                         Advance();
                     }
-                    // Check for 5: string representation operator
-                    else if (position > 0 && input[position - 1] == '5')
+                    // Check for 5: string representation operator (only when previous token is a standalone integer 5)
+                    else if (position > 0 && input[position - 1] == '5' && tokens.Count > 0 && tokens[tokens.Count - 1].Type == TokenType.INTEGER && tokens[tokens.Count - 1].Lexeme == "5")
                     {
                         // Replace the previous token with STRING_REPRESENTATION operator
                         tokens.RemoveAt(tokens.Count - 1);

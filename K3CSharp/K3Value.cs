@@ -1209,7 +1209,7 @@ namespace K3CSharp
 
         public override string ToString()
         {
-            return ""; // For display purposes, _n is displayed as nothing (empty string) per spec
+            return "";
         }
     }
 

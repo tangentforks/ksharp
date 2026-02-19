@@ -44,7 +44,13 @@ namespace K3CSharp
             else
             {
                 // For non-vector values, convert to string and create character vector
-                string str = value is SymbolValue sym ? sym.Value : value.ToString();
+                string str;
+                if (value is SymbolValue sym)
+                    str = sym.Value;
+                else if (value is CharacterValue charVal)
+                    str = charVal.Value; // Use raw value, not ToString() which adds quotes
+                else
+                    str = value.ToString();
                 var charElements = str.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
                 return new VectorValue(charElements);
             }
@@ -91,11 +97,6 @@ namespace K3CSharp
             }
             else if (left is FloatValue floatFormat)
             {
-                // Special case: k.exe treats format specifier 0.0 as always returning empty string
-                if (floatFormat.Value == 0.0)
-                {
-                    return new CharacterValue("");
-                }
                 return FormatWithFloatSpecifier(floatFormat.Value, right);
             }
             else
@@ -131,7 +132,7 @@ namespace K3CSharp
         private K3Value FormatElement(int formatSpec, K3Value value)
         {
             string str;
-            
+
             // Handle character vectors (strings) properly
             if (value is VectorValue charVec && charVec.Elements.Count > 0 && charVec.Elements.All(e => e is CharacterValue))
             {
@@ -143,6 +144,18 @@ namespace K3CSharp
             {
                 // For symbols, format just the name without the backtick
                 str = symValue.Value;
+            }
+            else if (value is FloatValue floatVal)
+            {
+                // Integer format spec: format float as integer (truncate decimals)
+                if (floatVal.Value == Math.Floor(floatVal.Value) && !double.IsInfinity(floatVal.Value) && !double.IsNaN(floatVal.Value))
+                {
+                    str = ((long)floatVal.Value).ToString();
+                }
+                else
+                {
+                    str = value.ToString();
+                }
             }
             else
             {
@@ -156,11 +169,7 @@ namespace K3CSharp
                 {
                     str = str.PadLeft(formatSpec);
                 }
-                else if (str.Length > formatSpec)
-                {
-                    // Length overflow: return asterisks
-                    str = new string('*', formatSpec);
-                }
+                // If str.Length >= formatSpec, return as-is (no truncation)
             }
             else if (formatSpec < 0)
             {
@@ -170,11 +179,7 @@ namespace K3CSharp
                 {
                     str = str.PadRight(targetLength);
                 }
-                else if (str.Length > targetLength)
-                {
-                    // Length overflow: return asterisks
-                    str = new string('*', targetLength);
-                }
+                // If str.Length >= targetLength, return as-is (no truncation)
             }
             
             // According to K3 spec: single character results should be enlisted

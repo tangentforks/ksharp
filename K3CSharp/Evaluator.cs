@@ -90,6 +90,15 @@ namespace K3CSharp
                     return EvaluateFunction(node);
 
                 case ASTNodeType.FunctionCall:
+                    // Handle control flow functions specially - they need unevaluated AST nodes
+                    if (node.Children.Count >= 2 && node.Children[0].Type == ASTNodeType.Variable)
+                    {
+                        var cfName = node.Children[0].Value is SymbolValue cfSym ? cfSym.Value : "";
+                        if (cfName == "do" || cfName == "while" || cfName == "if")
+                        {
+                            return EvaluateControlFlow(cfName, node.Children[1]);
+                        }
+                    }
                     return EvaluateFunctionCall(node);
 
                 case ASTNodeType.Block:
@@ -110,7 +119,8 @@ namespace K3CSharp
             return operatorName == "+" || operatorName == "-" || operatorName == "*" || operatorName == "%" ||
                    operatorName == "^" || operatorName == "<" || operatorName == ">" || operatorName == "=" ||
                    operatorName == "," || operatorName == "." || operatorName == "!" || operatorName == "@" ||
-                   operatorName == "#" || operatorName == "_" || operatorName == "?" || operatorName == "$";
+                   operatorName == "#" || operatorName == "_" || operatorName == "?" || operatorName == "$" ||
+                   operatorName == ":";
         }
 
         private static bool IsColon(K3Value value)
@@ -433,6 +443,15 @@ namespace K3CSharp
             {
                 return EvaluateAdverbChain(node);
             }
+            else if (node.Children.Count == 0)
+            {
+                // Handle niladic operators
+                if (op.Value == "_lsq")
+                {
+                    throw new Exception("_lsq (least squares) operation reserved for future use");
+                }
+                throw new Exception($"Binary operator must have exactly 2 children, got {node.Children.Count}");
+            }
             else
             {
                 throw new Exception($"Binary operator must have exactly 2 children, got {node.Children.Count}");
@@ -483,6 +502,75 @@ namespace K3CSharp
             // automatically evaluated. They should only be evaluated when explicitly applied.
             // All functions (including niladic) should return the function object.
             return functionValue;
+        }
+
+        private K3Value EvaluateControlFlow(string name, ASTNode argsNode)
+        {
+            // Control flow functions need to re-evaluate their arguments on each iteration
+            // The argsNode is a Vector of AST nodes (from bracket parsing)
+            var argNodes = new List<ASTNode>();
+            if (argsNode.Type == ASTNodeType.Vector)
+            {
+                argNodes.AddRange(argsNode.Children);
+            }
+            else
+            {
+                argNodes.Add(argsNode);
+            }
+
+            switch (name)
+            {
+                case "do":
+                {
+                    if (argNodes.Count < 2)
+                        throw new Exception("Do function requires at least 2 arguments: count and expression(s)");
+                    var count = ToInteger(Evaluate(argNodes[0]));
+                    if (count < 0)
+                        throw new Exception("Do count must be non-negative");
+                    for (int i = 0; i < count; i++)
+                    {
+                        for (int j = 1; j < argNodes.Count; j++)
+                        {
+                            Evaluate(argNodes[j]);
+                        }
+                    }
+                    return new SymbolValue("");
+                }
+                case "while":
+                {
+                    if (argNodes.Count < 2)
+                        throw new Exception("While function requires at least 2 arguments: condition and expression(s)");
+                    int maxIterations = 10000; // Safety limit
+                    int iter = 0;
+                    while (iter++ < maxIterations)
+                    {
+                        var condResult = Evaluate(argNodes[0]);
+                        if (!IsNonZeroInteger(condResult))
+                            break;
+                        for (int j = 1; j < argNodes.Count; j++)
+                        {
+                            Evaluate(argNodes[j]);
+                        }
+                    }
+                    return new SymbolValue(""); // while returns empty string
+                }
+                case "if":
+                {
+                    if (argNodes.Count < 2)
+                        throw new Exception("If function requires at least 2 arguments: condition and expression(s)");
+                    var condResult = Evaluate(argNodes[0]);
+                    if (IsNonZeroInteger(condResult))
+                    {
+                        for (int j = 1; j < argNodes.Count; j++)
+                        {
+                            Evaluate(argNodes[j]);
+                        }
+                    }
+                    return new SymbolValue(""); // if returns empty string
+                }
+                default:
+                    throw new Exception($"Unknown control flow: {name}");
+            }
         }
 
         private K3Value EvaluateFunctionCall(ASTNode node)
@@ -617,12 +705,23 @@ namespace K3CSharp
                 arguments = unpackedArgs;
             }
             
+            // Handle implicit parameters (x, y, z) for functions with no explicit params
+            if (parameters.Count == 0 && arguments.Count > 0)
+            {
+                // K convention: {x*2} has implicit param x, {x+y} has x and y, etc.
+                var implicitParams = new List<string>();
+                if (arguments.Count >= 1) implicitParams.Add("x");
+                if (arguments.Count >= 2) implicitParams.Add("y");
+                if (arguments.Count >= 3) implicitParams.Add("z");
+                parameters = implicitParams;
+            }
+
             // Check for projection: fewer arguments than expected valence
             if (arguments.Count < parameters.Count)
             {
                 return CreateProjectedFunction(functionValue, arguments);
             }
-            
+
             if (arguments.Count != parameters.Count)
             {
                 throw new Exception($"Function expects {parameters.Count} arguments, got {arguments.Count}");
@@ -992,13 +1091,23 @@ namespace K3CSharp
                     throw new Exception("! operator requires at least 1 argument");
                 case "do":
                 case "_do":
-                    return DoFunction(arguments.Count > 0 ? new VectorValue(arguments) : new NullValue());
+                    {
+                        // Unwrap if arguments contains a single VectorValue (from bracket notation parsing)
+                        var doArgs = (arguments.Count == 1 && arguments[0] is VectorValue doVec) ? doVec : (arguments.Count > 0 ? new VectorValue(arguments) : (K3Value)new NullValue());
+                        return DoFunction(doArgs);
+                    }
                 case "while":
                 case "_while":
-                    return WhileFunction(arguments.Count > 0 ? new VectorValue(arguments) : new NullValue());
+                    {
+                        var whileArgs = (arguments.Count == 1 && arguments[0] is VectorValue whileVec) ? whileVec : (arguments.Count > 0 ? new VectorValue(arguments) : (K3Value)new NullValue());
+                        return WhileFunction(whileArgs);
+                    }
                 case "if":
                 case "_if":
-                    return IfFunction(arguments.Count > 0 ? new VectorValue(arguments) : new NullValue());
+                    {
+                        var ifArgs = (arguments.Count == 1 && arguments[0] is VectorValue ifVec) ? ifVec : (arguments.Count > 0 ? new VectorValue(arguments) : (K3Value)new NullValue());
+                        return IfFunction(ifArgs);
+                    }
                 case "_t":
                     return TimeFunction(new NullValue());
                 case "_d":
@@ -1050,14 +1159,9 @@ namespace K3CSharp
                         }
                         else
                         {
-                            // Regular amend-item operation with enlisted second argument
-                            var enlistedArguments = new List<K3Value> { arguments[0] };
-                            enlistedArguments.Add(Enlist(arguments[1]));
-                            for (int i = 2; i < arguments.Count; i++)
-                            {
-                                enlistedArguments.Add(arguments[i]);
-                            }
-                            return AmendItemFunction(enlistedArguments);
+                            // Regular amend-item operation
+                            // AmendItemFunction handles enlistment of indices internally
+                            return AmendItemFunction(arguments);
                         }
                     }
                     else
@@ -1274,29 +1378,22 @@ namespace K3CSharp
         {
             // Conditional evaluation: [cond; true; false] or [cond1;true1; cond2;true2; ; condN;trueN; false]
             // Arguments alternate between conditions and expressions to execute
-            // Returns the result of the first true expression, or nil if all conditions are false
-            
+            // Returns the result of the first true expression, or the else branch if all false
+
             if (arguments.Count < 3)
             {
                 throw new Exception("Conditional evaluation requires at least 3 arguments");
             }
-            
+
             // Process arguments in pairs: (condition, expression)
             for (int i = 0; i < arguments.Count - 1; i += 2)
             {
                 var condition = arguments[i];
                 var expression = arguments[i + 1];
-                
-                // Check if this is the final "else" case (no condition)
-                if (i == arguments.Count - 2 && arguments.Count % 2 == 1)
-                {
-                    // This is the default case - execute it
-                    return EvaluateExpression(expression);
-                }
-                
+
                 // Evaluate condition
                 var conditionResult = EvaluateExpression(condition);
-                
+
                 // Check if condition is a non-zero integer
                 if (IsNonZeroInteger(conditionResult))
                 {
@@ -1304,8 +1401,14 @@ namespace K3CSharp
                     return EvaluateExpression(expression);
                 }
             }
-            
-            // All conditions were false, return nil
+
+            // If odd number of arguments, the last is the "else" branch
+            if (arguments.Count % 2 == 1)
+            {
+                return EvaluateExpression(arguments[arguments.Count - 1]);
+            }
+
+            // All conditions were false and no else branch, return nil
             return new NullValue();
         }
         
@@ -2022,10 +2125,18 @@ namespace K3CSharp
         {
             // Check if this is Amend operation: .[d; i; f; y] or .[d; i; f]
             // This happens when left is null (from bracket notation) or when left is the dot symbol
-            if ((left is NullValue || (left is SymbolValue sym && sym.Value == ".")) && 
-                right is VectorValue args && args.Elements.Count >= 3)
+            if (left is NullValue || (left is SymbolValue sym && sym.Value == "."))
             {
-                return AmendFunction(args.Elements);
+                // Unwrap enlisted vector: .(,v) -> unwrap to get the inner vector
+                var amendArgs = right;
+                if (amendArgs is VectorValue wrappedVec && wrappedVec.Elements.Count == 1 && wrappedVec.Elements[0] is VectorValue innerVec)
+                {
+                    amendArgs = innerVec;
+                }
+                if (amendArgs is VectorValue args && args.Elements.Count >= 3)
+                {
+                    return AmendFunction(args.Elements);
+                }
             }
             
             // Dot-apply operator: function . argument
@@ -2039,7 +2150,13 @@ namespace K3CSharp
             // Handle dictionary dot-apply with symbol vectors (spec: d@`v is equivalent to d .,`v)
             if (left is DictionaryValue dict)
             {
-                if (right is SymbolValue symbol)
+                if (right is NullValue)
+                {
+                    // d[] or d[_n] — return all values
+                    var values = dict.Entries.Values.Select(e => e.Value).ToList();
+                    return new VectorValue(values);
+                }
+                else if (right is SymbolValue symbol)
                 {
                     // Single symbol lookup - same as dictionary indexing
                     return VectorIndex(dict, symbol);

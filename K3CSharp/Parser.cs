@@ -416,19 +416,11 @@ namespace K3CSharp
             {
                 // Parse bracket notation: expression[index] or function[args]
                 Match(TokenType.LEFT_BRACKET); // Consume '['
-                
-                // Parse the arguments expression (can be semicolon-separated)
-                var argsExpression = ParseExpressionInsideDelimiters();
-                if (argsExpression == null)
-                {
-                    throw new Exception("Expected arguments expression in brackets");
-                }
-                
-                if (!Match(TokenType.RIGHT_BRACKET))
-                {
-                    throw new Exception("Expected ']' after arguments expression");
-                }
-                
+
+                // Parse bracket arguments with proper semicolon separation
+                // ParseBracketContentsAsCommaEnlisted handles ']' consumption internally
+                var argsExpression = ParseBracketContentsAsCommaEnlisted();
+
                 // Check if this is a control flow verb function call
                 if (result != null && result.Type == ASTNodeType.Variable)
                 {
@@ -438,11 +430,11 @@ namespace K3CSharp
                         // Create function call for control flow verbs
                         var funcCall = new ASTNode(ASTNodeType.FunctionCall);
                         funcCall.Children.Add(result);
-                        
+
                         // For control flow verbs, always add the arguments as a single expression
                         // The control flow functions will handle parsing the vector internally
                         if (argsExpression != null) funcCall.Children.Add(argsExpression);
-                        
+
                         result = funcCall;
                     }
                     else
@@ -1106,18 +1098,63 @@ namespace K3CSharp
                 else
                 {
                     // Parse parenthesized expression - inside parentheses, semicolons create lists
-                    var expression = ParseExpressionInsideDelimiters();
-                    if (expression == null)
+                    // Handle leading semicolons for null elements: (;1;2)
+                    ASTNode firstExpr = null;
+                    bool hasSemicolon = false;
+
+                    if (CurrentToken().Type == TokenType.SEMICOLON)
                     {
-                        throw new Exception("Expected expression after '('");
+                        // Leading semicolon: first element is null
+                        firstExpr = ASTNode.MakeLiteral(new NullValue());
+                        hasSemicolon = true;
+                        Advance(); // consume the semicolon
                     }
-                    
-                    if (!Match(TokenType.RIGHT_PAREN))
+                    else
                     {
-                        throw new Exception("Expected ')' after expression");
+                        firstExpr = ParseBracketArgument();
+                        if (firstExpr == null)
+                        {
+                            throw new Exception("Expected expression after '('");
+                        }
+                        hasSemicolon = Match(TokenType.SEMICOLON);
                     }
-                    
-                    result = expression;
+
+                    if (hasSemicolon)
+                    {
+                        // Semicolon-separated list
+                        var elements = new List<ASTNode> { firstExpr };
+                        do
+                        {
+                            // Check for empty position (consecutive semicolons or trailing)
+                            if (!IsAtEnd() && (CurrentToken().Type == TokenType.SEMICOLON || CurrentToken().Type == TokenType.RIGHT_PAREN))
+                            {
+                                // Empty position → null element
+                                elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                            }
+                            else
+                            {
+                                var nextExpr = ParseBracketArgument();
+                                if (nextExpr != null)
+                                    elements.Add(nextExpr);
+                                else
+                                    elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                            }
+                        } while (Match(TokenType.SEMICOLON));
+
+                        if (!Match(TokenType.RIGHT_PAREN))
+                        {
+                            throw new Exception("Expected ')' after expression");
+                        }
+                        result = ASTNode.MakeVector(elements);
+                    }
+                    else
+                    {
+                        if (!Match(TokenType.RIGHT_PAREN))
+                        {
+                            throw new Exception("Expected ')' after expression");
+                        }
+                        result = firstExpr;
+                    }
                 }
                 
                 // After parsing a parenthesized expression, check for dot-apply
@@ -1725,16 +1762,18 @@ namespace K3CSharp
                         }
                         
                         // Check if we have content before the next separator or closing brace
-                        if (!IsAtEnd() && CurrentToken().Type != TokenType.RIGHT_BRACE && 
+                        if (!IsAtEnd() && CurrentToken().Type != TokenType.RIGHT_BRACE &&
                             CurrentToken().Type != TokenType.SEMICOLON && CurrentToken().Type != TokenType.NEWLINE)
                         {
-                            var expr = ParseExpression();
+                            // Use ParseExpressionWithoutSemicolons to avoid greedily consuming
+                            // newlines/semicolons that the function body parser needs to manage
+                            var expr = ParseExpressionWithoutSemicolons();
                             if (expr != null)  // Only add non-null expressions
                             {
                                 statements.Add(expr);
                             }
                         }
-                        
+
                         // Skip the separator (semicolon or newline) if present
                         // Treat newlines and semicolons as equivalent per NSL parser insight
                         if (Match(TokenType.SEMICOLON) || Match(TokenType.NEWLINE))
@@ -1778,19 +1817,12 @@ namespace K3CSharp
                 string? bodyText = "";
                 List<Token>? preParsedTokens = null;
                 
-                // Reconstruct function body text from tokens between the braces
+                // Collect tokens from body start to the closing brace (forward direction)
+                // This properly handles nested functions by tracking brace depth
                 var bodyTokens = new List<Token>();
-                int tokenIndex = current - 1; // Start from the token before the closing brace
-                
-                // Work backwards to collect tokens from the function body (excluding braces)
-                while (tokenIndex >= bodyStartTokenIndex && tokens[tokenIndex].Type != TokenType.LEFT_BRACE)
+                for (int ti = bodyStartTokenIndex; ti < current - 1; ti++) // current-1 is the closing brace
                 {
-                    // Skip the closing brace - don't include it in the body
-                    if (tokens[tokenIndex].Type != TokenType.RIGHT_BRACE)
-                    {
-                        bodyTokens.Insert(0, tokens[tokenIndex]); // Insert at beginning to maintain order
-                    }
-                    tokenIndex--;
+                    bodyTokens.Add(tokens[ti]);
                 }
                 
                 // Reconstruct the function body text from tokens
@@ -1944,22 +1976,36 @@ namespace K3CSharp
                 }
                 else if (!IsAtEnd() && (CurrentToken().Type == TokenType.IDENTIFIER || CurrentToken().Type == TokenType.SYMBOL))
                 {
-                    // This is K tree dotted notation: .k, .k.foo, etc.
-                    var identifier = CurrentToken().Lexeme;
-                    Advance(); // Consume the identifier/symbol
-                    
-                    // Construct the dotted notation variable name
-                    var dottedVariable = "." + identifier;
-                    
-                    // Check if there are more dotted parts
-                    while (Match(TokenType.DOT_APPLY) && !IsAtEnd() && 
-                           (CurrentToken().Type == TokenType.IDENTIFIER || CurrentToken().Type == TokenType.SYMBOL))
+                    // Check if dot and identifier are adjacent (no space) → dotted notation .d
+                    // vs separated by space → monadic dot applied to d
+                    var dotToken = PreviousToken();
+                    var nextToken = CurrentToken();
+                    bool isAdjacent = (dotToken.Position + dotToken.Lexeme.Length) == nextToken.Position;
+
+                    if (isAdjacent)
                     {
-                        dottedVariable += "." + CurrentToken().Lexeme;
+                        // This is K tree dotted notation: .k, .k.foo, etc.
+                        var identifier = CurrentToken().Lexeme;
                         Advance(); // Consume the identifier/symbol
+
+                        // Construct the dotted notation variable name
+                        var dottedVariable = "." + identifier;
+
+                        // Check if there are more dotted parts
+                        while (Match(TokenType.DOT_APPLY) && !IsAtEnd() &&
+                               (CurrentToken().Type == TokenType.IDENTIFIER || CurrentToken().Type == TokenType.SYMBOL))
+                        {
+                            dottedVariable += "." + CurrentToken().Lexeme;
+                            Advance(); // Consume the identifier/symbol
+                        }
+
+                        result = ASTNode.MakeVariable(dottedVariable);
                     }
-                    
-                    result = ASTNode.MakeVariable(dottedVariable);
+                    else
+                    {
+                        // Space between . and identifier → monadic dot applied to the expression
+                        result = ASTNode.MakeVariable(".");
+                    }
                 }
                 else
                 {
@@ -2074,11 +2120,100 @@ namespace K3CSharp
         {
             // Parse an expression for bracket arguments, treating semicolons as separators
             // This is similar to ParseExpression but doesn't stop at semicolons
-            
+
+            // Check for standalone operator as function reference (e.g., + in @[x; i; +; y])
+            if (!IsAtEnd() && IsBinaryOperator(CurrentToken().Type))
+            {
+                var nextIdx = current + 1;
+                var nextType = nextIdx < tokens.Count ? tokens[nextIdx].Type : TokenType.EOF;
+                if (nextType == TokenType.SEMICOLON || nextType == TokenType.RIGHT_BRACKET || nextType == TokenType.RIGHT_PAREN || nextType == TokenType.EOF)
+                {
+                    // Standalone operator - treat as symbol
+                    var opToken = CurrentToken();
+                    var opSymbol = opToken.Type.ToString() switch
+                    {
+                        "PLUS" => "+",
+                        "MINUS" => "-",
+                        "MULTIPLY" => "*",
+                        "DIVIDE" => "%",
+                        "POWER" => "^",
+                        "MODULUS" => "!",
+                        "MIN" => "&",
+                        "MAX" => "|",
+                        "LESS" => "<",
+                        "GREATER" => ">",
+                        "EQUAL" => "=",
+                        "JOIN" => ",",
+                        "COLON" => ":",
+                        "HASH" => "#",
+                        "UNDERSCORE" => "_",
+                        "QUESTION" => "?",
+                        "DOLLAR" => "$",
+                        "APPLY" => "@",
+                        _ => opToken.Lexeme
+                    };
+                    Match(opToken.Type);
+                    return ASTNode.MakeLiteral(new SymbolValue(opSymbol));
+                }
+            }
+
             var left = ParseTerm();
             if (left == null)
             {
                 return null;
+            }
+
+            // Handle assignment operators (including modified assignments like +:, -:, *:)
+            if (!IsAtEnd() && CurrentToken().Type == TokenType.ASSIGNMENT)
+            {
+                var assignToken = CurrentToken();
+                Match(TokenType.ASSIGNMENT);
+                var right = ParseBracketArgument();
+                if (right == null)
+                {
+                    throw new Exception("Expected expression after assignment operator");
+                }
+                // Extract variable name from left side
+                if (left.Type == ASTNodeType.Variable)
+                {
+                    var variableName = left.Value is SymbolValue sym ? sym.Value : left.Value?.ToString() ?? "";
+                    if (assignToken.Lexeme.Length > 1)
+                    {
+                        // Modified assignment (e.g., +:, -:, *:)
+                        var opChar = assignToken.Lexeme[0].ToString();
+                        var opType = opChar switch
+                        {
+                            "+" => TokenType.PLUS,
+                            "-" => TokenType.MINUS,
+                            "*" => TokenType.MULTIPLY,
+                            "%" => TokenType.DIVIDE,
+                            _ => TokenType.PLUS
+                        };
+                        // x+: y => x: x + y
+                        var currentVal = ASTNode.MakeVariable(variableName);
+                        var modifiedValue = ASTNode.MakeBinaryOp(opType, currentVal, right);
+                        return ASTNode.MakeAssignment(variableName, modifiedValue);
+                    }
+                    return ASTNode.MakeAssignment(variableName, right);
+                }
+                return ASTNode.MakeBinaryOp(TokenType.COLON, left, right);
+            }
+
+            // Handle global assignment operator (::)
+            if (!IsAtEnd() && CurrentToken().Type == TokenType.GLOBAL_ASSIGNMENT)
+            {
+                Match(TokenType.GLOBAL_ASSIGNMENT);
+                var right = ParseBracketArgument();
+                if (right == null)
+                {
+                    throw new Exception("Expected expression after ::");
+                }
+                if (left.Type == ASTNodeType.Variable)
+                {
+                    var variableName = left.Value is SymbolValue sym ? sym.Value : left.Value?.ToString() ?? "";
+                    return ASTNode.MakeGlobalAssignment(variableName, right);
+                }
+                return ASTNode.MakeBinaryOp(TokenType.GLOBAL_ASSIGNMENT, left, right);
             }
 
             // Handle binary operators but stop at semicolon or right bracket
@@ -2147,13 +2282,13 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Regular binary operation
-                    var right = ParseTerm();
+                    // Regular binary operation with right-associativity
+                    var right = ParseBracketArgument();
                     if (right == null)
                     {
                         throw new Exception($"Expected right operand after {op}");
                     }
-                    left = ASTNode.MakeBinaryOp(op, left, right);
+                    return ASTNode.MakeBinaryOp(op, left, right);
                 }
             }
 
@@ -2558,22 +2693,14 @@ namespace K3CSharp
                     {
                         // Handle the bracket notation that follows
                         Match(TokenType.LEFT_BRACKET); // Consume '['
-                        
-                        // Parse the arguments expression (can be semicolon-separated)
-                        var argsExpression = ParseExpressionInsideDelimiters();
-                        if (argsExpression == null)
-                        {
-                            throw new Exception("Expected arguments expression in brackets");
-                        }
-                        
-                        if (!Match(TokenType.RIGHT_BRACKET))
-                        {
-                            throw new Exception("Expected ']' after arguments expression");
-                        }
-                        
+
+                        // Parse bracket arguments with proper semicolon separation
+                        // This ensures operators like < don't consume past semicolons
+                        var argsExpression = ParseBracketContentsAsCommaEnlisted();
+
                         // Create dot-apply node: operator .,(args)
                         left = ASTNode.MakeBinaryOp(TokenType.DOT_APPLY, left, argsExpression);
-                        
+
                         return left;
                     }
                 }
@@ -2663,15 +2790,37 @@ namespace K3CSharp
             }
             
             if (left == null) return null;
-            
+
+            // Handle global assignment operator (::)
+            if (!IsAtEnd() && CurrentToken().Type == TokenType.GLOBAL_ASSIGNMENT)
+            {
+                Match(TokenType.GLOBAL_ASSIGNMENT);
+                var right = ParseExpressionWithoutSemicolons();
+                if (right == null)
+                {
+                    throw new Exception("Expected expression after ::");
+                }
+                // Extract variable name from left side
+                if (left.Type == ASTNodeType.Variable)
+                {
+                    var variableName = left.Value is SymbolValue symbol ? symbol.Value : left.Value?.ToString() ?? "";
+                    return ASTNode.MakeGlobalAssignment(variableName, right);
+                }
+                else
+                {
+                    // Fallback: create binary op for ::
+                    return ASTNode.MakeBinaryOp(TokenType.GLOBAL_ASSIGNMENT, left, right);
+                }
+            }
+
             // Handle binary operators with Long Right Scope (LRS)
             // In K, there's no precedence among operators - they're all right-associative
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
-                   Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) || 
+                   Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
                    Match(TokenType.EQUAL) || Match(TokenType.IN) || Match(TokenType.BIN) || Match(TokenType.BINL) || Match(TokenType.LIN) ||
                    Match(TokenType.DV) || Match(TokenType.DI) || Match(TokenType.VS) || Match(TokenType.SV) || Match(TokenType.SS) || Match(TokenType.SM) || Match(TokenType.CI) || Match(TokenType.IC) ||
                    Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
-                   Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || 
+                   Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) ||
                    Match(TokenType.DOLLAR) || Match(TokenType.DRAW) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
                    Match(TokenType.APPLY) || Match(TokenType.DOT_APPLY))
             {

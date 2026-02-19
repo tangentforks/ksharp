@@ -50,7 +50,7 @@ namespace K3CSharp
             {
                 var kTime = intVal.Value;
                 var adjustedTime = kTime - 18000; // Assuming US Eastern Standard Time (UTC-5)
-                return new LongValue(adjustedTime);
+                return new IntegerValue(adjustedTime);
             }
             
             throw new Exception("_lt requires integer argument representing K-time");
