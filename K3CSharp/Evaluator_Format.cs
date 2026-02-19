@@ -24,7 +24,7 @@ namespace K3CSharp
                     if (vec.Elements.Count == 1)
                     {
                         // Single character - enlist it
-                        return new VectorValue(new List<K3Value> { vec.Elements[0] }, "string");
+                        return new VectorValue(new List<K3Value> { vec.Elements[0] });
                     }
                     else
                     {
@@ -120,7 +120,7 @@ namespace K3CSharp
                 {
                     result.Add(FormatElement(formatSpec, element));
                 }
-                return new VectorValue(result, "formatted");
+                return new VectorValue(result);
             }
             else
             {
@@ -181,7 +181,7 @@ namespace K3CSharp
             // to make them 1-item character vectors, e.g., ,"a" or ,"1"
             if (str.Length == 1)
             {
-                return new VectorValue(new List<K3Value> { new CharacterValue(str) }, "string");
+                return new VectorValue(new List<K3Value> { new CharacterValue(str) });
             }
             
             return new CharacterValue(str);
@@ -203,7 +203,7 @@ namespace K3CSharp
                 {
                     result.Add(FormatFloatElement(formatSpec, element));
                 }
-                return new VectorValue(result, "formatted");
+                return new VectorValue(result);
             }
             else
             {
@@ -256,7 +256,7 @@ namespace K3CSharp
             // to make them 1-item character vectors, e.g., ,"a" or ,"1"
             if (str.Length == 1)
             {
-                return new VectorValue(new List<K3Value> { new CharacterValue(str) }, "string");
+                return new VectorValue(new List<K3Value> { new CharacterValue(str) });
             }
             
             return new CharacterValue(str);

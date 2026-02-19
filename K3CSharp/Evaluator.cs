@@ -461,7 +461,7 @@ namespace K3CSharp
             if (isHomogeneous)
             {
                 // Create homogeneous VectorValue
-                return new VectorValue(elements, "standard");
+                return new VectorValue(elements);
             }
             else
             {
@@ -1536,7 +1536,7 @@ namespace K3CSharp
         {
             // 5: verb - produce string representation of the argument with proper escaping
             string representation = ToStringWithEscaping(value);
-            return new VectorValue(new List<K3Value> { new CharacterValue(representation) }, "string_representation");
+            return new VectorValue(new List<K3Value> { new CharacterValue(representation) });
         }
         
         private string ToStringWithEscaping(K3Value value)

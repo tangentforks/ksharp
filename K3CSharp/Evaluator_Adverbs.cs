@@ -287,7 +287,7 @@ namespace K3CSharp
                     }
                 }
                 
-                return new VectorValue(result, "standard");
+                return new VectorValue(result);
             }
             
             return data;

@@ -237,43 +237,13 @@ namespace K3CSharp
         
         private int GetVectorType(K3CSharp.VectorValue list)
         {
-            // Check CreationMethod for specific vector types
-            switch (list.CreationMethod)
-            {
-                case "enlist":
-                    // For enlisted vectors, determine type based on the single element
-                    if (list.Elements.Count == 1)
-                    {
-                        var element = list.Elements[0];
-                        if (element is IntegerValue || element is LongValue)
-                            return -1; // Integer vector
-                        else if (element is FloatValue)
-                            return -2; // Float vector  
-                        else if (element is CharacterValue)
-                            return -3; // Character vector
-                        else if (element is SymbolValue)
-                            return -4; // Symbol vector
-                    }
-                    return 0; // Mixed list for complex enlisted elements
-                case "enumerate_int":
-                case "enumerate_long":
-                    return -1; // Integer vector
-                case "enumerate_float":
-                    return -2; // Float vector
-                case "enumerate_char":
-                    return -3; // Character vector
-                case "enumerate_symbol":
-                    return -4; // Symbol vector
-            }
-            
-            // For empty vectors with no elements, determine from CreationMethod
+            // For empty vectors with no elements, determine from element types
             if (list.Elements.Count == 0)
             {
-                if (list.CreationMethod.Contains("int")) return -1;
-                if (list.CreationMethod.Contains("float")) return -2;
-                if (list.CreationMethod.Contains("char")) return -3;
-                if (list.CreationMethod.Contains("charvec")) return -3;
-                if (list.CreationMethod.Contains("symbol")) return -4;
+                if (list.Elements.Count > 0 && list.Elements.All(e => e is IntegerValue || e is LongValue)) return -1; // Integer vector
+                if (list.Elements.Count > 0 && list.Elements.All(e => e is FloatValue)) return -2; // Float vector  
+                if (list.Elements.Count > 0 && list.Elements.All(e => e is CharacterValue)) return -3; // Character vector
+                if (list.Elements.Count > 0 && list.Elements.All(e => e is SymbolValue)) return -4; // Symbol vector
                 return 0; // Default to mixed list
             }
             

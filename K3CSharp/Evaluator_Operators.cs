@@ -472,8 +472,8 @@ namespace K3CSharp
                     
                     if (dataVec.Elements.Count == 0)
                     {
-                        // Empty source vector - return empty result
-                        return new VectorValue(result, "standard");
+                        // Empty source vector - return empty result with same type
+                        return new VectorValue(result, GetVectorType(dataVec));
                     }
                     
                     // Repeat the source vector periodically to fill the requested count
@@ -483,21 +483,12 @@ namespace K3CSharp
                         result.Add(dataVec.Elements[sourceIndex]);
                     }
                     
-                    // Determine creation method for empty vectors
-                    string creationMethod = "standard";
-                    if (result.Count == 0)
-                    {
-                        if (dataVec.Elements.Count > 0 && dataVec.Elements[0] is FloatValue)
-                            creationMethod = "take_float";
-                        else if (dataVec.Elements.Count > 0 && dataVec.Elements[0] is SymbolValue)
-                            creationMethod = "take_symbol";
-                    }
-                    
-                    return new VectorValue(result, creationMethod);
+                    // Preserve vector type in the result
+                    return new VectorValue(result, GetVectorType(dataVec));
                 }
                 else
                 {
-                    // Take from scalar - create vector with the scalar repeated
+                    // Take from scalar - create vector with scalar repeated
                     var actualCount = Math.Max(0, intCount.Value);
                     var result = new List<K3Value>();
                     
@@ -506,17 +497,7 @@ namespace K3CSharp
                         result.Add(data);
                     }
                     
-                    // Determine creation method
-                    string creationMethod = "standard";
-                    if (result.Count == 0)
-                    {
-                        if (data is FloatValue)
-                            creationMethod = "take_float";
-                        else if (data is SymbolValue)
-                            creationMethod = "take_symbol";
-                    }
-                    
-                    return new VectorValue(result, creationMethod);
+                    return new VectorValue(result);
                 }
             }
             else if (count is LongValue longCount)
@@ -564,7 +545,7 @@ namespace K3CSharp
                     elements.Add(flatData[index[0] % flatData.Count]);
                     index[0]++;
                 }
-                return new VectorValue(elements, "standard");
+                return new VectorValue(elements);
             }
             else
             {
@@ -574,7 +555,7 @@ namespace K3CSharp
                 {
                     rows.Add(ReshapeBuild(shape, dim + 1, flatData, index));
                 }
-                return new VectorValue(rows, dim == 0 ? "reshape" : "standard");
+                return new VectorValue(rows);
             }
         }
 
@@ -1077,7 +1058,7 @@ namespace K3CSharp
                 return new VectorValue(new List<K3Value> { new IntegerValue(0) });
             }
             
-            return new VectorValue(new List<K3Value>(), "enumerate_int"); // For scalars - return !0 (empty integer vector)
+            return new VectorValue(new List<K3Value>(), -1); // Empty integer vector
         }
 
         private K3Value Enumerate(K3Value a)
@@ -1089,7 +1070,7 @@ namespace K3CSharp
                 {
                     elements.Add(new IntegerValue(i));
                 }
-                return new VectorValue(elements, intA.Value == 0 ? "enumerate_int" : "standard");
+                return new VectorValue(elements);
             }
             else if (a is LongValue longA)
             {
@@ -1098,7 +1079,7 @@ namespace K3CSharp
                 {
                     elements.Add(new LongValue(i));
                 }
-                return new VectorValue(elements, longA.Value == 0 ? "enumerate_long" : "standard");
+                return new VectorValue(elements);
             }
             else if (a is DictionaryValue dict)
             {
@@ -1108,7 +1089,7 @@ namespace K3CSharp
                 {
                     keys.Add(key);
                 }
-                return new VectorValue(keys, "standard");
+                return new VectorValue(keys);
             }
             
             throw new Exception($"Cannot enumerate {a.Type}");
@@ -1117,7 +1098,7 @@ namespace K3CSharp
         private K3Value Enlist(K3Value a)
         {
             var elements = new List<K3Value> { a };
-            return new VectorValue(elements, "enlist");
+            return new VectorValue(elements);
         }
 
         private K3Value Count(K3Value a)
@@ -1135,7 +1116,7 @@ namespace K3CSharp
             if (a is LongValue longA)
                 return longA;
             if (a is FloatValue floatA)
-                return new FloatValue(Math.Floor(floatA.Value));
+                return new IntegerValue((int)Math.Floor(floatA.Value));
             
             throw new Exception($"Cannot floor {a.Type}");
         }
@@ -1150,6 +1131,25 @@ namespace K3CSharp
         {
             return value is IntegerValue || value is LongValue || value is FloatValue || 
                    value is CharacterValue || value is SymbolValue || value is NullValue;
+        }
+        
+        private int GetVectorType(VectorValue vec)
+        {
+            if (vec.Elements.Count == 0)
+                return 0; // Default to mixed list for empty vectors without explicit type
+                
+            // For non-empty vectors, determine from element types
+            var firstElement = vec.Elements[0];
+            if (vec.Elements.All(e => e is IntegerValue || e is LongValue))
+                return -1; // Integer vector
+            else if (vec.Elements.All(e => e is FloatValue))
+                return -2; // Float vector  
+            else if (vec.Elements.All(e => e is CharacterValue))
+                return -3; // Character vector
+            else if (vec.Elements.All(e => e is SymbolValue))
+                return -4; // Symbol vector
+            else
+                return 0; // Default to mixed list
         }
     }
 }

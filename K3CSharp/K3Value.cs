@@ -648,17 +648,19 @@ namespace K3CSharp
     public class VectorValue : K3Value
     {
         public List<K3Value> Elements { get; }
-        public string CreationMethod { get; } // Track how the vector was created
+        public int? VectorType { get; private set; } // Track type for empty vectors
 
-        public VectorValue(List<K3Value> elements) : this(elements, "standard")
-        {
-        }
-        
-        public VectorValue(List<K3Value> elements, string creationMethod)
+        public VectorValue(List<K3Value> elements)
         {
             Elements = elements;
             Type = ValueType.Vector;
-            CreationMethod = creationMethod;
+        }
+
+        public VectorValue(List<K3Value> elements, int vectorType)
+        {
+            Elements = elements;
+            Type = ValueType.Vector;
+            VectorType = vectorType;
         }
 
         public override K3Value Add(K3Value other)
@@ -949,36 +951,27 @@ namespace K3CSharp
         {
             if (Elements.Count == 0)
             {
-                // Handle special empty vector display formats
-                if (CreationMethod == "enumerate_int")
-                    return "!0";
-                else if (CreationMethod == "enumerate_long")
-                    return "!0j";
-                else if (CreationMethod == "take_float")
-                    return "0#0.0";
-                else if (CreationMethod == "take_symbol")
-                    return "0#`";
-                else if (CreationMethod == "enumerate_char" || (Elements.Count > 0 && Elements.All(e => e is CharacterValue)))
-                    return "\"\"";
-                else if (CreationMethod == "standard")
-                    return "()"; // Empty standard vector
-                else if (asElement || CreationMethod == "mixed")
-                    return "()"; // Empty mixed vector
-                else
-                    return "()";
+                // Display empty vectors based on their type
+                if (VectorType.HasValue)
+                {
+                    return VectorType.Value switch
+                    {
+                        0 => "()", // Empty list
+                        -1 => "!0", // Empty integer vector
+                        -2 => "0#0.0", // Empty float vector
+                        -3 => "\"\"", // Empty character vector
+                        -4 => "0#`", // Empty symbol vector
+                        _ => "()" // Default to empty list
+                    };
+                }
+                
+                // For empty vectors without explicit type, default to empty list
+                return "()";
             }
             
             // Check if this is a character vector - display as vector of quoted strings
             if (Elements.All(e => e is CharacterValue))
             {
-                // For formatted vectors (like from $ operator), return vector of character vectors
-                // Only apply this to actual formatting operations, not type conversions
-                if (CreationMethod == "formatted")
-                {
-                    var elementsStr = string.Join(";", Elements.Select(e => e.ToString()));
-                    return $"({elementsStr})";
-                }
-                
                 // For simple character vectors, display as quoted string with escape sequences for non-printable chars
                 var sb = new System.Text.StringBuilder("\"");
                 foreach (var e in Elements)
@@ -1004,7 +997,7 @@ namespace K3CSharp
                 var result = sb.ToString();
                 
                 // Add enlist comma for single-element character vectors (unless skipped or string representation)
-                if (Elements.Count == 1 && !skipComma && CreationMethod != "string_representation")
+                if (Elements.Count == 1 && !skipComma)
                 {
                     result = "," + result;
                 }
@@ -1019,17 +1012,14 @@ namespace K3CSharp
             
             // Check if this is truly mixed (different types) OR has nested vectors OR has null values
             // For homogeneous vectors with nulls, we should display as mixed with semicolons
-            var isTrulyMixed = elementTypes.Count > 1 || hasNestedVectors || hasNullValues;
+            var isTrulyMixed = elementTypes.Count > 1 || hasNullValues;
             
-            if (isTrulyMixed)
+            // Special case: if we have a single-element vector containing another vector,
+            // we want comma prefix but not mixed list formatting
+            var isSingleVectorWithVector = Elements.Count == 1 && Elements[0] is VectorValue;
+            
+            if (isTrulyMixed && !isSingleVectorWithVector)
             {
-                // Reshape results display with newline+space separator in K3
-                if (CreationMethod == "reshape" && Elements.All(e => e is VectorValue))
-                {
-                    var rowStrs = Elements.Select(e => ((VectorValue)e).ToString(false)).ToList();
-                    return "(" + string.Join("\n ", rowStrs) + ")";
-                }
-
                 var elementsStr = string.Join(";", Elements.Select(e =>
                 {
                     if (e is NullValue)
@@ -1038,12 +1028,12 @@ namespace K3CSharp
                     }
                     else if (e is VectorValue vec)
                     {
-                        // Add comma prefix if the current vector is enlisted
+                        // Add comma prefix if this is a single-element vector (enlisted)
                         var vecStr = vec.Elements.Count == 1 
                             ? vec.ToString(false, true) // Skip inner comma logic for single elements
                             : vec.ToString(false); // Don't add inner parentheses for simple vectors
                         
-                        return CreationMethod == "enlist" ? "," + vecStr : vecStr;
+                        return vec.Elements.Count == 1 ? "," + vecStr : vecStr;
                     }
                     return e.ToString();
                 }));
@@ -1052,12 +1042,6 @@ namespace K3CSharp
                 if (Elements.Count == 1 && Elements[0] is VectorValue vec && vec.Elements.All(x => x is CharacterValue))
                 {
                     return elementsStr; // Return just the enlisted string without parentheses
-                }
-                
-                // Special case: single-element mixed list with enlisted vector - don't add parentheses
-                if (Elements.Count == 1 && Elements[0] is VectorValue)
-                {
-                    return elementsStr; // Return just the enlisted vector without parentheses
                 }
                 
                 return "(" + elementsStr + ")";
@@ -1076,8 +1060,8 @@ namespace K3CSharp
                 vectorStr = string.Join(" ", Elements.Select(e => e.ToString()));
             }
             
-            // Add enlist comma for single-element vectors with enlist creation method (unless skipped)
-            if (Elements.Count == 1 && !skipComma && CreationMethod == "enlist")
+            // Add enlist comma for single-element vectors (unless skipped)
+            if (Elements.Count == 1 && !skipComma)
             {
                 return "," + vectorStr;
             }

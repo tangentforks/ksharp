@@ -88,8 +88,7 @@ namespace K3CSharp
             }
             
             var vectorElements = elements.Select(x => (K3Value)new IntegerValue(x)).ToList();
-            // Mark single-element vectors as enlisted to preserve display format
-            return new VectorValue(vectorElements, elementCount == 1 ? "enlist" : "standard");
+            return new VectorValue(vectorElements);
         }
         
         private object DeserializeFloatVector(KSerializationReader reader)
@@ -102,8 +101,7 @@ namespace K3CSharp
                 elementList.Add(new FloatValue(reader.ReadDouble()));
             }
             
-            // Mark single-element vectors as enlisted to preserve display format
-            return new VectorValue(elementList, elementCount == 1 ? "enlist" : "standard");
+            return new VectorValue(elementList);
         }
         
         private object DeserializeCharacterVector(KSerializationReader reader)
@@ -120,8 +118,7 @@ namespace K3CSharp
             if (reader.HasMoreData) reader.ReadByte();
             
             var vectorElements = elements.Select(x => (K3Value)new CharacterValue(x.ToString())).ToList();
-            // Mark single-element vectors as enlisted to preserve display format
-            return new VectorValue(vectorElements, elementCount == 1 ? "enlist" : "standard");
+            return new VectorValue(vectorElements);
         }
         
         private object DeserializeSymbolVector(KSerializationReader reader)
@@ -137,8 +134,7 @@ namespace K3CSharp
             }
             
             var vectorElements = elements.Select(x => (K3Value)new SymbolValue(x)).ToList();
-            // Mark single-element vectors as enlisted to preserve display format
-            return new VectorValue(vectorElements, elementCount == 1 ? "enlist" : "standard");
+            return new VectorValue(vectorElements);
         }
         
         private object DeserializeListEntry(KSerializationReader reader)
@@ -171,7 +167,7 @@ namespace K3CSharp
                 }
             }
             
-            return new VectorValue(elements, elementCount == 1 ? "enlist" : "mixed"); // Mark single-element lists as enlisted
+            return new VectorValue(elements);
         }
         
         private int GetElementSize(K3Value element)

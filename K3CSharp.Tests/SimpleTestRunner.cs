@@ -170,6 +170,15 @@ namespace K3CSharp.Tests
                 ("dictionary_type.k", "5"),
                 ("dictionary_with_null_value.k", ".((`a;1;);(`b;;);(`c;3;))"),
                 
+                // Empty value tests
+                ("empty_char_vector.k", "\"\""),
+                ("empty_float_vector_test.k", "0#0.0"),
+                ("empty_symbol_vector.k", "0#`"),
+                ("empty_dictionary.k", ".()"),
+                ("empty_list.k", "()"),
+                ("test_symbol_take.k", "0#`"),
+                ("test_symbol_parsing.k", "0#`"),
+                
                 // Drop tests
                 ("drop_negative.k", "0 1 2 3"),
                 ("drop_positive.k", "4 5 6 7"),
