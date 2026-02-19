@@ -33,13 +33,26 @@ namespace K3CSharp
                     }
                 }
                 
-                // Regular vector - recursively format each element and enlist result
+                // Regular vector - recursively format each element and create list of character vectors
                 var result = new List<K3Value>();
                 foreach (var element in vec.Elements)
                 {
                     var formattedElement = FormatRecursive(element);
-                    // Enlist the formatted element as a single-element vector
-                    result.Add(new VectorValue(new List<K3Value> { formattedElement }));
+                    // According to K3 spec: result should be a list where each element is a character vector
+                    // If formatted element is already a character vector, enlist it to make it a list element
+                    if (formattedElement is VectorValue formattedVec && formattedVec.Elements.Count > 0 && formattedVec.Elements.All(e => e is CharacterValue))
+                    {
+                        result.Add(new VectorValue(new List<K3Value> { formattedElement }));
+                    }
+                    else if (formattedElement is CharacterValue)
+                    {
+                        // Single character - enlist it to make character vector
+                        result.Add(new VectorValue(new List<K3Value> { formattedElement }));
+                    }
+                    else
+                    {
+                        result.Add(formattedElement);
+                    }
                 }
                 return new VectorValue(result);
             }
