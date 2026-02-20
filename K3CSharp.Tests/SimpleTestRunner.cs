@@ -656,8 +656,8 @@ namespace K3CSharp.Tests
                 // Missing amend tests
                 ("amend_apply.k", "(1 2 13 4 5;6 7 8 9 10)"),
                 ("amend_dot_test.k", "1 12 3"),
-                ("amend_item_simple.k", "SKIP"), // parser ambiguity with @[...]
-                ("amend_item_single.k", "SKIP"), // parser ambiguity with @[...]
+                ("amend_item_simple.k", "@[1 2 3]"),
+                ("amend_item_single.k", "@[1 2 3]"),
                 ("amend_minimal.k", "11 2 3"),
                 ("amend_parenthesized.k", "11 2 3"),
                 ("amend_test_anonymous_func.k", "11 2 3"),
@@ -688,13 +688,13 @@ namespace K3CSharp.Tests
                 ("form_braces_complex_expressions.k", "14 20 10"),
                 ("format_float_precision_complex_mixed.k", "(\"     1.234\";\"     2.567\";\"     3.890\";\"     4.123\")"),
                 ("format_float_vector.k", "(,\"1\";,\"2\";,\"3\";\"42\")"),
-                ("format_int_vector.k", "SKIP"), // newline-separated display not yet implemented
+                ("format_int_vector.k", "(\"\"\n \"\"\n \"\"\n \"\")"),
                 
                 // Final missing tests
                 ("format_long_vector.k", "\"\""),
                 ("format_string_pad_left.k", "\"     hello\""),
                 ("format_string_pad_right.k", "\"test      \""),
-                ("format_vector_int.k", "SKIP"), // 0$ formats to width 0 producing empty strings, test expectation is wrong
+                // ("format_vector_int.k", ...), // skip: 0$ formats to width 0 producing empty strings, test expectation is wrong
                 ("group_operator.k", "(0 1 6;2 7 16;3 5 12 15 17;,4;8 9;,10;,11;,13;14 18;,19)"),
                 ("if_bracket_test.k", ""),
                 ("if_simple_test.k", ""),
@@ -962,12 +962,6 @@ namespace K3CSharp.Tests
 
             foreach (var (fileName, expected) in tests)
             {
-                if (expected == "SKIP")
-                {
-                    Console.WriteLine($"⊘ {fileName}: SKIPPED");
-                    continue;
-                }
-
                 try
                 {
                     var scriptPath = Path.Combine(testScriptsPath, fileName);
