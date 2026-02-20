@@ -355,10 +355,14 @@
 ║ find_basic.k                                       │ 9 8 7 6 5 4 3 ? 7  // Find operator - basic functionality │ 2                    │                      ║
 ║ find_notfound.k                                    │ 9 8 7 6 5 4 3 ? 1  // Find operator - not found case │ 7                    │                      ║
 ║ lsq.k                                              │ _lsq                 │ Error - _lsq (l...   │                      ║
-║ format_float_precision_vector_simple.k             │ 10.1$(1.5;2.5)       │ ("       1.5";"...   │                      ║
-║ format_float_precision_mixed_vector.k              │ 7.2$(1.5;2.7;3.14159;4.2) │ ("   1.50";"   ...   │                      ║
-║ format_pad_mixed_vector.k                          │ 10$(1;2;3)           │ ("         1";"...   │                      ║
-║ format_pad_negative_mixed_vector.k                 │ -10$(1;2;3)          │ ("1         ";"...   │                      ║
+║ format_float_precision_vector_simple.k             │ 10.1$(1.5;2.5)       │ ("       1.5"
+ ...   │                      ║
+║ format_float_precision_mixed_vector.k              │ 7.2$(1.5;2.7;3.14159;4.2) │ ("   1.50"
+ "  ...   │                      ║
+║ format_pad_mixed_vector.k                          │ 10$(1;2;3)           │ ("         1"
+ ...   │                      ║
+║ format_pad_negative_mixed_vector.k                 │ -10$(1;2;3)          │ ("1         "
+ ...   │                      ║
 ║ vector_notation_empty.k                            │ ()                   │ ()                   │                      ║
 ║ vector_notation_functions.k                        │ double: {[x] x * 2}  │ 10 20 30             │                      ║
 ║ vector_notation_mixed_types.k                      │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
@@ -408,16 +412,19 @@
 ║ empty_brackets_dictionary.k                        │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
 ║ empty_brackets_vector.k                            │ v: 1 2 3 4           │ 1 2 3 4              │                      ║
 ║ form_braces_complex_expressions.k                  │ sum:{[a;b] a+b}      │ 14 20 10             │                      ║
-║ format_float_precision_complex_mixed.k             │ 10.3$(1.234;2.567;3.890;4.123) │ ("     1.234";"...   │                      ║
+║ format_float_precision_complex_mixed.k             │ 10.3$(1.234;2.567;3.890;4.123) │ ("     1.234"
+ ...   │                      ║
 ║ format_float_vector.k                              │ 0.0$(1;2.5;3.14;42)  │ (,"1";,"2";,"3"...   │                      ║
-║ format_int_vector.k                                │ 0$(1;2.5;3.14;42)    │ ("";"";"";"")        │ (""
+║ format_int_vector.k                                │ 0$(1;2.5;3.14;42)    │ (""
  ""
  ""
- "")     ║
+ "")     │                      ║
 ║ format_long_vector.k                               │ 0j$(1;2.5;3.14;42)   │ ""                   │                      ║
 ║ format_string_pad_left.k                           │ 10$"hello"           │ "     hello"         │                      ║
 ║ format_string_pad_right.k                          │ -10$"test"           │ "test      "         │                      ║
-║ format_vector_int.k                                │ 0$(1;2;3)            │ ("1";"2";"3")        │                      ║
+║ format_vector_int.k                                │ 0$(1;2;3)            │ ("1"
+ "2"
+ "3")      │                      ║
 ║ group_operator.k                                   │ a: 3 3 8 7 5 7 3 8 4 4 9 2 7 6 0 7 8 7 0 1 │ (0 1 6;2 7 16;3...   │                      ║
 ║ if_bracket_test.k                                  │ if[1 < 2; a: 20]  // Test if function with bracket notation │                      │                      ║
 ║ if_simple_test.k                                   │ if[3; 42]  // If function with bracket notation │                      │                      ║
@@ -590,7 +597,7 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 565/583 tests passed (96.9%)                                                                               ║
+║ SUMMARY: 566/583 tests passed (97.1%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -624,14 +631,6 @@ Test: amend_item_single.k
 Input: @[1]
 Expected: @[1 2 3]
 Actual: 1
-──────────────────────────────────────────────────────────────────────────
-Test: format_int_vector.k
-Input: 0$(1;2.5;3.14;42)
-Expected: (""
- ""
- ""
- "")
-Actual: ("";"";"";"")
 ──────────────────────────────────────────────────────────────────────────
 Test: db_symbol_vector.k
 Input: _db _bd `a`b`c
