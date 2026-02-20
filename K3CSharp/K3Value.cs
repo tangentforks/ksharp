@@ -1025,12 +1025,8 @@ namespace K3CSharp
             
             if (isTrulyMixed && !isSingleVectorWithVector)
             {
-                // Check if all elements are strings (character vectors) — display one per line
-                var allStrings = Elements.All(e => e is VectorValue vec && vec.Elements.All(c => c is CharacterValue));
-                var separator = allStrings ? "\n " : ";";
-
                 // For mixed vectors with multiple elements (including nested vectors), use semicolon separation
-                var elementsStr = string.Join(separator, Elements.Select(e =>
+                var elementsStr = string.Join(";", Elements.Select(e =>
                 {
                     if (e is NullValue)
                     {

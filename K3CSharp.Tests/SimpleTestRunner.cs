@@ -613,10 +613,10 @@ namespace K3CSharp.Tests
                 ("lsq.k", "Error - _lsq (least squares) operation reserved for future use"),
                 
                 // Form specifiers on mixed vectors
-                ("format_float_precision_vector_simple.k", "(\"       1.5\"\n \"       2.5\")"),
-                ("format_float_precision_mixed_vector.k", "(\"   1.50\"\n \"   2.70\"\n \"   3.14\"\n \"   4.20\")"),
-                ("format_pad_mixed_vector.k", "(\"         1\"\n \"         2\"\n \"         3\")"),
-                ("format_pad_negative_mixed_vector.k", "(\"1         \"\n \"2         \"\n \"3         \")"),
+                ("format_float_precision_vector_simple.k", "(\"       1.5\";\"       2.5\")"),
+                ("format_float_precision_mixed_vector.k", "(\"   1.50\";\"   2.70\";\"   3.14\";\"   4.20\")"),
+                ("format_pad_mixed_vector.k", "(\"         1\";\"         2\";\"         3\")"),
+                ("format_pad_negative_mixed_vector.k", "(\"1         \";\"2         \";\"3         \")"),
                 
 // Vector notation tests
 ("vector_notation_empty.k", "()"),
@@ -686,15 +686,15 @@ namespace K3CSharp.Tests
                 
                 // Format tests
                 ("form_braces_complex_expressions.k", "14 20 10"),
-                ("format_float_precision_complex_mixed.k", "(\"     1.234\"\n \"     2.567\"\n \"     3.890\"\n \"     4.123\")"),
+                ("format_float_precision_complex_mixed.k", "(\"     1.234\";\"     2.567\";\"     3.890\";\"     4.123\")"),
                 ("format_float_vector.k", "(,\"1\";,\"2\";,\"3\";\"42\")"),
-                ("format_int_vector.k", "(\"\"\n \"\"\n \"\"\n \"\")"),
+                ("format_int_vector.k", "(\"\";\"\";\"\";\"\")"),
                 
                 // Final missing tests
                 ("format_long_vector.k", "\"\""),
                 ("format_string_pad_left.k", "\"     hello\""),
                 ("format_string_pad_right.k", "\"test      \""),
-                ("format_vector_int.k", "(\"1\"\n \"2\"\n \"3\")"),
+                ("format_vector_int.k", "(\"1\";\"2\";\"3\")"),
                 ("group_operator.k", "(0 1 6;2 7 16;3 5 12 15 17;,4;8 9;,10;,11;,13;14 18;,19)"),
                 ("if_bracket_test.k", ""),
                 ("if_simple_test.k", ""),
