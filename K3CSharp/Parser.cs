@@ -1833,11 +1833,11 @@ namespace K3CSharp
                     for (int i = 0; i < bodyTokens.Count; i++)
                     {
                         var token = bodyTokens[i];
-                        var lexeme = token.Lexeme;
-                        
+                        var lexeme = ReconstructTokenLexeme(token);
+
                         // Handle operators that should be attached to operands (no spaces)
-                        if ((lexeme == "+" || lexeme == "-" || lexeme == "*" || lexeme == "/" || 
-                             lexeme == "^" || lexeme == "!" || lexeme == "=" || lexeme == "<" || 
+                        if ((lexeme == "+" || lexeme == "-" || lexeme == "*" || lexeme == "/" ||
+                             lexeme == "^" || lexeme == "!" || lexeme == "=" || lexeme == "<" ||
                              lexeme == ">" || lexeme == "&" || lexeme == "|" || lexeme == ","))
                         {
                             // Check if this operator should be attached to previous token (no space before)
@@ -1850,7 +1850,7 @@ namespace K3CSharp
                                 {
                                     // Attach operator to previous token (no space before)
                                     bodyParts[bodyParts.Count - 1] += lexeme;
-                                    
+
                                     // Check if next token should also be attached (no space after)
                                     if (i + 1 < bodyTokens.Count)
                                     {
@@ -1862,7 +1862,7 @@ namespace K3CSharp
                                             // Attach next token to operator as well (no space after)
                                             if (i + 1 < bodyTokens.Count)
                                             {
-                                                bodyParts[bodyParts.Count - 1] += nextToken.Lexeme;
+                                                bodyParts[bodyParts.Count - 1] += ReconstructTokenLexeme(bodyTokens[i + 1]);
                                                 i++; // Skip the next token since we already processed it
                                             }
                                         }
@@ -1871,7 +1871,7 @@ namespace K3CSharp
                                 }
                             }
                         }
-                        
+
                         bodyParts.Add(lexeme);
                     }
                     
@@ -3231,6 +3231,27 @@ namespace K3CSharp
         private void Advance()
         {
             current++;
+        }
+
+        /// <summary>
+        /// Reconstruct a token's source representation including delimiters that the lexer strips.
+        /// CHARACTER and CHARACTER_VECTOR tokens lose their surrounding quotes,
+        /// and SYMBOL tokens lose their leading backtick.
+        /// </summary>
+        private static string ReconstructTokenLexeme(Token token)
+        {
+            switch (token.Type)
+            {
+                case TokenType.CHARACTER:
+                case TokenType.CHARACTER_VECTOR:
+                    // Re-add surrounding double quotes, escaping any embedded quotes or backslashes
+                    return "\"" + token.Lexeme.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
+                case TokenType.SYMBOL:
+                    // Re-add the leading backtick
+                    return "`" + token.Lexeme;
+                default:
+                    return token.Lexeme;
+            }
         }
     }
 }

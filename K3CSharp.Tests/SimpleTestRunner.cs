@@ -136,7 +136,12 @@ namespace K3CSharp.Tests
                 ("anonymous_function_empty.k", "{}"),
                 ("anonymous_function_simple.k", "{4+5}"),
                 ("anonymous_function_single_param.k", "{[arg1] arg1+6}"),
-                
+
+                // Lambda with string/symbol literal tests
+                ("lambda_string_literal.k", "\"hello\""),
+                ("lambda_symbol_literal.k", "`abc"),
+                ("lambda_string_assign.k", "\"hello\""),
+
                 // Atom tests
                 ("atom_scalar.k", "1"),
                 ("atom_vector.k", "0"),

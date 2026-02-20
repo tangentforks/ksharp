@@ -33,6 +33,9 @@
 ║ anonymous_function_empty.k                         │ {}                   │ {}                   │                      ║
 ║ anonymous_function_simple.k                        │ {4+5}                │ {4+5}                │                      ║
 ║ anonymous_function_single_param.k                  │ {[arg1] arg1+6}      │ {[arg1] arg1+6}      │                      ║
+║ lambda_string_literal.k                            │ {"hello"}[]          │ "hello"              │                      ║
+║ lambda_symbol_literal.k                            │ {`abc}[]             │ `abc                 │                      ║
+║ lambda_string_assign.k                             │ {a:"hello";a}[]      │ "hello"              │                      ║
 ║ atom_scalar.k                                      │ @42                  │ 1                    │                      ║
 ║ atom_vector.k                                      │ @1 2 3               │ 0                    │                      ║
 ║ attribute_handle_symbol.k                          │ ~`a                  │ `a.                  │                      ║
@@ -590,7 +593,7 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 559/583 tests passed (95.9%)                                                                               ║
+║ SUMMARY: 562/586 tests passed (95.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
