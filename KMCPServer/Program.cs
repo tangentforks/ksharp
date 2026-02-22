@@ -34,7 +34,7 @@ namespace KMCPServer
         {
             string command = null;
             string script = null;
-            int timeout = 2000; // Default 2 seconds
+            int timeout = 2000; // Default 2 seconds as per specification
             string interpreter = null;
             string passthrough = null;
 

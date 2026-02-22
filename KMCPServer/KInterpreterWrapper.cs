@@ -15,7 +15,7 @@ namespace K3CSharp
         private readonly string runId;
         private readonly string tempDirectory;
 
-        public KInterpreterWrapper(string kExePath = @"c:\k\e.exe", int timeoutMs = 10000)
+        public KInterpreterWrapper(string kExePath = @"c:\k\e.exe", int timeoutMs = 2000)
         {
             this.kExePath = File.Exists(kExePath) ? kExePath : @"c:\k\k.exe";
             this.timeoutMs = timeoutMs;
@@ -43,18 +43,15 @@ namespace K3CSharp
         private string ExecuteScriptWithTimeout(string scriptContent, int executionTimeoutMs)
         {
             string? tempScriptPath = null;
-            string? outputPath = null;
-            
+
             try
             {
                 tempScriptPath = CreateTempScriptWithExit(scriptContent);
-                outputPath = Path.Combine(tempDirectory, $"k_output_{Guid.NewGuid():N}_{DateTime.Now.Ticks}.txt");
-                
-                return ExecuteScriptWithRetryAndErrorCheck(tempScriptPath, outputPath, executionTimeoutMs);
+                return ExecuteScriptWithRetryAndErrorCheck(tempScriptPath, null, executionTimeoutMs);
             }
             finally
             {
-                CleanupTempFilesWithRetry(tempScriptPath ?? "", outputPath ?? "");
+                CleanupTempFilesWithRetry(tempScriptPath ?? "");
             }
         }
 
@@ -62,67 +59,135 @@ namespace K3CSharp
         {
             const int maxAttempts = 3;
             const int retryDelayMs = 1000;
-            
+
             for (int attempt = 1; attempt <= maxAttempts; attempt++)
             {
+                Process? process = null;
                 try
                 {
-                    // Use shell execution to properly redirect stdout and stderr
+                    // Start k.exe directly with the script file
                     var startInfo = new ProcessStartInfo
                     {
-                        FileName = "cmd.exe",
-                        Arguments = $"/c \"\"{kExePath}\" \"{scriptPath}\" > \"{outputPath}\" 2>&1\"",
+                        FileName = kExePath,
+                        Arguments = $"\"{scriptPath}\"",
                         UseShellExecute = false,
-                        RedirectStandardOutput = false, // Don't redirect - using shell redirection
-                        RedirectStandardError = false,  // Don't redirect - using shell redirection
-                        CreateNoWindow = true
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        CreateNoWindow = true,
+                        StandardOutputEncoding = Encoding.UTF8,
+                        StandardErrorEncoding = Encoding.UTF8
                     };
 
-                    using var process = Process.Start(startInfo);
+                    process = Process.Start(startInfo);
+
+                    // Set up to capture output
+                    var outputBuilder = new StringBuilder();
+                    var errorBuilder = new StringBuilder();
                     
+                    process.OutputDataReceived += (sender, e) => {
+                        if (e.Data != null) outputBuilder.AppendLine(e.Data);
+                    };
+                    process.ErrorDataReceived += (sender, e) => {
+                        if (e.Data != null) errorBuilder.AppendLine(e.Data);
+                    };
+
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+
                     // Wait for process to complete with timeout
                     if (!process.WaitForExit(executionTimeoutMs))
                     {
-                        process.Kill();
+                        // Kill the process
+                        KillProcessTree(process);
+                        process.WaitForExit(2000); // Give it 2 seconds to die gracefully
+
                         if (attempt == maxAttempts)
                         {
-                            throw new TimeoutException($"k.exe execution timed out after {executionTimeoutMs}ms");
+                            // On final attempt, check stderr for messages and return filtered stderr if available
+                            var timeoutStderr = errorBuilder.ToString();
+                            if (!string.IsNullOrWhiteSpace(timeoutStderr))
+                            {
+                                return FilterOutput(timeoutStderr);
+                            }
+                            return "timeout error";
                         }
+
                         // Wait before retry
                         System.Threading.Thread.Sleep(retryDelayMs);
                         continue;
                     }
 
+                    var stdout = outputBuilder.ToString();
+                    var stderr = errorBuilder.ToString();
+
                     // Check if k.exe exited with code 0
                     if (process.ExitCode == 0)
                     {
-                        // Add delay after exit to allow file operations to complete
-                        System.Threading.Thread.Sleep(100); // 100ms delay
-                        return ReadAndCleanOutput(outputPath);
+                        // Add delay after exit to ensure output is complete
+                        System.Threading.Thread.Sleep(100);
+                        return FilterOutput(stdout);
                     }
                     else
                     {
-                        // k.exe exited with error code, check stderr for messages
-                        if (File.Exists(outputPath))
+                        // k.exe exited with error code, return stderr messages
+                        if (!string.IsNullOrWhiteSpace(stderr))
                         {
-                            var errorOutput = File.ReadAllText(outputPath, Encoding.UTF8);
-                            throw new Exception($"k.exe exited with code {process.ExitCode}. Output: {errorOutput}");
+                            return FilterOutput(stderr); // Return stderr messages as per specification
                         }
-                        throw new Exception($"k.exe exited with code {process.ExitCode}");
+                        // If no stderr, return stdout (might contain error info)
+                        if (!string.IsNullOrWhiteSpace(stdout))
+                        {
+                            return FilterOutput(stdout);
+                        }
+                        // If no output at all, return indication of error
+                        return $"k.exe exited with code {process.ExitCode}";
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (attempt < maxAttempts)
                 {
-                    if (attempt == maxAttempts)
+                    // Kill any remaining processes
+                    if (process != null && !process.HasExited)
                     {
-                        throw new Exception($"Failed to execute k.exe after {maxAttempts} attempts: {ex.Message}", ex);
+                        KillProcessTree(process);
+                        process.WaitForExit(5000);
                     }
+
                     // Wait before retry
                     System.Threading.Thread.Sleep(retryDelayMs);
                 }
+                finally
+                {
+                    // Ensure process is disposed
+                    process?.Dispose();
+                }
             }
-            
+
             throw new Exception("k.exe execution failed after maximum retry attempts");
+        }
+
+        private void KillProcessTree(Process process)
+        {
+            try
+            {
+                // Kill the process itself
+                if (!process.HasExited)
+                {
+                    process.Kill();
+                    // Wait a bit for the process to actually terminate
+                    if (!process.WaitForExit(2000)) // Wait up to 2 seconds
+                    {
+                        // Force kill if it didn't terminate gracefully
+                        try { process.Kill(true); } catch { }
+                    }
+                }
+
+                // Give extra time for child processes to terminate
+                System.Threading.Thread.Sleep(500);
+            }
+            catch
+            {
+                // Ignore errors when killing processes
+            }
         }
 
         public static bool ContainsLongInteger(string scriptContent)
@@ -143,8 +208,8 @@ namespace K3CSharp
         {
             var tempScriptPath = Path.Combine(tempDirectory, $"k_script_{Guid.NewGuid():N}_{DateTime.Now.Ticks}.k");
             
-            // Add _exit 0 to force k.exe to exit with status code 0
-            var modifiedContent = scriptContent.TrimEnd() + "\n_exit 0\n";
+            // Add exit command to ensure k.exe terminates after executing the script
+            var modifiedContent = scriptContent.TrimEnd() + "\n\\\\\n";
             
             // Use atomic write with file sharing to prevent locking issues
             using var fileStream = new FileStream(tempScriptPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
@@ -156,49 +221,23 @@ namespace K3CSharp
             return tempScriptPath;
         }
 
-        private static string ReadAndCleanOutput(string outputPath)
+        private static string FilterOutput(string output)
         {
-            if (!File.Exists(outputPath))
+            if (string.IsNullOrWhiteSpace(output))
             {
                 return "";
             }
 
-            // Use retry mechanism for file access
-            const int maxRetries = 3;
-            const int retryDelayMs = 100;
+            // Filter out licensing and debug information
+            var lines = output.Split('\n');
+            var filteredLines = lines.Where(line => 
+                !string.IsNullOrWhiteSpace(line) &&
+                !line.StartsWith("WIN32") && !line.Contains("EVAL") &&
+                !line.StartsWith("w64") && !line.Contains("PROD") &&
+                !line.StartsWith("K 3.") && !line.Contains("Copyright") &&
+                !Regex.IsMatch(line, @"^>\s*$")).ToArray();
             
-            for (int attempt = 0; attempt < maxRetries; attempt++)
-            {
-                try
-                {
-                    using var fileStream = new FileStream(outputPath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096, FileOptions.SequentialScan);
-                    using var reader = new StreamReader(fileStream, Encoding.UTF8);
-                    {
-                        var content = reader.ReadToEnd();
-                        
-                        // Filter out licensing and debug information
-                        var lines = content.Split('\n');
-                        var filteredLines = lines.Where(line => 
-                            !string.IsNullOrWhiteSpace(line) &&
-                            !line.StartsWith("WIN32") && !line.Contains("EVAL") &&
-                            !line.StartsWith("w64") && !line.Contains("PROD") &&
-                            !line.StartsWith("K 3.") && !line.Contains("Copyright")).ToArray();
-                        
-                        return string.Join("\n", filteredLines).TrimEnd();
-                    }
-                }
-                catch (IOException) when (attempt < maxRetries - 1)
-                {
-                    System.Threading.Thread.Sleep(retryDelayMs);
-                    continue;
-                }
-                catch
-                {
-                    break;
-                }
-            }
-            
-            return "";
+            return string.Join("\n", filteredLines).TrimEnd();
         }
 
         private void CleanupTempFilesWithRetry(params string[] filePaths)
