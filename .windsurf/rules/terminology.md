@@ -6,13 +6,13 @@ K sometimes differs from the traditional terminology used in other languages and
 
 E.g. 
 
-- _sv _vs _dv and _di have the meanings in K of "scalar from vector" "vector from scalar" "delete value" and "delete item"  
-- "/" never means "divide"
+- "symbol" in K is always a data type. When referring to non-alphanumeric characters such as + - * % we will wuse the word "glyph"
+- "%" means "divide" (because it is the ASCII glyph that most resembles ÷)
+- Glyphs different from "%" never mean "divide"
+- dyadic "!" with atomic (scalar) arguments means "modulo"
+- Glyphs different from "!" never mean "modulo"
 - "/" means "over" (and it is an adverb, not a verb) unless it is preceded by a space
 - "/" preceded by a space is a comment marker
-- dyadic "%" never means modulo
-- "%" means "divide" (because it is the ASCII glyph that most resembles ÷)
-- dyadic "!" with atomic (scalar) arguments means "modulo"
 - dyadic "!" with a vector second arguments means "rotate"
-- "symbol" in K is a data type and is not synonymous with "glyph"
+- _sv _vs _dv and _di have the meanings in K of "scalar from vector" "vector from scalar" "delete value" and "delete item"  
 

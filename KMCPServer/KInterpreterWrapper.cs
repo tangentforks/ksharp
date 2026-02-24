@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace K3CSharp
 {
-    public class KInterpreterWrapper
+    public class KInterpreterWrapper : IDisposable
     {
         private readonly string kExePath;
         private readonly int timeoutMs;
@@ -47,7 +47,7 @@ namespace K3CSharp
             try
             {
                 tempScriptPath = CreateTempScriptWithExit(scriptContent);
-                return ExecuteScriptWithRetryAndErrorCheck(tempScriptPath, null, executionTimeoutMs);
+                return ExecuteScriptWithRetryAndErrorCheck(tempScriptPath ?? "", null!, executionTimeoutMs);
             }
             finally
             {
@@ -80,15 +80,21 @@ namespace K3CSharp
 
                     process = Process.Start(startInfo);
 
+                    // Check if process started successfully
+                    if (process == null)
+                    {
+                        throw new InvalidOperationException("Failed to start K interpreter process");
+                    }
+
                     // Set up to capture output
                     var outputBuilder = new StringBuilder();
                     var errorBuilder = new StringBuilder();
                     
                     process.OutputDataReceived += (sender, e) => {
-                        if (e.Data != null) outputBuilder.AppendLine(e.Data);
+                        if (e?.Data is { } data) outputBuilder.AppendLine(data);
                     };
                     process.ErrorDataReceived += (sender, e) => {
-                        if (e.Data != null) errorBuilder.AppendLine(e.Data);
+                        if (e?.Data is { } data) errorBuilder.AppendLine(data);
                     };
 
                     process.BeginOutputReadLine();
@@ -143,7 +149,7 @@ namespace K3CSharp
                         return $"k.exe exited with code {process.ExitCode}";
                     }
                 }
-                catch (Exception ex) when (attempt < maxAttempts)
+                catch (Exception) when (attempt < maxAttempts)
                 {
                     // Kill any remaining processes
                     if (process != null && !process.HasExited)
@@ -277,9 +283,33 @@ namespace K3CSharp
             return kExePath.Contains("k.exe");
         }
 
+        private bool disposed = false;
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    // No managed resources to dispose
+                }
+                
+                // Clean up temp directory
+                CleanupTempFilesWithRetry(tempDirectory);
+                
+                disposed = true;
+            }
+        }
+
         ~KInterpreterWrapper()
         {
-            CleanupTempFilesWithRetry(tempDirectory);
+            Dispose(false);
         }
     }
 }

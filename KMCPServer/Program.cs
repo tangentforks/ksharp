@@ -18,7 +18,32 @@ namespace KMCPServer
             {
                 Console.WriteLine("Starting K.exe MCP Server...");
                 Console.WriteLine("Press Ctrl+C to stop the server");
-                server.Start();
+                
+                // Parse default interpreter and timeout for MCP mode
+                string? interpreter = null;
+                int timeout = 2000; // Default timeout
+                
+                for (int i = 0; i < args.Length; i++)
+                {
+                    switch (args[i])
+                    {
+                        case "--interpreter":
+                            if (i + 1 < args.Length)
+                            {
+                                interpreter = args[++i];
+                            }
+                            break;
+                        case "--timeout":
+                            if (i + 1 < args.Length && int.TryParse(args[++i], out int t))
+                            {
+                                timeout = t * 1000; // Convert to milliseconds
+                            }
+                            break;
+                    }
+                }
+                
+                var mcpServer = new KMCPServer(interpreter, timeout);
+                mcpServer.Start();
                 return 0;
             }
             else
@@ -32,11 +57,11 @@ namespace KMCPServer
 
         static string ExecuteStandalone(string[] args)
         {
-            string command = null;
-            string script = null;
+            string? command = null;
+            string? script = null;
             int timeout = 2000; // Default 2 seconds as per specification
-            string interpreter = null;
-            string passthrough = null;
+            string? interpreter = null;
+            string? passthrough = null;
 
             // Parse command line arguments
             for (int i = 0; i < args.Length; i++)
@@ -73,6 +98,9 @@ namespace KMCPServer
                             passthrough = args[++i];
                         }
                         break;
+                    case "--mcp":
+                        // MCP mode - handled by the initial check
+                        break;
                     default:
                         // Unknown option - add to passthrough
                         if (passthrough == null)
@@ -87,29 +115,19 @@ namespace KMCPServer
                 }
             }
 
-            // Validate arguments
-            if (command != null && script != null)
-            {
-                return "Error: Cannot specify both --command and --script";
-            }
-            if (command == null && script == null)
-            {
-                return "Error: Must specify either --command or --script";
-            }
-
             // Create wrapper with custom settings
-            var kPath = GetKInterpreterPath(interpreter);
+            var kPath = GetKInterpreterPath(interpreter ?? "");
             var wrapper = new KInterpreterWrapper(kPath, timeout);
 
             try
             {
                 if (command != null)
                 {
-                    return wrapper.ExecuteScript(command);
+                    return wrapper.ExecuteScript(command ?? "");
                 }
                 else
                 {
-                    return wrapper.ExecuteScript(script);
+                    return wrapper.ExecuteScript(script ?? "");
                 }
             }
             catch (Exception ex)

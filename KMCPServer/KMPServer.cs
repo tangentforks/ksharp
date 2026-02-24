@@ -6,7 +6,7 @@ using K3CSharp;
 
 namespace KMCPServer
 {
-    public class KMCPServer
+    public class KMCPServer : IDisposable
     {
         private readonly KInterpreterWrapper wrapper;
 
@@ -15,32 +15,40 @@ namespace KMCPServer
             this.wrapper = new KInterpreterWrapper();
         }
 
+        public KMCPServer(string interpreterPath, int timeout)
+        {
+            this.wrapper = new KInterpreterWrapper(interpreterPath ?? "", timeout);
+        }
+
         public void Start()
         {
-            Console.WriteLine("K MCP Server starting...");
-            
             using var reader = new StreamReader(Console.OpenStandardInput());
             while (!reader.EndOfStream)
             {
                 var line = reader.ReadLine();
                 if (string.IsNullOrEmpty(line)) continue;
-
-                JsonRpcRequest request = null;
+                
                 try
                 {
-                    request = JsonSerializer.Deserialize<JsonRpcRequest>(line);
-                    var response = ProcessRequest(request);
+                    var request = JsonSerializer.Deserialize<JsonRpcRequest>(line);
+                    if (request == null) continue;
                     
-                    Console.WriteLine("\x01\x02" + JsonSerializer.Serialize(response) + "\x03");
+                    var response = ProcessRequest(request);
+                    if (response != null)
+                    {
+                        Console.WriteLine(JsonSerializer.Serialize(response));
+                        Console.Out.Flush();
+                    }
                 }
                 catch (Exception ex)
                 {
                     var errorResponse = new JsonRpcResponse
                     {
-                        id = request?.id,
+                        id = "",
                         error = new JsonRpcError { code = -32603, message = string.Format("Internal error: {0}", ex.Message) }
                     };
-                    Console.WriteLine("\x01\x02" + JsonSerializer.Serialize(errorResponse) + "\x03");
+                    Console.WriteLine(JsonSerializer.Serialize(errorResponse));
+                    Console.Out.Flush();
                 }
             }
         }
@@ -51,8 +59,7 @@ namespace KMCPServer
             {
                 var capabilities = new
                 {
-                    tools = new object[0],
-                    resources = new object[0]
+                    tools = new object()  // Empty object, not array
                 };
                 var serverInfo = new
                 {
@@ -63,21 +70,67 @@ namespace KMCPServer
                 return new JsonRpcResponse
                 {
                     id = request.id,
-                    result = new Dictionary<string, object>
+                    result = new
                     {
-                        ["protocolVersion"] = "2024-11-05",
-                        ["capabilities"] = capabilities,
-                        ["serverInfo"] = serverInfo
+                        protocolVersion = "2024-11-05",
+                        capabilities = capabilities,
+                        serverInfo = serverInfo
                     }
                 };
             }
 
+            if (request.method == "notifications/initialized")
+            {
+                // No response needed for notifications
+                return null!;
+            }
+
             if (request.method == "tools/list")
             {
+                var tools = new object[]
+                {
+                    new
+                    {
+                        name = "execute_k_command",
+                        description = "Execute a K command and return the result",
+                        inputSchema = new
+                        {
+                            type = "object",
+                            properties = new
+                            {
+                                command = new
+                                {
+                                    type = "string",
+                                    description = "The K command to execute"
+                                }
+                            },
+                            required = new[] { "command" }
+                        }
+                    },
+                    new
+                    {
+                        name = "execute_k_script",
+                        description = "Execute a K script from a file and return the result",
+                        inputSchema = new
+                        {
+                            type = "object",
+                            properties = new
+                            {
+                                script_path = new
+                                {
+                                    type = "string",
+                                    description = "Path to the K script file to execute"
+                                }
+                            },
+                            required = new[] { "script_path" }
+                        }
+                    }
+                };
+                
                 return new JsonRpcResponse
                 {
                     id = request.id,
-                    result = new object[0]
+                    result = new Dictionary<string, object> { ["tools"] = tools }  // Wrap in object
                 };
             }
 
@@ -97,102 +150,100 @@ namespace KMCPServer
         {
             try
             {
-                var arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(request.@params.ToString());
-                var toolName = arguments["name"].ToString();
-                var toolArgs = JsonSerializer.Deserialize<string[]>(arguments["arguments"].ToString());
+                var arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(request.@params?.ToString() ?? "");
+                var toolName = arguments?["name"]?.ToString() ?? "";
+                var toolArgs = JsonSerializer.Deserialize<string[]>(arguments?["arguments"]?.ToString() ?? "");
 
-                if (toolName == "execute_k_command")
+                string result = toolName switch
                 {
-                    var command = toolArgs.Length > 0 ? toolArgs[0] : "";
-                    
-                    try
-                    {
-                        var result = wrapper.ExecuteScript(command);
-                        return new JsonRpcResponse 
-                        { 
-                            id = request.id, 
-                            result = new Dictionary<string, object> { ["output"] = result }
-                        };
-                    }
-                    catch (Exception ex)
-                    {
-                        return new JsonRpcResponse 
-                        { 
-                            id = request.id, 
-                            error = new JsonRpcError { code = -32000, message = string.Format("K execution failed: {0}", ex.Message) } 
-                        };
-                    }
-                }
+                    "execute_k_command" => ExecuteKCommand(toolArgs),
+                    "execute_k_script" => ExecuteKScript(toolArgs),
+                    _ => throw new Exception($"Unknown tool: {toolName}")
+                };
 
-                if (toolName == "execute_k_script")
-                {
-                    if (toolArgs.Length == 0)
-                    {
-                        return new JsonRpcResponse 
-                        { 
-                            id = request.id, 
-                            error = new JsonRpcError { code = -32602, message = "Script content required" } 
-                        };
-                    }
-
-                    var scriptContent = toolArgs[0];
-                    try
-                    {
-                        var result = wrapper.ExecuteScript(scriptContent);
-                        return new JsonRpcResponse 
-                        { 
-                            id = request.id, 
-                            result = new Dictionary<string, object> { ["output"] = result }
-                        };
-                    }
-                    catch (Exception ex)
-                    {
-                        return new JsonRpcResponse 
-                        { 
-                            id = request.id, 
-                            error = new JsonRpcError { code = -32000, message = string.Format("Script execution failed: {0}", ex.Message) } 
-                        };
-                    }
-                }
-                else
-                {
-                    return new JsonRpcResponse 
+                return new JsonRpcResponse 
+                { 
+                    id = request.id, 
+                    result = new Dictionary<string, object> 
                     { 
-                        id = request.id, 
-                        error = new JsonRpcError { code = -32601, message = "Tool not found" } 
-                    };
-                }
+                        ["content"] = new object[]
+                        {
+                            new Dictionary<string, object> 
+                            { 
+                                ["type"] = "text", 
+                                ["text"] = result 
+                            }
+                        }
+                    }
+                };
             }
             catch (Exception ex)
             {
                 return new JsonRpcResponse 
                 { 
                     id = request.id, 
-                    error = new JsonRpcError { code = -32000, message = string.Format("Tool execution failed: {0}", ex.Message) } 
+                    result = new Dictionary<string, object> 
+                    { 
+                        ["content"] = new object[]
+                        {
+                            new Dictionary<string, object> 
+                            { 
+                                ["type"] = "text", 
+                                ["text"] = $"Error: {ex.Message}",
+                                ["isError"] = true
+                            }
+                        }
+                    }
                 };
             }
+        }
+
+        private string ExecuteKCommand(string[]? toolArgs)
+        {
+            var command = toolArgs?.Length > 0 ? toolArgs[0] ?? "" : "";
+            if (string.IsNullOrEmpty(command))
+                throw new Exception("Command argument required");
+            return wrapper.ExecuteScript(command);
+        }
+
+        private string ExecuteKScript(string[]? toolArgs)
+        {
+            if (toolArgs?.Length == 0)
+                throw new Exception("Script path required");
+            
+            var scriptPath = toolArgs?[0] ?? "";
+            if (string.IsNullOrEmpty(scriptPath))
+                throw new Exception("Script path required");
+                
+            var scriptContent = File.ReadAllText(scriptPath);
+            return wrapper.ExecuteScript(scriptContent);
+        }
+
+        public void Dispose()
+        {
+            wrapper?.Dispose();
         }
     }
 
     public class JsonRpcRequest
     {
         public string jsonrpc { get; set; } = "2.0";
-        public string method { get; set; }
-        public object @params { get; set; }
-        public string id { get; set; }
+        public string? method { get; set; }
+        public object? @params { get; set; }
+        public object? id { get; set; }  // Changed from string to object to handle both string and numeric
     }
 
     public class JsonRpcResponse
     {
         public string jsonrpc { get; set; } = "2.0";
-        public object result { get; set; }
-        public JsonRpcError error { get; set; }
-        public string id { get; set; }
+        public object? result { get; set; }
+        public JsonRpcError? error { get; set; }
+        public object? id { get; set; }  // Changed from string to object
     }
 
     public class JsonRpcError
     {
         public int code { get; set; }
-        public string message { get; set; }
+        public string? message { get; set; }
     }
 }

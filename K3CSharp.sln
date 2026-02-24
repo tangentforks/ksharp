@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "K3CSharp.SerializationResea
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMCPServer", "KMCPServer\KMCPServer.csproj", "{31FB869C-0BE0-5D63-4A7C-ED4017E074F0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "K3CSharp.MCP", "K3CSharp.MCP\K3CSharp.MCP.csproj", "{D2B5525E-74E5-5375-1715-AC821CDE979F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{31FB869C-0BE0-5D63-4A7C-ED4017E074F0}.Release|x64.Build.0 = Release|Any CPU
 		{31FB869C-0BE0-5D63-4A7C-ED4017E074F0}.Release|x86.ActiveCfg = Release|Any CPU
 		{31FB869C-0BE0-5D63-4A7C-ED4017E074F0}.Release|x86.Build.0 = Release|Any CPU
+		{D2B5525E-74E5-5375-1715-AC821CDE979F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2B5525E-74E5-5375-1715-AC821CDE979F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2B5525E-74E5-5375-1715-AC821CDE979F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D2B5525E-74E5-5375-1715-AC821CDE979F}.Debug|x64.Build.0 = Debug|Any CPU
+		{D2B5525E-74E5-5375-1715-AC821CDE979F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D2B5525E-74E5-5375-1715-AC821CDE979F}.Debug|x86.Build.0 = Debug|Any CPU
+		{D2B5525E-74E5-5375-1715-AC821CDE979F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2B5525E-74E5-5375-1715-AC821CDE979F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2B5525E-74E5-5375-1715-AC821CDE979F}.Release|x64.ActiveCfg = Release|Any CPU
+		{D2B5525E-74E5-5375-1715-AC821CDE979F}.Release|x64.Build.0 = Release|Any CPU
+		{D2B5525E-74E5-5375-1715-AC821CDE979F}.Release|x86.ActiveCfg = Release|Any CPU
+		{D2B5525E-74E5-5375-1715-AC821CDE979F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
