@@ -6,7 +6,7 @@ using K3CSharp;
 
 namespace KMCPServer
 {
-    public class KMCPServer : IDisposable
+    public sealed class KMCPServer : IDisposable
     {
         private readonly KInterpreterWrapper wrapper;
 
@@ -15,7 +15,7 @@ namespace KMCPServer
             this.wrapper = new KInterpreterWrapper();
         }
 
-        public KMCPServer(string interpreterPath, int timeout)
+        public KMCPServer(string? interpreterPath, int timeout)
         {
             this.wrapper = new KInterpreterWrapper(interpreterPath ?? "", timeout);
         }
@@ -225,7 +225,7 @@ namespace KMCPServer
         }
     }
 
-    public class JsonRpcRequest
+    public sealed class JsonRpcRequest
     {
         public string jsonrpc { get; set; } = "2.0";
         public string? method { get; set; }
@@ -233,7 +233,7 @@ namespace KMCPServer
         public object? id { get; set; }  // Changed from string to object to handle both string and numeric
     }
 
-    public class JsonRpcResponse
+    public sealed class JsonRpcResponse
     {
         public string jsonrpc { get; set; } = "2.0";
         public object? result { get; set; }
@@ -241,7 +241,7 @@ namespace KMCPServer
         public object? id { get; set; }  // Changed from string to object
     }
 
-    public class JsonRpcError
+    public sealed class JsonRpcError
     {
         public int code { get; set; }
         public string? message { get; set; }
