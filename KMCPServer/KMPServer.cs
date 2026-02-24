@@ -152,12 +152,14 @@ namespace KMCPServer
             {
                 var arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(request.@params?.ToString() ?? "");
                 var toolName = arguments?["name"]?.ToString() ?? "";
-                var toolArgs = JsonSerializer.Deserialize<string[]>(arguments?["arguments"]?.ToString() ?? "");
+                
+                // Extract the actual tool arguments from the nested structure
+                var toolArgs = JsonSerializer.Deserialize<Dictionary<string, object>>(arguments?["arguments"]?.ToString() ?? "");
 
                 string result = toolName switch
                 {
-                    "execute_k_command" => ExecuteKCommand(toolArgs),
-                    "execute_k_script" => ExecuteKScript(toolArgs),
+                    "execute_k_command" => ExecuteKCommand(toolArgs?["command"]?.ToString()),
+                    "execute_k_script" => ExecuteKScript(toolArgs?["script_path"]?.ToString()),
                     _ => throw new Exception($"Unknown tool: {toolName}")
                 };
 
@@ -198,20 +200,15 @@ namespace KMCPServer
             }
         }
 
-        private string ExecuteKCommand(string[]? toolArgs)
+        private string ExecuteKCommand(string? command)
         {
-            var command = toolArgs?.Length > 0 ? toolArgs[0] ?? "" : "";
             if (string.IsNullOrEmpty(command))
                 throw new Exception("Command argument required");
             return wrapper.ExecuteScript(command);
         }
 
-        private string ExecuteKScript(string[]? toolArgs)
+        private string ExecuteKScript(string? scriptPath)
         {
-            if (toolArgs?.Length == 0)
-                throw new Exception("Script path required");
-            
-            var scriptPath = toolArgs?[0] ?? "";
             if (string.IsNullOrEmpty(scriptPath))
                 throw new Exception("Script path required");
                 
