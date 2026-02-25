@@ -73,7 +73,7 @@ in_comprehensive.k:
 
 #### **Test-First Development**
 1. **Write failing test**: Create test that demonstrates the issue. 
-2. **Canonical results**: Use the Comparison Tool to generate the expected output using k.exe
+2. **Canonical results**: Use the k MCP Server to generate the expected output 
 3. **Implement minimal fix**: Get test passing with simplest solution
 4. **Refactor**: Clean up implementation while keeping test passing
 5. **Add edge cases**: Test boundary conditions and error cases
@@ -81,14 +81,14 @@ in_comprehensive.k:
 #### **Test Coverage Guidelines**
 - **Core operations**: 100% coverage required
 - **Edge cases**: Test all boundary conditions
-- **Error paths**: Avoid creating tests that make the Comparison Tool and k.exe fail and time out
+- **Error paths**: Avoid creating tests that make the the k MCP Server to return an error or timeout
 - **Integration**: Test complex expressions combining operations
 
 ### **Test Maintenance**
 
 #### **Keeping Tests Current**
 - Remove tests for deprecated functionality
-- Update tests when behavior changes (with proper verification using the Comparison Tool)
+- Update tests when behavior changes (obtain results again from the k MCP Server)
 - Add tests for new features immediately
 - Run the test suite to update T:\_src\github.com\ERufian\ksharp\K3CSharp.Tests\results_table.txt after each step of development is completed
 
@@ -97,28 +97,15 @@ in_comprehensive.k:
 
 ## **🧪 Test Expectation Modification Notice**
 
-**Before modifying any test expectations in `SimpleTestRunner.cs` or test files, you must verify the expected result against k.exe using the comparison tool. If the modified expectation differs from k.exe's actual output, you must ask for explicit confirmation before proceeding.**
+**Before modifying any test expectations in `SimpleTestRunner.cs` or test files, you must get the expected result from the k MCP Server. If the modified expectation differs from k.exe's actual output, you must ask for explicit confirmation before proceeding.**
 
 ### **Required Verification Process:**
-1. **Run comparison tool**: `cd K3CSharp.Comparison && dotnet run --project . -- <test_name>`
+1. **Run the k MCP Server**: 
 2. **Compare results**: Check if K3Sharp output matches k.exe output
 3. **If different**: Ask for user confirmation before changing test expectations
 4. **Document**: If difference is expected, add entry to `known_differences.txt`
 
-### **Example Workflow:**
-```bash
-# Before changing test expectation
-cd K3CSharp.Comparison
-dotnet run --project . -- format_symbol_string_mixed_vector
-
-# If results differ:
-# K3Sharp: `hello`world`test
-# k.exe:   `hello `world `test
-# → Ask for confirmation before updating expectation
-```
-
 This ensures test expectations remain aligned with the reference k.exe implementation.
-
 
 #### **Solving discrepancies in test counts**
 The test suite has a verification to ensure thare aren't test cases in the file system that are missing from the test suite. If errors are reported then the test cases missing from the test runner need to be added to the test runner or removed:
