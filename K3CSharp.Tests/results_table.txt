@@ -332,7 +332,7 @@
 ║ list_sv_base10.k                                   │ 10 _sv 1 9 9 5       │ 1995                 │                      ║
 ║ list_sv_base2.k                                    │ 2 _sv 1 0 0 1        │ 9                    │                      ║
 ║ list_sv_mixed.k                                    │ 10 10 10 10 _sv 1 9 9 5 │ 1995                 │                      ║
-║ list_getenv.k                                      │ _getenv "PROMPT"     │ "$P$G"               │                      ║
+║ list_getenv.k                                      │ _getenv "PROMPT"     │ ()                   │ "$P$G"               ║
 ║ list_setenv.k                                      │ `TESTVAR _setenv "hello world" │ `TESTVAR             │                      ║
 ║ list_size_existing.k                               │ _size "C:\\Windows\\System32\\write.exe" │ 11264.0              │                      ║
 ║ test_ci_basic.k                                    │ _ci 65               │ "A"                  │                      ║
@@ -593,7 +593,7 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 560/583 tests passed (96.1%)                                                                               ║
+║ SUMMARY: 562/586 tests passed (95.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -627,6 +627,11 @@ Test: rand_draw_vector_deal.k
 Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
 Expected: .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
 Actual: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
+──────────────────────────────────────────────────────────────────────────
+Test: list_getenv.k
+Input: _getenv "PROMPT"
+Expected: "$P$G"
+Actual: ()
 ──────────────────────────────────────────────────────────────────────────
 Test: lsq.k
 Input: _lsq
