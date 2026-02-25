@@ -19,7 +19,9 @@ namespace K3CSharp
         {
             this.kExePath = File.Exists(kExePath) ? kExePath : @"c:\k\k.exe";
             this.timeoutMs = timeoutMs;
-            this.runId = $"{DateTime.Now:yyyyMMdd_HHmmss}_{Environment.ProcessId}_{Guid.NewGuid():N}";
+            // Enhanced concurrency support: use high-precision timestamp with ticks and GUID
+            var highPrecisionTimestamp = DateTime.UtcNow.Ticks;
+            this.runId = $"{DateTime.Now:yyyyMMdd_HHmmss}_{Environment.ProcessId}_{highPrecisionTimestamp}_{Guid.NewGuid():N}";
             this.tempDirectory = Path.Combine(Path.GetTempPath(), "ksharp_wrapper", runId);
             
             // Ensure temp directory exists
@@ -212,7 +214,9 @@ namespace K3CSharp
 
         private string CreateTempScriptWithExit(string scriptContent)
         {
-            var tempScriptPath = Path.Combine(tempDirectory, $"k_script_{Guid.NewGuid():N}_{DateTime.Now.Ticks}.k");
+            // Enhanced concurrency: use high-precision timestamp with process ID and GUID
+            var highPrecisionTimestamp = DateTime.UtcNow.Ticks;
+            var tempScriptPath = Path.Combine(tempDirectory, $"k_script_{Environment.ProcessId}_{highPrecisionTimestamp}_{Guid.NewGuid():N}.k");
             
             // Add exit command to ensure k.exe terminates after executing the script
             var modifiedContent = scriptContent.TrimEnd() + "\n\\\\\n";
