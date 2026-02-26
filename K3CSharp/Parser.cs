@@ -1950,6 +1950,32 @@ namespace K3CSharp
                 if (operand != null) node.Children.Add(operand);
                 return node;
             }
+            else if (Match(TokenType.IO_VERB_1) || Match(TokenType.IO_VERB_2) || Match(TokenType.IO_VERB_3) || 
+                     Match(TokenType.IO_VERB_6) || Match(TokenType.IO_VERB_7) || Match(TokenType.IO_VERB_8) || Match(TokenType.IO_VERB_9))
+            {
+                // General digit-colon operator - could be monadic or dyadic
+                // We need to determine arity by context in the evaluator
+                var matchedToken = PreviousToken(); // Get the I/O verb token before parsing operand
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                
+                // Store the digit for later use in evaluator
+                int digit = matchedToken.Type switch
+                {
+                    TokenType.IO_VERB_1 => 1,
+                    TokenType.IO_VERB_2 => 2,
+                    TokenType.IO_VERB_3 => 3,
+                    TokenType.IO_VERB_6 => 6,
+                    TokenType.IO_VERB_7 => 7,
+                    TokenType.IO_VERB_8 => 8,
+                    TokenType.IO_VERB_9 => 9,
+                    _ => throw new Exception($"Invalid I/O verb token: {matchedToken.Type}")
+                };
+                
+                node.Value = new SymbolValue($"IO_VERB_{digit}");
+                if (operand != null) node.Children.Add(operand);
+                return node;
+            }
             else if (Match(TokenType.DOT_APPLY))
             {
                 // Check if this is followed by LEFT_BRACKET for bracket syntax .[...]

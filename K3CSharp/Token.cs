@@ -52,7 +52,14 @@ namespace K3CSharp
         ADVERB_TICK_COLON,    // ': adverb (each-prior)
         NULL,           // _n null value
         TYPE,           // 4: type operator
-        STRING_REPRESENTATION, // :: string representation operator
+        STRING_REPRESENTATION, // 5: string representation operator
+        IO_VERB_1,      // 1: I/O verb
+        IO_VERB_2,      // 2: I/O verb
+        IO_VERB_3,      // 3: I/O verb
+        IO_VERB_6,      // 6: I/O verb
+        IO_VERB_7,      // 7: I/O verb (reserved)
+        IO_VERB_8,      // 8: I/O verb (reserved)
+        IO_VERB_9,      // 9: I/O verb (reserved)
         GLOBAL_ASSIGNMENT, // :: global assignment operator
         DOLLAR,          // $ format/form operator
         

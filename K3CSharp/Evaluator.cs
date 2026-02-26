@@ -289,10 +289,16 @@ namespace K3CSharp
                     "%" => Reciprocal(operand),
                     "&" => Where(operand),
                     "|" => Reverse(operand),
-                    "TYPE" => GetTypeCode(operand),
-                    "STRING_REPRESENTATION" => StringRepresentation(operand),
-                    "." => Make(operand),
-                    "<" => GradeUp(operand),
+                    "TYPE" => IoVerbMonadic(operand, 4),
+                    "STRING_REPRESENTATION" => IoVerbMonadic(operand, 5),
+                    "IO_VERB_1" => IoVerbMonadic(operand, 1),
+                    "IO_VERB_2" => IoVerbMonadic(operand, 2),
+                    "IO_VERB_3" => IoVerbMonadic(operand, 3),
+                    "IO_VERB_6" => IoVerbMonadic(operand, 6),
+                    "IO_VERB_7" => IoVerbMonadic(operand, 7),
+                    "IO_VERB_8" => IoVerbMonadic(operand, 8),
+                    "IO_VERB_9" => IoVerbMonadic(operand, 9),
+                                        "<" => GradeUp(operand),
                     ">" => GradeDown(operand),
                     "^" => Shape(operand),
                     "!" => Enumerate(operand),
@@ -308,6 +314,7 @@ namespace K3CSharp
                     : LogicalNegate(operand),
                     ":" => ReturnOperator(operand),
                     "@" => Atom(operand),
+                    "." => MakeFunction(operand),
                     "~" => AttributeHandle(operand),
                     "_log" => MathLog(operand),
                     "_exp" => MathExp(operand),
@@ -441,7 +448,14 @@ namespace K3CSharp
                         "_ss" => SsFunction(left, right),
                         "_setenv" => SetenvFunction(new VectorValue(new List<K3Value> { left, right })),
                         "?" => Find(left, right),
-                        "TYPE" => GetTypeCode(left),
+                        "TYPE" => IoVerbDyadic(left, right, 4),
+                    "IO_VERB_1" => IoVerbDyadic(left, right, 1),
+                    "IO_VERB_2" => IoVerbDyadic(left, right, 2),
+                    "IO_VERB_3" => IoVerbDyadic(left, right, 3),
+                    "IO_VERB_6" => IoVerbDyadic(left, right, 6),
+                    "IO_VERB_7" => IoVerbDyadic(left, right, 7),
+                    "IO_VERB_8" => IoVerbDyadic(left, right, 8),
+                    "IO_VERB_9" => IoVerbDyadic(left, right, 9),
                         _ => throw new Exception($"Unknown binary operator: {op.Value}")
                     };
             }
@@ -1230,7 +1244,7 @@ namespace K3CSharp
                         if (arguments.Count == 1)
                         {
                             // Monadic . is MAKE - use Make function
-                            return Make(arguments[0]);
+                            return MakeFunction(arguments[0]);
                         }
                         else if (arguments.Count == 2)
                         {
@@ -1597,380 +1611,8 @@ namespace K3CSharp
         }
 
 
-        private K3Value GetTypeCode(K3Value value)
-        {
-            if (value is IntegerValue)
-                return new IntegerValue(1);
-            if (value is LongValue)
-                return new IntegerValue(64);
-            if (value is FloatValue)
-                return new IntegerValue(2);
-            if (value is CharacterValue)
-                return new IntegerValue(3);
-            if (value is SymbolValue)
-                return new IntegerValue(4);
-            if (value is DictionaryValue)
-                return new IntegerValue(5);
-            if (value is NullValue)
-                return new IntegerValue(6);
-            if (value is FunctionValue)
-                return new IntegerValue(7);
-            if (value is VectorValue vec)
-            {
-                // Check vector type
-                if (vec.Elements.Count == 0)
-                    return new IntegerValue(vec.VectorType ?? 0); // Use stored vector type, default to generic list
                 
-                // Check if all elements are the same type
-                var firstType = vec.Elements[0].Type;
-                bool allSameType = true;
-                bool hasNulls = false;
                 
-                foreach (var element in vec.Elements)
-                {
-                    if (element.Type != firstType)
-                    {
-                        allSameType = false;
-                        break;
-                    }
-                    if (element.Type == ValueType.Null)
-                    {
-                        hasNulls = true;
-                    }
-                }
-                
-                if (!allSameType)
-                    return new IntegerValue(0); // Mixed type vector
-                
-                if (hasNulls)
-                    return new IntegerValue(0); // Vector with nulls is generic list
-                
-                // Return vector type code
-                return firstType switch
-                {
-                    ValueType.Integer => new IntegerValue(-1),
-                    ValueType.Long => new IntegerValue(-64),
-                    ValueType.Float => new IntegerValue(-2),
-                    ValueType.Character => new IntegerValue(-3),
-                    ValueType.Symbol => new IntegerValue(-4),
-                    ValueType.Function => new IntegerValue(-7),
-                    _ => new IntegerValue(0)
-                };
-            }
-            
-            return new IntegerValue(0); // Default to generic list
-        }
-        
-        private K3Value StringRepresentation(K3Value value)
-        {
-            // 5: verb - produce string representation of argument with proper escaping
-            string representation = ToStringWithEscaping(value);
-            // Create character vector with individual characters
-            var charElements = representation.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
-            return new VectorValue(charElements);
-        }
-        
-        private string ToStringWithEscaping(K3Value value)
-        {
-            if (value is CharacterValue charVal)
-            {
-                // For character values, escape the result of ToString() which already includes quotes
-                return EscapeString(charVal.ToString());
-            }
-            else if (value is VectorValue vec)
-            {
-                // Handle vector representation with escaping
-                return VectorToStringWithEscaping(vec);
-            }
-            else
-            {
-                // For other types, use regular ToString
-                return value.ToString();
-            }
-        }
-        
-        private string EscapeString(string input)
-        {
-            var result = new System.Text.StringBuilder();
-            
-            foreach (char c in input)
-            {
-                switch (c)
-                {
-                    case '"':
-                        result.Append("\\\"");
-                        break;
-                    case '\\':
-                        result.Append("\\\\");
-                        break;
-                    case '\n':
-                        result.Append("\\n");
-                        break;
-                    case '\r':
-                        result.Append("\\r");
-                        break;
-                    case '\t':
-                        result.Append("\\t");
-                        break;
-                    case '\b':
-                        result.Append("\\b");
-                        break;
-                    case '\f':
-                        result.Append("\\f");
-                        break;
-                    default:
-                        if (c < ' ' || c > '~')
-                        {
-                            // Non-printable characters as octal escape
-                            result.Append($"\\{(int)c:o3}");
-                        }
-                        else
-                        {
-                            result.Append(c);
-                        }
-                        break;
-                }
-            }
-            
-            return result.ToString();
-        }
-        
-        private string VectorToStringWithEscaping(VectorValue vec)
-        {
-            if (vec.Elements.Count == 0)
-            {
-                return "()";
-            }
-            
-            // Check if this is a character vector - display as quoted string with escaping
-            if (vec.Elements.All(e => e is CharacterValue))
-            {
-                var chars = vec.Elements.Select(e => ((CharacterValue)e).Value);
-                var content = string.Concat(chars);
-                return $"\"{EscapeString(content)}\"";
-            }
-            
-            // Check if this is a symbol vector - display in compact format without spaces
-            if (vec.Elements.All(e => e is SymbolValue))
-            {
-                var symbols = vec.Elements.Select(e => ((SymbolValue)e).ToString());
-                return string.Concat(symbols);
-            }
-            
-            // Check if this is a mixed vector - keep parentheses and semicolons for clarity
-            var elementTypes = vec.Elements.Select(e => e.GetType()).Distinct().ToList();
-            var hasNestedVectors = vec.Elements.Any(e => e is VectorValue);
-            var hasNullValues = vec.Elements.Any(e => e is NullValue);
-            
-            // Check if this is truly mixed (different types) OR has nested vectors OR has null values
-            var isTrulyMixed = elementTypes.Count > 1 || hasNestedVectors || hasNullValues;
-            
-            if (isTrulyMixed)
-            {
-                var elementsStr = string.Join(";", vec.Elements.Select(e => 
-                {
-                    if (e is NullValue)
-                    {
-                        return ""; // Display null as empty position
-                    }
-                    else if (e is VectorValue innerVec)
-                    {
-                        // For character vectors in mixed context, treat as single string element with escaping
-                        if (innerVec.Elements.All(x => x is CharacterValue))
-                        {
-                            var chars = innerVec.Elements.Select(x => ((CharacterValue)x).Value);
-                            var content = string.Concat(chars);
-                            return $"\"{EscapeString(content)}\"";
-                        }
-                        // For simple homogeneous vectors, don't add inner parentheses
-                        else if (innerVec.Elements.All(x => x is IntegerValue) || 
-                            innerVec.Elements.All(x => x is FloatValue) ||
-                            innerVec.Elements.All(x => x is LongValue))
-                        {
-                            return VectorToStringWithEscaping(innerVec);
-                        }
-                        return VectorToStringWithEscaping(innerVec);
-                    }
-                    return ToStringWithEscaping(e);
-                }));
-                return "(" + elementsStr + ")";
-            }
-            
-            // For homogeneous vectors (except characters), use space-separated format
-            var vectorStr = string.Join(" ", vec.Elements.Select(e => e.ToString()));
-            
-            // Add enlist comma for single-element vectors of integer, symbol, and character types
-            if (vec.Elements.Count == 1 && 
-                (vec.Elements[0] is IntegerValue || vec.Elements[0] is SymbolValue || vec.Elements[0] is CharacterValue))
-            {
-                return "," + vectorStr;
-            }
-            
-            return vectorStr;
-        }
-        
-        private K3Value Make(K3Value value)
-        {
-            // . (make) operator - create dictionary from mixed vector OR execute character vector
-            // IMPORTANT: Check for character vector FIRST, then handle dictionaries and other vectors
-            
-            // Check if this is specifically a character vector (all elements are CharacterValue)
-            if (value is VectorValue charVec && charVec.Elements.Count > 0 && charVec.Elements.All(e => e is CharacterValue))
-            {
-                // Execute operation: ."text" executes the text as if it was entered in the parser
-                // IMPORTANT: Dot execute works in the current variable context (no new variable space)
-                var chars = charVec.Elements.Select(e => ((CharacterValue)e).Value);
-                var executeText = string.Concat(chars);
-
-                // Route through ExecuteLine so backslash commands (e.g. ."\\v") work
-                return Program.ExecuteLine(executeText, this);
-            }
-            else if (value is DictionaryValue dict)
-            {
-                // Unmake operation: .dictionary returns list of triplets
-                var triplets = new List<K3Value>();
-                
-                foreach (var kvp in dict.Entries)
-                {
-                    var key = kvp.Key;
-                    var (val, attr) = kvp.Value;
-                    
-                    // Create triplet vector: (key; value; attribute)
-                    var tripletElements = new List<K3Value> { key, val };
-                    
-                    // Add attribute (null if no attribute)
-                    if (attr != null)
-                    {
-                        tripletElements.Add(attr);
-                    }
-                    else
-                    {
-                        // Add null for missing attribute
-                        tripletElements.Add(new NullValue());
-                    }
-                    
-                    triplets.Add(new VectorValue(tripletElements));
-                }
-                
-                return new VectorValue(triplets);
-            }
-            else if (value is VectorValue list)
-            {
-                // Make operation: .() creates empty dictionary, .(elements) creates dictionary
-                var newDict = new Dictionary<SymbolValue, (K3Value, DictionaryValue?)>();
-                
-                foreach (var element in list.Elements)
-                {
-                    // element is already K3Value, no conversion needed
-                    K3Value k3Element = element;
-                    
-                    if (k3Element != null)
-                    {
-                        // Handle both VectorValue and KList for dictionary entries
-                        List<K3Value> entryElements;
-                        
-                        if (k3Element is VectorValue entryVec)
-                        {
-                            entryElements = entryVec.Elements;
-                        }
-                        else if (k3Element is VectorValue entryList)
-                        {
-                            entryElements = entryList.Elements.Cast<K3Value>().ToList();
-                        }
-                        else
-                        {
-                            // Single element - wrap in list
-                            entryElements = new List<K3Value> { k3Element };
-                        }
-                        
-                        // Process entry elements (same logic as VectorValue case)
-                        if (entryElements.Count == 2)
-                        {
-                            // Dictionary entry: (key; value)
-                            var key = entryElements[0] as SymbolValue ?? throw new Exception("Dictionary key must be a symbol");
-                            var val = entryElements[1];
-                            newDict[key] = (val, null);
-                        }
-                        else if (entryElements.Count == 3)
-                        {
-                            // Dictionary entry with attribute: (key; value; attr)
-                            var key = entryElements[0] as SymbolValue ?? throw new Exception("Dictionary key must be a symbol");
-                            var val = entryElements[1];
-                            var attr = entryElements[2] as DictionaryValue;
-                            newDict[key] = (val, attr);
-                        }
-                        else
-                        {
-                            throw new Exception("Dictionary entry must be a tuple (2 elements) or triplet (3 elements)");
-                        }
-                    }
-                }
-                
-                return new DictionaryValue(newDict!);
-            }
-            else if (value is VectorValue vec)
-            {
-                // Make operation: .() creates empty dictionary, .(elements) creates dictionary
-                var newDict = new Dictionary<SymbolValue, (K3Value, DictionaryValue?)>();
-                
-                foreach (var element in vec.Elements)
-                {
-                    // Handle both VectorValue and KList for dictionary entries
-                    List<K3Value> entryElements;
-                    
-                    if (element is VectorValue entryVec)
-                    {
-                        entryElements = entryVec.Elements;
-                    }
-                    else if (element is VectorValue entryList)
-                    {
-                        // Convert VectorValue elements back to K3Value
-                        entryElements = entryList.Elements.Cast<K3Value>().ToList();
-                    }
-                    else
-                    {
-                        throw new Exception("Dictionary entries must be vectors or lists");
-                    }
-                    
-                    if (entryElements.Count == 2)
-                    {
-                        // Tuple (key; value) - attribute is null
-                        if (entryElements[0] is SymbolValue key)
-                        {
-                            newDict[key] = (entryElements[1], new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue?)>()));
-                        }
-                        else
-                        {
-                            throw new Exception("Dictionary key must be a symbol");
-                        }
-                    }
-                    else if (entryElements.Count == 3)
-                    {
-                        // Triplet (key; value; attribute)
-                        if (entryElements[0] is SymbolValue key)
-                        {
-                            var attribute = entryElements[2] as DictionaryValue;
-                            newDict[key] = (entryElements[1], attribute ?? new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue?)>()));
-                        }
-                        else
-                        {
-                            throw new Exception("Dictionary key must be a symbol");
-                        }
-                    }
-                    else
-                    {
-                        throw new Exception("Dictionary entry must be a tuple (2 elements) or triplet (3 elements)");
-                    }
-                }
-                
-                return new DictionaryValue(newDict!);
-            }
-            else
-            {
-                throw new Exception("Make operator requires a vector or dictionary");
-            }
-        }
-        
         
         private K3Value AtIndex(K3Value left, K3Value right)
         {
@@ -2736,10 +2378,9 @@ namespace K3CSharp
                     }
                 }
             }
-            
+
             return bytes;
         }
-        
         private K3Value ConvertToK3Value(object obj)
         {
             return obj switch
@@ -2785,6 +2426,105 @@ namespace K3CSharp
         {
             // Return VectorValue directly - KSerializer will handle serialization
             return vector;
+        }
+        
+        private K3Value ConvertVectorToDictionary(K3Value operand)
+        {
+            // Convert vector to dictionary based on KDeserializer logic
+            if (operand is VectorValue vector && vector.Elements.Count > 0)
+            {
+                var entries = new Dictionary<SymbolValue, (K3Value, DictionaryValue?)>();
+                
+                foreach (var element in vector.Elements)
+                {
+                    if (element is VectorValue vectorValue && vectorValue.Elements.Count >= 2)
+                    {
+                        var key = vectorValue.Elements[0];
+                        var value = vectorValue.Elements[1];
+                        K3Value? attr = vectorValue.Elements.Count >= 3 ? vectorValue.Elements[2] : null;
+                        
+                        // Ensure key is a SymbolValue (dictionary keys are always symbols)
+                        if (key is SymbolValue symbolKey)
+                        {
+                            // Convert attribute to DictionaryValue if it exists and is a dictionary, otherwise null
+                            DictionaryValue? dictAttr = null;
+                            if (attr is DictionaryValue dv)
+                                dictAttr = dv;
+                            
+                            entries.Add(symbolKey, (value, dictAttr));
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"Dictionary key must be a symbol, got {key.GetType().Name}");
+                        }
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Invalid dictionary triplet format during conversion.");
+                    }
+                }
+                
+                return new DictionaryValue(entries);
+            }
+            else if (operand is VectorValue emptyVector && emptyVector.Elements.Count == 0)
+            {
+                // Empty vector -> empty dictionary
+                return new DictionaryValue();
+            }
+            else
+            {
+                // For other types, just return the operand as-is
+                return operand;
+            }
+        }
+        
+        private K3Value MakeFunction(K3Value operand)
+        {
+            // Monadic dot: Make dictionary/Unmake dictionary/evaluate string
+            if (operand is CharacterValue)
+            {
+                // This is a string - evaluate as system command
+                // For now, just return the string as-is (system commands not implemented)
+                return operand;
+            }
+            else if (operand is VectorValue vv && vv.Elements.Count > 0 && vv.Elements.All(e => e is CharacterValue))
+            {
+                // This is a character vector (string) - evaluate as K code
+                var stringValue = string.Join("", vv.Elements.Select(e => ((CharacterValue)e).Value));
+                
+                // Parse the string as K code and evaluate it in the current context
+                var lexer = new Lexer(stringValue);
+                var tokens = lexer.Tokenize();
+                var parser = new Parser(tokens);
+                var ast = parser.Parse();
+                
+                var result = Evaluate(ast);
+                
+                return result;
+            }
+            else if (operand is DictionaryValue dv)
+            {
+                // Unmake dictionary - return list of triplets
+                var result = new List<K3Value>();
+                
+                foreach (var kvp in dv.Entries)
+                {
+                    // Create triplet: (key;value;attribute)
+                    K3Value attribute = kvp.Value.Attribute;
+                    if (attribute == null)
+                    {
+                        attribute = new NullValue();
+                    }
+                    var triplet = new List<K3Value> { kvp.Key, kvp.Value.Value, attribute };
+                    result.Add(new VectorValue(triplet));
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                // Make dictionary from operand
+                return ConvertVectorToDictionary(operand);
+            }
         }
     }
     

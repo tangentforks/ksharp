@@ -400,7 +400,7 @@
 ║ conditional_simple_test.k                          │ :[1; "true"; "false"] │ "true"               │                      ║
 ║ conditional_true.k                                 │ :[1; "true"; "false"]  // Conditional evaluation - condition true │ "true"               │                      ║
 ║ dictionary_null_index.k                            │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
-║ dictionary_unmake.k                                │ d: .((`a;1);(`b;2))  │ ((`a;1;);(`b;2;))    │                      ║
+║ dictionary_unmake.k                                │ d: .((`a;1);(`b;2)); . d │ ((`a;1;);(`b;2;))    │                      ║
 ║ do_bracket_test.k                                  │ do[3; 42]  // Do function with bracket notation │                      │                      ║
 ║ do_loop.k                                          │ i: 0; do[3; i+: 1]  // Do loop - increment i 3 times │                      │                      ║
 ║ do_simple.k                                        │ do[3; 42]  // Do loop - simple test │                      │                      ║

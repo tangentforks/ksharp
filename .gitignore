@@ -435,5 +435,5 @@ K3CSharp_implementation_details.md
 K3CSharp.SerializationResearch/Kx annotated serialization.htm
 
 # Typical Errors
-TestScripts/
+/TestScripts/
 K3CSharp/TestScripts/

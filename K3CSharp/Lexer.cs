@@ -295,20 +295,51 @@ namespace K3CSharp
                 }
                 else if (c == ':')
                 {
-                    // Check for 4: type operator (only when previous token is a standalone integer 4)
-                    if (position > 0 && input[position - 1] == '4' && tokens.Count > 0 && tokens[tokens.Count - 1].Type == TokenType.INTEGER && tokens[tokens.Count - 1].Lexeme == "4")
+                    // Check for digit-colon operators (0: through 9:)
+                    // For now, just handle the basic case without precedence rules
+                    if (position > 0 && char.IsDigit(input[position - 1]) && tokens.Count > 0 && tokens[tokens.Count - 1].Type == TokenType.INTEGER)
                     {
-                        // Replace the previous token with TYPE operator
+                        char digitChar = input[position - 1];
+                        int digit = digitChar - '0';
+                        
+                        // Replace the previous token with appropriate I/O operator
                         tokens.RemoveAt(tokens.Count - 1);
-                        tokens.Add(new Token(TokenType.TYPE, "4:", position - 1));
-                        Advance();
-                    }
-                    // Check for 5: string representation operator (only when previous token is a standalone integer 5)
-                    else if (position > 0 && input[position - 1] == '5' && tokens.Count > 0 && tokens[tokens.Count - 1].Type == TokenType.INTEGER && tokens[tokens.Count - 1].Lexeme == "5")
-                    {
-                        // Replace the previous token with STRING_REPRESENTATION operator
-                        tokens.RemoveAt(tokens.Count - 1);
-                        tokens.Add(new Token(TokenType.STRING_REPRESENTATION, "5:", position - 1));
+                        
+                        switch (digit)
+                        {
+                            case 0:
+                                tokens.Add(new Token(TokenType.TYPE, "0:", position - 1));
+                                break;
+                            case 1:
+                                tokens.Add(new Token(TokenType.IO_VERB_1, "1:", position - 1));
+                                break;
+                            case 2:
+                                tokens.Add(new Token(TokenType.IO_VERB_2, "2:", position - 1));
+                                break;
+                            case 3:
+                                tokens.Add(new Token(TokenType.IO_VERB_3, "3:", position - 1));
+                                break;
+                            case 4:
+                                tokens.Add(new Token(TokenType.TYPE, "4:", position - 1));
+                                break;
+                            case 5:
+                                tokens.Add(new Token(TokenType.STRING_REPRESENTATION, "5:", position - 1));
+                                break;
+                            case 6:
+                                tokens.Add(new Token(TokenType.IO_VERB_6, "6:", position - 1));
+                                break;
+                            case 7:
+                                tokens.Add(new Token(TokenType.IO_VERB_7, "7:", position - 1));
+                                break;
+                            case 8:
+                                tokens.Add(new Token(TokenType.IO_VERB_8, "8:", position - 1));
+                                break;
+                            case 9:
+                                tokens.Add(new Token(TokenType.IO_VERB_9, "9:", position - 1));
+                                break;
+                            default:
+                                throw new Exception($"Unsupported I/O verb digit: {digit}");
+                        }
                         Advance();
                     }
                     // Check for :: global assignment operator
