@@ -269,7 +269,7 @@ public class ApplyTweaksServer
         }
     }
     
-    public JsonRpcResponse ProcessRequest(JsonRpcRequest request)
+    public JsonRpcResponse? ProcessRequest(JsonRpcRequest request)
     {
         try
         {
