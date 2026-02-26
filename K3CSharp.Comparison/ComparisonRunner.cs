@@ -150,7 +150,7 @@ namespace K3CSharp.Comparison
             
             var testScriptsPath = @"T:\_src\github.com\ERufian\ksharp\K3CSharp.Tests\TestScripts";
             var reportPath = "comparison_table.txt";
-            var knownDifferencesPath = "known_differences.txt";
+            var knownDifferencesPath =  @"T:\_src\github.com\ERufian\ksharp\known_differences.txt";
             
             // Check if single test mode
             if (singleTest != null)

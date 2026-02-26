@@ -30,11 +30,9 @@ trigger: always_on
 - **Multiple lines only**: When variable assignments are required before the test (this including assigning anonymous functions to give them a name)
 
 #### **Setting Test Expectations**
-Try not to guess what the expected result should be. 
-Use the comparison tool to call k.exe, and determine the expectation from the k.exe results. 
-Note that tests that result in a dictionary, nested vectors or vectors of symbols will require first adding a known difference in T:\_src\github.com\ERufian\ksharp\K3CSharp.Comparison\known_differences.txt for Compact representation, with regex 
-^\s+|\s+$|\s*\n\s*:\;
-before running the comparison tool to determine expectations, if we don't add this known difference, the result will have newlines which is undesired
+1. **Call the k MCP Server using execute_k_script and the full script path**: 
+2. **If the test result in a dictionary, nested vectors or vectors of symbols then add a known difference in T:\_src\github.com\ERufian\ksharp\known_differences.txt with the test name, a regex:^\s+|\s+$|\s*\n\s*:\; and a note of Compact Representation**
+3. **Call the ApplyTweaks MCP Server using tweakstring with the test name (without folder nor extension) as the id parameter and the result from the k MCP Server as the string parameter**
 
 ##### **Test Structure Guidelines**
 ```k
@@ -73,7 +71,7 @@ in_comprehensive.k:
 
 #### **Test-First Development**
 1. **Write failing test**: Create test that demonstrates the issue. 
-2. **Canonical results**: Use the k MCP Server to generate the expected output 
+2. **Canonical results**: Use the k MCP Server and ApplyTweaks MCP Server to generate the expected output 
 3. **Implement minimal fix**: Get test passing with simplest solution
 4. **Refactor**: Clean up implementation while keeping test passing
 5. **Add edge cases**: Test boundary conditions and error cases
@@ -88,7 +86,7 @@ in_comprehensive.k:
 
 #### **Keeping Tests Current**
 - Remove tests for deprecated functionality
-- Update tests when behavior changes (obtain results again from the k MCP Server)
+- Update tests when behavior changes (obtain results again from the k MCP Server and ApplyTweaks MCP Server)
 - Add tests for new features immediately
 - Run the test suite to update T:\_src\github.com\ERufian\ksharp\K3CSharp.Tests\results_table.txt after each step of development is completed
 
@@ -97,13 +95,14 @@ in_comprehensive.k:
 
 ## **🧪 Test Expectation Modification Notice**
 
-**Before modifying any test expectations in `SimpleTestRunner.cs` or test files, you must get the expected result from the k MCP Server. If the modified expectation differs from k.exe's actual output, you must ask for explicit confirmation before proceeding.**
+**Before modifying any test expectations in `SimpleTestRunner.cs` or test files, you must get the expected result from the k MCP Server and process them through the ApplyTweaks MCP Server. If the modified expectation differs from k.exe's actual output, you must ask for explicit confirmation before proceeding.**
 
 ### **Required Verification Process:**
-1. **Run the k MCP Server**: 
-2. **Compare results**: Check if K3Sharp output matches k.exe output
-3. **If different**: Ask for user confirmation before changing test expectations
-4. **Document**: If difference is expected, add entry to `known_differences.txt`
+1. **Call the k MCP Server using execute_k_script and the full script path**: 
+2. **Call the ApplyTweaks MCP Server using tweakstring with the test name (without folder nor extension) as the id parameter and the result from the k MCP Server as the string parameter**
+3. **Compare results**: Check if K3Sharp output matches k.exe output
+4. **If different**: Ask for user confirmation before changing test expectations
+5. **Document**: If difference is expected, add entry to `known_differences.txt`
 
 This ensures test expectations remain aligned with the reference k.exe implementation.
 

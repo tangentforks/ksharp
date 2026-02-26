@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <None Remove="comparison_table.txt" />
-    <None Remove="known_differences.txt" />
     <None Remove="K_WRAPPER_README.md" />
     <None Remove="K_WRAPPER_SUMMARY.md" />
     <None Remove="README.md" />

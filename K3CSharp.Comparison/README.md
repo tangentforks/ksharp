@@ -65,7 +65,7 @@ The comparison uses multiple normalization strategies:
 - `ComparisonRunner.cs` - Main comparison engine with single test support
 - `KInterpreterWrapper.cs` - k.exe execution wrapper
 - `comparison_table.txt` - Generated comparison report
-- `known_differences.txt` - Known differences configuration file
+- `known_differences.txt` - Known differences configuration file (in base folder)
 - `run_comparison.bat` - Batch file for easy execution
 
 ## Dependencies

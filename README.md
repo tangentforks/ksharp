@@ -201,13 +201,13 @@ K3CSharp provides an **outstanding foundation** for K3 development with its **co
 K3CSharp/
 ├── K3CSharp/                    # Core interpreter implementation
 ├── K3CSharp.Tests/              # Unit tests (327 test files)
-├── K3CSharp.Comparison/          # 🆕 k.exe comparison framework
+├── K3CSharp.Comparison/         # 🆕 k.exe comparison framework
 │   ├── ComparisonRunner.cs      # Main comparison engine
 │   ├── KInterpreterWrapper.cs   # k.exe execution wrapper
 │   ├── comparison_table.txt     # Latest compatibility report
-│   └── known_differences.txt   # Known differences configuration
 ├── run_tests.bat                # Quick test runner
-└── run_comparison.bat           # 🆕 Quick comparison runner
+├── run_comparison.bat           # 🆕 Quick comparison runner
+└── known_differences.txt        # Known differences configuration
 ```
 
 ---
