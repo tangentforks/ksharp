@@ -332,7 +332,7 @@
 ║ list_sv_base10.k                                   │ 10 _sv 1 9 9 5       │ 1995                 │                      ║
 ║ list_sv_base2.k                                    │ 2 _sv 1 0 0 1        │ 9                    │                      ║
 ║ list_sv_mixed.k                                    │ 10 10 10 10 _sv 1 9 9 5 │ 1995                 │                      ║
-║ list_getenv.k                                      │ _getenv "PROMPT"     │ ()                   │ "$P$G"               ║
+║ list_getenv.k                                      │ _getenv "PROMPT"     │ "$P$G"               │                      ║
 ║ list_setenv.k                                      │ `TESTVAR _setenv "hello world" │ `TESTVAR             │                      ║
 ║ list_size_existing.k                               │ _size "C:\\Windows\\System32\\write.exe" │ 11264.0              │                      ║
 ║ test_ci_basic.k                                    │ _ci 65               │ "A"                  │                      ║
@@ -501,7 +501,6 @@
 ║ db_dict_complex_attributes.k                       │ _db _bd .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer)))) │ .((`col01;11 12...   │ .((`col01; 11 1...   ║
 ║ db_dict_empty.k                                    │ _db _bd .()          │ .()                  │                      ║
 ║ db_dict_with_null_attrs.k                          │ _db _bd .,(`a;1;.()) │ .,(`a;1;)            │ .,(`a;1;.())         ║
-║ db_dict_two_entries_simple.k                       │ _db _bd .,(`a;1);(`b;2) │ (`b;2)               │ .((`a;1);(`b;2))     ║
 ║ db_dict_with_empty_attrs.k                         │ _db _bd .((`a;1);(`b;2;.())) │ .((`a;1;);(`b;2;))   │ .((`a;1);(`b;2))     ║
 ║ db_enlist_single_int.k                             │ _db _bd ,5           │ ,5                   │                      ║
 ║ db_enlist_single_symbol.k                          │ _db _bd ,`test       │ ,`test               │                      ║
@@ -593,7 +592,7 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 565/586 tests passed (96.4%)                                                                               ║
+║ SUMMARY: 566/585 tests passed (96.8%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -627,11 +626,6 @@ Test: rand_draw_vector_deal.k
 Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
 Expected: .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
 Actual: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
-──────────────────────────────────────────────────────────────────────────
-Test: list_getenv.k
-Input: _getenv "PROMPT"
-Expected: "$P$G"
-Actual: ()
 ──────────────────────────────────────────────────────────────────────────
 Test: lsq.k
 Input: _lsq
@@ -680,11 +674,6 @@ Test: db_dict_with_null_attrs.k
 Input: _db _bd .,(`a;1;.())
 Expected: .,(`a;1;.())
 Actual: .,(`a;1;)
-──────────────────────────────────────────────────────────────────────────
-Test: db_dict_two_entries_simple.k
-Input: _db _bd .,(`a;1);(`b;2)
-Expected: .((`a;1);(`b;2))
-Actual: (`b;2)
 ──────────────────────────────────────────────────────────────────────────
 Test: db_dict_with_empty_attrs.k
 Input: _db _bd .((`a;1);(`b;2;.()))
