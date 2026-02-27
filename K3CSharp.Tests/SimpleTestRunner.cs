@@ -792,7 +792,7 @@ namespace K3CSharp.Tests
                 ("db_dict_complex_attributes.k", ".((`col01; 11 12 13 14 15;.((`format;,`\"n\");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`\"c\");(`name;`Color)));(`col03; (\"Home Depot\";\"Lowes\";\"Ace\";\"Neighborhood Paints\";\"Supply Co.\");.((`format;,`\"c\");(`name;`Retailer)))"),
                 ("db_dict_empty.k", ".()"),
                 ("db_dict_with_null_attrs.k", ".,(`a;1;.())"),
-                ("db_dict_with_empty_attrs.k", ".((`a;1);(`b;2))"),
+                ("db_dict_with_empty_attrs.k", ".((`a;1;);(`b;2;.()))"),
                 ("db_enlist_single_int.k", ",5"),
                 ("db_enlist_single_symbol.k", ",`test"),
                 ("db_enlist_single_string.k", ",\"hello\""),

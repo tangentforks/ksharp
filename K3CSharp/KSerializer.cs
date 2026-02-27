@@ -296,8 +296,9 @@ namespace K3CSharp
                 var key = kvp.Key;
                 var (value, attr) = kvp.Value;
                 
-                // Create triplet as VectorValue (mixed list) with 3 elements: (key; value; null)
-                var tripletElements = new List<K3CSharp.K3Value> { key, value, new K3CSharp.NullValue() };
+                // Create triplet as VectorValue (mixed list) with 3 elements: (key; value; attribute)
+                var attribute = attr as K3CSharp.K3Value ?? new K3CSharp.NullValue();
+                var tripletElements = new List<K3CSharp.K3Value> { key, value, attribute };
                 var tripletList = new K3CSharp.VectorValue(tripletElements);
                 
                 // Add triplet as element to main list
