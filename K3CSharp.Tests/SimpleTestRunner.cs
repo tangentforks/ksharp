@@ -781,7 +781,7 @@ namespace K3CSharp.Tests
                 ("db_function_complex.k", "{[x;y] x*y+z}"),
                 ("db_function_simple_math.k", "{x+y}"),
                 ("db_nested_dict_vectors.k", ".((`a;1 2 3;);(`b;`hello`world`test;))"),
-                ("db_nested_lists.k", "((1;2;3);(`hello;`world;`test);(4.5;6.7))"),
+                ("db_nested_lists.k", "(1 2 3;`hello`world`test;4.5 6.7)"),
                 ("db_mixed_list.k", "(1;`test;3.14)"),
                 ("db_dict_simple.k", ".((`a;1;);(`b;2;);(`c;3;))"),
                 ("db_dict_single_entry.k", ".,(`a;1;)"),

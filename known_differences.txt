@@ -125,7 +125,7 @@ db_list_mixed_types :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_function_complex :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_function_simple_math :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_nested_dict_vectors :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
-db_nested_lists :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+db_nested_lists :: regex:^\s+|\s+$|\s*\n\s*:\; & regex:\s+`:` :: Compact representation
 db_dict_single_entry :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_dict_symbol_2char :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_dict_symbol_8char :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
