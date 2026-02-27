@@ -23,8 +23,8 @@ namespace K3CSharp
                 {
                     if (vec.Elements.Count == 1)
                     {
-                        // Single character - enlist it
-                        return new VectorValue(new List<K3Value> { vec.Elements[0] });
+                        // Single character - return as character vector directly, don't enlist
+                        return vec.Elements[0];
                     }
                     else
                     {
@@ -39,10 +39,10 @@ namespace K3CSharp
                 {
                     var formattedElement = FormatRecursive(element);
                     // According to K3 spec: result should be a list where each element is a character vector
-                    // If formatted element is already a character vector, enlist it to make it a list element
+                    // If formatted element is already a character vector, add it directly (don't double-enlist)
                     if (formattedElement is VectorValue formattedVec && formattedVec.Elements.Count > 0 && formattedVec.Elements.All(e => e is CharacterValue))
                     {
-                        result.Add(new VectorValue(new List<K3Value> { formattedElement }));
+                        result.Add(formattedElement);
                     }
                     else if (formattedElement is CharacterValue)
                     {
@@ -130,25 +130,14 @@ namespace K3CSharp
             }
             else if (value is VectorValue regularVec)
             {
-                // Apply formatting to each element of vector and enlist each result
+                // Create a list of character vectors, one for each element in the input vector
                 var result = new List<K3Value>();
                 foreach (var element in regularVec.Elements)
                 {
                     var formattedElement = FormatElement(formatSpec, element);
-                    // Enlist the formatted element as a single-element vector
-                    if (formattedElement is CharacterValue charVal)
-                    {
-                        result.Add(new VectorValue(new List<K3Value> { charVal }));
-                    }
-                    else if (formattedElement is VectorValue formattedVec)
-                    {
-                        result.Add(new VectorValue(new List<K3Value> { formattedVec }));
-                    }
-                    else
-                    {
-                        result.Add(new VectorValue(new List<K3Value> { formattedElement }));
-                    }
+                    result.Add(formattedElement);
                 }
+                
                 return new VectorValue(result);
             }
             else
@@ -210,14 +199,10 @@ namespace K3CSharp
                 // If str.Length >= targetLength, return as-is (no truncation)
             }
             
-            // According to K3 spec: single character results should be enlisted
-            // to make them 1-item character vectors, e.g., ,"a" or ,"1"
-            if (str.Length == 1)
-            {
-                return new VectorValue(new List<K3Value> { new CharacterValue(str) });
-            }
-            
-            return new CharacterValue(str);
+            // According to K3 spec: format operations should return character vectors
+            // Convert string to character vector for proper comma prefix handling
+            var charElements = str.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
+            return new VectorValue(charElements);
         }
         
         private K3Value FormatWithFloatSpecifier(double formatSpec, K3Value value)
@@ -230,25 +215,14 @@ namespace K3CSharp
             }
             else if (value is VectorValue regularVec)
             {
-                // Apply formatting to each element of vector and enlist each result
+                // Create a list of character vectors, one for each element in the input vector
                 var result = new List<K3Value>();
                 foreach (var element in regularVec.Elements)
                 {
                     var formattedElement = FormatFloatElement(formatSpec, element);
-                    // Enlist the formatted element as a single-element vector
-                    if (formattedElement is CharacterValue charVal)
-                    {
-                        result.Add(new VectorValue(new List<K3Value> { charVal }));
-                    }
-                    else if (formattedElement is VectorValue formattedVec)
-                    {
-                        result.Add(new VectorValue(new List<K3Value> { formattedVec }));
-                    }
-                    else
-                    {
-                        result.Add(new VectorValue(new List<K3Value> { formattedElement }));
-                    }
+                    result.Add(formattedElement);
                 }
+                
                 return new VectorValue(result);
             }
             else
@@ -298,14 +272,10 @@ namespace K3CSharp
                 str = str.PadRight(Math.Abs(totalWidth));
             }
             
-            // According to K3 spec: single character results should be enlisted
-            // to make them 1-item character vectors, e.g., ,"a" or ,"1"
-            if (str.Length == 1)
-            {
-                return new VectorValue(new List<K3Value> { new CharacterValue(str) });
-            }
-            
-            return new CharacterValue(str);
+            // According to K3 spec: format operations should return character vectors
+            // Convert string to character vector for proper comma prefix handling
+            var charElements = str.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
+            return new VectorValue(charElements);
         }
     }
 }

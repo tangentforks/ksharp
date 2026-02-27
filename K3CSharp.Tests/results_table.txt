@@ -421,7 +421,7 @@
 ║ format_string_pad_left.k                           │ 10$"hello"           │ "     hello"         │                      ║
 ║ format_string_pad_right.k                          │ -10$"test"           │ "test      "         │                      ║
 ║ format_vector_int.k                                │ 0$(1;2;3)            │ ""                   │ ("1";"2";"3")        ║
-║ group_operator.k                                   │ a: 3 3 8 7 5 7 3 8 4 4 9 2 7 6 0 7 8 7 0 1 │ (0 1 6;2 7 16;3...   │ (0 1 6;2 7 16;3...   ║
+║ group_operator.k                                   │ a: 3 3 8 7 5 7 3 8 4 4 9 2 7 6 0 7 8 7 0 1 │ (0 1 6;2 7 16;3...   │                      ║
 ║ if_bracket_test.k                                  │ if[1 < 2; a: 20]  // Test if function with bracket notation │                      │                      ║
 ║ if_simple_test.k                                   │ if[3; 42]  // If function with bracket notation │                      │                      ║
 ║ if_true.k                                          │ a: 10; if[1 < 2; a: 20]  // If statement - condition true │                      │                      ║
@@ -593,7 +593,7 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 575/586 tests passed (98.1%)                                                                               ║
+║ SUMMARY: 576/586 tests passed (98.3%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -650,9 +650,4 @@ Test: format_vector_int.k
 Input: 0$(1;2;3)
 Expected: ("1";"2";"3")
 Actual: ""
-──────────────────────────────────────────────────────────────────────────
-Test: group_operator.k
-Input: a: 3 3 8 7 5 7 3 8 4 4 9 2 7 6 0 7 8 7 0 1
-Expected: (0 1 6;2 7 16;3 5 12 15 17;,4;8 9;,10;,11;,13;14 18;,19)
-Actual: (0 1 6;2 7 16;3 5 12 15 17;4;8 9;10;11;13;14 18;19)
 ──────────────────────────────────────────────────────────────────────────

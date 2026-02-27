@@ -954,11 +954,6 @@ namespace K3CSharp
         
         public string ToString(bool asElement)
         {
-            return ToString(asElement, false);
-        }
-        
-        public string ToString(bool asElement, bool skipComma)
-        {
             if (Elements.Count == 0)
             {
                 // Display empty vectors based on their type
@@ -1006,8 +1001,8 @@ namespace K3CSharp
                 sb.Append('"');
                 var result = sb.ToString();
                 
-                // Add enlist comma for single-element character vectors (unless skipped or string representation)
-                if (Elements.Count == 1 && !skipComma)
+                // Add enlist comma for single-element character vectors
+                if (Elements.Count == 1)
                 {
                     result = "," + result;
                 }
@@ -1039,8 +1034,8 @@ namespace K3CSharp
                     }
                     else if (e is VectorValue vec)
                     {
-                        // For nested vectors in mixed lists, always show with parentheses
-                        return vec.ToString(false, true);
+                        // For nested vectors in mixed lists, show with parentheses but allow comma prefix
+                        return vec.ToString(false);
                     }
                     return e.ToString();
                 }));
@@ -1061,8 +1056,8 @@ namespace K3CSharp
                 vectorStr = string.Join(" ", Elements.Select(e => e.ToString()));
             }
             
-            // Add enlist comma for single-element vectors (unless skipped)
-            if (Elements.Count == 1 && !skipComma)
+            // Add enlist comma for single-element vectors
+            if (Elements.Count == 1)
             {
                 return "," + vectorStr;
             }
