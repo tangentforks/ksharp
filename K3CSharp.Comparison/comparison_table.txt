@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-02-27 02:24:04
+Generated: 2026-02-27 03:32:17
 
 SUMMARY:
 --------
-Total Tests:     584
-✅ Matched:       548
-❌ Differed:      33
+Total Tests:     585
+✅ Matched:       551
+❌ Differed:      31
 ⚠️  Skipped:       0
 💥 Errors:        3
-Success Rate:    93.8%
+Success Rate:    94.2%
 
 DETAILED RESULTS:
 -----------------
@@ -244,7 +244,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   grade_up_no_parens.k                               0 4 2 3 1                      0 4 2 3 1                                                                        
 ✅ PASS   grade_up_operator.k                                0 4 2 3 1                      0 4 2 3 1                                                                        
 ✅ PASS   greater_than_operator.k                            0                              0                                                                                
-❌ FAIL   group_operator.k                                   (0 1 6;2 7 16;3 5 12 15 1...   (0 1 6;2 7 16;3 5 12 15 1...   Compact representation                            
+✅ PASS   group_operator.k                                   (0 1 6;2 7 16;3 5 12 15 1...   (0 1 6;2 7 16;3 5 12 15 1...   Compact representation                            
 ✅ PASS   if_bracket_test.k                                                                                                                                                  
 ✅ PASS   if_simple_test.k                                                                                                                                                   
 ✅ PASS   if_true.k                                                                                                                                                          
@@ -520,8 +520,9 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   string_representation_mixed.k                      "(1;2.5;\"a\")"                "(1;2.5;\"a\")"                                                                  
 ✅ PASS   string_representation_symbol.k                     "`symbol"                      "`symbol"                                                                        
 ✅ PASS   string_representation_vector.k                     "1 2 3"                        "1 2 3"                                                                          
-❌ FAIL   symbol_quoted.k                                    `a symbol                      `"a symbol"                                                                      
+✅ PASS   symbol_quoted.k                                    `"a symbol"                    `"a symbol"                                                                      
 ✅ PASS   symbol_simple.k                                    `foo                           `foo                                                                             
+✅ PASS   symbol_special_chars.k                             `"hello-world!"                `"hello-world!"                                                                  
 ✅ PASS   symbol_vector_compact.k                            `a`b`c                         `a`b`c                         Compact representation                            
 ✅ PASS   symbol_vector_spaces.k                             `a`b`c                         `a`b`c                         Compact representation                            
 ✅ PASS   take_operator_basic.k                              1 2 3                          1 2 3                                                                            
@@ -658,7 +659,7 @@ File: format_vector_int.k
 K3Sharp: ""
 k.exe:   ("";"";"")
 
-... and 23 more failed tests
+... and 21 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------
