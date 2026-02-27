@@ -274,8 +274,7 @@ namespace K3CSharp
 
         private K3Value EvaluateBinaryOp(ASTNode node)
         {
-            var op = node.Value as SymbolValue;
-            if (op == null) throw new Exception("Binary operator must have a symbol value");
+            if (node.Value is not SymbolValue op) throw new Exception("Binary operator must have a symbol value");
 
             // Handle unary operators (which are implemented as binary ops with one child)
             if (node.Children.Count == 1)
@@ -532,8 +531,7 @@ namespace K3CSharp
         private K3Value EvaluateFunction(ASTNode node)
         {
             // The function value should already be stored in node.Value from the parser
-            var functionValue = node.Value as FunctionValue;
-            if (functionValue == null)
+            if (node.Value is not FunctionValue functionValue)
             {
                 throw new Exception("Function node must contain a FunctionValue");
             }
@@ -670,11 +668,7 @@ namespace K3CSharp
                 }
                 else if (function.Type == ValueType.Symbol)
                 {
-                    var functionName = (function as SymbolValue)?.Value;
-                    if (functionName == null)
-                    {
-                        throw new Exception("Invalid function name");
-                    }
+                    var functionName = (function as SymbolValue)?.Value ?? throw new Exception("Invalid function name");
                     return CallVariableFunction(functionName, arguments);
                 }
                 
@@ -724,8 +718,7 @@ namespace K3CSharp
         
         private K3Value CallDirectFunction(ASTNode functionNode, List<K3Value> arguments)
         {
-            var functionValue = functionNode.Value as FunctionValue;
-            if (functionValue == null)
+            if (functionNode.Value is not FunctionValue functionValue)
             {
                 throw new Exception("Function node must contain a FunctionValue");
             }
@@ -1844,11 +1837,7 @@ namespace K3CSharp
             }
             else if (left.Type == ValueType.Symbol)
             {
-                var functionName = (left as SymbolValue)?.Value;
-                if (functionName == null)
-                {
-                    throw new Exception("Invalid function name for dot-apply");
-                }
+                var functionName = (left as SymbolValue)?.Value ?? throw new Exception("Invalid function name for dot-apply");
                 
                 // Unpack vector arguments into individual arguments for bracket notation
                 List<K3Value> arguments;
@@ -1877,11 +1866,7 @@ namespace K3CSharp
                 throw new Exception("Global assignment requires a variable name on the left side");
             }
             
-            var variableName = (left as SymbolValue)?.Value;
-            if (variableName == null)
-            {
-                throw new Exception("Invalid variable name for global assignment");
-            }
+            var variableName = (left as SymbolValue)?.Value ?? throw new Exception("Invalid variable name for global assignment");
             
             // Evaluate the right side
             var value = right;
@@ -2510,11 +2495,7 @@ namespace K3CSharp
                 foreach (var kvp in dv.Entries)
                 {
                     // Create triplet: (key;value;attribute)
-                    K3Value attribute = kvp.Value.Attribute;
-                    if (attribute == null)
-                    {
-                        attribute = new NullValue();
-                    }
+                    K3Value attribute = kvp.Value.Attribute ?? (K3Value)new NullValue();
                     var triplet = new List<K3Value> { kvp.Key, kvp.Value.Value, attribute };
                     result.Add(new VectorValue(triplet));
                 }
