@@ -131,7 +131,7 @@ db_dict_symbol_2char :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_dict_symbol_8char :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_dict_multi_entry :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_dict_five_entries :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
-db_dict_complex_attributes :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+db_dict_complex_attributes :: regex:^\s+|\s+$|\s*\n\s*:\; & regex:\s+`:` :: Compact representation
 db_enlist_single_int :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_enlist_single_symbol :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_enlist_single_string :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation

@@ -789,7 +789,7 @@ namespace K3CSharp.Tests
                 ("db_dict_symbol_8char.k", ".,(`abcdefgh;1 2 3 4 5 6 7 8;)"),
                 ("db_dict_multi_entry.k", ".((`a;1;);(`b;2;))"),
                 ("db_dict_five_entries.k", ".((`a;1;);(`b;2;);(`c;3;);(`d;4;);(`e;5;))"),
-                ("db_dict_complex_attributes.k", ".((`col01; 11 12 13 14 15;.((`format;,`\"n\");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`\"c\");(`name;`Color)));(`col03; (\"Home Depot\";\"Lowes\";\"Ace\";\"Neighborhood Paints\";\"Supply Co.\");.((`format;,`\"c\");(`name;`Retailer)))"),
+                ("db_dict_complex_attributes.k", ".((`col01;11 12 13 14 15;.((`format;,`n;);(`name;`ID;)));(`col02;`yellow`white`blue`red`black;.((`format;,`c;);(`name;`Color;)));(`col03;(\"Home Depot\";\"Lowes\";\"Ace\";\"Neighborhood Paints\";\"Supply Co.\");.((`format;,`c;);(`name;`Retailer;))))"),
                 ("db_dict_empty.k", ".()"),
                 ("db_dict_with_null_attrs.k", ".,(`a;1;.())"),
                 ("db_dict_with_empty_attrs.k", ".((`a;1;);(`b;2;.()))"),
