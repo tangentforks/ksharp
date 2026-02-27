@@ -332,7 +332,7 @@
 ║ list_sv_base10.k                                   │ 10 _sv 1 9 9 5       │ 1995                 │                      ║
 ║ list_sv_base2.k                                    │ 2 _sv 1 0 0 1        │ 9                    │                      ║
 ║ list_sv_mixed.k                                    │ 10 10 10 10 _sv 1 9 9 5 │ 1995                 │                      ║
-║ list_getenv.k                                      │ _getenv "PROMPT"     │ ()                   │ "$P$G"               ║
+║ list_getenv.k                                      │ _getenv "PROMPT"     │ "$P$G"               │                      ║
 ║ list_setenv.k                                      │ `TESTVAR _setenv "hello world" │ `TESTVAR             │                      ║
 ║ list_size_existing.k                               │ _size "C:\\Windows\\System32\\write.exe" │ 11264.0              │                      ║
 ║ test_ci_basic.k                                    │ _ci 65               │ "A"                  │                      ║
@@ -471,7 +471,7 @@
 ║ db_float.k                                         │ _db _bd 3.14         │ 3.14                 │                      ║
 ║ db_symbol.k                                        │ _db _bd `test        │ `test                │                      ║
 ║ db_int_vector.k                                    │ _db _bd 1 2 3        │ 1 2 3                │                      ║
-║ db_symbol_vector.k                                 │ _db _bd `a`b`c       │ `a                   │ `a`b`c               ║
+║ db_symbol_vector.k                                 │ _db _bd `a`b`c       │ `a`b`c               │                      ║
 ║ db_char_vector.k                                   │ _db _bd "hello"      │ "hello"              │                      ║
 ║ db_list_simple.k                                   │ _db _bd (1;2;3)      │ 1 2 3                │                      ║
 ║ db_dict_simple.k                                   │ _db _bd .((`a;1);(`b;2);(`c;3;)) │ .((`a;1;);(`b;2...   │                      ║
@@ -489,8 +489,8 @@
 ║ db_list_mixed_types.k                              │ _db _bd (1;`test;3.14;"hello") │ (1;`test;3.14;"...   │                      ║
 ║ db_function_complex.k                              │ _db _bd {[x;y] x*y+z} │ {[x;y] x*y+z}        │                      ║
 ║ db_function_simple_math.k                          │ _db _bd {x+y}        │ {x+y}                │                      ║
-║ db_nested_dict_vectors.k                           │ _db _bd .((`a;(1;2;3));(`b;(`hello;`world;`test))) │ Error: _db (dat...   │ {`a:(1;2;3);`b:...   ║
-║ db_nested_lists.k                                  │ _db _bd ((1;2;3);(`hello;`world;`test);(4.5;6.7)) │ Error: _db (dat...   │ ((1;2;3);(`hell...   ║
+║ db_nested_dict_vectors.k                           │ _db _bd .((`a;(1;2;3));(`b;(`hello;`world;`test))) │ .((`a;1 2 3;);(...   │ {`a:(1;2;3);`b:...   ║
+║ db_nested_lists.k                                  │ _db _bd ((1;2;3);(`hello;`world;`test);(4.5;6.7)) │ (1 2 3;`hello`w...   │ ((1;2;3);(`hell...   ║
 ║ db_mixed_list.k                                    │ _db _bd (1;`test;3.14) │ (1;`test;3.14)       │                      ║
 ║ db_dict_simple.k                                   │ _db _bd .((`a;1);(`b;2);(`c;3;)) │ .((`a;1;);(`b;2...   │                      ║
 ║ db_dict_single_entry.k                             │ _db _bd .,(`a;1)     │ .,(`a;1;)            │                      ║
@@ -498,7 +498,7 @@
 ║ db_dict_symbol_8char.k                             │ _db _bd .,(`abcdefgh;1 2 3 4 5 6 7 8) │ .,(`abcdefgh;1 ...   │                      ║
 ║ db_dict_multi_entry.k                              │ _db _bd .((`a;1);(`b;2)) │ .((`a;1;);(`b;2;))   │                      ║
 ║ db_dict_five_entries.k                             │ _db _bd .((`a;1);(`b;2);(`c;3);(`d;4);(`e;5)) │ .((`a;1;);(`b;2...   │                      ║
-║ db_dict_complex_attributes.k                       │ _db _bd .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer)))) │ Error: _db (dat...   │ .((`col01; 11 1...   ║
+║ db_dict_complex_attributes.k                       │ _db _bd .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer)))) │ .((`col01;11 12...   │ .((`col01; 11 1...   ║
 ║ db_dict_empty.k                                    │ _db _bd .()          │ .()                  │                      ║
 ║ db_dict_with_null_attrs.k                          │ _db _bd .,(`a;1;.()) │ .,(`a;1;)            │ .,(`a;1;.())         ║
 ║ db_dict_two_entries_simple.k                       │ _db _bd .,(`a;1);(`b;2) │ (`b;2)               │ .((`a;1);(`b;2))     ║
@@ -583,7 +583,7 @@
 ║ db_nested_structures.k                             │ _db _bd .((`a;(1;2;3));(`b;(4;5;6))) │ .((`a;1 2 3;);(...   │                      ║
 ║ db_string_hello.k                                  │ _db _bd "hello"      │ "hello"              │                      ║
 ║ db_symbol_hello.k                                  │ _db _bd `hello       │ `hello               │                      ║
-║ db_symbol_vector_longer.k                          │ _db _bd `hello`world`test │ `hello               │ `hello`world`test    ║
+║ db_symbol_vector_longer.k                          │ _db _bd `hello`world`test │ `hello`world`test    │                      ║
 ║ test_dict_larger.k                                 │ .((`a;1;);(`b;2;);(`c;3;);(`d;4;)) │ .((`a;1;);(`b;2...   │                      ║
 ║ test_dict_simple.k                                 │ .((`a;1);(`b;2);(`c;3;)) │ .((`a;1;);(`b;2...   │                      ║
 ║ type_empty_int_vector.k                            │ 4: !0                │ -1                   │                      ║
@@ -593,7 +593,7 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 562/586 tests passed (95.9%)                                                                               ║
+║ SUMMARY: 565/586 tests passed (96.4%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -628,11 +628,6 @@ Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
 Expected: .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
 Actual: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
 ──────────────────────────────────────────────────────────────────────────
-Test: list_getenv.k
-Input: _getenv "PROMPT"
-Expected: "$P$G"
-Actual: ()
-──────────────────────────────────────────────────────────────────────────
 Test: lsq.k
 Input: _lsq
 Expected: Error - _lsq (least squares) operation reserved for future use
@@ -666,25 +661,20 @@ Input: a: 3 3 8 7 5 7 3 8 4 4 9 2 7 6 0 7 8 7 0 1
 Expected: (0 1 6;2 7 16;3 5 12 15 17;,4;8 9;,10;,11;,13;14 18;,19)
 Actual: (0 1 6;2 7 16;3 5 12 15 17;4;8 9;10;11;13;14 18;19)
 ──────────────────────────────────────────────────────────────────────────
-Test: db_symbol_vector.k
-Input: _db _bd `a`b`c
-Expected: `a`b`c
-Actual: `a
-──────────────────────────────────────────────────────────────────────────
 Test: db_nested_dict_vectors.k
 Input: _db _bd .((`a;(1;2;3));(`b;(`hello;`world;`test)))
 Expected: {`a:(1;2;3);`b:(`hello;`world;`test)}
-Actual: Error: _db (data from bytes) operation failed: Unsupported type: 6581362
+Actual: .((`a;1 2 3;);(`b;`hello`world`test;))
 ──────────────────────────────────────────────────────────────────────────
 Test: db_nested_lists.k
 Input: _db _bd ((1;2;3);(`hello;`world;`test);(4.5;6.7))
 Expected: ((1;2;3);(`hello;`world;`test);(4.5;6.7))
-Actual: Error: _db (data from bytes) operation failed: Unsupported type: 6581362
+Actual: (1 2 3;`hello`world`test;4.5 6.7)
 ──────────────────────────────────────────────────────────────────────────
 Test: db_dict_complex_attributes.k
 Input: _db _bd .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer))))
 Expected: .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer)))
-Actual: Error: _db (data from bytes) operation failed: Unsupported type: 1702127976
+Actual: .((`col01;11 12 13 14 15;);(`col02;`yellow`white`blue`red`black;);(`col03;("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");))
 ──────────────────────────────────────────────────────────────────────────
 Test: db_dict_with_null_attrs.k
 Input: _db _bd .,(`a;1;.())
@@ -715,9 +705,4 @@ Test: serialization_bd_list_with_vectors.k
 Input: _bd ((`col1;1 2 3 4);(`col2;5 6 7 8))
 Expected: "\001\000\000\000h\000\000\000\000\000\000\000\002\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000col1\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000\004\000\000\000\000\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000col2\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\005\000\000\000\006\000\000\000\007\000\000\000\b\000\000\000"
 Actual: "\001\000\000\000h\000\000\000\000\000\000\000\002\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000col1\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000\004\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000col2\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\005\000\000\000\006\000\000\000\007\000\000\000\b\000\000\000"
-──────────────────────────────────────────────────────────────────────────
-Test: db_symbol_vector_longer.k
-Input: _db _bd `hello`world`test
-Expected: `hello`world`test
-Actual: `hello
 ──────────────────────────────────────────────────────────────────────────

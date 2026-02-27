@@ -78,7 +78,15 @@ namespace K3CSharp
             {
                 position++;
             }
-            return Encoding.UTF8.GetString(data, start, position - start);
+            var result = Encoding.UTF8.GetString(data, start, position - start);
+            
+            // Skip the null terminator if present
+            if (position < data.Length && data[position] == 0)
+            {
+                position++;
+            }
+            
+            return result;
         }
         
         public int Position 
