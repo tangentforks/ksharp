@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-02-26 00:39:07
+Generated: 2026-02-27 02:24:04
 
 SUMMARY:
 --------
-Total Tests:     585
-✅ Matched:       542
-❌ Differed:      37
+Total Tests:     584
+✅ Matched:       548
+❌ Differed:      33
 ⚠️  Skipped:       0
-💥 Errors:        6
-Success Rate:    92.6%
+💥 Errors:        3
+Success Rate:    93.8%
 
 DETAILED RESULTS:
 -----------------
@@ -83,8 +83,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   db_char_vector_sentence.k                          "hello world"                  "hello world"                  Compact representation                            
 ✅ PASS   db_char_vector.k                                   "hello"                        "hello"                        Compact representation                            
 ✅ PASS   db_character.k                                     "a"                            "a"                            Compact representation                            
-💥 ERROR db_dict_complex_attributes.k                                                      .((`col01
-   11 12 13 14 ...   K3Sharp error, k.exe succeeded                    
+✅ PASS   db_dict_complex_attributes.k                       .((`col01;11 12 13 14 15;...   .((`col01;11 12 13 14 15;...   Compact representation                            
 ✅ PASS   db_dict_empty.k                                    .()                            .()                            Compact representation                            
 ✅ PASS   db_dict_five_entries.k                             .((`a;1;);(`b;2;);(`c;3;)...   .((`a;1;);(`b;2;);(`c;3;)...   Compact representation                            
 ✅ PASS   db_dict_larger.k                                   .((`a;1;);(`b;2;);(`c;3;)...   .((`a;1;);(`b;2;);(`c;3;)...   Compact representation                            
@@ -94,9 +93,8 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   db_dict_single_entry.k                             .,(`a;1;)                      .,(`a;1;)                      Compact representation                            
 ✅ PASS   db_dict_symbol_2char.k                             .,(`ab;1 2;)                   .,(`ab;1 2;)                   Compact representation                            
 ✅ PASS   db_dict_symbol_8char.k                             .,(`abcdefgh;1 2 3 4 5 6 ...   .,(`abcdefgh;1 2 3 4 5 6 ...   Compact representation                            
-✅ PASS   db_dict_two_entries_simple.k                       (`b;2)                         (`b;2)                         Compact representation                            
-❌ FAIL   db_dict_with_empty_attrs.k                         .((`a;1;);(`b;2;))             .((`a;1;);(`b;2;.()))          Compact representation                            
-❌ FAIL   db_dict_with_null_attrs.k                          .,(`a;1;)                      .,(`a;1;.())                   Compact representation                            
+✅ PASS   db_dict_with_empty_attrs.k                         .((`a;1;);(`b;2;.()))          .((`a;1;);(`b;2;.()))          Compact representation                            
+✅ PASS   db_dict_with_null_attrs.k                          .,(`a;1;.())                   .,(`a;1;.())                   Compact representation                            
 ✅ PASS   db_empty_list.k                                    ()                             ()                             Compact representation                            
 ✅ PASS   db_enlist_single_int.k                             ,5                             ,5                             Compact representation                            
 ✅ PASS   db_enlist_single_string.k                          ,"hello"                       ,"hello"                       Compact representation                            
@@ -117,19 +115,15 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   db_list_mixed_types.k                              (1;`test;3.14;"hello")         (1;`test;3.14;"hello")         Compact representation                            
 ✅ PASS   db_list_simple.k                                   1 2 3                          1 2 3                          Compact representation                            
 ✅ PASS   db_mixed_list.k                                    (1;`test;3.14)                 (1;`test;3.14)                 Compact representation                            
-💥 ERROR db_nested_dict_vectors.k                                                          .((`a
-   1 2 3
-   )
-  (`b...   K3Sharp error, k.exe succeeded                    
-💥 ERROR db_nested_lists.k                                                                 (1 2 3
- `hello `world `te...   K3Sharp error, k.exe succeeded                    
+✅ PASS   db_nested_dict_vectors.k                           .((`a;1 2 3;);(`b;`hello`...   .((`a;1 2 3;);(`b;`hello`...   Compact representation                            
+✅ PASS   db_nested_lists.k                                  (1 2 3;`hello`world`test;...   (1 2 3;`hello`world`test;...   Compact representation                            
 ✅ PASS   db_nested_structures.k                             .((`a;1 2 3;);(`b;4 5 6;))     .((`a;1 2 3;);(`b;4 5 6;))     Compact representation                            
 ✅ PASS   db_null.k                                          0N                             0N                             Compact representation                            
 ✅ PASS   db_string_hello.k                                  "hello"                        "hello"                        Compact representation                            
 ✅ PASS   db_symbol_hello.k                                  `hello                         `hello                         Compact representation                            
 ✅ PASS   db_symbol_simple.k                                 `hello                         `hello                         Compact representation                            
-❌ FAIL   db_symbol_vector_longer.k                          `hello                         `hello `world `test            Compact representation                            
-❌ FAIL   db_symbol_vector.k                                 `a                             `a `b `c                       Compact representation                            
+✅ PASS   db_symbol_vector_longer.k                          `hello`world`test              `hello`world`test              Compact representation                            
+✅ PASS   db_symbol_vector.k                                 `a`b`c                         `a`b`c                         Compact representation                            
 ✅ PASS   db_symbol.k                                        `test                          `test                          Compact representation                            
 ✅ PASS   dictionary_dot_apply.k                             1                              1                                                                                
 ✅ PASS   dictionary_empty.k                                 .()                            .()                                                                              
@@ -424,8 +418,8 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   serialization_bd_db_roundtrip_list.k               (1;2.5;"a")                    (1;2.5;"a")                                                                      
 ✅ PASS   serialization_bd_db_symbol.k                       "\001\000\000\000\013\000...   "\001\000\000\000\013\000...                                                     
 ✅ PASS   serialization_bd_db_symbolvector.k                 "\001\000\000\000\016\000...   "\001\000\000\000\016\000...                                                     
-❌ FAIL   serialization_bd_dictionary_with_symbol_vectors.k  "\001\000\000\000p\000\00...   "\001\000\000\000p\000\00...                                                     
-❌ FAIL   serialization_bd_dictionary_with_vectors.k         "\001\000\000\000x\000\00...   "\001\000\000\000x\000\00...                                                     
+❌ FAIL   serialization_bd_dictionary_with_symbol_vectors.k  "\001\000\000\000p\000\00...   "\001\000\000\000p\000\00...   Fix padding junk                                  
+❌ FAIL   serialization_bd_dictionary_with_vectors.k         "\001\000\000\000x\000\00...   "\001\000\000\000x\000\00...   Fix padding junk                                  
 ✅ PASS   serialization_bd_float_edge_-0.5.k                 "\001\000\000\000\020\000...   "\001\000\000\000\020\000...                                                     
 ✅ PASS   serialization_bd_float_edge_-0i.k                  "\001\000\000\000\020\000...   "\001\000\000\000\020\000...                                                     
 ✅ PASS   serialization_bd_float_edge_-1.0.k                 "\001\000\000\000\020\000...   "\001\000\000\000\020\000...                                                     
@@ -626,22 +620,6 @@ File: anonymous_function_double_param.k
 K3Sharp: {[op1;op2] op1 * op2}
 k.exe:   {[op1;op2] op1*op2}
 
-File: db_dict_with_empty_attrs.k
-K3Sharp: .((`a;1;);(`b;2;))
-k.exe:   .((`a;1;);(`b;2;.()))
-
-File: db_dict_with_null_attrs.k
-K3Sharp: .,(`a;1;)
-k.exe:   .,(`a;1;.())
-
-File: db_symbol_vector_longer.k
-K3Sharp: `hello
-k.exe:   `hello `world `test
-
-File: db_symbol_vector.k
-K3Sharp: `a
-k.exe:   `a `b `c
-
 File: dyadic_divide_bracket.k
 K3Sharp: 5
 k.exe:   5.0
@@ -658,21 +636,34 @@ File: form_braces_complex.k
 K3Sharp: 8.25 12.0 9.0
 k.exe:   8.25 12 9
 
-... and 27 more failed tests
+File: form_braces_float.k
+K3Sharp: 4.0 3.75 0.6 -1.0
+k.exe:   4 3.75 0.6 -1
+
+File: format_int_vector.k
+K3Sharp: ""
+k.exe:   (""
+ ""
+ ""
+ "")
+
+File: format_long_vector.k
+K3Sharp: ""
+k.exe:   (,"1"
+ ,"*"
+ ,"*"
+ ,"*")
+
+File: format_vector_int.k
+K3Sharp: ""
+k.exe:   ("";"";"")
+
+... and 23 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------
 File: amend_item_simple.k
 Error: K3Sharp Error: For atomic data, indices must be empty list
-
-File: db_dict_complex_attributes.k
-Error: K3Sharp Error: _db (data from bytes) operation failed: Unsupported type: 1702127976
-
-File: db_nested_dict_vectors.k
-Error: K3Sharp Error: _db (data from bytes) operation failed: Unsupported type: 6581362
-
-File: db_nested_lists.k
-Error: K3Sharp Error: _db (data from bytes) operation failed: Unsupported type: 6581362
 
 File: dictionary_index_attr.k
 Error: K3Sharp Error: Undefined variable: b.

@@ -58,9 +58,9 @@ smart_division1 :: regex:\.0\b: :: smart integer division, inverse and exponenti
 smart_division2 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
 smart_division3 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
 form_braces_arith :: regex:\(|\)|\.0\b: &regex:[;]:space :: smart integer division, inverse and exponentiation
-anonymous_function_double_param :: regex:\s*\*\s*:* :: Compact representation
-attribute_handle_vector :: regex:\s*`:` :: Compact representation
-db_symbol_vector_longer :: regex:\s*`:` :: Compact representation
+anonymous_function_double_param :: regex:\s+\\*\s+:* :: Compact representation
+attribute_handle_vector :: regex:\s+`:` :: Compact representation
+db_symbol_vector_longer :: regex:\s+`:` :: Compact representation
 db_enlist_single_symbol :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 cut_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 dictionary_index_attr :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
@@ -93,7 +93,7 @@ db_comprehensive :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_float :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_symbol :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_int_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
-db_symbol_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+db_symbol_vector :: regex:\s+`:`:: Compact representation
 db_edge_cases :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_dictionaries :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_complex_structures :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
@@ -116,7 +116,6 @@ db_symbol_hello :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_string_hello :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_int_vector_longer :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_float_vector_longer :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
-db_symbol_vector_longer :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_char_vector_sentence :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_dict_larger :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_dict_mixed_types :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
@@ -124,7 +123,7 @@ db_list_longer :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_list_mixed_types :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_function_complex :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_function_simple_math :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
-db_nested_dict_vectors :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+db_nested_dict_vectors :: regex:^\s+|\s+$|\s*\n\s*:\; & regex:\s+`:` :: Compact representation
 db_nested_lists :: regex:^\s+|\s+$|\s*\n\s*:\; & regex:\s+`:` :: Compact representation
 db_dict_single_entry :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 db_dict_symbol_2char :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
@@ -148,3 +147,5 @@ db_dict_larger :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 test_dict_simple :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 reshape_basic :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 amend_apply :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+serialization_bd_dictionary_with_symbol_vectors :: regex:colA\\\\000\\\\000\\\\000\\\\000\\\\001:colA\\000\\000\\000\\000\\000 & regex:ffff\\\\000\\\\001:ffff\\000\\000 :: Fix padding junk
+serialization_bd_dictionary_with_vectors :: regex:col1\\\\000\\\\001:col1\\000\\000 & col2\\\\000\\\\001:col2\\000\\000 :: Fix padding junk
