@@ -332,7 +332,7 @@
 ║ list_sv_base10.k                                   │ 10 _sv 1 9 9 5       │ 1995                 │                      ║
 ║ list_sv_base2.k                                    │ 2 _sv 1 0 0 1        │ 9                    │                      ║
 ║ list_sv_mixed.k                                    │ 10 10 10 10 _sv 1 9 9 5 │ 1995                 │                      ║
-║ list_getenv.k                                      │ _getenv "PROMPT"     │ "$P$G"               │                      ║
+║ list_getenv.k                                      │ _getenv "PROMPT"     │ ()                   │ "$P$G"               ║
 ║ list_setenv.k                                      │ `TESTVAR _setenv "hello world" │ `TESTVAR             │                      ║
 ║ list_size_existing.k                               │ _size "C:\\Windows\\System32\\write.exe" │ 11264.0              │                      ║
 ║ test_ci_basic.k                                    │ _ci 65               │ "A"                  │                      ║
@@ -489,7 +489,7 @@
 ║ db_list_mixed_types.k                              │ _db _bd (1;`test;3.14;"hello") │ (1;`test;3.14;"...   │                      ║
 ║ db_function_complex.k                              │ _db _bd {[x;y] x*y+z} │ {[x;y] x*y+z}        │                      ║
 ║ db_function_simple_math.k                          │ _db _bd {x+y}        │ {x+y}                │                      ║
-║ db_nested_dict_vectors.k                           │ _db _bd .((`a;(1;2;3));(`b;(`hello;`world;`test))) │ .((`a;1 2 3;);(...   │ {`a:(1;2;3);`b:...   ║
+║ db_nested_dict_vectors.k                           │ _db _bd .((`a;(1;2;3));(`b;(`hello;`world;`test))) │ .((`a;1 2 3;);(...   │                      ║
 ║ db_nested_lists.k                                  │ _db _bd ((1;2;3);(`hello;`world;`test);(4.5;6.7)) │ (1 2 3;`hello`w...   │ ((1;2;3);(`hell...   ║
 ║ db_mixed_list.k                                    │ _db _bd (1;`test;3.14) │ (1;`test;3.14)       │                      ║
 ║ db_dict_simple.k                                   │ _db _bd .((`a;1);(`b;2);(`c;3;)) │ .((`a;1;);(`b;2...   │                      ║
@@ -628,6 +628,11 @@ Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
 Expected: .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
 Actual: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
 ──────────────────────────────────────────────────────────────────────────
+Test: list_getenv.k
+Input: _getenv "PROMPT"
+Expected: "$P$G"
+Actual: ()
+──────────────────────────────────────────────────────────────────────────
 Test: lsq.k
 Input: _lsq
 Expected: Error - _lsq (least squares) operation reserved for future use
@@ -660,11 +665,6 @@ Test: group_operator.k
 Input: a: 3 3 8 7 5 7 3 8 4 4 9 2 7 6 0 7 8 7 0 1
 Expected: (0 1 6;2 7 16;3 5 12 15 17;,4;8 9;,10;,11;,13;14 18;,19)
 Actual: (0 1 6;2 7 16;3 5 12 15 17;4;8 9;10;11;13;14 18;19)
-──────────────────────────────────────────────────────────────────────────
-Test: db_nested_dict_vectors.k
-Input: _db _bd .((`a;(1;2;3));(`b;(`hello;`world;`test)))
-Expected: {`a:(1;2;3);`b:(`hello;`world;`test)}
-Actual: .((`a;1 2 3;);(`b;`hello`world`test;))
 ──────────────────────────────────────────────────────────────────────────
 Test: db_nested_lists.k
 Input: _db _bd ((1;2;3);(`hello;`world;`test);(4.5;6.7))
