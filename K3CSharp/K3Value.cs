@@ -605,7 +605,17 @@ namespace K3CSharp
             if (string.IsNullOrEmpty(Value))
                 return "";
             
-            return "`" + Value;
+            // Check if symbol is a valid variable name (letters, digits, underscore, period)
+            if (ContainsSpecialCharacters(Value))
+            {
+                // Symbol contains special characters, display with quotes and backtick
+                return $"`\"{Value}\"";
+            }
+            else
+            {
+                // Symbol is a valid variable name, display with backtick only
+                return "`" + Value;
+            }
         }
         
         public string ToStringForFormat()

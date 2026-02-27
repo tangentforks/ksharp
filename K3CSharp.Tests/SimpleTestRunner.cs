@@ -883,6 +883,7 @@ namespace K3CSharp.Tests
                 ("db_symbol_vector_longer.k", "`hello`world`test"),
                 ("test_dict_larger.k", ".((`a;1;);(`b;2;);(`c;3;);(`d;4;))"),
                 ("test_dict_simple.k", ".((`a;1;);(`b;2;);(`c;3;))"),
+                ("symbol_special_chars.k", "`\"hello-world!\""),
                 ("type_empty_int_vector.k", "-1"),
                 ("bd_empty_list.k", "\"\\001\\000\\000\\000\\b\\000\\000\\000\\000\\000\\000\\000\\000\\000\\000\\000\""),
                 ("bd_enlist_single_int.k", "\"\\001\\000\\000\\000\\014\\000\\000\\000\\377\\377\\377\\377\\001\\000\\000\\000\\005\\000\\000\\000\""),
