@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-02-28 02:26:50
+Generated: 2026-02-28 04:11:59
 
 SUMMARY:
 --------
-Total Tests:     581
-✅ Matched:       562
-❌ Differed:      17
+Total Tests:     586
+✅ Matched:       568
+❌ Differed:      16
 ⚠️  Skipped:       0
 💥 Errors:        2
-Success Rate:    96.7%
+Success Rate:    96.9%
 
 DETAILED RESULTS:
 -----------------
@@ -452,7 +452,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   serialization_bd_symbol_edge_underscore.k          "\001\000\000\000\020\000...   "\001\000\000\000\020\000...                                                     
 ✅ PASS   serialization_bd_symbolvector_random_1.k           "\001\000\000\000&\000\00...   "\001\000\000\000&\000\00...                                                     
 ✅ PASS   serialization_bd_symbolvector_random_2.k           "\001\000\000\0001\000\00...   "\001\000\000\0001\000\00...                                                     
-❌ FAIL   serialization_bd_symbolvector_random_3.k           "\001\000\000\000\035\000...   "\001\000\000\000!\000\00...                                                     
+✅ PASS   serialization_bd_symbolvector_random_3.k           "\001\000\000\000!\000\00...   "\001\000\000\000!\000\00...                                                     
 ✅ PASS   shape_operator_empty_vector.k                      ,0                             ,0                                                                               
 ✅ PASS   shape_operator_jagged_3d.k                         2 2                            2 2                                                                              
 ✅ PASS   shape_operator_jagged_matrix.k                     ,3                             ,3                                                                               
@@ -525,12 +525,17 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   test_ic_basic.k                                    65                             65                                                                               
 ✅ PASS   test_ic_vector.k                                   65 66 67                       65 66 67                                                                         
 ✅ PASS   test_monadic_colon.k                               42                             42                                                                               
+✅ PASS   test_quoted_symbol_serialization.k                 "\001\000\000\000\006\000...   "\001\000\000\000\006\000...                                                     
+✅ PASS   test_quoted_symbol.k                               `"."                           `"."                                                                             
 ✅ PASS   test_semicolon.k                                   3 4                            3 4                                                                              
+✅ PASS   test_simple_symbol.k                               `a`"."`b                       `a`"."`b                       Compact representation                            
+✅ PASS   test_single_quoted_symbol.k                        `"."                           `"."                                                                             
 ✅ PASS   test_sm_basic.k                                    1                              1                                                                                
 ✅ PASS   test_sm_simple.k                                   1                              1                                                                                
 ❌ FAIL   test_ss_basic.k                                    7                              ,6                                                                               
 ✅ PASS   test_symbol_parsing.k                              0#`                            0#`                                                                              
 ✅ PASS   test_symbol_take.k                                 0#`                            0#`                                                                              
+✅ PASS   test_symbol_vector_with_quoted.k                   `a`b`"."`c                     `a`b`"."`c                     Compact representation                            
 ✅ PASS   test_vs_dyadic.k                                   1 9 9 5                        1 9 9 5                                                                          
 ✅ PASS   time_dj.k                                          20350101                       20350101                                                                         
 ✅ PASS   time_gtime.k                                       20350101 0                     20350101 0                                                                       
@@ -641,7 +646,7 @@ File: rand_draw_vector_select.k
 K3Sharp: .((`type;0;);(`shape;,2;))
 k.exe:   .((`type;0;);(`shape;2 3;))
 
-... and 7 more failed tests
+... and 6 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------

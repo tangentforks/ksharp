@@ -158,3 +158,5 @@ format_int_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 form_braces_float :: regex:4:4.0 & regex:-1:-1.0 :: Do not use abbreviated float vectors
 form_braces_complex :: regex:12:12.0 & regex:9:9.0 :: Do not use abbreviated float vectors
 k_tree_enumerate :: regex:,`k:`k`t :: Always create `t including when running scripts instead of interactive REPL
+test_simple_symbol :: regex:\s+`:` :: Compact representation
+test_symbol_vector_with_quoted :: regex:\s+`:` :: Compact representation

@@ -488,10 +488,12 @@ namespace K3CSharp
                 
                 // Special case: compact symbol vectors (symbols back-to-back without spaces)
                 // Check if the first element was a symbol and the current element is also a symbol
-                if (firstElementType == ASTNodeType.Literal && 
-                    firstValueType == typeof(SymbolValue) &&
-                    nextElement?.Type == ASTNodeType.Literal && 
-                    nextElement?.Value is SymbolValue)
+                bool firstIsSymbol = (firstElementType == ASTNodeType.Literal && firstValueType == typeof(SymbolValue)) ||
+                                  (firstElementType == ASTNodeType.Variable && firstValueType == typeof(SymbolValue));
+                bool nextIsSymbol = (nextElement?.Type == ASTNodeType.Literal && nextElement?.Value is SymbolValue) ||
+                                  (nextElement?.Type == ASTNodeType.Variable && nextElement?.Value is SymbolValue);
+                
+                if (firstIsSymbol && nextIsSymbol)
                 {
                     // Both are symbols, allow them to be combined regardless of uniform type check
                     if (nextElement != null) elements.Add(nextElement);
@@ -641,14 +643,15 @@ namespace K3CSharp
                 var symbol = PreviousToken().Lexeme;
                 
                 // Check if this is a dotted notation for K tree access
-                if (symbol.Contains("."))
+                // But NOT if it's a quoted symbol (starts with quote) - quoted symbols should always be treated as symbol literals
+                if (symbol.Contains(".") && !symbol.StartsWith("\""))
                 {
                     // This is a K tree dotted notation variable
                     result = ASTNode.MakeVariable(symbol);
                 }
                 else
                 {
-                    // Regular symbol
+                    // Regular symbol (including quoted symbols)
                     result = ASTNode.MakeLiteral(new SymbolValue(symbol));
                 }
             }

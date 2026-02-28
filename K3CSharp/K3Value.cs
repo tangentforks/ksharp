@@ -581,39 +581,48 @@ namespace K3CSharp
             if (string.IsNullOrEmpty(Value))
                 return "";
             
-            // Check if symbol is a valid variable name (letters, digits, underscore, period)
-            if (ContainsSpecialCharacters(Value))
-            {
-                // Symbol contains special characters, display with quotes and backtick
-                return $"`\"{Value}\"";
-            }
-            else
+            // Check if symbol is a valid variable name according to K spec
+            if (IsValidVariableName(Value))
             {
                 // Symbol is a valid variable name, display with backtick only
                 return "`" + Value;
             }
+            else
+            {
+                // Symbol is not a valid variable name, display with quotes and backtick
+                return $"`\"{Value}\"";
+            }
+        }
+        
+        private static bool IsValidVariableName(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return false;
+            
+            // Must contain at least one upper or lower case alphabetic character
+            bool hasAlphabetic = false;
+            
+            foreach (char c in value)
+            {
+                if (char.IsLetter(c))
+                {
+                    hasAlphabetic = true;
+                }
+                
+                // If character is not alphanumeric, underscore, or period, it's invalid
+                if (!char.IsLetterOrDigit(c) && c != '_' && c != '.')
+                {
+                    return false;
+                }
+            }
+            
+            return hasAlphabetic;
         }
         
         public string ToStringForFormat()
         {
             // For unary $ formatting, return symbol name in quotes without backtick
             return $"\"{Value}\"";
-        }
-        
-        private static bool ContainsSpecialCharacters(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-                return false;
-                
-            foreach (char c in value)
-            {
-                // If character is not alphanumeric, underscore, or period, it's a special character
-                if (!char.IsLetterOrDigit(c) && c != '_' && c != '.')
-                {
-                    return true;
-                }
-            }
-            return false;
         }
 
         public override bool Equals(object? obj)

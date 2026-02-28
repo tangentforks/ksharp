@@ -564,7 +564,12 @@
 ║ serialization_bd_floatvector_random_3.k            │ _bd 585267.57816312299 -569668.94176055992 37200.312770306708 397004.01885714347 │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_symbolvector_random_1.k           │ _bd `qzUM7 `g8X6P `"iay" `KgNQ5i `"< +" `b5 │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_symbolvector_random_2.k           │ _bd `"O 0" `D `qCBI1b `"*H " `"SS" `ULsyI `"F~" `"C" `Mont `O25B │ "\001\000\000\0...   │                      ║
-║ serialization_bd_symbolvector_random_3.k           │ _bd `o3 `EE5ijP `trD0LuE `OW `"." `y │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_symbolvector_random_3.k           │ _bd `o3 `EE5ijP `trD0LuE `OW `"." `y │ "\001\000\000\0...   │                      ║
+║ test_quoted_symbol.k                               │ `"."                 │ `"."                 │                      ║
+║ test_quoted_symbol_serialization.k                 │ _bd `"."             │ "\001\000\000\0...   │                      ║
+║ test_simple_symbol.k                               │ `a `"." `b           │ `a`"."`b             │                      ║
+║ test_single_quoted_symbol.k                        │ `"."                 │ `"."                 │                      ║
+║ test_symbol_vector_with_quoted.k                   │ `a `b `"." `c        │ `a`b`"."`c           │                      ║
 ║ serialization_bd_dictionary_with_symbol_vectors.k  │ _bd .((`colA;`a `b `c);(`colB;`dd `eee `ffff)) │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_dictionary_with_vectors.k         │ _bd .((`col1;1 2 3 4);(`col2;5 6 7 8)) │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_list_with_explicit_nulls.k        │ _bd ((`a;`"1";);(`b;`"2";)) │ "\001\000\000\0...   │                      ║
@@ -589,7 +594,7 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 573/582 tests passed (98.5%)                                                                               ║
+║ SUMMARY: 579/587 tests passed (98.6%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -636,9 +641,4 @@ Test: format_vector_int.k
 Input: 0$(1;2;3)
 Expected: ("1";"2";"3")
 Actual: ""
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_symbolvector_random_3.k
-Input: _bd `o3 `EE5ijP `trD0LuE `OW `"." `y
-Expected: "\001\000\000\000!\000\000\000\374\377\377\377\006\000\000\000o3\000EE5ijP\000trD0LuE\000OW\000.\000y\000"
-Actual: "\001\000\000\000\035\000\000\000\374\377\377\377\004\000\000\000o3\000EE5ijP\000trD0LuE\000OW\000"
 ──────────────────────────────────────────────────────────────────────────
