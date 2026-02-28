@@ -343,7 +343,7 @@
 ║ test_monadic_colon.k                               │ : 42                 │ 42                   │                      ║
 ║ test_sm_basic.k                                    │ `foo _sm `foo        │ 1                    │                      ║
 ║ test_sm_simple.k                                   │ `a _sm `a            │ 1                    │                      ║
-║ test_ss_basic.k                                    │ "hello world" _ss "world" │ 7                    │ ,6                   ║
+║ test_ss_basic.k                                    │ "hello world" _ss "world" │ ,6                   │                      ║
 ║ test_semicolon.k                                   │ 1 2; 3 4             │ 3 4                  │                      ║
 ║ search_in_basic.k                                  │ 4 _in 1 2 3 4 5      │ 1                    │                      ║
 ║ search_in_notfound.k                               │ 6 _in 1 2 3 4 5      │ 0                    │                      ║
@@ -594,7 +594,7 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 579/587 tests passed (98.6%)                                                                               ║
+║ SUMMARY: 580/587 tests passed (98.8%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -618,11 +618,6 @@ Test: rand_draw_vector_deal.k
 Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
 Expected: .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
 Actual: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
-──────────────────────────────────────────────────────────────────────────
-Test: test_ss_basic.k
-Input: "hello world" _ss "world"
-Expected: ,6
-Actual: 7
 ──────────────────────────────────────────────────────────────────────────
 Test: lsq.k
 Input: _lsq

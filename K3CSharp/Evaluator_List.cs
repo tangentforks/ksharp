@@ -858,7 +858,7 @@ namespace K3CSharp
         {
             // _ss (string search) function
             // Dyadic verb: x _ss y
-            // Returns start indices where pattern occurs in text
+            // Returns start indices where pattern occurs in text (0-based)
             
             string leftStr = left switch
             {
@@ -884,13 +884,13 @@ namespace K3CSharp
                 int foundIndex = leftStr.IndexOf(rightStr, index);
                 if (foundIndex == -1)
                     break;
-                indices.Add(foundIndex + 1); // Convert to 1-based indexing
+                indices.Add(foundIndex); // Keep 0-based indexing
                 index = foundIndex + 1; // Move to next character after found pattern
             }
             
-            // Return scalar if single result, vector if multiple results
-            if (indices.Count == 1)
-                return new IntegerValue(indices[0]);
+            // Always return integer vector, even for 0 or 1 items
+            if (indices.Count == 0)
+                return new VectorValue(new List<K3Value>(), -1); // Empty integer vector
             else
                 return new VectorValue(indices.Select(i => new IntegerValue(i)).Cast<K3Value>().ToList());
         }

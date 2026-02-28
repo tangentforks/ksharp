@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-02-28 05:10:57
+Generated: 2026-02-28 05:32:56
 
 SUMMARY:
 --------
 Total Tests:     586
-✅ Matched:       568
-❌ Differed:      16
+✅ Matched:       569
+❌ Differed:      15
 ⚠️  Skipped:       0
 💥 Errors:        2
-Success Rate:    96.9%
+Success Rate:    97.1%
 
 DETAILED RESULTS:
 -----------------
@@ -532,7 +532,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   test_single_quoted_symbol.k                        `"."                           `"."                                                                             
 ✅ PASS   test_sm_basic.k                                    1                              1                                                                                
 ✅ PASS   test_sm_simple.k                                   1                              1                                                                                
-❌ FAIL   test_ss_basic.k                                    7                              ,6                                                                               
+✅ PASS   test_ss_basic.k                                    ,6                             ,6                                                                               
 ✅ PASS   test_symbol_parsing.k                              0#`                            0#`                                                                              
 ✅ PASS   test_symbol_take.k                                 0#`                            0#`                                                                              
 ✅ PASS   test_symbol_vector_with_quoted.k                   `a`b`"."`c                     `a`b`"."`c                     Compact representation                            
@@ -657,10 +657,6 @@ k.exe:   "\001\000\000\000x\000\000\000\005\000\000\000\002\000\000\000\000\000\
 File: serialization_bd_list_with_symbol_vectors.k
 K3Sharp: "\001\000\000\000`\000\000\000\000\000\000\000\002\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000colA\000\000\000\000\000\000\000\000\374\377\377\377\003\000\000\000a\000b\000c\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000colB\000\000\000\000\000\000\000\000\374\377\377\377\003\000\000\000dd\000eee\000ffff\000\000\000\000\000"
 k.exe:   "\001\000\000\000`\000\000\000\000\000\000\000\002\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000colA\000\000\000\000e\000\000\000\374\377\377\377\003\000\000\000a\000b\000c\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000colB\000\000\000\0000\000\000\000\374\377\377\377\003\000\000\000dd\000eee\000ffff\0001\000\000\000"
-
-File: test_ss_basic.k
-K3Sharp: 7
-k.exe:   ,6
 
 File: variable_assignment.k
 K3Sharp: 7
