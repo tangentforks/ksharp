@@ -587,10 +587,25 @@ namespace K3CSharp
             {
                 var lexeme = PreviousToken().Lexeme;
                 // Check if it's a special long value
-                if (lexeme == "0Ij" || lexeme == "0Nj" || lexeme == "-0Ij")
-                    result = ASTNode.MakeLiteral(new LongValue(lexeme));
+                if (lexeme == "0Ij")
+                    result = ASTNode.MakeLiteral(new LongValue(long.MaxValue));
+                else if (lexeme == "0Nj")
+                    result = ASTNode.MakeLiteral(new LongValue(long.MinValue));
+                else if (lexeme == "-0Ij")
+                    result = ASTNode.MakeLiteral(new LongValue(-long.MaxValue));
                 else
-                    result = ASTNode.MakeLiteral(new LongValue(long.Parse(lexeme.Substring(0, lexeme.Length - 1))));
+                {
+                    // Parse with bounds checking
+                    var numberPart = lexeme.Substring(0, lexeme.Length - 1); // Remove 'j'
+                    double parsedValue = double.Parse(numberPart);
+                    
+                    if (parsedValue >= long.MaxValue)
+                        result = ASTNode.MakeLiteral(new LongValue(long.MaxValue));
+                    else if (parsedValue <= -long.MaxValue)
+                        result = ASTNode.MakeLiteral(new LongValue(-long.MaxValue));
+                    else
+                        result = ASTNode.MakeLiteral(new LongValue(long.Parse(numberPart)));
+                }
             }
             else if (Match(TokenType.FLOAT))
             {
@@ -682,66 +697,34 @@ namespace K3CSharp
             }
             else if (Match(TokenType.MINUS))
             {
-                // Check if this is a negative long literal (for long.MinValue)
-                if (!IsAtEnd() && CurrentToken().Type == TokenType.LONG)
+                // Check if this is unary minus (at start of expression)
+                if (result == null)
                 {
-                    var longToken = CurrentToken();
-                    Advance(); // Consume the LONG token
-                    var lexeme = longToken.Lexeme;
-                    // Check if it's a special negative long value
-                    if (lexeme == "0Ij" || lexeme == "0Nj" || lexeme == "-0Ij")
-                        result = ASTNode.MakeLiteral(new LongValue(lexeme));
+                    // Look ahead to see if this is part of an adverb operation
+                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK ||
+                                       CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
+                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
+                                       CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                    {
+                        // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("-"));
+                    }
                     else
                     {
-                        // Parse the positive part and negate it
-                        var positivePart = lexeme.Substring(0, lexeme.Length - 1);
-                        long positiveValue;
-                        
-                        // Handle the special case where the positive part is long.MaxValue + 1
-                        if (positivePart == "9223372036854775808")
-                        {
-                            // This is long.MaxValue + 1, which will overflow if parsed directly
-                            // We know this should become long.MinValue when negated
-                            result = ASTNode.MakeLiteral(new LongValue(long.MinValue));
-                        }
-                        else
-                        {
-                            positiveValue = long.Parse(positivePart);
-                            result = ASTNode.MakeLiteral(new LongValue(-positiveValue));
-                        }
+                        // This is unary minus
+                        var operand = ParsePrimary();
+                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        node.Value = new SymbolValue("-");
+                        if (operand != null) node.Children.Add(operand);
+                        return node;
                     }
                 }
                 else
                 {
-                    // Check if this is unary minus (at start of expression)
-                    if (result == null)
-                    {
-                        // Look ahead to see if this is part of an adverb operation
-                        if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                           CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                           CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                           CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                           CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                                           CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
-                        {
-                            // This is a verb symbol for an adverb operation
-                            result = ASTNode.MakeLiteral(new SymbolValue("-"));
-                        }
-                        else
-                        {
-                            // This is unary minus
-                            var operand = ParsePrimary();
-                            var node = new ASTNode(ASTNodeType.BinaryOp);
-                            node.Value = new SymbolValue("-");
-                            if (operand != null) node.Children.Add(operand);
-                            return node;
-                        }
-                    }
-                    else
-                    {
-                        // Binary minus symbol
-                        result = ASTNode.MakeLiteral(new SymbolValue("-"));
-                    }
+                    // Binary minus symbol
+                    result = ASTNode.MakeLiteral(new SymbolValue("-"));
                 }
             }
             else if (Match(TokenType.DIVIDE))

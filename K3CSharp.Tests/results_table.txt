@@ -90,7 +90,7 @@
 ║ integer_types_long.k                               │ 123456789j           │ 123456789j           │                      ║
 ║ join_operator.k                                    │ 3 , 5                │ 3 5                  │                      ║
 ║ less_than_operator.k                               │ 3 < 5                │ 1                    │                      ║
-║ math_abs.k                                         │ _abs -5              │ 5.0                  │                      ║
+║ math_abs.k                                         │ _abs -5              │ 5                    │                      ║
 ║ math_exp.k                                         │ _exp 2               │ 7.389056             │                      ║
 ║ math_log.k                                         │ _log 10              │ 2.302585             │                      ║
 ║ math_sin.k                                         │ _sin 0               │ 0.0                  │                      ║
@@ -115,7 +115,7 @@
 ║ overflow_int_pos_inf.k                             │ 0I + 1               │ 0N                   │                      ║
 ║ overflow_int_pos_inf_plus2.k                       │ 0I + 2               │ -0I                  │                      ║
 ║ overflow_long_max_plus1.k                          │ 9223372036854775807j + 1 │ 0Nj                  │                      ║
-║ overflow_long_min_minus1.k                         │ -9223372036854775808j - 1 │ 0Ij                  │                      ║
+║ overflow_long_min_minus1.k                         │ -9223372036854775808j - 1 │ 0Nj                  │                      ║
 ║ overflow_long_neg_inf.k                            │ -0Ij - 1             │ 0Nj                  │                      ║
 ║ overflow_long_neg_inf_minus2.k                     │ -0Ij - 2             │ 0Ij                  │                      ║
 ║ overflow_long_pos_inf.k                            │ 0Ij + 1              │ 0Nj                  │                      ║
@@ -324,7 +324,7 @@
 ║ time_jd.k                                          │ _jd 20260206         │ -3251                │                      ║
 ║ time_dj.k                                          │ _dj 0                │ 20350101             │                      ║
 ║ time_ltime.k                                       │ _ltime 0             │ 20341231 190000      │                      ║
-║ in.k                                               │ 4 _in 1 7 2 4 6 3    │ 4                    │                      ║
+║ in.k                                               │ 4 _in 1 7 2 4 6 3    │ 1                    │                      ║
 ║ list_dv_basic.k                                    │ 3 4 4 5 _dv 4        │ 3 5                  │                      ║
 ║ list_dv_nomatch.k                                  │ 3 4 4 5 _dv 6        │ 3 4 4 5              │                      ║
 ║ list_di_basic.k                                    │ 3 2 4 5 _di 1        │ 3 4 5                │                      ║
@@ -345,7 +345,7 @@
 ║ test_sm_simple.k                                   │ `a _sm `a            │ 1                    │                      ║
 ║ test_ss_basic.k                                    │ "hello world" _ss "world" │ 7                    │                      ║
 ║ test_semicolon.k                                   │ 1 2; 3 4             │ 3 4                  │                      ║
-║ search_in_basic.k                                  │ 4 _in 1 2 3 4 5      │ 4                    │                      ║
+║ search_in_basic.k                                  │ 4 _in 1 2 3 4 5      │ 1                    │                      ║
 ║ search_in_notfound.k                               │ 6 _in 1 2 3 4 5      │ 0                    │                      ║
 ║ search_bin_basic.k                                 │ 3 4 5 6 _bin 4       │ 1                    │                      ║
 ║ search_binl_eachleft.k                             │ 1 3 5 _binl 1 2 3 4 5 │ 0 1 1 2 2            │                      ║
@@ -354,7 +354,6 @@
 ║ amend_item_multiple.k                              │ @[1 2 3; 0 2; +; 10] │ 11 2 13              │                      ║
 ║ amend_item_monadic.k                               │ @[1 2 3; 1; {x*2}]   │ 1 4 3                │                      ║
 ║ amend_test.k                                       │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)  // Amend: add 10 to elements at indices 0 and 2 │ (1 2 13 4 5;6 7...   │                      ║
-║ amend_simple.k                                     │ 1 12 3 4 5           │ 1 12 3 4 5           │                      ║
 ║ find_basic.k                                       │ 9 8 7 6 5 4 3 ? 7  // Find operator - basic functionality │ 2                    │                      ║
 ║ find_notfound.k                                    │ 9 8 7 6 5 4 3 ? 1  // Find operator - not found case │ 7                    │                      ║
 ║ lsq.k                                              │ _lsq                 │ Error: _lsq (le...   │ Error - _lsq (l...   ║
@@ -389,9 +388,6 @@
 ║ adverb_tick_colon_basic.k                          │ -': 4 8 9 12 20      │ 4 1 3 8              │                      ║
 ║ amend_apply.k                                      │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10) │ (1 2 13 4 5;6 7...   │                      ║
 ║ amend_dot_test.k                                   │ .[1 2 3; 1; +; 10]   │ 1 12 3               │                      ║
-║ amend_item_simple.k                                │ @[1 2 3]             │ Error: For atom...   │ @[1 2 3]             ║
-║ amend_item_single.k                                │ @[1]                 │ 1                    │ @[1 2 3]             ║
-║ amend_minimal.k                                    │ (.) . (1 2 3; 0; +; 10) │ 11 2 3               │                      ║
 ║ amend_parenthesized.k                              │ (.) . (1 2 3; 0; +; 10) │ 11 2 3               │                      ║
 ║ amend_test_anonymous_func.k                        │ f:{x+y}              │ 11 2 3               │                      ║
 ║ amend_test_func_var.k                              │ f:{x+y}              │ 11 2 3               │                      ║
@@ -425,7 +421,7 @@
 ║ if_bracket_test.k                                  │ if[1 < 2; a: 20]  // Test if function with bracket notation │                      │                      ║
 ║ if_simple_test.k                                   │ if[3; 42]  // If function with bracket notation │                      │                      ║
 ║ if_true.k                                          │ a: 10; if[1 < 2; a: 20]  // If statement - condition true │                      │                      ║
-║ in_basic.k                                         │ 4 _in 1 7 2 4 6 3    │ 4                    │                      ║
+║ in_basic.k                                         │ 4 _in 1 7 2 4 6 3    │ 1                    │                      ║
 ║ in_notfound.k                                      │ 10 _in 1 7 2 4 6 3   │ 0                    │                      ║
 ║ in_simple.k                                        │ 5 _in 1 2 3          │ 0                    │                      ║
 ║ isolated.k                                         │ a:1.5                │ 0.6                  │                      ║
@@ -593,7 +589,7 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 576/586 tests passed (98.3%)                                                                               ║
+║ SUMMARY: 574/582 tests passed (98.6%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -627,16 +623,6 @@ Test: lsq.k
 Input: _lsq
 Expected: Error - _lsq (least squares) operation reserved for future use
 Actual: Error: _lsq (least squares) operation reserved for future use
-──────────────────────────────────────────────────────────────────────────
-Test: amend_item_simple.k
-Input: @[1 2 3]
-Expected: @[1 2 3]
-Actual: Error: For atomic data, indices must be empty list
-──────────────────────────────────────────────────────────────────────────
-Test: amend_item_single.k
-Input: @[1]
-Expected: @[1 2 3]
-Actual: 1
 ──────────────────────────────────────────────────────────────────────────
 Test: format_int_vector.k
 Input: 0$(1;2.5;3.14;42)

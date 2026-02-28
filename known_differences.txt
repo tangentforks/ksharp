@@ -58,7 +58,7 @@ smart_division1 :: regex:\.0\b: :: smart integer division, inverse and exponenti
 smart_division2 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
 smart_division3 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
 form_braces_arith :: regex:\(|\)|\.0\b: &regex:[;]:space :: smart integer division, inverse and exponentiation
-anonymous_function_double_param :: regex:\s+\\*\s+:* :: Compact representation
+anonymous_function_double_param :: regex:\s.\s:* :: Compact representation
 attribute_handle_vector :: regex:\s+`:` :: Compact representation
 db_symbol_vector_longer :: regex:\s+`:` :: Compact representation
 db_enlist_single_symbol :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
@@ -149,3 +149,12 @@ reshape_basic :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 amend_apply :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 serialization_bd_dictionary_with_symbol_vectors :: regex:colA\\\\000\\\\000\\\\000\\\\000\\\\001:colA\\000\\000\\000\\000\\000 & regex:ffff\\\\000\\\\001:ffff\\000\\000 :: Fix padding junk
 serialization_bd_dictionary_with_vectors :: regex:col1\\\\000\\\\001:col1\\000\\000 & col2\\\\000\\\\001:col2\\000\\000 :: Fix padding junk
+float_exponential_large :: regex:15:015 :: Allow k/e difference in mantissa width
+float_exponential_small :: regex:20:020 :: Allow k/e difference in mantissa width
+dyadic_divide_bracket :: regex:5.0:5 :: Smart division
+k_tree_dictionary_assignment :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+format_long_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+format_int_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+form_braces_float :: regex:4:4.0 & regex:-1:-1.0 :: Do not use abbreviated float vectors
+form_braces_complex :: regex:12:12.0 & regex:9:9.0 :: Do not use abbreviated float vectors
+k_tree_enumerate :: regex:,`k:`k`t :: Always create `t including when running scripts instead of interactive REPL

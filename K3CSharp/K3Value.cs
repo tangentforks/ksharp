@@ -151,51 +151,11 @@ namespace K3CSharp
     public class LongValue : K3Value
     {
         public long Value { get; }
-        public bool IsSpecial { get; }
-        public string SpecialName { get; }
 
         public LongValue(long value)
         {
             Value = value;
             Type = ValueType.Long;
-            
-            // Check if this value matches any special long patterns
-            if (value == long.MaxValue)
-            {
-                IsSpecial = true;
-                SpecialName = "0Ij";
-            }
-            else if (value == long.MinValue)
-            {
-                IsSpecial = true;
-                SpecialName = "0Nj";
-            }
-            else if (value == long.MinValue + 1)
-            {
-                IsSpecial = true;
-                SpecialName = "-0Ij";
-            }
-            else
-            {
-                IsSpecial = false;
-                SpecialName = "";
-            }
-        }
-
-        public LongValue(string specialName)
-        {
-            SpecialName = specialName;
-            IsSpecial = true;
-            Type = ValueType.Long;
-            
-            // Set the actual long values for special cases
-            switch (specialName)
-            {
-                case "0Ij": Value = long.MaxValue; break;
-                case "0Nj": Value = long.MinValue; break;
-                case "-0Ij": Value = long.MinValue + 1; break;
-                default: throw new ArgumentException($"Unknown special long: {specialName}");
-            }
         }
 
         public override K3Value Add(K3Value other)
@@ -284,8 +244,14 @@ namespace K3CSharp
 
         public override string ToString()
         {
-            if (IsSpecial)
-                return SpecialName;
+            // Handle special display cases
+            if (Value == long.MaxValue)
+                return "0Ij";
+            else if (Value == -long.MaxValue)
+                return "-0Ij";
+            else if (Value == long.MinValue)
+                return "0Nj";
+            
             return Value.ToString() + "j";
         }
     }
@@ -295,12 +261,14 @@ namespace K3CSharp
         public double Value { get; }
         public bool IsSpecial { get; }
         public string? SpecialName { get; }
+        public bool HasZeroFractionalPart { get; }
 
         public FloatValue(double value)
         {
             Value = value;
             Type = ValueType.Float;
             IsSpecial = false;
+            HasZeroFractionalPart = (Math.Abs(value % 1) < double.Epsilon);
             
             // Check if this value should be treated as special
             if (double.IsNaN(value))
@@ -325,6 +293,7 @@ namespace K3CSharp
             SpecialName = specialName;
             IsSpecial = true;
             Type = ValueType.Float;
+            HasZeroFractionalPart = false; // Special values don't have fractional parts
             
             // Set the actual double values for special cases
             switch (specialName)
@@ -490,8 +459,11 @@ namespace K3CSharp
                     // Reconstruct
                     formatted = integerPart + "." + decimalPart;
                     
-                    // If decimal part is just "0", we might want to keep it for float numbers
-                    // But if the original number was a whole number that was converted to float, keep .0
+                    // If this float was originally created with zero fractional part, preserve the .0
+                    if (HasZeroFractionalPart && decimalPart == "0")
+                    {
+                        formatted = integerPart + ".0";
+                    }
                 }
                 
                 // Ensure decimal notation for display consistency
@@ -502,7 +474,11 @@ namespace K3CSharp
                 else
                 {
                     // Add .0 for whole numbers that were originally floats
-                    return formatted + ".0";
+                    if (HasZeroFractionalPart)
+                    {
+                        return formatted + ".0";
+                    }
+                    return formatted;
                 }
             }
             

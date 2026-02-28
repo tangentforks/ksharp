@@ -30,18 +30,20 @@ namespace K3CSharp
         private K3Value In(K3Value left, K3Value right)
         {
             // _in (Find) function - searches for left argument in right argument
-            // Returns position (1-based) or 0 if not found
-            // Uses tolerant comparison for floating-point numbers
+            // Returns 1 if found, 0 if not found (per K3 spec)
+            // OPTIMIZED: Use early exit with Match for tolerant comparison
             
             if (right is VectorValue rightVec)
             {
-                // Search for left in right vector
+                // Search for left in right vector with early exit
                 for (int i = 0; i < rightVec.Elements.Count; i++)
                 {
-                    var matchResult = Match(left, rightVec.Elements[i]);
+                    var element = rightVec.Elements[i];
+                    var matchResult = Match(left, element);
+                    
                     if (matchResult is IntegerValue intVal && intVal.Value == 1)
                     {
-                        return new IntegerValue(i + 1); // 1-based indexing
+                        return new IntegerValue(1); // Found - return 1
                     }
                 }
                 return new IntegerValue(0); // Not found
@@ -50,11 +52,9 @@ namespace K3CSharp
             {
                 // Search for left in right scalar
                 var matchResult = Match(left, right);
-                if (matchResult is IntegerValue intVal2 && intVal2.Value == 1)
-                {
-                    return new IntegerValue(1); // Found at position 1
-                }
-                return new IntegerValue(0); // Not found
+                return (matchResult is IntegerValue intVal && intVal.Value == 1) 
+                    ? new IntegerValue(1) 
+                    : new IntegerValue(0);
             }
         }
 
@@ -171,7 +171,18 @@ namespace K3CSharp
                     else
                     {
                         // Fallback to linear search if HashSet creation failed
-                        found = LinearSearchInRight(leftElement, right);
+                        if (right is VectorValue rightVec)
+                        {
+                            foreach (var rightElement in rightVec.Elements)
+                            {
+                                var matchResult = Match(leftElement, rightElement);
+                                if (matchResult is IntegerValue intVal && intVal.Value == 1)
+                                {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
                     }
                     
                     results.Add(new IntegerValue(found ? 1 : 0));
@@ -182,8 +193,26 @@ namespace K3CSharp
             else
             {
                 // Single element case - return 1 if found, 0 otherwise
-                bool found = LinearSearchInRight(left, right);
-                return new IntegerValue(found ? 1 : 0);
+                if (right is VectorValue rightVec)
+                {
+                    foreach (var rightElement in rightVec.Elements)
+                    {
+                        var matchResult = Match(left, rightElement);
+                        if (matchResult is IntegerValue intVal && intVal.Value == 1)
+                        {
+                            return new IntegerValue(1);
+                        }
+                    }
+                    return new IntegerValue(0);
+                }
+                else
+                {
+                    // Scalar case
+                    var matchResult = Match(left, right);
+                    return (matchResult is IntegerValue intVal && intVal.Value == 1) 
+                        ? new IntegerValue(1) 
+                        : new IntegerValue(0);
+                }
             }
         }
 
@@ -994,28 +1023,6 @@ namespace K3CSharp
             catch
             {
                 return null; // Return null if HashSet creation fails
-            }
-        }
-
-        private bool LinearSearchInRight(K3Value leftElement, K3Value right)
-        {
-            // Linear search for leftElement in right
-            if (right is VectorValue rightVec)
-            {
-                foreach (var rightElement in rightVec.Elements)
-                {
-                    var matchResult = Match(leftElement, rightElement);
-                    if (matchResult is IntegerValue intVal && intVal.Value == 1)
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            else
-            {
-                var matchResult = Match(leftElement, right);
-                return matchResult is IntegerValue intVal && intVal.Value == 1;
             }
         }
     }

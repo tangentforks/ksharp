@@ -74,11 +74,11 @@ namespace K3CSharp
         {
             if (operand is IntegerValue intValue)
             {
-                return new FloatValue(Math.Abs(intValue.Value));
+                return new IntegerValue(Math.Abs(intValue.Value));
             }
             else if (operand is LongValue longValue)
             {
-                return new FloatValue(Math.Abs(longValue.Value));
+                return new LongValue(Math.Abs(longValue.Value));
             }
             else if (operand is FloatValue floatValue)
             {

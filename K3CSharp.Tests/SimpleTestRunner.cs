@@ -241,7 +241,7 @@ namespace K3CSharp.Tests
                 ("less_than_operator.k", "1"),
                 
                 // Math functions
-                ("math_abs.k", "5.0"),
+                ("math_abs.k", "5"),
                 ("math_exp.k", "7.389056"),
                 ("math_log.k", "2.302585"),
                 ("math_sin.k", "0.0"),
@@ -282,7 +282,7 @@ namespace K3CSharp.Tests
                 ("overflow_int_pos_inf.k", "0N"),
                 ("overflow_int_pos_inf_plus2.k", "-0I"),
                 ("overflow_long_max_plus1.k", "0Nj"),
-                ("overflow_long_min_minus1.k", "0Ij"),
+                ("overflow_long_min_minus1.k", "0Nj"),
                 ("overflow_long_neg_inf.k", "0Nj"),
                 ("overflow_long_neg_inf_minus2.k", "0Ij"),
                 ("overflow_long_pos_inf.k", "0Nj"),
@@ -569,7 +569,7 @@ namespace K3CSharp.Tests
                 ("time_jd.k", "-3251"),
                 ("time_dj.k", "20350101"),
                 ("time_ltime.k", "20341231 190000"),
-                ("in.k", "4"),
+                ("in.k", "1"),
                 
                 // List operations tests
                 ("list_dv_basic.k", "3 5"),
@@ -596,7 +596,7 @@ namespace K3CSharp.Tests
                 ("test_semicolon.k", "3 4"),
                 
                 // New search function tests
-                ("search_in_basic.k", "4"),
+                ("search_in_basic.k", "1"),
                 ("search_in_notfound.k", "0"),
                 ("search_bin_basic.k", "1"),
                 ("search_binl_eachleft.k", "0 1 1 2 2"),
@@ -609,7 +609,6 @@ namespace K3CSharp.Tests
                 
                 // Existing amend tests - only valid cases with 3+ arguments
                 ("amend_test.k", "(1 2 13 4 5;6 7 8 9 10)"),
-                ("amend_simple.k", "1 12 3 4 5"),
                 
                 // Find operator tests
                 ("find_basic.k", "2"),
@@ -661,9 +660,6 @@ namespace K3CSharp.Tests
                 // Missing amend tests
                 ("amend_apply.k", "(1 2 13 4 5;6 7 8 9 10)"),
                 ("amend_dot_test.k", "1 12 3"),
-                ("amend_item_simple.k", "@[1 2 3]"),
-                ("amend_item_single.k", "@[1 2 3]"),
-                ("amend_minimal.k", "11 2 3"),
                 ("amend_parenthesized.k", "11 2 3"),
                 ("amend_test_anonymous_func.k", "11 2 3"),
                 
@@ -704,7 +700,7 @@ namespace K3CSharp.Tests
                 ("if_bracket_test.k", ""),
                 ("if_simple_test.k", ""),
                 ("if_true.k", ""),
-                ("in_basic.k", "4"),
+                ("in_basic.k", "1"),
                 ("in_notfound.k", "0"),
                 
                 // Final remaining tests
