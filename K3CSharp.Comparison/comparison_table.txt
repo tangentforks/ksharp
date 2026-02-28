@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-02-28 01:42:12
+Generated: 2026-02-28 02:26:50
 
 SUMMARY:
 --------
 Total Tests:     581
-✅ Matched:       561
-❌ Differed:      18
+✅ Matched:       562
+❌ Differed:      17
 ⚠️  Skipped:       0
 💥 Errors:        2
-Success Rate:    96.6%
+Success Rate:    96.7%
 
 DETAILED RESULTS:
 -----------------
@@ -472,7 +472,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   simple_scalar_div.k                                2.5                            2.5                                                                              
 ✅ PASS   simple_subtraction.k                               2                              2                                                                                
 ✅ PASS   single_no_semicolon.k                              42                             42                                                                               
-❌ FAIL   smart_division1.k                                  2.5 5.0                        2.5 5                          smart integer division, inverse and exponenti...  
+✅ PASS   smart_division1.k                                  2.5 5.0                        2.5 5.0                        Do not use abbreviated float vectors              
 ✅ PASS   smart_division2.k                                  2 4                            2 4                            smart integer division, inverse and exponenti...  
 ✅ PASS   smart_division3.k                                  2 4 6                          2 4 6                          smart integer division, inverse and exponenti...  
 ✅ PASS   special_0i_plus_1.k                                0N                             0N                                                                               
@@ -641,7 +641,7 @@ File: rand_draw_vector_select.k
 K3Sharp: .((`type;0;);(`shape;,2;))
 k.exe:   .((`type;0;);(`shape;2 3;))
 
-... and 8 more failed tests
+... and 7 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------

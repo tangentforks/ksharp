@@ -54,7 +54,7 @@ dictionary_enumerate :: regex:\s+: :: Compact representation
 division_int_4_2 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
 division_rules_12_4 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
 division_rules_4_2 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
-smart_division1 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
+smart_division1 :: regex:space5:space5.0 :: Do not use abbreviated float vectors
 smart_division2 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
 smart_division3 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
 form_braces_arith :: regex:\(|\)|\.0\b: &regex:[;]:space :: smart integer division, inverse and exponentiation

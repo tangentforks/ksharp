@@ -262,7 +262,7 @@
 ║ variable_scoping_global_assignment.k               │ globalVar: 100  // Test global assignment from nested function │ 100                  │ 10                   ║
 ║ variable_scoping_global_unchanged.k                │ globalVar: 100  // Test verify global variable unchanged │ 100                  │                      ║
 ║ variable_scoping_local_hiding.k                    │ globalVar: 100  // Test function with local variable hiding global │ 60                   │                      ║
-║ variable_scoping_nested_functions.k                │ globalVar: 100  // Test nested functions │ 140                  │ 25                   ║
+║ variable_scoping_nested_functions.k                │ globalVar: 100  // Test nested functions │ 140                  │                      ║
 ║ variable_usage.k                                   │ x:10                 │ 30                   │                      ║
 ║ dot_execute.k                                      │ ."2+2"               │ 4                    │                      ║
 ║ dot_execute_context.k                              │ foo:7                │ 8                    │                      ║
@@ -343,7 +343,7 @@
 ║ test_monadic_colon.k                               │ : 42                 │ 42                   │                      ║
 ║ test_sm_basic.k                                    │ `foo _sm `foo        │ 1                    │                      ║
 ║ test_sm_simple.k                                   │ `a _sm `a            │ 1                    │                      ║
-║ test_ss_basic.k                                    │ "hello world" _ss "world" │ 7                    │                      ║
+║ test_ss_basic.k                                    │ "hello world" _ss "world" │ 7                    │ ,6                   ║
 ║ test_semicolon.k                                   │ 1 2; 3 4             │ 3 4                  │                      ║
 ║ search_in_basic.k                                  │ 4 _in 1 2 3 4 5      │ 1                    │                      ║
 ║ search_in_notfound.k                               │ 6 _in 1 2 3 4 5      │ 0                    │                      ║
@@ -564,7 +564,7 @@
 ║ serialization_bd_floatvector_random_3.k            │ _bd 585267.57816312299 -569668.94176055992 37200.312770306708 397004.01885714347 │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_symbolvector_random_1.k           │ _bd `qzUM7 `g8X6P `"iay" `KgNQ5i `"< +" `b5 │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_symbolvector_random_2.k           │ _bd `"O 0" `D `qCBI1b `"*H " `"SS" `ULsyI `"F~" `"C" `Mont `O25B │ "\001\000\000\0...   │                      ║
-║ serialization_bd_symbolvector_random_3.k           │ _bd `o3 `EE5ijP `trD0LuE `OW `"." `y │ "\001\000\000\0...   │                      ║
+║ serialization_bd_symbolvector_random_3.k           │ _bd `o3 `EE5ijP `trD0LuE `OW `"." `y │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_dictionary_with_symbol_vectors.k  │ _bd .((`colA;`a `b `c);(`colB;`dd `eee `ffff)) │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_dictionary_with_vectors.k         │ _bd .((`col1;1 2 3 4);(`col2;5 6 7 8)) │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_list_with_explicit_nulls.k        │ _bd ((`a;`"1";);(`b;`"2";)) │ "\001\000\000\0...   │                      ║
@@ -589,7 +589,7 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 574/582 tests passed (98.6%)                                                                               ║
+║ SUMMARY: 573/582 tests passed (98.5%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -609,15 +609,15 @@ Input: globalVar: 100  // Test global assignment from nested function
 Expected: 10
 Actual: 100
 ──────────────────────────────────────────────────────────────────────────
-Test: variable_scoping_nested_functions.k
-Input: globalVar: 100  // Test nested functions
-Expected: 25
-Actual: 140
-──────────────────────────────────────────────────────────────────────────
 Test: rand_draw_vector_deal.k
 Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
 Expected: .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
 Actual: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
+──────────────────────────────────────────────────────────────────────────
+Test: test_ss_basic.k
+Input: "hello world" _ss "world"
+Expected: ,6
+Actual: 7
 ──────────────────────────────────────────────────────────────────────────
 Test: lsq.k
 Input: _lsq
@@ -636,4 +636,9 @@ Test: format_vector_int.k
 Input: 0$(1;2;3)
 Expected: ("1";"2";"3")
 Actual: ""
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_symbolvector_random_3.k
+Input: _bd `o3 `EE5ijP `trD0LuE `OW `"." `y
+Expected: "\001\000\000\000!\000\000\000\374\377\377\377\006\000\000\000o3\000EE5ijP\000trD0LuE\000OW\000.\000y\000"
+Actual: "\001\000\000\000\035\000\000\000\374\377\377\377\004\000\000\000o3\000EE5ijP\000trD0LuE\000OW\000"
 ──────────────────────────────────────────────────────────────────────────
