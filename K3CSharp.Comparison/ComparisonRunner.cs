@@ -473,16 +473,16 @@ namespace K3CSharp.Comparison
                 var failedTests = results.Where(r => r.Status == ComparisonStatus.Differed).ToList();
                 if (failedTests.Any())
                 {
-                    foreach (var test in failedTests.Take(10)) // Limit to first 10 failed tests
+                    foreach (var test in failedTests.Take(20)) // Limit to first 20 failed tests
                     {
                         writer.WriteLine($"File: {test.FileName}");
                         writer.WriteLine($"K3Sharp: {test.K3SharpOutput}");
                         writer.WriteLine($"k.exe:   {test.KOutput}");
                         writer.WriteLine();
                     }
-                    if (failedTests.Count > 10)
+                    if (failedTests.Count > 20)
                     {
-                        writer.WriteLine($"... and {failedTests.Count - 10} more failed tests");
+                        writer.WriteLine($"... and {failedTests.Count - 20} more failed tests");
                     }
                 }
                 else
