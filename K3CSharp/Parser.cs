@@ -345,6 +345,8 @@ namespace K3CSharp
                    type == TokenType.POWER || type == TokenType.MODULUS || type == TokenType.JOIN ||
                    type == TokenType.COLON || type == TokenType.HASH || type == TokenType.UNDERSCORE || type == TokenType.QUESTION || 
                    type == TokenType.DOLLAR || type == TokenType.DRAW || type == TokenType.GETENV || type == TokenType.SETENV || type == TokenType.SIZE || type == TokenType.STRING_REPRESENTATION ||
+                   type == TokenType.IO_VERB_0 || type == TokenType.IO_VERB_1 || type == TokenType.IO_VERB_2 || type == TokenType.IO_VERB_3 ||
+                   type == TokenType.IO_VERB_6 || type == TokenType.IO_VERB_7 || type == TokenType.IO_VERB_8 || type == TokenType.IO_VERB_9 ||
                    type == TokenType.APPLY;
         }
 
@@ -630,13 +632,24 @@ namespace K3CSharp
             else if (Match(TokenType.CHARACTER_VECTOR))
             {
                 var value = PreviousToken().Lexeme;
-                // Create a VectorValue containing individual CharacterValue objects
-                var charVector = new List<K3Value>();
-                foreach (char c in value)
+                
+                // Check if this looks like a complete string (word/sentence) vs character vector
+                // If it contains only letters and numbers, treat as single string
+                if (value.All(c => char.IsLetterOrDigit(c) || c == ' ') && value.Length > 1)
                 {
-                    charVector.Add(new CharacterValue(c.ToString()));
+                    // Treat as complete string
+                    result = ASTNode.MakeLiteral(new CharacterValue(value));
                 }
-                result = ASTNode.MakeLiteral(new VectorValue(charVector, -3)); // -3 = character vector type
+                else
+                {
+                    // Create a VectorValue containing individual CharacterValue objects
+                    var charVector = new List<K3Value>();
+                    foreach (char c in value)
+                    {
+                        charVector.Add(new CharacterValue(c.ToString()));
+                    }
+                    result = ASTNode.MakeLiteral(new VectorValue(charVector, -3)); // -3 = character vector type
+                }
             }
             else if (Match(TokenType.SYMBOL))
             {
@@ -1936,7 +1949,7 @@ namespace K3CSharp
                 if (operand != null) node.Children.Add(operand);
                 return node;
             }
-            else if (Match(TokenType.IO_VERB_1) || Match(TokenType.IO_VERB_2) || Match(TokenType.IO_VERB_3) || 
+            else if (Match(TokenType.IO_VERB_0) || Match(TokenType.IO_VERB_1) || Match(TokenType.IO_VERB_2) || Match(TokenType.IO_VERB_3) || 
                      Match(TokenType.IO_VERB_6) || Match(TokenType.IO_VERB_7) || Match(TokenType.IO_VERB_8) || Match(TokenType.IO_VERB_9))
             {
                 // General digit-colon operator - could be monadic or dyadic
@@ -1948,6 +1961,7 @@ namespace K3CSharp
                 // Store the digit for later use in evaluator
                 int digit = matchedToken.Type switch
                 {
+                    TokenType.IO_VERB_0 => 0,
                     TokenType.IO_VERB_1 => 1,
                     TokenType.IO_VERB_2 => 2,
                     TokenType.IO_VERB_3 => 3,
@@ -2834,6 +2848,8 @@ namespace K3CSharp
                    Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
                    Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) ||
                    Match(TokenType.DOLLAR) || Match(TokenType.DRAW) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
+                   Match(TokenType.IO_VERB_0) || Match(TokenType.IO_VERB_1) || Match(TokenType.IO_VERB_2) || Match(TokenType.IO_VERB_3) ||
+                   Match(TokenType.IO_VERB_6) || Match(TokenType.IO_VERB_7) || Match(TokenType.IO_VERB_8) || Match(TokenType.IO_VERB_9) ||
                    Match(TokenType.APPLY) || Match(TokenType.DOT_APPLY))
             {
                 var op = PreviousToken().Type;

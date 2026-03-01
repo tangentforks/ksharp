@@ -220,8 +220,8 @@ namespace K3CSharp.Tests
                 ("function_foo_chain.k", "20"),
                 ("function_mul.k", "32"),
                 
-                // Generate operator
-                ("generate_operator.k", "0 0 0 0"),
+                // Where operator
+                ("where_generate_scalar.k", "0 0 0 0"),
                 
                 // Grade operators
                 ("grade_down_operator.k", "1 2 3 4 0"),
@@ -432,6 +432,7 @@ namespace K3CSharp.Tests
                 ("semicolon_simple.k", "(7;11;-20.45)"),
                 ("semicolon_vars.k", "30 200 -10"),
                 ("semicolon_vector.k", "(7;3 4;-20.45)"),
+                ("test_semicolon.k", "3 4"),
                 
                 // Test simple scalar div
                 ("simple_scalar_div.k", "2.5"),
@@ -593,7 +594,25 @@ namespace K3CSharp.Tests
                 ("test_sm_basic.k", "1"),
                 ("test_sm_simple.k", "1"),
                 ("test_ss_basic.k", ",6"),
-                ("test_semicolon.k", "3 4"),
+                
+                // I/O verb tests
+                ("io_read_basic.k", "(\"line1\";\"line2\";\"line3\")"),
+                ("io_write_basic.k", ""),
+                ("io_write_csv.k", "null"),
+                ("debug_char.k", "(\"line1\";\"line2\";\"line3\")"),
+                ("debug_simple_char.k", "\"line1\""),
+                ("debug_nested.k", "(\"line1\";\"line2\";\"line3\")"),
+                ("debug_nested2.k", "(\"line1\";\"line2\";\"line3\")"),
+                ("debug_hello_func.k", "\"hello\""),
+                ("debug_direct.k", "(\"line1\";\"line2\";\"line3\")"),
+                ("debug_direct2.k", "(\"line1\";\"line2\";\"line3\")"),
+                ("debug_direct_test.k", "(\"line1\";\"line2\";\"line3\")"),
+                ("debug_readtext.k", "(\"line1\";\"line2\";\"line3\")"),
+                ("debug_single_char.k", "\"l\""),
+                ("debug_char_vector.k", "\"line\""),
+                ("debug_char_value.k", "\"line1\""),
+                ("debug_test_concat.k", "\"line1\""),
+                ("debug_char_tostring.k", "\"line1\""),
                 
                 // New search function tests
                 ("search_in_basic.k", "1"),

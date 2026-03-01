@@ -100,7 +100,7 @@ public partial class Evaluator
         string representation = ToStringWithEscaping(value);
         // Create character vector with individual characters
         var charElements = representation.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
-        return new VectorValue(charElements);
+        return new VectorValue(charElements, -3); // Character vector
     }
     
     private string ToStringWithEscaping(K3Value value)
@@ -150,7 +150,97 @@ public partial class Evaluator
     // Stub implementations for new I/O verbs
     private K3Value ReadText(K3Value operand)
     {
-        throw new NotImplementedException("0: READ TEXT not yet implemented");
+        try
+        {
+            string path;
+            string separator = "\n"; // Default line separator
+            
+            // Handle operand types: symbol, character vector, or list with path and separator
+            if (operand is SymbolValue sym)
+            {
+                path = sym.Value;
+            }
+            else if (operand is CharacterValue charVal)
+            {
+                path = charVal.Value.ToString();
+            }
+            else if (operand is VectorValue vec && vec.Elements.Count >= 2)
+            {
+                // First element is path, second is separator
+                var pathElement = vec.Elements[0];
+                var separatorElement = vec.Elements[1];
+                
+                path = pathElement switch
+                {
+                    SymbolValue s => s.Value,
+                    CharacterValue c => c.Value.ToString(),
+                    _ => throw new Exception("0: path must be symbol or character vector")
+                };
+                
+                separator = separatorElement switch
+                {
+                    SymbolValue s => s.Value,
+                    CharacterValue c => c.Value.ToString(),
+                    VectorValue sepVec when sepVec.Elements.Count > 0 => string.Join("", sepVec.Elements.OfType<CharacterValue>().Select(cv => cv.Value)),
+                    _ => throw new Exception("0: separator must be symbol or character vector")
+                };
+            }
+            else
+            {
+                throw new Exception("0: argument must be symbol, character vector, or list with path and separator");
+            }
+            
+            // Handle standard input
+            if (string.IsNullOrEmpty(path))
+            {
+                return ReadFromStandardInput();
+            }
+            
+            // Read file with UTF-8 encoding
+            using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var streamReader = new StreamReader(fileStream, System.Text.Encoding.UTF8);
+            
+            var lines = new List<K3Value>();
+            string? line;
+            
+            while ((line = streamReader.ReadLine()) != null)
+            {
+                // Convert line to character vector (single CharacterValue containing entire line)
+                var charVector = new List<K3Value> { new CharacterValue(line) };
+                lines.Add(new VectorValue(charVector, -3)); // -3 indicates character vector type
+            }
+            
+            return new VectorValue(lines, 0); // 0 indicates generic list (list of character vectors)
+        }
+        catch (Exception ex)
+        {
+            // Convert exceptions to K signals
+            throw new Exception($"0: {ex.Message}");
+        }
+    }
+    
+    private K3Value ReadFromStandardInput()
+    {
+        var lines = new List<K3Value>();
+        
+        try
+        {
+            while (true)
+            {
+                string? line = Console.ReadLine();
+                if (line == null) break; // EOF reached
+                
+                // Convert line to character vector (single CharacterValue containing entire line)
+                var charVector = new List<K3Value> { new CharacterValue(line) };
+                lines.Add(new VectorValue(charVector, -3)); // -3 indicates character vector type
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Ctrl-C pressed - terminate gracefully
+        }
+        
+        return new VectorValue(lines, 0); // 0 indicates generic list (list of character vectors)
     }
     
     private K3Value ReadMemoryMappedKData(K3Value operand)
@@ -175,7 +265,152 @@ public partial class Evaluator
     
     private K3Value WriteText(K3Value left, K3Value right)
     {
-        throw new NotImplementedException("0: WRITE TEXT not yet implemented");
+        try
+        {
+            string path;
+            
+            // Handle left argument (path): symbol or character vector
+            path = left switch
+            {
+                SymbolValue sym => sym.Value,
+                CharacterValue charVal => charVal.Value.ToString(),
+                _ => throw new Exception("0: output path must be symbol or character vector")
+            };
+            
+            // Handle standard output
+            if (string.IsNullOrEmpty(path))
+            {
+                WriteToStandardOutput(right);
+                return new NullValue(); // Return null as specified
+            }
+            
+            // Write to file with UTF-8 encoding and platform-specific line endings
+            using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            using var streamWriter = new StreamWriter(fileStream, System.Text.Encoding.UTF8);
+            
+            string lineEnding = Environment.NewLine; // Platform-specific line endings
+            
+            // Handle right argument (data to write)
+            if (right is VectorValue vec)
+            {
+                // Check if this is a list of lists (structured data with separator)
+                if (vec.Elements.Count > 0 && vec.Elements[0] is VectorValue)
+                {
+                    // This is structured data - write as fields with separators
+                    WriteStructuredData(streamWriter, vec, lineEnding);
+                }
+                else
+                {
+                    // This is a simple list - write each item as a line
+                    WriteSimpleList(streamWriter, vec, lineEnding);
+                }
+            }
+            else
+            {
+                // Single item - write it and add line ending
+                streamWriter.Write(right.ToString());
+                streamWriter.Write(lineEnding);
+            }
+            
+            streamWriter.Flush();
+            return new NullValue(); // Return null as specified
+        }
+        catch (Exception ex)
+        {
+            // Convert exceptions to K signals
+            throw new Exception($"0: {ex.Message}");
+        }
+    }
+    
+    private void WriteStructuredData(TextWriter writer, VectorValue data, string lineEnding)
+    {
+        // Default separator is comma (CSV)
+        string separator = ",";
+        
+        // Check if first element is a list with separator specification
+        if (data.Elements.Count >= 2 && data.Elements[0] is VectorValue firstVec && firstVec.Elements.Count == 1)
+        {
+            // Check if this is a separator specification (path, separator) pattern
+            // For now, assume comma separator for CSV
+            separator = ",";
+        }
+        
+        foreach (var element in data.Elements)
+        {
+            if (element is VectorValue lineVec)
+            {
+                // Write each field in the line
+                var fields = new List<string>();
+                foreach (var field in lineVec.Elements)
+                {
+                    string fieldText = field.ToString();
+                    
+                    // Apply CSV escaping if separator is comma
+                    if (separator == ",")
+                    {
+                        fieldText = EscapeCsvField(fieldText);
+                    }
+                    
+                    fields.Add(fieldText);
+                }
+                
+                writer.WriteLine(string.Join(separator, fields));
+            }
+            else
+            {
+                // Single item in line
+                writer.WriteLine(element.ToString());
+            }
+        }
+    }
+    
+    private void WriteSimpleList(TextWriter writer, VectorValue data, string lineEnding)
+    {
+        foreach (var item in data.Elements)
+        {
+            writer.Write(item.ToString());
+            writer.Write(lineEnding);
+        }
+    }
+    
+    private string EscapeCsvField(string field)
+    {
+        // RFC 4180 CSV escaping
+        if (field.Contains("\"") || field.Contains(",") || field.Contains("\n") || field.Contains("\r"))
+        {
+            // Escape quotes by doubling them and wrap in quotes
+            return $"\"{field.Replace("\"", "\"\"")}\"";
+        }
+        return field;
+    }
+    
+    private void WriteToStandardOutput(K3Value data)
+    {
+        try
+        {
+            string lineEnding = Environment.NewLine;
+            
+            if (data is VectorValue vec)
+            {
+                // Check if this is a list of lists (structured data)
+                if (vec.Elements.Count > 0 && vec.Elements[0] is VectorValue)
+                {
+                    WriteStructuredData(Console.Out, vec, lineEnding);
+                }
+                else
+                {
+                    WriteSimpleList(Console.Out, vec, lineEnding);
+                }
+            }
+            else
+            {
+                Console.WriteLine(data.ToString());
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"0: stdout write failed: {ex.Message}");
+        }
     }
     
     private K3Value WriteMemoryMappedKData(K3Value left, K3Value right)

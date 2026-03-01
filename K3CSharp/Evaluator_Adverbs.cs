@@ -34,7 +34,7 @@ namespace K3CSharp
                 "-" => Negate(operand),
                 "*" => First(operand),
                 "%" => Reciprocal(operand),
-                "&" => operand,  // Identity operation
+                "&" => Where(operand),  // Where operator
                 "|" => Reverse(operand),
                 "^" => Shape(operand),
                 "!" => Enumerate(operand),
@@ -287,7 +287,8 @@ namespace K3CSharp
                     }
                 }
                 
-                return new VectorValue(result);
+                int vectorType = DetermineVectorType(result);
+                return new VectorValue(result, vectorType);
             }
             
             return data;
@@ -316,7 +317,10 @@ namespace K3CSharp
                         
                         result.Add(ApplyVerb(verbSymbol.Value, leftElement, rightElement));
                     }
-                    return new VectorValue(result);
+                    
+                    // Determine vector type based on result elements
+                    int vectorType = DetermineVectorType(result);
+                    return new VectorValue(result, vectorType);
                 }
                 
                 // Handle scalar + vector case
@@ -327,7 +331,8 @@ namespace K3CSharp
                     {
                         result.Add(ApplyVerb(verbSymbol.Value, left, element));
                     }
-                    return new VectorValue(result);
+                    int vectorType = DetermineVectorType(result);
+                    return new VectorValue(result, vectorType);
                 }
                 
                 // Handle scalar + scalar case
@@ -352,7 +357,8 @@ namespace K3CSharp
                     {
                         result.Add(ApplyVerb(verbSymbol.Value, element, right));
                     }
-                    return new VectorValue(result);
+                    int vectorType = DetermineVectorType(result);
+                    return new VectorValue(result, vectorType);
                 }
                 else if (IsScalar(left))
                 {
@@ -375,7 +381,8 @@ namespace K3CSharp
                     {
                         result.Add(ApplyVerb(verbSymbol.Value, left, element));
                     }
-                    return new VectorValue(result);
+                    int vectorType = DetermineVectorType(result);
+                    return new VectorValue(result, vectorType);
                 }
                 else if (IsScalar(right))
                 {
@@ -404,7 +411,8 @@ namespace K3CSharp
                             result.Add(ApplyVerb(verbSymbol.Value, current, prior));
                         }
                     }
-                    return new VectorValue(result);
+                    int vectorType = DetermineVectorType(result);
+                    return new VectorValue(result, vectorType);
                 }
                 else if (IsScalar(right))
                 {
@@ -444,7 +452,8 @@ namespace K3CSharp
                         result.Add(ApplyVerbWithOperator(verb, left, right));
                     }
                 }
-                return new VectorValue(result);
+                int vectorType = DetermineVectorType(result);
+                return new VectorValue(result, vectorType);
             }
             
             // Handle scalar + vector case (legacy)
@@ -472,7 +481,8 @@ namespace K3CSharp
                         }
                     }
                 }
-                return new VectorValue(result);
+                int vectorType = DetermineVectorType(result);
+                return new VectorValue(result, vectorType);
             }
             
             // Handle scalar + scalar case (legacy)
@@ -489,6 +499,27 @@ namespace K3CSharp
             }
             
             throw new Exception($"Each not implemented for types: {verb.Type}, {data.Type}");
+        }
+
+        private int DetermineVectorType(List<K3Value> elements)
+        {
+            if (elements.Count == 0) return 0; // Empty list
+            
+            // Check if all elements are the same type
+            var firstType = elements[0].Type;
+            var allSameType = elements.All(e => e.Type == firstType);
+            
+            if (!allSameType) return 0; // Mixed types = generic list
+            
+            return firstType switch
+            {
+                ValueType.Integer => -1,   // Integer vector
+                ValueType.Long => -64,     // Long vector  
+                ValueType.Float => -2,     // Float vector
+                ValueType.Character => -3, // Character vector
+                ValueType.Symbol => -4,    // Symbol vector
+                _ => 0                      // Default to generic list
+            };
         }
     }
 }

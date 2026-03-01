@@ -290,6 +290,7 @@ namespace K3CSharp
                     "|" => Reverse(operand),
                     "TYPE" => IoVerbMonadic(operand, 4),
                     "STRING_REPRESENTATION" => IoVerbMonadic(operand, 5),
+                    "IO_VERB_0" => IoVerbMonadic(operand, 0),
                     "IO_VERB_1" => IoVerbMonadic(operand, 1),
                     "IO_VERB_2" => IoVerbMonadic(operand, 2),
                     "IO_VERB_3" => IoVerbMonadic(operand, 3),
@@ -448,6 +449,7 @@ namespace K3CSharp
                         "_setenv" => SetenvFunction(new VectorValue(new List<K3Value> { left, right })),
                         "?" => Find(left, right),
                         "TYPE" => IoVerbDyadic(left, right, 4),
+                    "IO_VERB_0" => IoVerbDyadic(left, right, 0),
                     "IO_VERB_1" => IoVerbDyadic(left, right, 1),
                     "IO_VERB_2" => IoVerbDyadic(left, right, 2),
                     "IO_VERB_3" => IoVerbDyadic(left, right, 3),
@@ -497,6 +499,24 @@ namespace K3CSharp
             }
         }
         
+        private int DetermineVectorTypeFromElements(List<K3Value> elements)
+        {
+            if (elements.Count == 0)
+                return 0; // Default to mixed list for empty vectors
+                
+            var firstElement = elements[0];
+            if (firstElement is IntegerValue || firstElement is LongValue)
+                return -1; // Integer vector
+            else if (firstElement is FloatValue)
+                return -2; // Float vector  
+            else if (firstElement is CharacterValue)
+                return -3; // Character vector
+            else if (firstElement is SymbolValue)
+                return -4; // Symbol vector
+            else
+                return 0; // Default to mixed list
+        }
+        
         private K3Value EvaluateVector(ASTNode node)
         {
             var elements = new List<K3Value>();
@@ -518,14 +538,15 @@ namespace K3CSharp
             
             if (isHomogeneous)
             {
-                // Create homogeneous VectorValue
-                return new VectorValue(elements);
+                // Create homogeneous VectorValue with proper type
+                int vectorType = DetermineVectorTypeFromElements(elements);
+                return new VectorValue(elements, vectorType);
             }
             else
             {
-                // Create mixed-type VectorValue
+                // Create mixed-type VectorValue (generic list)
                 var listElements = elements.Cast<K3Value>().ToList(); // Convert K3Value to object
-                return new VectorValue(listElements);
+                return new VectorValue(listElements, 0); // Type 0 for generic list
             }
         }
         private K3Value EvaluateFunction(ASTNode node)
@@ -1759,7 +1780,7 @@ namespace K3CSharp
                         throw new Exception("Attribute handle can only be applied to symbols or vectors of symbols");
                     }
                 }
-                return new VectorValue(result);
+                return new VectorValue(result, -4); // Symbol vector
             }
             else
             {
@@ -2166,13 +2187,13 @@ namespace K3CSharp
                 var bytes = serializer.Serialize(primitiveValue!);
                 
                 // Convert raw bytes directly to character vector
-                var charElements = new List<K3Value>();
+                var charString = "";
                 for (int i = 0; i < bytes.Length; i++)
                 {
-                    charElements.Add(new CharacterValue(((char)bytes[i]).ToString()));
+                    charString += (char)bytes[i];
                 }
                 
-                return new VectorValue(charElements);
+                return new CharacterValue(charString); // Return CharacterValue directly (type -3)
             }
             catch (Exception ex)
             {
@@ -2228,25 +2249,39 @@ namespace K3CSharp
         {
             try
             {
-                if (operand is not VectorValue vector)
+                string charString;
+                
+                if (operand is CharacterValue charVal)
+                {
+                    // Handle CharacterValue directly (from _bd operation)
+                    charString = "\"" + charVal.Value + "\"";
+                }
+                else if (operand is VectorValue charVector && charVector.Elements.Count == 1 && charVector.Elements[0] is CharacterValue nestedCharVal)
+                {
+                    // Handle character vector with single CharacterValue (legacy support)
+                    charString = "\"" + nestedCharVal.Value + "\"";
+                }
+                else if (operand is VectorValue vec)
+                {
+                    // Handle VectorValue of CharacterValue elements
+                    charString = "\"";
+                    foreach (var element in vec.Elements)
+                    {
+                        if (element is CharacterValue cv)
+                        {
+                            charString += cv.Value;
+                        }
+                        else
+                        {
+                            throw new Exception("_db: vector must contain only character values");
+                        }
+                    }
+                    charString += "\"";
+                }
+                else
                 {
                     throw new Exception("_db (data from bytes) requires a character vector as input");
                 }
-                
-                // Convert VectorValue of CharacterValue elements to a character string
-                var charString = "\"";
-                foreach (var element in vector.Elements)
-                {
-                    if (element is CharacterValue charValue)
-                    {
-                        charString += charValue.Value;
-                    }
-                    else
-                    {
-                        throw new Exception("_db: vector must contain only character values");
-                    }
-                }
-                charString += "\"";
                 
                 // Parse character string with escape sequences back to bytes
                 var bytes = ParseCharacterStringToBytes(charString);

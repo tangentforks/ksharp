@@ -407,7 +407,9 @@ namespace K3CSharp
                         throw new Exception("Vector mod requires all elements to be integers");
                     }
                 }
-                return new VectorValue(result);
+                // Preserve input vector type, use GetVectorType to handle null case
+                int vectorType = GetVectorType(leftVec);
+                return new VectorValue(result, vectorType);
             }
             else if (left is IntegerValue leftIntVal && right is VectorValue rightVec)
             {
@@ -426,7 +428,9 @@ namespace K3CSharp
                 {
                     result.Add(rightVec.Elements[(i + rotation) % size]);
                 }
-                return new VectorValue(result);
+                // Preserve input vector type
+                int vectorType = GetVectorType(rightVec);
+                return new VectorValue(result, vectorType);
             }
             else
             {
@@ -457,7 +461,9 @@ namespace K3CSharp
                 elements.Add(b);
             }
             
-            return new VectorValue(elements);
+            // Determine vector type based on result elements
+            int vectorType = GetVectorType(new VectorValue(elements));
+            return new VectorValue(elements, vectorType);
         }
 
         private K3Value Take(K3Value count, K3Value data)
@@ -584,7 +590,8 @@ namespace K3CSharp
                             {
                                 subVector.Add(rightVec.Elements[i]);
                             }
-                            result.Add(new VectorValue(subVector));
+                            int vectorType = GetVectorType(leftVec);
+                            result.Add(new VectorValue(subVector, vectorType)); // Preserve input vector type
                         }
                         prevIndex = cutPoint.Value;
                     }
@@ -602,7 +609,8 @@ namespace K3CSharp
                     {
                         subVector.Add(rightVec.Elements[i]);
                     }
-                    result.Add(new VectorValue(subVector));
+                    int vectorType = GetVectorType(leftVec);
+                    result.Add(new VectorValue(subVector, vectorType)); // Preserve input vector type
                 }
                 
                 return new VectorValue(result);
@@ -871,7 +879,9 @@ namespace K3CSharp
             {
                 var reversed = new List<K3Value>(vecA.Elements);
                 reversed.Reverse();
-                return new VectorValue(reversed);
+                // Preserve input vector type
+                int vectorType = GetVectorType(vecA);
+                return new VectorValue(reversed, vectorType);
             }
             
             return a; // For scalars, return the value itself
@@ -895,7 +905,7 @@ namespace K3CSharp
                 {
                     result.Add(new IntegerValue(index));
                 }
-                return new VectorValue(result);
+                return new VectorValue(result, -1); // Integer vector
             }
             
             throw new Exception("Rank error: grade-up operator '<' requires a vector argument");
@@ -919,7 +929,7 @@ namespace K3CSharp
                 {
                     result.Add(new IntegerValue(index));
                 }
-                return new VectorValue(result);
+                return new VectorValue(result, -1); // Integer vector
             }
             
             throw new Exception("Rank error: grade-down operator '>' requires a vector argument");
@@ -959,7 +969,7 @@ namespace K3CSharp
                 if (!hasNestedVectors)
                 {
                     // Simple vector - return its length as a 1-element vector
-                    return new VectorValue(new List<K3Value> { new IntegerValue(vecA.Elements.Count) });
+                    return new VectorValue(new List<K3Value> { new IntegerValue(vecA.Elements.Count) }, -1); // Integer vector
                 }
                 else
                 {
@@ -1050,14 +1060,14 @@ namespace K3CSharp
                         }
                     }
                     
-                    return new VectorValue(dimensions.Select(d => (K3Value)new IntegerValue(d)).ToList());
+                    return new VectorValue(dimensions.Select(d => (K3Value)new IntegerValue(d)).ToList(), -1); // Integer vector
                 }
             }
             else if (a is VectorValue list)
             {
                 // Handle VectorValue (empty list) according to updated spec
                 // "If the input is an empty list result will be handled like a jagged list representing 1 dimension of length 0: ,0"
-                return new VectorValue(new List<K3Value> { new IntegerValue(0) });
+                return new VectorValue(new List<K3Value> { new IntegerValue(0) }, -1); // Integer vector
             }
             
             return new VectorValue(new List<K3Value>(), -1); // Empty integer vector
@@ -1077,7 +1087,7 @@ namespace K3CSharp
                 {
                     elements.Add(new IntegerValue(i));
                 }
-                return new VectorValue(elements);
+                return new VectorValue(elements, -1); // Integer vector
             }
             else if (a is LongValue longA)
             {
@@ -1091,7 +1101,7 @@ namespace K3CSharp
                 {
                     elements.Add(new LongValue(i));
                 }
-                return new VectorValue(elements);
+                return new VectorValue(elements, -64); // Long vector
             }
             else if (a is DictionaryValue dict)
             {
@@ -1101,7 +1111,7 @@ namespace K3CSharp
                 {
                     keys.Add(key);
                 }
-                return new VectorValue(keys);
+                return new VectorValue(keys, -4); // Symbol vector
             }
             
             throw new Exception($"Cannot enumerate {a.Type}");
@@ -1110,7 +1120,19 @@ namespace K3CSharp
         private K3Value Enlist(K3Value a)
         {
             var elements = new List<K3Value> { a };
-            return new VectorValue(elements);
+            
+            // Set vector type based on argument type
+            int vectorType = a.Type switch
+            {
+                ValueType.Integer => -1,    // Integer vector
+                ValueType.Float => -2,      // Float vector  
+                ValueType.Character => -3,  // Character vector
+                ValueType.Symbol => -4,     // Symbol vector
+                ValueType.Long => -64,     // Long vector
+                _ => 0                  // Generic list for other types
+            };
+            
+            return new VectorValue(elements, vectorType);
         }
 
         private K3Value Count(K3Value a)

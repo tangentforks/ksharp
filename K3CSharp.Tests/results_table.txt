@@ -82,7 +82,7 @@
 ║ function_call_simple.k                             │ add7:{[arg1] arg1+7} │ 12                   │                      ║
 ║ function_foo_chain.k                               │ mul:{[op1;op2] op1 * op2} │ 20                   │                      ║
 ║ function_mul.k                                     │ mul:{[op1;op2] op1 * op2} │ 32                   │                      ║
-║ generate_operator.k                                │ &4                   │ 0 0 0 0              │                      ║
+║ where_generate_scalar.k                            │ &4                   │ 0 0 0 0              │                      ║
 ║ grade_down_operator.k                              │ > (3 11 9 9 4)       │ 1 2 3 4 0            │                      ║
 ║ grade_up_operator.k                                │ < (3 11 9 9 4)       │ 0 4 2 3 1            │                      ║
 ║ greater_than_operator.k                            │ 3 > 5                │ 0                    │                      ║
@@ -219,6 +219,7 @@
 ║ semicolon_simple.k                                 │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
 ║ semicolon_vars.k                                   │ a: 10                │ 30 200 -10           │                      ║
 ║ semicolon_vector.k                                 │ a: 1 2               │ (7;3 4;-20.45)       │                      ║
+║ test_semicolon.k                                   │ 1 2; 3 4             │ 3 4                  │                      ║
 ║ simple_scalar_div.k                                │ 5 % 2                │ 2.5                  │                      ║
 ║ single_no_semicolon.k                              │ (42)                 │ 42                   │                      ║
 ║ smart_division1.k                                  │ 5 10 % 2             │ 2.5 5.0              │                      ║
@@ -242,11 +243,11 @@
 ║ type_operator_float.k                              │ 4: 3.14              │ 2                    │                      ║
 ║ type_operator_null.k                               │ 4: _n                │ 6                    │                      ║
 ║ type_operator_symbol.k                             │ 4: `symbol           │ 4                    │                      ║
-║ type_operator_vector_char.k                        │ 4: ("abc")           │ -3                   │                      ║
+║ type_operator_vector_char.k                        │ 4: ("abc")           │ 3                    │ -3                   ║
 ║ type_operator_vector_float.k                       │ 4: (1.0 2.0 3.0)     │ -2                   │                      ║
 ║ type_operator_vector_int.k                         │ 4: (1 2 3)           │ -1                   │                      ║
 ║ type_operator_vector_mixed.k                       │ 4: (1;2.0;"a")       │ 0                    │                      ║
-║ type_operator_vector_symbol.k                      │ 4: "abc"             │ -3                   │                      ║
+║ type_operator_vector_symbol.k                      │ 4: "abc"             │ 3                    │ -3                   ║
 ║ type_promotion_float_int.k                         │ 1.5 + 2              │ 3.5                  │                      ║
 ║ type_promotion_float_long.k                        │ 1.5 + 1j             │ 2.5                  │                      ║
 ║ type_promotion_int_float.k                         │ 2 + 1.5              │ 3.5                  │                      ║
@@ -285,7 +286,7 @@
 ║ format_float_numeric.k                             │ 0.0$1                │ ,"1"                 │                      ║
 ║ form_long.k                                        │ 0j$"42"              │ 42j                  │                      ║
 ║ format_numeric.k                                   │ 5$1                  │ "    1"              │                      ║
-║ form_string_pad_left.k                             │ 7$"hello"            │ "  hello"            │                      ║
+║ form_string_pad_left.k                             │ 7$"hello"            │ ""hello""            │ "  hello"            ║
 ║ format_symbol_pad_left.k                           │ 10$`hello            │ "     hello"         │                      ║
 ║ format_symbol_pad_left_8.k                         │ 8$`hello             │ "   hello"           │                      ║
 ║ format_pad_left.k                                  │ 5$42                 │ "   42"              │                      ║
@@ -294,15 +295,15 @@
 ║ format_float_precision.k                           │ 8.2$3.14159          │ "    3.14"           │                      ║
 ║ format_0_1.k                                       │ 0$1.0                │ ""                   │                      ║
 ║ format_1_1.k                                       │ 1$1.0                │ ,"1"                 │                      ║
-║ format_symbol_string_mixed_vector.k                │ `$("hello";"world";"test") │ `hello`world`test    │                      ║
+║ format_symbol_string_mixed_vector.k                │ `$("hello";"world";"test") │ `helloworldtest      │ `hello`world`test    ║
 ║ form_integer_charvector.k                          │ 0$"42"               │ 42                   │                      ║
 ║ form_character_charvector.k                        │ " "$"aaa"            │ "aaa"                │                      ║
 ║ dot_execute_variables.k                            │ a:1.5                │ 0.6                  │                      ║
 ║ form_braces_expressions.k                          │ a:5                  │ 8 15 2               │                      ║
 ║ form_braces_nested_expr.k                          │ x:10                 │ (12 20;(7;3.333...   │                      ║
 ║ form_braces_complex.k                              │ a:1.5                │ 8.25 12.0 9.0        │                      ║
-║ form_braces_string.k                               │ name:"John"          │ ("John";"is";25...   │                      ║
-║ form_braces_mixed_type.k                           │ num:42               │ (42;"hello";`te...   │                      ║
+║ form_braces_string.k                               │ name:"John"          │ "nameisageyears...   │ ("John";"is";25...   ║
+║ form_braces_mixed_type.k                           │ num:42               │ Error: Unable t...   │ (42;"hello";`te...   ║
 ║ form_braces_simple.k                               │ a:5                  │ 8                    │                      ║
 ║ form_braces_arith.k                                │ a:5                  │ 8 15 2 12 20 5       │                      ║
 ║ form_braces_nested_arith.k                         │ a:5                  │ (7 10;(2;2.5);5...   │                      ║
@@ -339,12 +340,28 @@
 ║ test_ci_vector.k                                   │ _ci 65 66 67         │ "ABC"                │                      ║
 ║ test_ic_basic.k                                    │ _ic "A"              │ 65                   │                      ║
 ║ test_vs_dyadic.k                                   │ 10 _vs 1995          │ 1 9 9 5              │                      ║
-║ test_ic_vector.k                                   │ _ic "ABC"            │ 65 66 67             │                      ║
+║ test_ic_vector.k                                   │ _ic "ABC"            │ Error: _ic: ope...   │ 65 66 67             ║
 ║ test_monadic_colon.k                               │ : 42                 │ 42                   │                      ║
 ║ test_sm_basic.k                                    │ `foo _sm `foo        │ 1                    │                      ║
 ║ test_sm_simple.k                                   │ `a _sm `a            │ 1                    │                      ║
 ║ test_ss_basic.k                                    │ "hello world" _ss "world" │ ,6                   │                      ║
-║ test_semicolon.k                                   │ 1 2; 3 4             │ 3 4                  │                      ║
+║ io_read_basic.k                                    │ 0:`test              │ (,"\"line1\"";,...   │ ("line1";"line2...   ║
+║ io_write_basic.k                                   │ `test 0: ("line1";"line2";"line3") │                      │                      ║
+║ io_write_csv.k                                     │ `"test.csv" 0: (("name";"age";"city");("John";25;"NYC");("Jane";30;"LA")) │ Error: Undefine...   │ null                 ║
+║ debug_char.k                                       │ 0:`test              │ (,"\"line1\"";,...   │ ("line1";"line2...   ║
+║ debug_simple_char.k                                │ "line1"              │ "line1"              │                      ║
+║ debug_nested.k                                     │ ("line1";"line2";"line3") │ "line1line2line3"    │ ("line1";"line2...   ║
+║ debug_nested2.k                                    │ ("line1";"line2";"line3") │ "line1line2line3"    │ ("line1";"line2...   ║
+║ debug_hello_func.k                                 │ {(x;"hello")}        │ {(x;"hello")}        │ "hello"              ║
+║ debug_direct.k                                     │ ("line1";"line2";"line3") │ "line1line2line3"    │ ("line1";"line2...   ║
+║ debug_direct2.k                                    │ ("line1";"line2";"line3") │ "line1line2line3"    │ ("line1";"line2...   ║
+║ debug_direct_test.k                                │ ("line1";"line2";"line3") │ "line1line2line3"    │ ("line1";"line2...   ║
+║ debug_readtext.k                                   │ 0:`test              │ (,"\"line1\"";,...   │ ("line1";"line2...   ║
+║ debug_single_char.k                                │ "l"                  │ "l"                  │                      ║
+║ debug_char_vector.k                                │ ("l";"i";"n";"e")    │ "line"               │                      ║
+║ debug_char_value.k                                 │ { show "line1" }     │ { show "line1" }     │ "line1"              ║
+║ debug_test_concat.k                                │ { show "line1" }     │ { show "line1" }     │ "line1"              ║
+║ debug_char_tostring.k                              │ { show c }           │ { show c }           │ "line1"              ║
 ║ search_in_basic.k                                  │ 4 _in 1 2 3 4 5      │ 1                    │                      ║
 ║ search_in_notfound.k                               │ 6 _in 1 2 3 4 5      │ 0                    │                      ║
 ║ search_bin_basic.k                                 │ 3 4 5 6 _bin 4       │ 1                    │                      ║
@@ -396,7 +413,7 @@
 ║ conditional_simple_test.k                          │ :[1; "true"; "false"] │ "true"               │                      ║
 ║ conditional_true.k                                 │ :[1; "true"; "false"]  // Conditional evaluation - condition true │ "true"               │                      ║
 ║ dictionary_null_index.k                            │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
-║ dictionary_unmake.k                                │ d: .((`a;1);(`b;2)); . d │ ((`a;1;);(`b;2;))    │                      ║
+║ dictionary_unmake.k                                │ d: .((`a;1);(`b;2)); . d │ (`a1;`b2)            │ ((`a;1;);(`b;2;))    ║
 ║ do_bracket_test.k                                  │ do[3; 42]  // Do function with bracket notation │                      │                      ║
 ║ do_loop.k                                          │ i: 0; do[3; i+: 1]  // Do loop - increment i 3 times │                      │                      ║
 ║ do_simple.k                                        │ do[3; 42]  // Do loop - simple test │                      │                      ║
@@ -414,8 +431,8 @@
  ""
  "")     ║
 ║ format_long_vector.k                               │ 0j$(1;2.5;3.14;42)   │ ""                   │                      ║
-║ format_string_pad_left.k                           │ 10$"hello"           │ "     hello"         │                      ║
-║ format_string_pad_right.k                          │ -10$"test"           │ "test      "         │                      ║
+║ format_string_pad_left.k                           │ 10$"hello"           │ "   "hello""         │ "     hello"         ║
+║ format_string_pad_right.k                          │ -10$"test"           │ ""test"    "         │ "test      "         ║
 ║ format_vector_int.k                                │ 0$(1;2;3)            │ ""                   │ ("1";"2";"3")        ║
 ║ group_operator.k                                   │ a: 3 3 8 7 5 7 3 8 4 4 9 2 7 6 0 7 8 7 0 1 │ (0 1 6;2 7 16;3...   │                      ║
 ║ if_bracket_test.k                                  │ if[1 < 2; a: 20]  // Test if function with bracket notation │                      │                      ║
@@ -443,7 +460,7 @@
 ║ k_tree_null_to_dict_conversion.k                   │ .k.foo: 42           │ .,(`foo;42;)         │                      ║
 ║ k_tree_dictionary_assignment.k                     │ .k.dd: .((`a;1);(`b;2);(`c;3)) │ .((`a;1;);(`b;2...   │                      ║
 ║ k_tree_test_bracket_indexing.k                     │ d: .((`a;1);(`b;2);(`c;3)) │ 2                    │                      ║
-║ k_tree_flip_test.k                                 │ +(`a`b`c;1 2 3)      │ ((`a;1);(`b;2);...   │                      ║
+║ k_tree_flip_test.k                                 │ +(`a`b`c;1 2 3)      │ (`a1;`b2;`c3)        │ ((`a;1);(`b;2);...   ║
 ║ vector_null_index.k                                │ v: 1 2 3 4           │ 1 2 3 4              │                      ║
 ║ while_bracket_test.k                               │ i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation │                      │                      ║
 ║ while_safe_test.k                                  │ i: 0                 │                      │                      ║
@@ -461,8 +478,8 @@
 ║ serialization_bd_db_dictionary.k                   │ _bd .((`a;`"1");(`b;`"2")) │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_anonymousfunction.k            │ _bd {[x] x+1}        │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_roundtrip_integer.k            │ // Test _bd and _db round-trip serialization │ 42                   │                      ║
-║ serialization_bd_db_roundtrip_list.k               │ _db _bd (1;2.5;"a")  │ (1;2.5;"a")          │                      ║
-║ serialization_bd_ic_symbol.k                       │ _ic _bd `A           │ 1 0 0 0 6 0 0 0...   │                      ║
+║ serialization_bd_db_roundtrip_list.k               │ _db _bd (1;2.5;"a")  │ 1 2.5 "a"            │ (1;2.5;"a")          ║
+║ serialization_bd_ic_symbol.k                       │ _ic _bd `A           │ Error: _ic: ope...   │ 1 0 0 0 6 0 0 0...   ║
 ║ db_basic_integer.k                                 │ _db _bd 42           │ 42                   │                      ║
 ║ db_float.k                                         │ _db _bd 3.14         │ 3.14                 │                      ║
 ║ db_symbol.k                                        │ _db _bd `test        │ `test                │                      ║
@@ -482,25 +499,25 @@
 ║ db_char_vector_sentence.k                          │ _db _bd "hello world" │ "hello world"        │                      ║
 ║ db_symbol_simple.k                                 │ _db _bd `hello       │ `hello               │                      ║
 ║ db_list_longer.k                                   │ _db _bd (1;2;3;4;5)  │ 1 2 3 4 5            │                      ║
-║ db_list_mixed_types.k                              │ _db _bd (1;`test;3.14;"hello") │ (1;`test;3.14;"...   │                      ║
+║ db_list_mixed_types.k                              │ _db _bd (1;`test;3.14;"hello") │ 1 `test 3.14 "h"     │ (1;`test;3.14;"...   ║
 ║ db_function_complex.k                              │ _db _bd {[x;y] x*y+z} │ {[x;y] x*y+z}        │                      ║
 ║ db_function_simple_math.k                          │ _db _bd {x+y}        │ {x+y}                │                      ║
 ║ db_nested_dict_vectors.k                           │ _db _bd .((`a;(1;2;3));(`b;(`hello;`world;`test))) │ .((`a;1 2 3;);(...   │                      ║
 ║ db_nested_lists.k                                  │ _db _bd ((1;2;3);(`hello;`world;`test);(4.5;6.7)) │ (1 2 3;`hello`w...   │                      ║
-║ db_mixed_list.k                                    │ _db _bd (1;`test;3.14) │ (1;`test;3.14)       │                      ║
+║ db_mixed_list.k                                    │ _db _bd (1;`test;3.14) │ 1 `test 3.14         │ (1;`test;3.14)       ║
 ║ db_dict_simple.k                                   │ _db _bd .((`a;1);(`b;2);(`c;3;)) │ .((`a;1;);(`b;2...   │                      ║
 ║ db_dict_single_entry.k                             │ _db _bd .,(`a;1)     │ .,(`a;1;)            │                      ║
 ║ db_dict_symbol_2char.k                             │ _db _bd .,(`ab;1 2)  │ .,(`ab;1 2;)         │                      ║
 ║ db_dict_symbol_8char.k                             │ _db _bd .,(`abcdefgh;1 2 3 4 5 6 7 8) │ .,(`abcdefgh;1 ...   │                      ║
 ║ db_dict_multi_entry.k                              │ _db _bd .((`a;1);(`b;2)) │ .((`a;1;);(`b;2;))   │                      ║
 ║ db_dict_five_entries.k                             │ _db _bd .((`a;1);(`b;2);(`c;3);(`d;4);(`e;5)) │ .((`a;1;);(`b;2...   │                      ║
-║ db_dict_complex_attributes.k                       │ _db _bd .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer)))) │ .((`col01;11 12...   │                      ║
+║ db_dict_complex_attributes.k                       │ _db _bd .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer)))) │ Error: Unable t...   │ .((`col01;11 12...   ║
 ║ db_dict_empty.k                                    │ _db _bd .()          │ .()                  │                      ║
 ║ db_dict_with_null_attrs.k                          │ _db _bd .,(`a;1;.()) │ .,(`a;1;.())         │                      ║
 ║ db_dict_with_empty_attrs.k                         │ _db _bd .((`a;1);(`b;2;.())) │ .((`a;1;);(`b;2...   │                      ║
 ║ db_enlist_single_int.k                             │ _db _bd ,5           │ ,5                   │                      ║
 ║ db_enlist_single_symbol.k                          │ _db _bd ,`test       │ ,`test               │                      ║
-║ db_enlist_single_string.k                          │ _db _bd ,"hello"     │ ,"hello"             │                      ║
+║ db_enlist_single_string.k                          │ _db _bd ,"hello"     │ ,"h"                 │ ,"hello"             ║
 ║ db_enlist_vector.k                                 │ _db _bd ,(1 2 3)     │ ,1 2 3               │                      ║
 ║ serialization_bd_null_edge_0.k                     │ _bd _n               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_0.k                  │ _bd 0                │ "\001\000\000\0...   │                      ║
@@ -590,11 +607,11 @@
 ║ type_empty_int_vector.k                            │ 4: !0                │ -1                   │                      ║
 ║ bd_empty_list.k                                    │ _bd ()               │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_int.k                             │ _bd ,5               │ "\001\000\000\0...   │                      ║
-║ bd_enlist_single_string.k                          │ _bd ,"hello"         │ "\001\000\000\0...   │                      ║
+║ bd_enlist_single_string.k                          │ _bd ,"hello"         │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 580/587 tests passed (98.8%)                                                                               ║
+║ SUMMARY: 566/604 tests passed (93.7%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -609,20 +626,125 @@ Input: _n
 Expected: _n
 Actual: 
 ──────────────────────────────────────────────────────────────────────────
+Test: type_operator_vector_char.k
+Input: 4: ("abc")
+Expected: -3
+Actual: 3
+──────────────────────────────────────────────────────────────────────────
+Test: type_operator_vector_symbol.k
+Input: 4: "abc"
+Expected: -3
+Actual: 3
+──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 10
 Actual: 100
+──────────────────────────────────────────────────────────────────────────
+Test: form_string_pad_left.k
+Input: 7$"hello"
+Expected: "  hello"
+Actual: ""hello""
+──────────────────────────────────────────────────────────────────────────
+Test: format_symbol_string_mixed_vector.k
+Input: `$("hello";"world";"test")
+Expected: `hello`world`test
+Actual: `helloworldtest
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_string.k
+Input: name:"John"
+Expected: ("John";"is";25;"years old")
+Actual: "nameisageyears old"
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_mixed_type.k
+Input: num:42
+Expected: (42;"hello";`test;47;"helloworld")
+Actual: Error: Unable to cast object of type 'K3CSharp.IntegerValue' to type 'K3CSharp.CharacterValue'.
 ──────────────────────────────────────────────────────────────────────────
 Test: rand_draw_vector_deal.k
 Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
 Expected: .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
 Actual: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
 ──────────────────────────────────────────────────────────────────────────
+Test: test_ic_vector.k
+Input: _ic "ABC"
+Expected: 65 66 67
+Actual: Error: _ic: operand must be a single character
+──────────────────────────────────────────────────────────────────────────
+Test: io_read_basic.k
+Input: 0:`test
+Expected: ("line1";"line2";"line3")
+Actual: (,"\"line1\"";,"\"line2\"";,"\"line3\"")
+──────────────────────────────────────────────────────────────────────────
+Test: io_write_csv.k
+Input: `"test.csv" 0: (("name";"age";"city");("John";25;"NYC");("Jane";30;"LA"))
+Expected: null
+Actual: Error: Undefined variable: test.csv
+──────────────────────────────────────────────────────────────────────────
+Test: debug_char.k
+Input: 0:`test
+Expected: ("line1";"line2";"line3")
+Actual: (,"\"line1\"";,"\"line2\"";,"\"line3\"")
+──────────────────────────────────────────────────────────────────────────
+Test: debug_nested.k
+Input: ("line1";"line2";"line3")
+Expected: ("line1";"line2";"line3")
+Actual: "line1line2line3"
+──────────────────────────────────────────────────────────────────────────
+Test: debug_nested2.k
+Input: ("line1";"line2";"line3")
+Expected: ("line1";"line2";"line3")
+Actual: "line1line2line3"
+──────────────────────────────────────────────────────────────────────────
+Test: debug_hello_func.k
+Input: {(x;"hello")}
+Expected: "hello"
+Actual: {(x;"hello")}
+──────────────────────────────────────────────────────────────────────────
+Test: debug_direct.k
+Input: ("line1";"line2";"line3")
+Expected: ("line1";"line2";"line3")
+Actual: "line1line2line3"
+──────────────────────────────────────────────────────────────────────────
+Test: debug_direct2.k
+Input: ("line1";"line2";"line3")
+Expected: ("line1";"line2";"line3")
+Actual: "line1line2line3"
+──────────────────────────────────────────────────────────────────────────
+Test: debug_direct_test.k
+Input: ("line1";"line2";"line3")
+Expected: ("line1";"line2";"line3")
+Actual: "line1line2line3"
+──────────────────────────────────────────────────────────────────────────
+Test: debug_readtext.k
+Input: 0:`test
+Expected: ("line1";"line2";"line3")
+Actual: (,"\"line1\"";,"\"line2\"";,"\"line3\"")
+──────────────────────────────────────────────────────────────────────────
+Test: debug_char_value.k
+Input: { show "line1" }
+Expected: "line1"
+Actual: { show "line1" }
+──────────────────────────────────────────────────────────────────────────
+Test: debug_test_concat.k
+Input: { show "line1" }
+Expected: "line1"
+Actual: { show "line1" }
+──────────────────────────────────────────────────────────────────────────
+Test: debug_char_tostring.k
+Input: { show c }
+Expected: "line1"
+Actual: { show c }
+──────────────────────────────────────────────────────────────────────────
 Test: lsq.k
 Input: _lsq
 Expected: Error - _lsq (least squares) operation reserved for future use
 Actual: Error: _lsq (least squares) operation reserved for future use
+──────────────────────────────────────────────────────────────────────────
+Test: dictionary_unmake.k
+Input: d: .((`a;1);(`b;2)); . d
+Expected: ((`a;1;);(`b;2;))
+Actual: (`a1;`b2)
 ──────────────────────────────────────────────────────────────────────────
 Test: format_int_vector.k
 Input: 0$(1;2.5;3.14;42)
@@ -632,8 +754,58 @@ Expected: (""
  "")
 Actual: ""
 ──────────────────────────────────────────────────────────────────────────
+Test: format_string_pad_left.k
+Input: 10$"hello"
+Expected: "     hello"
+Actual: "   "hello""
+──────────────────────────────────────────────────────────────────────────
+Test: format_string_pad_right.k
+Input: -10$"test"
+Expected: "test      "
+Actual: ""test"    "
+──────────────────────────────────────────────────────────────────────────
 Test: format_vector_int.k
 Input: 0$(1;2;3)
 Expected: ("1";"2";"3")
 Actual: ""
+──────────────────────────────────────────────────────────────────────────
+Test: k_tree_flip_test.k
+Input: +(`a`b`c;1 2 3)
+Expected: ((`a;1);(`b;2);(`c;3))
+Actual: (`a1;`b2;`c3)
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_db_roundtrip_list.k
+Input: _db _bd (1;2.5;"a")
+Expected: (1;2.5;"a")
+Actual: 1 2.5 "a"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_ic_symbol.k
+Input: _ic _bd `A
+Expected: 1 0 0 0 6 0 0 0 4 0 0 0 65 0
+Actual: Error: _ic: operand must be a single character
+──────────────────────────────────────────────────────────────────────────
+Test: db_list_mixed_types.k
+Input: _db _bd (1;`test;3.14;"hello")
+Expected: (1;`test;3.14;"hello")
+Actual: 1 `test 3.14 "h"
+──────────────────────────────────────────────────────────────────────────
+Test: db_mixed_list.k
+Input: _db _bd (1;`test;3.14)
+Expected: (1;`test;3.14)
+Actual: 1 `test 3.14
+──────────────────────────────────────────────────────────────────────────
+Test: db_dict_complex_attributes.k
+Input: _db _bd .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer))))
+Expected: .((`col01;11 12 13 14 15;.((`format;,`n;);(`name;`ID;)));(`col02;`yellow`white`blue`red`black;.((`format;,`c;);(`name;`Color;)));(`col03;("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`c;);(`name;`Retailer;))))
+Actual: Error: Unable to cast object of type 'K3CSharp.VectorValue' to type 'K3CSharp.CharacterValue'.
+──────────────────────────────────────────────────────────────────────────
+Test: db_enlist_single_string.k
+Input: _db _bd ,"hello"
+Expected: ,"hello"
+Actual: ,"h"
+──────────────────────────────────────────────────────────────────────────
+Test: bd_enlist_single_string.k
+Input: _bd ,"hello"
+Expected: "\001\000\000\000\030\000\000\000\000\000\000\000\001\000\000\000\375\377\377\377\005\000\000\000hello\000\000\000"
+Actual: "\001\000\000\000\n\000\000\000\375\377\377\377\001\000\000\000h\000"
 ──────────────────────────────────────────────────────────────────────────

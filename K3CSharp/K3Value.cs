@@ -541,7 +541,49 @@ namespace K3CSharp
 
         public override string ToString()
         {
-            return $"\"{Value}\"";
+            var result = new StringBuilder();
+            result.Append('"');
+            
+            foreach (char c in Value)
+            {
+                switch (c)
+                {
+                    case '\\':
+                        result.Append("\\\\");
+                        break;
+                    case '\b':
+                        result.Append("\\b");
+                        break;
+                    case '\t':
+                        result.Append("\\t");
+                        break;
+                    case '\n':
+                        result.Append("\\n");
+                        break;
+                    case '\r':
+                        result.Append("\\r");
+                        break;
+                    case '"':
+                        result.Append("\\\"");
+                        break;
+                    default:
+                        if (c >= ' ' && c <= '~')
+                        {
+                            // Printable characters (space to tilde)
+                            result.Append(c);
+                        }
+                        else
+                        {
+                            // Non-printable or extended characters - use 3-digit octal
+                            string octalValue = Convert.ToString(Convert.ToInt32(c), 8);
+                            result.Append($"\\{octalValue.PadLeft(3, '0')}");
+                        }
+                        break;
+                }
+            }
+            
+            result.Append('"');
+            return result.ToString();
         }
     }
 
@@ -649,6 +691,7 @@ namespace K3CSharp
         {
             Elements = elements;
             Type = ValueType.Vector;
+            VectorType = DetermineVectorTypeFromElements(elements);
         }
 
         public VectorValue(List<K3Value> elements, int vectorType)
@@ -656,6 +699,24 @@ namespace K3CSharp
             Elements = elements;
             Type = ValueType.Vector;
             VectorType = vectorType;
+        }
+
+        private static int DetermineVectorTypeFromElements(List<K3Value> elements)
+        {
+            if (elements.Count == 0)
+                return 0; // Default to mixed list for empty vectors
+                
+            var firstElement = elements[0];
+            if (firstElement is IntegerValue || firstElement is LongValue)
+                return -1; // Integer vector
+            else if (firstElement is FloatValue)
+                return -2; // Float vector  
+            else if (firstElement is CharacterValue)
+                return -3; // Character vector
+            else if (firstElement is SymbolValue)
+                return -4; // Symbol vector
+            else
+                return 0; // Default to mixed list
         }
 
         public override K3Value Add(K3Value other)
@@ -934,127 +995,70 @@ namespace K3CSharp
 
         public override string ToString()
         {
-            return ToString(false);
-        }
-        
-        public string ToString(bool asElement)
-        {
+            // 1) Handle empty vectors
             if (Elements.Count == 0)
             {
-                // Display empty vectors based on their type
                 if (VectorType.HasValue)
                 {
                     return VectorType.Value switch
                     {
-                        0 => "()", // Empty list
-                        -1 => "!0", // Empty integer vector
-                        -2 => "0#0.0", // Empty float vector
-                        -3 => "\"\"", // Empty character vector
-                        -4 => "0#`", // Empty symbol vector
-                        _ => "()" // Default to empty list
+                        -4 => "0#`",    // Empty symbol vector
+                        -3 => "\"\"",    // Empty character vector
+                        -2 => "0#0.0",   // Empty float vector
+                        -1 => "!0",      // Empty integer vector
+                        -64 => "!0",     // Empty long vector (same as integer)
+                        0 => "()",       // Empty list
+                        _ => "()"        // Default to empty list
                     };
                 }
-                
-                // For empty vectors without explicit type, default to empty list
-                return "()";
+                return "()"; // Default to empty list if no type specified
             }
-            
-            // Check if this is a character vector - display as vector of quoted strings
-            if (Elements.All(e => e is CharacterValue))
-            {
-                // For simple character vectors, display as quoted string with escape sequences for non-printable chars
-                var sb = new System.Text.StringBuilder("\"");
-                foreach (var e in Elements)
-                {
-                    foreach (var c in ((CharacterValue)e).Value)
-                    {
-                        switch (c)
-                        {
-                            case '\b': sb.Append("\\b"); break;
-                            case '\t': sb.Append("\\t"); break;
-                            case '\n': sb.Append("\\n"); break;
-                            case '\r': sb.Append("\\r"); break;
-                            default:
-                                if (c >= 32 && c <= 126)
-                                    sb.Append(c);
-                                else
-                                    sb.Append($"\\{Convert.ToString(c, 8).PadLeft(3, '0')}");
-                                break;
-                        }
-                    }
-                }
-                sb.Append('"');
-                var result = sb.ToString();
-                
-                // Add enlist comma for single-element character vectors
-                if (Elements.Count == 1)
-                {
-                    result = "," + result;
-                }
-                
-                return result;
-            }
-            
-            // Check if this is a mixed vector - keep parentheses and semicolons for clarity
-            var elementTypes = Elements.Select(e => e.GetType()).Distinct().ToList();
-            var hasNestedVectors = Elements.Any(e => e is VectorValue);
-            var hasNullValues = Elements.Any(e => e is NullValue);
-            
-            // Check if this is truly mixed (different types) OR has null values OR has nested vectors
-            // For homogeneous vectors with nulls, we should display as mixed with semicolons
-            var isTrulyMixed = elementTypes.Count > 1 || hasNullValues || hasNestedVectors;
-            
-            // Special case: if we have a single-element vector containing another vector,
-            // we want comma prefix but not mixed list formatting
-            var isSingleVectorWithVector = Elements.Count == 1 && Elements[0] is VectorValue;
-            
-            if (isTrulyMixed && !isSingleVectorWithVector)
-            {
-                // For mixed vectors with multiple elements (including nested vectors), use semicolon separation
-                var elementsStr = string.Join(";", Elements.Select(e =>
-                {
-                    if (e is NullValue)
-                    {
-                        return ""; // Display null as empty position
-                    }
-                    else if (e is VectorValue vec)
-                    {
-                        // For nested vectors in mixed lists, show with parentheses but allow comma prefix
-                        return vec.ToString(false);
-                    }
-                    return e.ToString();
-                }));
-                
-                return "(" + elementsStr + ")";
-            }
-            
-            // For homogeneous vectors, handle different types appropriately
-            string vectorStr;
-            if (Elements.All(e => e is SymbolValue))
-            {
-                // Symbol vectors use compact format without spaces
-                vectorStr = string.Concat(Elements.Select(e => e.ToString()));
-            }
-            else
-            {
-                // Other vectors use space-separated format
-                vectorStr = string.Join(" ", Elements.Select(e => e.ToString()));
-            }
-            
-            // Add enlist comma for single-element vectors
+                        
+            // 2) Handle single-element generic lists (enlist) - only for type 0
             if (Elements.Count == 1)
             {
-                return "," + vectorStr;
+                return "," + Elements[0].ToString();
             }
-            
-            // If this vector is an element of another vector, wrap it in parentheses
-            // But don't wrap if it already has comma prefix (enlisted vectors)
-            if (asElement && !vectorStr.StartsWith(","))
+
+            // 3) Identify vector type and apply appropriate rules
+            var vectorType = VectorType ?? 0; // Default to generic list if no type specified
+
+            // For typed vectors (-1, -2, -3, -4, -64), use type-specific rules
+            return vectorType switch
             {
-                return "(" + vectorStr + ")";
+                -1 => FormatNumericVector(),    // Integer vector
+                -2 => FormatNumericVector(),    // Float vector
+                -64 => FormatNumericVector(),   // Long vector
+                -3 => FormatCharacterVector(),  // Character vector
+                -4 => FormatSymbolVector(),     // Symbol vector
+                _ => FormatGenericList()        // Default to generic list
+            };
+            
+            string FormatNumericVector()
+            {
+                // Numeric types: elements separated by spaces
+                return string.Join(" ", Elements.Select(e => e.ToString()));
             }
             
-            return vectorStr;
+            string FormatCharacterVector()
+            {
+                // Character vector: string literal containing all characters
+                var concatenatedValue = string.Concat(Elements.Select(e => ((CharacterValue)e).Value));
+                return "\"" + concatenatedValue + "\"";
+            }
+            
+            string FormatSymbolVector()
+            {
+                // Symbol vector: elements with no separation
+                return string.Concat(Elements.Select(e => e.ToString()));
+            }
+            
+            string FormatGenericList()
+            {
+                // Generic list: enclosing parentheses and elements separated by semicolons
+                var elementsStr = string.Join(";", Elements.Select(e => e.ToString()));
+                return "(" + elementsStr + ")";
+            }
         }
     }
 

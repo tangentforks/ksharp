@@ -308,7 +308,9 @@ namespace K3CSharp
                         switch (digit)
                         {
                             case 0:
-                                tokens.Add(new Token(TokenType.TYPE, "0:", position - 1));
+                                // Check if this is an I/O verb context or type context
+                                // For now, assume it's always I/O verb - we'll handle type in evaluator
+                                tokens.Add(new Token(TokenType.IO_VERB_0, "0:", position - 1));
                                 break;
                             case 1:
                                 tokens.Add(new Token(TokenType.IO_VERB_1, "1:", position - 1));

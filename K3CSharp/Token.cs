@@ -53,6 +53,7 @@ namespace K3CSharp
         NULL,           // _n null value
         TYPE,           // 4: type operator
         STRING_REPRESENTATION, // 5: string representation operator
+        IO_VERB_0,      // 0: I/O verb (read/write text)
         IO_VERB_1,      // 1: I/O verb
         IO_VERB_2,      // 2: I/O verb
         IO_VERB_3,      // 3: I/O verb

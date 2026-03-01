@@ -1,10 +1,10 @@
 Test File Validation:
-  Expected tests: 469
-  Actual .k files: 450
+  Expected tests: 602
+  Actual .k files: 601
   ✅ Test counts match perfectly!
 =========================
 Running K3CSharp Tests...
-Total tests: 469
+Total tests: 602
 =========================
 ✓ adverb_each_vector_minus.k: 9 18 27
 ✓ adverb_each_vector_multiply.k: 4 10 18
@@ -32,17 +32,20 @@ Total tests: 469
 ✓ adverb_scan_with_initialization_divide.k: (2;2;1;0.3333333;0.08333333)
 ✓ adverb_scan_with_initialization_minus.k: 2 1 -1 -4 -8
 ✓ adverb_scan_with_initialization.k: 2 2 4 12
-✓ anonymous_function_double_param.k: {[op1;op2] op1*op2}
+✓ anonymous_function_double_param.k: {[op1;op2] op1 * op2}
 ✓ anonymous_function_empty.k: {}
 ✓ anonymous_function_simple.k: {4+5}
 ✓ anonymous_function_single_param.k: {[arg1] arg1+6}
+✓ lambda_string_literal.k: "hello"
+✓ lambda_symbol_literal.k: `abc
+✓ lambda_string_assign.k: "hello"
 ✓ atom_scalar.k: 1
 ✓ atom_vector.k: 0
 ✓ attribute_handle_symbol.k: `a.
 ✓ attribute_handle_vector.k: `a.`b.`c.
 ✓ character_single.k: "f"
 ✓ character_vector.k: "hello"
-✗ complex_function.k: Expected '205', got '{[d0;v;a;t] d1 : v*t ; d2 : a*t*t % 2 ; d0+d1+d2}'
+✓ complex_function.k: 205
 ✓ count_operator.k: 3
 ✓ cut_vector.k: (0 1;2 3;4 5 6 7)
 ✓ dictionary_empty.k: .()
@@ -55,6 +58,13 @@ Total tests: 469
 ✓ dictionary_single.k: .,(`a;`b;)
 ✓ dictionary_type.k: 5
 ✓ dictionary_with_null_value.k: .((`a;1;);(`b;;);(`c;3;))
+✓ empty_char_vector.k: ""
+✓ empty_float_vector_test.k: 0#0.0
+✓ empty_symbol_atomic.k: 0#`
+✓ empty_dictionary.k: .()
+✓ empty_list.k: ()
+✓ test_symbol_take.k: 0#`
+✓ test_symbol_parsing.k: 0#`
 ✓ drop_negative.k: 0 1 2 3
 ✓ drop_positive.k: 4 5 6 7
 ✓ empty_mixed_vector.k: ()
@@ -68,13 +78,13 @@ Total tests: 469
 ✓ float_exponential_large.k: 1e+015
 ✓ float_exponential_small.k: 1e-020
 ✓ float_types.k: 3.14
-✗ function_add7.k: Expected '12', got '{[arg1] arg1+7}'
-✗ function_call_anonymous.k: Expected '13', got '{[arg1] arg1+6}'
-✗ function_call_chain.k: Error - Cannot subtract Function and Integer
-✗ function_call_double.k: Expected '32', got '{[op1;op2] op1*op2}'
-✗ function_call_simple.k: Expected '12', got '{[arg1] arg1+7}'
-✗ function_foo_chain.k: Error - Cannot subtract Function and Integer
-✗ function_mul.k: Expected '32', got '{[op1;op2] op1*op2}'
+✓ function_add7.k: 12
+✓ function_call_anonymous.k: 13
+✓ function_call_chain.k: 20
+✓ function_call_double.k: 32
+✓ function_call_simple.k: 12
+✓ function_foo_chain.k: 20
+✓ function_mul.k: 32
 ✓ generate_operator.k: 0 0 0 0
 ✓ grade_down_operator.k: 1 2 3 4 0
 ✓ grade_up_operator.k: 0 4 2 3 1
@@ -83,7 +93,7 @@ Total tests: 469
 ✓ integer_types_long.k: 123456789j
 ✓ join_operator.k: 3 5
 ✓ less_than_operator.k: 1
-✓ math_abs.k: 5.0
+✓ math_abs.k: 5
 ✓ math_exp.k: 7.389056
 ✓ math_log.k: 2.302585
 ✓ math_sin.k: 0.0
@@ -108,7 +118,7 @@ Total tests: 469
 ✓ overflow_int_pos_inf.k: 0N
 ✓ overflow_int_pos_inf_plus2.k: -0I
 ✓ overflow_long_max_plus1.k: 0Nj
-✓ overflow_long_min_minus1.k: 0Ij
+✓ overflow_long_min_minus1.k: 0Nj
 ✓ overflow_long_neg_inf.k: 0Nj
 ✓ overflow_long_neg_inf_minus2.k: 0Ij
 ✓ overflow_long_pos_inf.k: 0Nj
@@ -125,7 +135,7 @@ Total tests: 469
 ✓ parentheses_nested5.k: 29
 ✓ parentheses_precedence.k: 7
 ✓ parenthesized_vector.k: 1 2 3 4
-✗ power_operator.k: Error - Unknown binary operator: POWER
+✓ power_operator.k: 8
 ✓ precedence_chain1.k: 1410
 ✓ precedence_chain2.k: 0.07092199
 ✓ precedence_complex1.k: 0.7142857
@@ -133,8 +143,8 @@ Total tests: 469
 ✓ precedence_mixed1.k: 0
 ✓ precedence_mixed2.k: 25
 ✓ precedence_mixed3.k: 11
-✗ precedence_power1.k: Error - Unknown binary operator: POWER
-✗ precedence_power2.k: Error - Unknown binary operator: POWER
+✓ precedence_power1.k: 128
+✓ precedence_power2.k: 83
 ✓ precedence_spec1.k: 11.57143
 ✓ precedence_spec2.k: 6
 ✓ reciprocal_operator.k: 0.25
@@ -180,10 +190,10 @@ Total tests: 469
 ✓ square_bracket_function.k: 2
 ✓ square_bracket_vector_multiple.k: 14 16
 ✓ square_bracket_vector_single.k: 14
-✓ string_representation_int.k: "42"
-✓ string_representation_mixed.k: "(1;2.5;\"a\")"
-✓ string_representation_symbol.k: "`symbol"
-✓ string_representation_vector.k: "1 2 3"
+✗ string_representation_int.k: Expected '"42"', got '"4";"2"'
+✗ string_representation_mixed.k: Expected '"(1;2.5;\"a\")"', got '"(";"1";";";"2";".";"5";";";"\";""";"a";"\";""";")"'
+✗ string_representation_symbol.k: Expected '"`symbol"', got '"`";"s";"y";"m";"b";"o";"l"'
+✗ string_representation_vector.k: Expected '"1 2 3"', got '"1";" ";"2";" ";"3"'
 ✓ symbol_quoted.k: `"a symbol"
 ✓ symbol_simple.k: `foo
 ✓ symbol_vector_compact.k: `a`b`c
@@ -193,6 +203,7 @@ Total tests: 469
 ✓ take_operator_empty_symbol.k: 0#`
 ✓ take_operator_overflow.k: 1 2 3 1 2 3 1 2 3 1
 ✓ take_operator_scalar.k: 42 42 42
+✓ reshape_basic.k: (0 1 2 3;4 5 6 7;8 9 10 11)
 ✓ division_float_4_2.0.k: 2.0
 ✓ division_float_5_2.5.k: 2.0
 ✓ division_int_4_2.k: 2
@@ -205,12 +216,12 @@ Total tests: 469
 ✓ grade_down_no_parens.k: 1 2 3 4 0
 ✓ grade_up_no_parens.k: 0 4 2 3 1
 ✓ mixed_types.k: (42;3.14;"hello";`symbol)
-✗ multiline_function_single.k: Expected '20', got '{[x] a : x*2 ; a+10}'
+✓ multiline_function_single.k: 20
 ✓ null_vector.k: (;1;2)
-✗ scoping_single.k: Expected '60', got '{[x] globalVar : x*2 ; globalVar+10}'
-✗ semicolon_simple.k: Expected '(7;11;-20.45)', got '(7;14;-17.45)'
-✗ semicolon_vars.k: Expected '30 200 -10', got '30 210 0'
-✗ semicolon_vector.k: Expected '(7;3 4;-20.45)', got '(7;6 7;-17.45)'
+✓ scoping_single.k: 60
+✓ semicolon_simple.k: (7;11;-20.45)
+✓ semicolon_vars.k: 30 200 -10
+✓ semicolon_vector.k: (7;3 4;-20.45)
 ✓ simple_scalar_div.k: 2.5
 ✓ single_no_semicolon.k: 42
 ✓ smart_division1.k: 2.5 5.0
@@ -234,11 +245,11 @@ Total tests: 469
 ✓ type_operator_float.k: 2
 ✓ type_operator_null.k: 6
 ✓ type_operator_symbol.k: 4
-✓ type_operator_vector_char.k: -3
+✗ type_operator_vector_char.k: Expected '-3', got '3'
 ✓ type_operator_vector_float.k: -2
 ✓ type_operator_vector_int.k: -1
 ✓ type_operator_vector_mixed.k: 0
-✓ type_operator_vector_symbol.k: -3
+✗ type_operator_vector_symbol.k: Expected '-3', got '3'
 ✓ type_promotion_float_int.k: 3.5
 ✓ type_promotion_float_long.k: 2.5
 ✓ type_promotion_int_float.k: 3.5
@@ -250,11 +261,11 @@ Total tests: 469
 ✓ amend_item_simple_no_semicolon.k: 1 12 3
 ✓ variable_assignment.k: 7
 ✓ variable_reassignment.k: 7.2 4.5
-✗ variable_scoping_global_access.k: Expected '150', got '{[x] globalVar+x}'
-✗ variable_scoping_global_assignment.k: Error - Expected '}' after function body
-✗ variable_scoping_global_unchanged.k: Error - Expected '}' after function body
-✗ variable_scoping_local_hiding.k: Error - Expected '}' after function body
-✗ variable_scoping_nested_functions.k: Error - Expected '}' after function body
+✓ variable_scoping_global_access.k: 150
+✗ variable_scoping_global_assignment.k: Expected '10', got '100'
+✓ variable_scoping_global_unchanged.k: 100
+✓ variable_scoping_local_hiding.k: 60
+✓ variable_scoping_nested_functions.k: 140
 ✓ variable_usage.k: 30
 ✓ dot_execute.k: 4
 ✓ dot_execute_context.k: 8
@@ -262,42 +273,42 @@ Total tests: 469
 ✓ null_operations.k: 7
 ✓ dictionary_dot_apply.k: 1
 ✓ monadic_format_basic.k: ,"1"
-✓ monadic_format_types.k: "42.5"
+✗ monadic_format_types.k: Expected '"42.5"', got '"4";"2";".";"5"'
 ✓ monadic_format_vector.k: (,"1";,"2";,"3")
-✓ monadic_format_string_hello.k: "hello"
-✗ monadic_format_string_a.k: Expected ',"a"', got '""a""'
-✓ monadic_format_symbol_hello.k: "hello"
-✓ monadic_format_symbol_simple.k: "test"
-✓ monadic_format_dictionary.k: ".((`a;1;);(`b;2;);(`c;3;))"
+✗ monadic_format_string_hello.k: Expected '"hello"', got '"h";"e";"l";"l";"o"'
+✓ monadic_format_string_a.k: ,"a"
+✗ monadic_format_symbol_hello.k: Expected '"hello"', got '"h";"e";"l";"l";"o"'
+✗ monadic_format_symbol_simple.k: Expected '"test"', got '"t";"e";"s";"t"'
+✗ monadic_format_dictionary.k: Expected '".((`a;1;);(`b;2;);(`c;3;))"', got '".";"(";"(";"`";"a";";";"1";";";")";";";"(";"`";"b";";";"2";";";")";";";"(";"`";"c";";";"3";";";")";")"'
 ✓ monadic_format_nested_list.k: ((,"1";,"2";,"3");(,"4";,"5";,"6"))
-✓ monadic_format_integer.k: "42"
-✓ monadic_format_float.k: "3.14"
+✗ monadic_format_integer.k: Expected '"42"', got '"4";"2"'
+✗ monadic_format_float.k: Expected '"3.14"', got '"3";".";"1";"4"'
 ✓ monadic_format_vector_simple.k: (,"1";,"2";,"3")
 ✓ format_integer.k: ""
-✗ format_float_numeric.k: Expected ',"1"', got '""'
+✓ format_float_numeric.k: ,"1"
 ✓ form_long.k: 42j
-✓ format_numeric.k: "    1"
-✓ form_string_pad_left.k: "  hello"
-✓ format_symbol_pad_left.k: "     hello"
-✓ format_symbol_pad_left_8.k: "   hello"
-✓ format_pad_left.k: "   42"
-✓ format_pad_right.k: "42   "
-✓ format_float_width_precision.k: "      3.14"
-✓ format_float_precision.k: "    3.14"
+✗ format_numeric.k: Expected '"    1"', got '" ";" ";" ";" ";"1"'
+✗ form_string_pad_left.k: Expected '"  hello"', got '""";"h";"e";"l";"l";"o";"""'
+✗ format_symbol_pad_left.k: Expected '"     hello"', got '" ";" ";" ";" ";" ";"h";"e";"l";"l";"o"'
+✗ format_symbol_pad_left_8.k: Expected '"   hello"', got '" ";" ";" ";"h";"e";"l";"l";"o"'
+✗ format_pad_left.k: Expected '"   42"', got '" ";" ";" ";"4";"2"'
+✗ format_pad_right.k: Expected '"42   "', got '"4";"2";" ";" ";" "'
+✗ format_float_width_precision.k: Expected '"      3.14"', got '" ";" ";" ";" ";" ";" ";"3";".";"1";"4"'
+✗ format_float_precision.k: Expected '"    3.14"', got '" ";" ";" ";" ";"3";".";"1";"4"'
 ✓ format_0_1.k: ""
-✗ format_1_1.k: Expected ',"1"', got ',"*"'
-✓ format_symbol_string_mixed_vector.k: `hello`world`test
+✓ format_1_1.k: ,"1"
+✗ format_symbol_string_mixed_vector.k: Expected '`hello`world`test', got '`helloworldtest'
 ✓ form_integer_charvector.k: 42
-✗ form_character_charvector.k: Expected '"aaa"', got '""aaa""'
+✓ form_character_charvector.k: "aaa"
 ✓ dot_execute_variables.k: 0.6
 ✓ form_braces_expressions.k: 8 15 2
-✗ form_braces_nested_expr.k: Expected '(12 20;(7;3.333333))', got '(12 30;(7;6.666667))'
+✓ form_braces_nested_expr.k: (12 20;(7;3.333333))
 ✓ form_braces_complex.k: 8.25 12.0 9.0
-✓ form_braces_string.k: ("John";"is";25;"years old")
-✓ form_braces_mixed_type.k: (42;"hello";`test;47;"helloworld")
+✗ form_braces_string.k: Expected '("John";"is";25;"years old")', got '"name";"is";"age";"years old"'
+✗ form_braces_mixed_type.k: Expected '(42;"hello";`test;47;"helloworld")', got '("num";"txt";"sym";47;"hello";"world")'
 ✓ form_braces_simple.k: 8
 ✓ form_braces_arith.k: 8 15 2 12 20 5
-✗ form_braces_nested_arith.k: Expected '(7 10;(2;2.5);5 -1)', got '(7 15;(2;2.5);5 1)'
+✓ form_braces_nested_arith.k: (7 10;(2;2.5);5 -1)
 ✓ form_braces_float.k: 4.0 3.75 0.6 -1.0
 ✓ form_braces_mixed_arith.k: 17.5 32.5 4.5
 ✓ form_braces_example.k: 8 9
@@ -309,15 +320,14 @@ Total tests: 469
 ✓ rand_draw_deal.k: .((`type;-1;);(`shape;,4;);(`allitemsunique;1;))
 ✓ rand_draw_probability.k: .((`type;-2;);(`shape;,10;))
 ✓ rand_draw_vector_select.k: .((`type;0;);(`shape;,2;))
-✓ rand_draw_vector_deal.k: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
+✗ rand_draw_vector_deal.k: Expected '.((`type;0;);(`shape;2 3;);(`allitemsunique;1;))', got '.((`type;0;);(`shape;,2;);(`allitemsunique;1;))'
 ✓ rand_draw_vector_probability.k: .((`type;0;);(`shape;,2;))
-✗ draw.k: Error - _draw requires dyadic call (left and right arguments)
 ✓ time_gtime.k: 20350101 0
-✗ time_lt.k: Error - Undefined variable: lt
-✗ time_jd.k: Error - Undefined variable: jd
-✗ time_dj.k: Error - Undefined variable: dj
+✓ time_lt.k: -18000
+✓ time_jd.k: -3251
+✓ time_dj.k: 20350101
 ✓ time_ltime.k: 20341231 190000
-✓ in.k: 4
+✓ in.k: 1
 ✓ list_dv_basic.k: 3 5
 ✓ list_dv_nomatch.k: 3 4 4 5
 ✓ list_di_basic.k: 3 4 5
@@ -325,50 +335,58 @@ Total tests: 469
 ✓ list_sv_base10.k: 1995
 ✓ list_sv_base2.k: 9
 ✓ list_sv_mixed.k: 1995
-✗ list_getenv.k: Expected '"C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\euseb\bin;C:\Program Files\Microsoft MPI\Bin\;C:\Program Files\Eclipse Adoptium\jdk-8.0.382.5-hotspot\bin;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\ia32;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\Intel64;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\HP\HP Performance Advisor;C:\Program Files (x86)\QuickTime\QTSystem\;C:\Program Files (x86)\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Common Files\Propellerhead Software\ReWire\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\CMake\bin;C:\Program Files\dotnet\;C:\Program Files (x86)\Microsoft Emulator Manager\1.0\;C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Pages\v1.0\;C:\Program Files\Microsoft SQL Server\110\Tools\Binn\;C:\Users\euseb\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm\;C:\Program Files\Microsoft SQL Server\120\Tools\Binn\;C:\Program Files (x86)\nodejs\;C:\Program Files\Common Files\Avid\Eucon;C:\Program Files (x86)\Common Files\Avid\Eucon;C:\Program Files\Avid\Avid Link\jre\bin;C:\Program Files (x86)\dotnet\;c:\Windows\SysWOW64\;c:\Windows\Sysnative\;c:\program files (x86)\iracing\d3dgear;C:\Program Files (x86)\Common Files\DivX Shared\DesktopService;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\gs\gs10.00.0\bin;C:\Program Files (x86)\Windows Kits\10\Microsoft Application Virtualization\Sequencer\;C:\Program Files\Calibre2\;C:\Program Files\NVIDIA Corporation\Nsight Compute 2020.1.1\;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files\Git LFS;C:\Program Files\GitHub CLI\;C:\Program Files (x86)\Incredibuild;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\Acustica\Medusa Framework\;C:\Program Files\Git\cmd;C:\Users\euseb\.local\bin;C:\Progra~1\NVIDIA~2\CUDA\v11.0\libnvvp;C:\Progra~1\NVIDIA~2\CUDA\v11.0\bin;C:\Progra~2\Common~1\Intel\Shared~1\redist\intel6~1\compiler;C:\Users\euseb\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Imaginando\DLYM;C:\Users\euseb\.dotnet\tools;C:\Users\euseb\AppData\Roaming\npm;C:\Users\euseb\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Imaginando\K7D;C:\Program Files\Imaginando\FRMS;C:\Program Files\Imaginando\DRC;C:\Users\euseb\AppData\Local\Programs\Ollama;C:\Users\euseb\.local\bin;C:\Users\euseb\.dotnet\tools"', got '"C:\Users\euseb\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\local\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\usr\bin;C:\Program Files\Git\mingw64\bin;C:\Program Files\Git\usr\bin;C:\Users\euseb\bin;C:\Program Files\Microsoft MPI\Bin;C:\Program Files\Eclipse Adoptium\jdk-8.0.382.5-hotspot\bin;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\ia32;C:\Program Files (x86)\Common Files\Intel\Shared Files\cpp\bin\Intel64;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64_win\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\OpenSSH;C:\Program Files (x86)\HP\HP Performance Advisor;C:\Program Files (x86)\QuickTime\QTSystem;C:\Program Files (x86)\Common Files\Propellerhead Software\ReWire;C:\Program Files\Common Files\Propellerhead Software\ReWire;C:\Program Files\Microsoft SQL Server\130\Tools\Binn;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn;C:\Program Files (x86)\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\Common Files\GRM\SpaceVRData\Libs;C:\Program Files\CMake\bin;C:\Program Files\dotnet;C:\Program Files (x86)\Microsoft Emulator Manager\1.0;C:\Program Files (x86)\Microsoft ASP.NET\ASP.NET Web Pages\v1.0;C:\Program Files\Microsoft SQL Server\110\Tools\Binn;C:\Users\euseb\.dnx\bin;C:\Program Files\Microsoft DNX\Dnvm;C:\Program Files\Microsoft SQL Server\120\Tools\Binn;C:\Program Files (x86)\nodejs;C:\Program Files\Common Files\Avid\Eucon;C:\Program Files (x86)\Common Files\Avid\Eucon;C:\Program Files\Avid\Avid Link\jre\bin;C:\Program Files (x86)\dotnet;C:\Windows\SysWOW64;C:\Windows\Sysnative;C:\program files (x86)\iracing\d3dgear;C:\Program Files (x86)\Common Files\DivX Shared\DesktopService;C:\Program Files\Microsoft SQL Server\150\Tools\Binn;C:\Program Files\gs\gs10.00.0\bin;C:\Program Files (x86)\Windows Kits\10\Microsoft Application Virtualization\Sequencer;C:\Program Files\Calibre2;C:\Program Files\NVIDIA Corporation\Nsight Compute 2020.1.1;C:\Program Files\NVIDIA Corporation\NVIDIA app\NvDLISR;C:\Program Files\Git LFS;C:\Program Files\GitHub CLI;C:\Program Files (x86)\Incredibuild;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit;C:\Program Files\Acustica\Medusa Framework;C:\Program Files\Git\cmd;C:\Users\euseb\.local\bin;C:\Progra~1\NVIDIA~2\CUDA\v11.0\libnvvp;C:\Progra~1\NVIDIA~2\CUDA\v11.0\bin;C:\Progra~2\Common~1\Intel\Shared~1\redist\intel6~1\compiler;C:\Users\euseb\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Imaginando\DLYM;C:\Users\euseb\.dotnet\tools;C:\Users\euseb\AppData\Roaming\npm;C:\Users\euseb\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Imaginando\K7D;C:\Program Files\Imaginando\FRMS;C:\Program Files\Imaginando\DRC;C:\Users\euseb\AppData\Local\Programs\Ollama;C:\Users\euseb\.local\bin;C:\Users\euseb\.dotnet\tools;C:\Users\euseb\.windsurf\extensions\ms-python.debugpy-2025.18.0-win32-x64\bundled\scripts\noConfigScripts;C:\Program Files\Git\usr\bin\vendor_perl;C:\Program Files\Git\usr\bin\core_perl"'
+✗ list_getenv.k: Expected '"$P$G"', got '()'
 ✓ list_setenv.k: `TESTVAR
-✗ list_size.k: Error - _size: error accessing file 'README.md': _size: file 'README.md' not found
-✗ list_size_existing.k: Expected '872.0', got '1061.0'
+✓ list_size_existing.k: 11264.0
 ✓ test_ci_basic.k: "A"
-✓ test_ci_vector.k: "ABC"
+✗ test_ci_vector.k: Expected '"ABC"', got '"A";"B";"C"'
 ✓ test_ic_basic.k: 65
 ✓ test_vs_dyadic.k: 1 9 9 5
-✓ test_ic_vector.k: 65 66 67
+✗ test_ic_vector.k: Error - _ic: operand must be a single character
 ✓ test_monadic_colon.k: 42
 ✓ test_sm_basic.k: 1
 ✓ test_sm_simple.k: 1
-✓ test_ss_basic.k: 7
-✗ test_semicolon.k: Expected '1 2 3 4', got '3 4'
-✓ search_in_basic.k: 4
+✓ test_ss_basic.k: ,6
+✗ io_read_basic.k: Expected '("line1";"line2";"line3")', got '(,""""l""","""i""","""n""","""e""","""1"""";,""""l""","""i""","""n""","""e""","""2"""";,""""l""","""i""","""n""","""e""","""3"""")'
+✓ io_write_basic.k: 
+✗ io_write_csv.k: Error - Undefined variable: test.csv
+✗ debug_char.k: Expected '("line1";"line2";"line3")', got '(,""line1"";,""line2"";,""line3"")'
+✓ debug_simple_char.k: "line1"
+✗ debug_nested.k: Expected '("line1";"line2";"line3")', got '"line1";"line2";"line3"'
+✗ debug_nested2.k: Expected '("line1";"line2";"line3")', got '"line1";"line2";"line3"'
+✗ debug_hello_func.k: Expected '"hello"', got '{(x;"hello")}'
+✗ debug_direct.k: Expected '("line1";"line2";"line3")', got '"line1";"line2";"line3"'
+✗ debug_readtext.k: Expected '("line1";"line2";"line3")', got '(,""line1"";,""line2"";,""line3"")'
+✗ debug_enlist.k: Expected ',"line1"', got '{ enlist 0:`test }'
+✓ debug_single_char.k: "l"
+✗ debug_char_vector.k: Expected '"line"', got '"l";"i";"n";"e"'
+✗ debug_show.k: Expected '("line1";"line2";"line3")', got '{ show 0:`test }'
+✗ debug_enlist2.k: Expected ',"line1"', got '{ enlist "line1" }'
+✓ test_semicolon.k: 3 4
+✓ search_in_basic.k: 1
 ✓ search_in_notfound.k: 0
 ✓ search_bin_basic.k: 1
 ✓ search_binl_eachleft.k: 0 1 1 2 2
 ✓ search_lin_intersection.k: 1 1 1 0 0
-✗ amend_item_basic.k: Error - List indices must be integers
-✗ amend_item_multiple.k: Error - List indices must be integers
-✗ amend_item_monadic.k: Error - List indices must be integers
-✗ amend_test.k: Expected '1 12 3 4 5', got '`.'
-✓ amend_simple.k: 1 12 3 4 5
+✓ amend_item_basic.k: 1 12 3
+✓ amend_item_multiple.k: 11 2 13
+✓ amend_item_monadic.k: 1 4 3
+✓ amend_test.k: (1 2 13 4 5;6 7 8 9 10)
 ✓ find_basic.k: 2
 ✓ find_notfound.k: 7
-✗ bin.k: Error - Unexpected token: BIN(_bin)
-✗ lsq.k: Error - Binary operator must have exactly 2 children, got 0
-✓ format_float_precision_vector_simple.k: ("       1.5";"       2.5")
-✓ format_float_precision_mixed_vector.k: ("   1.50";"   2.70";"   3.14";"   4.20")
-✓ format_pad_mixed_vector.k: ("         1";"         2";"         3")
-✓ format_pad_negative_mixed_vector.k: ("1         ";"2         ";"3         ")
+✗ lsq.k: Error - _lsq (least squares) operation reserved for future use
+✗ format_float_precision_vector_simple.k: Expected '("       1.5";"       2.5")', got '(" ";" ";" ";" ";" ";" ";" ";"1";".";"5";" ";" ";" ";" ";" ";" ";" ";"2";".";"5")'
+✗ format_float_precision_mixed_vector.k: Expected '("   1.50";"   2.70";"   3.14";"   4.20")', got '(" ";" ";" ";"1";".";"5";"0";" ";" ";" ";"2";".";"7";"0";" ";" ";" ";"3";".";"1";"4";" ";" ";" ";"4";".";"2";"0")'
+✗ format_pad_mixed_vector.k: Expected '("         1";"         2";"         3")', got '(" ";" ";" ";" ";" ";" ";" ";" ";" ";"1";" ";" ";" ";" ";" ";" ";" ";" ";" ";"2";" ";" ";" ";" ";" ";" ";" ";" ";" ";"3")'
+✗ format_pad_negative_mixed_vector.k: Expected '("1         ";"2         ";"3         ")', got '("1";" ";" ";" ";" ";" ";" ";" ";" ";" ";"2";" ";" ";" ";" ";" ";" ";" ";" ";" ";"3";" ";" ";" ";" ";" ";" ";" ";" ";" ")'
 ✓ vector_notation_empty.k: ()
 ✓ vector_notation_functions.k: 10 20 30
 ✓ vector_notation_mixed_types.k: (42;3.14;"hello";`symbol)
 ✓ vector_notation_nested.k: 3 7 11
-✗ vector_notation_semicolon.k: Expected '(7;11;-20.45)', got '(7;14;-17.45)'
+✓ vector_notation_semicolon.k: (7;11;-20.45)
 ✓ vector_notation_single_group.k: 42
 ✓ vector_notation_space.k: 1 2 3 4 5
-✗ vector_notation_variables.k: Expected '30 200 -10', got '30 210 0'
-✗ vector_notation_semicolon.k: Expected '(7;11;-20.45)', got '(7;14;-17.45)'
-✓ vector_notation_single_group.k: 42
-✓ vector_notation_space.k: 1 2 3 4 5
-✗ vector_notation_variables.k: Expected '30 200 -10', got '30 210 0'
+✓ vector_notation_variables.k: 30 200 -10
 ✓ vector_addition.k: 4 6
 ✓ vector_division.k: 0.3333333 0.5
 ✓ vector_index_duplicate.k: 5 5
@@ -382,71 +400,55 @@ Total tests: 469
 ✓ vector_with_null_middle.k: (1;;3)
 ✓ where_operator.k: 0 2 3
 ✓ where_vector_counts.k: 0 0 0 1 1 2
-✓ floor_operator.k: 3.0
+✓ floor_operator.k: 3
 ✓ adverb_backslash_colon_basic.k: (5 6 7;6 7 8;7 8 9)
 ✓ adverb_slash_colon_basic.k: (5 6 7;6 7 8;7 8 9)
 ✓ adverb_tick_colon_basic.k: 4 1 3 8
-✗ amend_apply.k: Expected '(1 2 13 4 5
-6 7 8 9 10)', got '`.'
-✗ amend_dot_test.k: Error - Dictionary key must be a symbol
-✗ amend_item_simple.k: Error - For atomic data, indices must be empty list
-✗ amend_item_single.k: Expected '@[1 2 3]', got '1'
-✗ amend_minimal.k: Expected '@[1 2 3]', got '`.'
-✗ amend_parenthesized.k: Expected '@[1 2 3]', got '`.'
-✗ amend_test_anonymous_func.k: Expected '1 12 3 4 5', got '`.'
-✗ amend_test_func_var.k: Expected '11 2 3', got '`.'
-✗ conditional_bracket_test.k: Error - Undefined variable: :
-✗ conditional_false.k: Error - Undefined variable: :
-✗ conditional_simple_test.k: Error - Undefined variable: :
-✗ conditional_true.k: Error - Undefined variable: :
+✓ amend_apply.k: (1 2 13 4 5;6 7 8 9 10)
+✓ amend_dot_test.k: 1 12 3
+✓ amend_parenthesized.k: 11 2 3
+✓ amend_test_anonymous_func.k: 11 2 3
+✓ amend_test_func_var.k: 11 2 3
+✓ conditional_bracket_test.k: "true"
+✓ conditional_false.k: "false"
+✓ conditional_simple_test.k: "true"
+✓ conditional_true.k: "true"
 ✓ dictionary_null_index.k: 1 2
-✗ dictionary_unmake.k: Error - Undefined variable: .d
-✗ do_bracket_test.k: Error - Do function requires at least 2 arguments: count and expression(s)
-✗ do_loop.k: Error - Expected ']' after arguments expression
-✗ do_simple.k: Error - Do function requires at least 2 arguments: count and expression(s)
+✓ dictionary_unmake.k: ((`a;1;);(`b;2;))
+✓ do_bracket_test.k: 
+✓ do_loop.k: 
+✓ do_simple.k: 
 ✓ dyadic_divide_bracket.k: 5
 ✓ dyadic_minus_bracket.k: 7
 ✓ dyadic_multiply_bracket.k: 24
 ✓ dyadic_plus_bracket.k: 8
-✗ empty_brackets_dictionary.k: Error - Unexpected token: RIGHT_BRACKET(])
-✗ empty_brackets_vector.k: Error - Unexpected token: RIGHT_BRACKET(])
+✓ empty_brackets_dictionary.k: 1 2
+✓ empty_brackets_vector.k: 1 2 3 4
 ✓ form_braces_complex_expressions.k: 14 20 10
-✗ format_float_precision_complex_mixed.k: Expected '("   1.50";"   2.70";"   3.14";"   4.20")', got '("     1.234";"     2.567";"     3.890";"     4.123")'
-✗ format_float_vector.k: Expected '("       1.5";"       2.5")', got '""'
-✗ format_int_vector.k: Expected '("         1";"         2";"         3")', got '""'
+✗ format_float_precision_complex_mixed.k: Expected '("     1.234";"     2.567";"     3.890";"     4.123")', got '(" ";" ";" ";" ";" ";"1";".";"2";"3";"4";" ";" ";" ";" ";" ";"2";".";"5";"6";"7";" ";" ";" ";" ";" ";"3";".";"8";"9";"0";" ";" ";" ";" ";" ";"4";".";"1";"2";"3")'
+✗ format_float_vector.k: Expected '(,"1";,"2";,"3";"42")', got '(,"1";,"2";,"3";"4";"2")'
+✗ format_int_vector.k: Expected '(""
+ ""
+ ""
+ "")', got '""'
 ✓ format_long_vector.k: ""
-✓ format_string_pad_left.k: "     hello"
-✓ format_string_pad_right.k: "test      "
+✗ format_string_pad_left.k: Expected '"     hello"', got '" ";" ";" ";""";"h";"e";"l";"l";"o";"""'
+✗ format_string_pad_right.k: Expected '"test      "', got '""";"t";"e";"s";"t";""";" ";" ";" ";" "'
 ✗ format_vector_int.k: Expected '("1";"2";"3")', got '""'
 ✓ group_operator.k: (0 1 6;2 7 16;3 5 12 15 17;,4;8 9;,10;,11;,13;14 18;,19)
-✗ if_bracket_test.k: Error - Cannot compare Integer and Vector with <
-✗ if_simple_test.k: Error - If function requires at least 2 arguments: condition and expression(s)
-✗ if_true.k: Error - Cannot compare Integer and Vector with <
-✓ in_basic.k: 4
+✓ if_bracket_test.k: 
+✓ if_simple_test.k: 
+✓ if_true.k: 
+✓ in_basic.k: 1
 ✓ in_notfound.k: 0
-✓ monadic_format_basic.k: ,"1"
-✓ monadic_format_types.k: "42.5"
-✓ monadic_format_vector.k: (,"1";,"2";,"3")
-✓ monadic_format_string_hello.k: "hello"
-✗ monadic_format_string_a.k: Expected ',"a"', got '""a""'
-✓ monadic_format_symbol_hello.k: "hello"
-✓ monadic_format_symbol_simple.k: "test"
-✗ monadic_format_dictionary.k: Expected '.((`a;1;);(`b;2;);(`c;3;))', got '".((`a;1;);(`b;2;);(`c;3;))"'
-✓ monadic_format_nested_list.k: ((,"1";,"2";,"3");(,"4";,"5";,"6"))
-✓ monadic_format_integer.k: "42"
-✓ monadic_format_float.k: "3.14"
-✓ monadic_format_vector_simple.k: (,"1";,"2";,"3")
 ✓ in_simple.k: 0
 ✓ isolated.k: 0.6
 ✓ modulo.k: 0.6
-✓ monadic_format_mixed_vector.k: (,"1";"2.5";"hello";"symbol")
+✗ monadic_format_mixed_vector.k: Expected '(,"1";"2.5";"hello";"symbol")', got '(,"1";"2";".";"5";"h";"e";"l";"l";"o";"s";"y";"m";"b";"o";"l")'
 ✓ over_plus_empty.k: 0
 ✓ simple_division.k: 4
 ✓ simple_subtraction.k: 2
 ✓ string_parse.k: 30
-✓ take_operator_empty_float.k: 0#0.0
-✓ take_operator_empty_symbol.k: 0#`
-✓ take_operator_overflow.k: 1 2 3 1 2 3 1 2 3 1
 ✓ k_tree_assignment_absolute_foo.k: 42
 ✓ k_tree_retrieve_absolute_foo.k: 42
 ✓ k_tree_retrieval_relative.k: 42
@@ -461,21 +463,168 @@ Total tests: 469
 ✓ k_tree_test_bracket_indexing.k: 2
 ✓ k_tree_flip_test.k: ((`a;1);(`b;2);(`c;3))
 ✓ vector_null_index.k: 1 2 3 4
-✗ while_bracket_test.k: Error - Expected ']' after arguments expression
-✗ while_safe_test.k: Error - Cannot compare Integer and Vector with <
-✗ while_simple_test.k: Error - While function requires at least 2 arguments: condition and expression(s)
-✓ serialization_bd_db_integer.k: 1 0 0 0 8 0 0 0 1 0 0 0 0 0 0 42 0 0 0
-✓ serialization_bd_db_float.k: 1 0 0 0 16 0 0 0 2 0 0 0 0 0 0 0 110 134 27 240 249 33 9 64
-✓ serialization_bd_db_character.k: 1 0 0 0 8 0 0 0 3 0 0 0 97 0 0 0
-✓ serialization_bd_db_symbol.k: 1 0 0 0 11 0 0 0 4 0 0 0 115 121 109 98 111 108 0
-✓ serialization_bd_db_null.k: 1 0 0 0 8 0 0 0 6 0 0 0 0 0 0
-✓ serialization_bd_db_integervector.k: 1 0 0 0 28 0 0 0 255 255 255 255 3 0 0 0 1 0 0 0 2 0 0 0 3 0 0 0
-✓ serialization_bd_db_charactervector.k: 1 0 0 0 21 0 0 0 253 255 255 255 5 0 0 0 104 101 108 108 111 0
-✓ serialization_bd_db_symbolvector.k: 1 0 0 0 22 0 0 0 252 255 255 255 3 0 0 0 97 0 98 0 99 0
-✗ serialization_bd_db_list.k: Error - _bd (bytes from data) operation failed: Unable to cast object of type 'K3CSharp.FloatValue' to type 'K3CSharp.IntegerValue'.
-✗ serialization_bd_db_dictionary.k: Error - _bd (bytes from data) operation failed: Vector type not supported for serialization: K3CSharp.VectorValue
-✗ serialization_bd_db_anonymousfunction.k: Error - _bd (bytes from data) operation failed: Unsupported type for _bd: K3CSharp.FunctionValue
-✓ serialization_bd_db_roundtrip_integer.k: 704643072
+✓ while_bracket_test.k: 
+✓ while_safe_test.k: 
+✓ while_simple_test.k: 
+✗ serialization_bd_db_integer.k: Expected '"\001\000\000\000\b\000\000\000\001\000\000\000*\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"*";" ";" ";" "'
+✗ serialization_bd_db_float.k: Expected '"\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000n\206\033\360\371!\t@"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"n";"";"";"ð";"ù";"!";"	";"@"'
+✗ serialization_bd_db_character.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\000a\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"a";" ";" ";" "'
+✗ serialization_bd_db_symbol.k: Expected '"\001\000\000\000\013\000\000\000\004\000\000\000symbol\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"s";"y";"m";"b";"o";"l";" "'
+✗ serialization_bd_db_null.k: Expected '"\001\000\000\000\b\000\000\000\006\000\000\000\000\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" "'
+✗ serialization_bd_db_integervector.k: Expected '"\001\000\000\000\024\000\000\000\377\377\377\377\003\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"ÿ";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" "'
+✗ serialization_bd_db_floatvector.k: Expected '"\001\000\000\000 \000\000\000\376\377\377\377\003\000\000\000\232\231\231\231\231\231\361?\232\231\231\231\231\231\001@ffffff\n@"', got '"";" ";" ";" ";" ";" ";" ";" ";"þ";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"";"";"";"";"";"";"ñ";"?";"";"";"";"";"";"";"";"@";"f";"f";"f";"f";"f";"f";"
+";"@"'
+✗ serialization_bd_db_charactervector.k: Expected '"\001\000\000\000\016\000\000\000\375\377\377\377\005\000\000\000hello\000"', got '"";" ";" ";" ";"";" ";" ";" ";"ý";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"h";"e";"l";"l";"o";" "'
+✗ serialization_bd_db_symbolvector.k: Expected '"\001\000\000\000\016\000\000\000\374\377\377\377\003\000\000\000a\000b\000c\000"', got '"";" ";" ";" ";"";" ";" ";" ";"ü";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"a";" ";"b";" ";"c";" "'
+✗ serialization_bd_db_list.k: Expected '"\001\000\000\000(\000\000\000\000\000\000\000\003\000\000\000\001\000\000\000\001\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\004@\003\000\000\000a\000\000\000"', got '"";" ";" ";" ";"(";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";" ";" ";"";"@";"";" ";" ";" ";"a";" ";" ";" "'
+✗ serialization_bd_db_dictionary.k: Expected '"\001\000\000\000H\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\004\000\000\0001\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\004\000\000\0002\000\000\000\006\000\000\000\000\000\000\000"', got '"";" ";" ";" ";"H";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"a";" ";" ";" ";"";" ";" ";" ";"1";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"b";" ";" ";" ";"";" ";" ";" ";"2";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" "'
+✗ serialization_bd_db_anonymousfunction.k: Expected '"\001\000\000\000\017\000\000\000\n\000\000\000\000{[x] x+1}\000"', got '"";" ";" ";" ";"";" ";" ";" ";"
+";" ";" ";" ";" ";"{";"[";"x";"]";" ";"x";"+";"1";"}";" "'
+✓ serialization_bd_db_roundtrip_integer.k: 42
+✓ serialization_bd_db_roundtrip_list.k: (1;2.5;"a")
+✓ serialization_bd_ic_symbol.k: 1 0 0 0 6 0 0 0 4 0 0 0 65 0
+✓ db_basic_integer.k: 42
+✓ db_float.k: 3.14
+✓ db_symbol.k: `test
+✓ db_int_vector.k: 1 2 3
+✓ db_symbol_vector.k: `a`b`c
+✗ db_char_vector.k: Expected '"hello"', got '"h";"e";"l";"l";"o"'
+✓ db_list_simple.k: 1 2 3
+✓ db_dict_simple.k: .((`a;1;);(`b;2;);(`c;3;))
+✓ db_function_simple.k: {+}
+✓ db_function_params.k: {x+y}
+✓ db_null.k: 0N
+✓ db_empty_list.k: ()
+✓ db_character.k: "a"
+✓ db_float_simple.k: 1.5
+✓ db_int_vector_long.k: 1 2 3 4 5
+✓ db_float_vector.k: 1.1 2.2 3.3
+✗ db_char_vector_sentence.k: Expected '"hello world"', got '"h";"e";"l";"l";"o";" ";"w";"o";"r";"l";"d"'
+✓ db_symbol_simple.k: `hello
+✓ db_list_longer.k: 1 2 3 4 5
+✗ db_list_mixed_types.k: Expected '(1;`test;3.14;"hello")', got '(1;`test;3.14;"h")'
+✓ db_function_complex.k: {[x;y] x*y+z}
+✓ db_function_simple_math.k: {x+y}
+✓ db_nested_dict_vectors.k: .((`a;1 2 3;);(`b;`hello`world`test;))
+✓ db_nested_lists.k: (1 2 3;`hello`world`test;4.5 6.7)
+✓ db_mixed_list.k: (1;`test;3.14)
+✓ db_dict_simple.k: .((`a;1;);(`b;2;);(`c;3;))
+✓ db_dict_single_entry.k: .,(`a;1;)
+✓ db_dict_symbol_2char.k: .,(`ab;1 2;)
+✓ db_dict_symbol_8char.k: .,(`abcdefgh;1 2 3 4 5 6 7 8;)
+✓ db_dict_multi_entry.k: .((`a;1;);(`b;2;))
+✓ db_dict_five_entries.k: .((`a;1;);(`b;2;);(`c;3;);(`d;4;);(`e;5;))
+✗ db_dict_complex_attributes.k: Expected '.((`col01;11 12 13 14 15;.((`format;,`n;);(`name;`ID;)));(`col02;`yellow`white`blue`red`black;.((`format;,`c;);(`name;`Color;)));(`col03;("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`c;);(`name;`Retailer;))))', got '.((`col01;11 12 13 14 15;.((`format;,`n;);(`name;`ID;)));(`col02;`yellow`white`blue`red`black;.((`format;,`c;);(`name;`Color;)));(`col03;("H";"L";"A";"N";"S";"u";"p";"p";"l";"y";" ";"C";"o";".");.((`format;,`c;);(`name;`Retailer;))))'
+✓ db_dict_empty.k: .()
+✓ db_dict_with_null_attrs.k: .,(`a;1;.())
+✓ db_dict_with_empty_attrs.k: .((`a;1;);(`b;2;.()))
+✓ db_enlist_single_int.k: ,5
+✓ db_enlist_single_symbol.k: ,`test
+✗ db_enlist_single_string.k: Expected ',"hello"', got ',"h"'
+✓ db_enlist_vector.k: ,1 2 3
+✗ serialization_bd_null_edge_0.k: Expected '"\001\000\000\000\b\000\000\000\006\000\000\000\000\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" "'
+✗ serialization_bd_integer_edge_0.k: Expected '"\001\000\000\000\b\000\000\000\001\000\000\000\000\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" "'
+✗ serialization_bd_integer_edge_1.k: Expected '"\001\000\000\000\b\000\000\000\001\000\000\000\001\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" "'
+✗ serialization_bd_integer_edge_-1.k: Expected '"\001\000\000\000\b\000\000\000\001\000\000\000\377\377\377\377"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"ÿ";"ÿ";"ÿ";"ÿ"'
+✗ serialization_bd_integer_edge_2147483647.k: Expected '"\001\000\000\000\b\000\000\000\001\000\000\000\377\377\377\177"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"ÿ";"ÿ";"ÿ";""'
+✗ serialization_bd_integer_edge_-2147483648.k: Expected '"\001\000\000\000\b\000\000\000\001\000\000\000\001\000\000\200"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";""'
+✗ serialization_bd_integer_edge_0N.k: Expected '"\001\000\000\000\b\000\000\000\001\000\000\000\000\000\000\200"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";""'
+✗ serialization_bd_integer_edge_0I.k: Expected '"\001\000\000\000\b\000\000\000\001\000\000\000\377\377\377\177"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"ÿ";"ÿ";"ÿ";""'
+✗ serialization_bd_integer_edge_-0I.k: Expected '"\001\000\000\000\b\000\000\000\001\000\000\000\001\000\000\200"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";""'
+✗ serialization_bd_float_edge_0.0.k: Expected '"\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";" ";" ";" ";" "'
+✗ serialization_bd_float_edge_1.0.k: Expected '"\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\360?"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";" ";" ";"ð";"?"'
+✗ serialization_bd_float_edge_-1.0.k: Expected '"\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\360\277"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";" ";" ";"ð";"¿"'
+✗ serialization_bd_float_edge_0.5.k: Expected '"\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\340?"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";" ";" ";"à";"?"'
+✗ serialization_bd_float_edge_-0.5.k: Expected '"\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\340\277"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";" ";" ";"à";"¿"'
+✗ serialization_bd_float_edge_0n.k: Expected '"\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\370\377"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";" ";" ";"ø";"ÿ"'
+✗ serialization_bd_float_edge_0i.k: Expected '"\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\360\177"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";" ";" ";"ð";""'
+✗ serialization_bd_float_edge_-0i.k: Expected '"\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\360\377"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";" ";" ";"ð";"ÿ"'
+✗ serialization_bd_symbol_edge_a.k: Expected '"\001\000\000\000\006\000\000\000\004\000\000\000a\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"a";" "'
+✗ serialization_bd_symbol_edge_symbol.k: Expected '"\001\000\000\000\013\000\000\000\004\000\000\000symbol\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"s";"y";"m";"b";"o";"l";" "'
+✗ serialization_bd_symbol_edge_test123.k: Expected '"\001\000\000\000\014\000\000\000\004\000\000\000test123\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"t";"e";"s";"t";"1";"2";"3";" "'
+✗ serialization_bd_symbol_edge_underscore.k: Expected '"\001\000\000\000\020\000\000\000\004\000\000\000_underscore\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"_";"u";"n";"d";"e";"r";"s";"c";"o";"r";"e";" "'
+✗ serialization_bd_symbol_edge_hello.k: Expected '"\001\000\000\000\n\000\000\000\004\000\000\000hello\000"', got '"";" ";" ";" ";"
+";" ";" ";" ";"";" ";" ";" ";"h";"e";"l";"l";"o";" "'
+✗ serialization_bd_symbol_edge_newline_tab.k: Expected '"\001\000\000\000\007\000\000\000\004\000\000\000\n\t\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"
+";"	";" "'
+✗ serialization_bd_symbol_edge_001.k: Expected '"\001\000\000\000\006\000\000\000\004\000\000\000\001\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" "'
+✗ serialization_bd_symbol_edge_empty.k: Expected '"\001\000\000\000\005\000\000\000\004\000\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" "'
+✗ serialization_bd_character_edge_a.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\000a\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"a";" ";" ";" "'
+✗ serialization_bd_character_edge_b.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\000b\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"b";" ";" ";" "'
+✗ serialization_bd_character_edge_z.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\000z\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"z";" ";" ";" "'
+✗ serialization_bd_character_edge_A_upper.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\000A\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"A";" ";" ";" "'
+✗ serialization_bd_character_edge_Z_upper.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\000Z\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"Z";" ";" ";" "'
+✗ serialization_bd_character_edge_0.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\0000\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"0";" ";" ";" "'
+✗ serialization_bd_character_edge_9.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\0009\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"9";" ";" ";" "'
+✗ serialization_bd_character_edge_space.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\000 \000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" "'
+✗ serialization_bd_character_edge_newline.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\000\n\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"
+";" ";" ";" "'
+✗ serialization_bd_character_edge_tab.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\000\t\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"	";" ";" ";" "'
+✗ serialization_bd_character_edge_carriage.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\000\r\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" "'
+✗ serialization_bd_character_edge_null.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\000\000\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" "'
+✗ serialization_bd_character_edge_001.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\000\001\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" "'
+✗ serialization_bd_character_edge_377.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\000\377\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"ÿ";" ";" ";" "'
+✗ serialization_bd_character_edge_backspace.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\000\b\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" "'
+✗ serialization_bd_charactervector_edge_empty.k: Expected '"\001\000\000\000\t\000\000\000\375\377\377\377\000\000\000\000\000"', got '"";" ";" ";" ";"	";" ";" ";" ";"ý";"ÿ";"ÿ";"ÿ";" ";" ";" ";" ";" "'
+✗ serialization_bd_charactervector_edge_a.k: Expected '"\001\000\000\000\b\000\000\000\003\000\000\000a\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"a";" ";" ";" "'
+✗ serialization_bd_charactervector_edge_hello.k: Expected '"\001\000\000\000\016\000\000\000\375\377\377\377\005\000\000\000hello\000"', got '"";" ";" ";" ";"";" ";" ";" ";"ý";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"h";"e";"l";"l";"o";" "'
+✗ serialization_bd_charactervector_edge_whitespace.k: Expected '"\001\000\000\000\014\000\000\000\375\377\377\377\003\000\000\000\n\t\r\000"', got '"";" ";" ";" ";"";" ";" ";" ";"ý";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"
+";"	";"";" "'
+✗ serialization_bd_integervector_edge_empty.k: Expected '"\001\000\000\000\b\000\000\000\377\377\377\377\000\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"ÿ";"ÿ";"ÿ";"ÿ";" ";" ";" ";" "'
+✗ serialization_bd_integervector_edge_single.k: Expected '"\001\000\000\000\014\000\000\000\377\377\377\377\001\000\000\000\001\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"ÿ";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"";" ";" ";" "'
+✗ serialization_bd_integervector_edge_123.k: Expected '"\001\000\000\000\024\000\000\000\377\377\377\377\003\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"ÿ";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" "'
+✗ serialization_bd_integervector_edge_special.k: Expected '"\001\000\000\000\024\000\000\000\377\377\377\377\003\000\000\000\000\000\000\200\377\377\377\177\001\000\000\200"', got '"";" ";" ";" ";"";" ";" ";" ";"ÿ";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";" ";" ";" ";"";"ÿ";"ÿ";"ÿ";"";"";" ";" ";""'
+✗ serialization_bd_list_edge_empty.k: Expected '"\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";" ";" ";" ";" "'
+✗ serialization_bd_list_edge_null.k: Expected '"\001\000\000\000\020\000\000\000\000\000\000\000\001\000\000\000\006\000\000\000\000\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" "'
+✗ serialization_bd_list_edge_mixed.k: Expected '"\001\000\000\000(\000\000\000\000\000\000\000\003\000\000\000\001\000\000\000\001\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\004@\003\000\000\000a\000\000\000"', got '"";" ";" ";" ";"(";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";" ";" ";"";"@";"";" ";" ";" ";"a";" ";" ";" "'
+✗ serialization_bd_list_edge_complex.k: Expected '"\001\000\000\0000\000\000\000\000\000\000\000\003\000\000\000\006\000\000\000\000\000\000\000\004\000\000\000symbol\000\000\000\000\000\000\n\000\000\000\000{[]}\000\000\000\000\000\000\000"', got '"";" ";" ";" ";"0";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"s";"y";"m";"b";"o";"l";" ";" ";" ";" ";" ";" ";"
+";" ";" ";" ";" ";"{";"[";"]";"}";" ";" ";" ";" ";" ";" ";" "'
+✗ serialization_bd_list_edge_nested.k: Expected '"\001\000\000\000(\000\000\000\000\000\000\000\002\000\000\000\377\377\377\377\002\000\000\000\001\000\000\000\002\000\000\000\377\377\377\377\002\000\000\000\003\000\000\000\004\000\000\000"', got '"";" ";" ";" ";"(";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"ÿ";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"ÿ";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" "'
+✗ serialization_bd_list_edge_dicts.k: Expected '"\001\000\000\000X\000\000\000\000\000\000\000\002\000\000\000\005\000\000\000\001\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\001\000\000\000\001\000\000\000\006\000\000\000\000\000\000\000\005\000\000\000\001\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\001\000\000\000\002\000\000\000\006\000\000\000\000\000\000\000"', got '"";" ";" ";" ";"X";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"a";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"b";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" "'
+✗ serialization_bd_anonymousfunction_random_1.k: Expected '"\001\000\000\000\030\000\000\000\n\000\000\000\000{[x] x+7;x$1;x<=2}\000"', got '"";" ";" ";" ";"";" ";" ";" ";"
+";" ";" ";" ";" ";"{";"[";"x";"]";" ";"x";"+";"7";";";"x";"$";"1";";";"x";"<";"=";"2";"}";" "'
+✗ serialization_bd_anonymousfunction_random_2.k: Expected '"\001\000\000\000\022\000\000\000\n\000\000\000\000{[] 0|4;0&3}\000"', got '"";" ";" ";" ";"";" ";" ";" ";"
+";" ";" ";" ";" ";"{";"[";"]";" ";"0";"|";"4";";";"0";"&";"3";"}";" "'
+✗ serialization_bd_anonymousfunction_random_3.k: Expected '"\001\000\000\000\024\000\000\000\n\000\000\000.k\000{[xyz] xy|3}\000"', got '"";" ";" ";" ";"";" ";" ";" ";"
+";" ";" ";" ";".";"k";" ";"{";"[";"x";"y";"z";"]";" ";"x";"y";"|";"3";"}";" "'
+✗ serialization_bd_floatvector_random_1.k: Expected '"\001\000\000\000(\000\000\000\376\377\377\377\004\000\000\000sj\325/\312\006\bAl\315\227\234\217\353\023\301\026\270Yp\027/\n\301Z`\257\331\350\303\306@"', got '"";" ";" ";" ";"(";" ";" ";" ";"þ";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"s";"j";"Õ";"/";"Ê";"";"";"A";"l";"Í";"";"";"";"ë";"";"Á";"";"¸";"Y";"p";"";"/";"
+";"Á";"Z";"`";"¯";"Ù";"è";"Ã";"Æ";"@"'
+✗ serialization_bd_floatvector_random_2.k: Expected '"\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000:\321\254\250b*\002A"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";":";"Ñ";"¬";"¨";"b";"*";"";"A"'
+✗ serialization_bd_floatvector_random_3.k: Expected '"\001\000\000\000(\000\000\000\376\377\377\377\004\000\000\0002\377\004(g\334!A\253p.\342\211b!\301\317\3376\002\n*\342@zIO\0230;\030A"', got '"";" ";" ";" ";"(";" ";" ";" ";"þ";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"2";"ÿ";"";"(";"g";"Ü";"!";"A";"«";"p";".";"â";"";"b";"!";"Á";"Ï";"ß";"6";"";"
+";"*";"â";"@";"z";"I";"O";"";"0";";";"";"A"'
+✗ serialization_bd_symbolvector_random_1.k: Expected '"\001\000\000\000&\000\000\000\374\377\377\377\006\000\000\000qzUM7\000g8X6P\000iay\000KgNQ5i\000< +\000b5\000"', got '"";" ";" ";" ";"&";" ";" ";" ";"ü";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"q";"z";"U";"M";"7";" ";"g";"8";"X";"6";"P";" ";"i";"a";"y";" ";"K";"g";"N";"Q";"5";"i";" ";"<";" ";"+";" ";"b";"5";" "'
+✗ serialization_bd_symbolvector_random_2.k: Expected '"\001\000\000\0001\000\000\000\374\377\377\377\n\000\000\000O 0\000D\000qCBI1b\000*H \000SS\000ULsyI\000F~\000C\000Mont\000O25B\000"', got '"";" ";" ";" ";"1";" ";" ";" ";"ü";"ÿ";"ÿ";"ÿ";"
+";" ";" ";" ";"O";" ";"0";" ";"D";" ";"q";"C";"B";"I";"1";"b";" ";"*";"H";" ";" ";"S";"S";" ";"U";"L";"s";"y";"I";" ";"F";"~";" ";"C";" ";"M";"o";"n";"t";" ";"O";"2";"5";"B";" "'
+✗ serialization_bd_symbolvector_random_3.k: Expected '"\001\000\000\000!\000\000\000\374\377\377\377\006\000\000\000o3\000EE5ijP\000trD0LuE\000OW\000.\000y\000"', got '"";" ";" ";" ";"!";" ";" ";" ";"ü";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"o";"3";" ";"E";"E";"5";"i";"j";"P";" ";"t";"r";"D";"0";"L";"u";"E";" ";"O";"W";" ";".";" ";"y";" "'
+✓ test_quoted_symbol.k: `"."
+✗ test_quoted_symbol_serialization.k: Expected '"\001\000\000\000\006\000\000\000\004\000\000\000.\000"', got '"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";".";" "'
+✓ test_simple_symbol.k: `a`"."`b
+✓ test_single_quoted_symbol.k: `"."
+✓ test_symbol_vector_with_quoted.k: `a`b`"."`c
+✗ serialization_bd_dictionary_with_symbol_vectors.k: Expected '"\001\000\000\000p\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000colA\000\000\000\000\000\000\000\000\374\377\377\377\003\000\000\000a\000b\000c\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000colB\000\000\000\000\000\000\000\000\374\377\377\377\003\000\000\000dd\000eee\000ffff\000\000\000\000\000\006\000\000\000\000\000\000\000"', got '"";" ";" ";" ";"p";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"c";"o";"l";"A";" ";" ";" ";" ";" ";" ";" ";" ";"ü";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"a";" ";"b";" ";"c";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"c";"o";"l";"B";" ";" ";" ";" ";" ";" ";" ";" ";"ü";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"d";"d";" ";"e";"e";"e";" ";"f";"f";"f";"f";" ";" ";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" "'
+✗ serialization_bd_dictionary_with_vectors.k: Expected '"\001\000\000\000x\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000col1\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000\004\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000col2\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\005\000\000\000\006\000\000\000\007\000\000\000\b\000\000\000\006\000\000\000\000\000\000\000"', got '"";" ";" ";" ";"x";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"c";"o";"l";"1";" ";" ";" ";" ";" ";" ";" ";" ";"ÿ";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"c";"o";"l";"2";" ";" ";" ";" ";" ";" ";" ";" ";"ÿ";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" "'
+✗ serialization_bd_list_with_explicit_nulls.k: Expected '"\001\000\000\000H\000\000\000\000\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\004\000\000\0001\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\004\000\000\0002\000\000\000\006\000\000\000\000\000\000\000"', got '"";" ";" ";" ";"H";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"a";" ";" ";" ";"";" ";" ";" ";"1";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"b";" ";" ";" ";"";" ";" ";" ";"2";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" "'
+✗ serialization_bd_list_with_vectors.k: Expected '"\001\000\000\000h\000\000\000\000\000\000\000\002\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000col1\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000\004\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000col2\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\005\000\000\000\006\000\000\000\007\000\000\000\b\000\000\000"', got '"";" ";" ";" ";"h";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"c";"o";"l";"1";" ";" ";" ";" ";" ";" ";" ";" ";"ÿ";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"c";"o";"l";"2";" ";" ";" ";" ";" ";" ";" ";" ";"ÿ";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" "'
+✗ serialization_bd_list_with_symbol_vectors.k: Expected '"\001\000\000\000`\000\000\000\000\000\000\000\002\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000colA\000\000\000\000\000\000\000\000\374\377\377\377\003\000\000\000a\000b\000c\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000colB\000\000\000\000\000\000\000\000\374\377\377\377\003\000\000\000dd\000eee\000ffff\000\000\000\000\000"', got '"";" ";" ";" ";"`";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"c";"o";"l";"A";" ";" ";" ";" ";" ";" ";" ";" ";"ü";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"a";" ";"b";" ";"c";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"c";"o";"l";"B";" ";" ";" ";" ";" ";" ";" ";" ";"ü";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"d";"d";" ";"e";"e";"e";" ";"f";"f";"f";"f";" ";" ";" ";" ";" "'
+✗ bd_dict_single_entry.k: Expected '"\001\000\000\000(\000\000\000\005\000\000\000\001\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\001\000\000\000\001\000\000\000\006\000\000\000\000\000\000\000"', got '"";" ";" ";" ";"(";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"a";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" "'
+✓ db_dict_larger.k: .((`a;1;);(`b;2;);(`c;3;);(`d;4;))
+✓ db_dict_mixed_types.k: .((`key1;`value1;);(`key2;42;);(`key3;3.14;))
+✓ db_float_vector_longer.k: 1.1 2.2 3.3 4.4 5.5
+✓ db_int_vector_longer.k: 1 2 3 4 5 6 7 8 9 10
+✓ db_nested_structures.k: .((`a;1 2 3;);(`b;4 5 6;))
+✗ db_string_hello.k: Expected '"hello"', got '"h";"e";"l";"l";"o"'
+✓ db_symbol_hello.k: `hello
+✓ db_symbol_vector_longer.k: `hello`world`test
+✓ test_dict_larger.k: .((`a;1;);(`b;2;);(`c;3;);(`d;4;))
+✓ test_dict_simple.k: .((`a;1;);(`b;2;);(`c;3;))
+✓ symbol_special_chars.k: `"hello-world!"
+✓ type_empty_int_vector.k: -1
+✗ bd_empty_list.k: Expected '"\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";" ";" ";" ";" ";" ";" ";" ";" "'
+✗ bd_enlist_single_int.k: Expected '"\001\000\000\000\014\000\000\000\377\377\377\377\001\000\000\000\005\000\000\000"', got '"";" ";" ";" ";"";" ";" ";" ";"ÿ";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"";" ";" ";" "'
+✗ bd_enlist_single_string.k: Expected '"\001\000\000\000\030\000\000\000\000\000\000\000\001\000\000\000\375\377\377\377\005\000\000\000hello\000\000\000"', got '"";" ";" ";" ";"
+";" ";" ";" ";"ý";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"h";" "'
+✗ bd_symbol_vector_longer.k: Expected '"\001\000\000\000\031\000\000\000\374\377\377\377\003\000\000\000hello\000world\000test\000"', got '"";" ";" ";" ";"";" ";" ";" ";"ü";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"h";"e";"l";"l";"o";" ";"w";"o";"r";"l";"d";" ";"t";"e";"s";"t";" "'
+✗ bd_enlist_single_symbol.k: Expected '"\001\000\000\000\r\000\000\000\374\377\377\377\001\000\000\000test\000"', got '"";" ";" ";" ";"";" ";" ";" ";"ü";"ÿ";"ÿ";"ÿ";"";" ";" ";" ";"t";"e";"s";"t";" "'
 
-Test Results: 389/469 passed (82.9%)
+Test Results: 454/602 passed (75.4%)
 Detailed results table written to: T:\_src\github.com\ERufian\ksharp\K3CSharp.Tests\results_table.txt

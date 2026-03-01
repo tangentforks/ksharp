@@ -33,7 +33,7 @@ namespace K3CSharp
                 {
                     result.Add(MathLog(element));
                 }
-                return new VectorValue(result);
+                return new VectorValue(result, -2); // Float vector
             }
             else
             {
@@ -55,14 +55,14 @@ namespace K3CSharp
             {
                 return new FloatValue(Math.Exp(floatValue.Value));
             }
-            else if (operand is VectorValue vec)
+            else if (operand is VectorValue vector)
             {
                 var result = new List<K3Value>();
-                foreach (var element in vec.Elements)
+                foreach (var element in vector.Elements)
                 {
                     result.Add(MathExp(element));
                 }
-                return new VectorValue(result);
+                return new VectorValue(result, -2); // Float vector
             }
             else
             {
@@ -91,7 +91,7 @@ namespace K3CSharp
                 {
                     result.Add(MathAbs(element));
                 }
-                return new VectorValue(result);
+                return new VectorValue(result, -2); // Float vector
             }
             else
             {
@@ -120,7 +120,7 @@ namespace K3CSharp
                 {
                     result.Add(MathSqr(element));
                 }
-                return new VectorValue(result);
+                return new VectorValue(result, -2); // Float vector
             }
             else
             {
@@ -155,7 +155,7 @@ namespace K3CSharp
                 {
                     result.Add(MathSqrt(element));
                 }
-                return new VectorValue(result);
+                return new VectorValue(result, -2); // Float vector
             }
             else
             {
@@ -297,7 +297,7 @@ namespace K3CSharp
                 {
                     result.Add(MathSin(element));
                 }
-                return new VectorValue(result);
+                return new VectorValue(result, -2); // Float vector
             }
             else
             {
@@ -326,7 +326,7 @@ namespace K3CSharp
                 {
                     result.Add(MathCos(element));
                 }
-                return new VectorValue(result);
+                return new VectorValue(result, -2); // Float vector
             }
             else
             {
@@ -355,7 +355,7 @@ namespace K3CSharp
                 {
                     result.Add(MathTan(element));
                 }
-                return new VectorValue(result);
+                return new VectorValue(result, -2); // Float vector
             }
             else
             {
