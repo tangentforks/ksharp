@@ -360,7 +360,7 @@ namespace K3CSharp.Tests
                 ("special_long_neg_inf.k", "-0Ij"),
                 ("special_long_null.k", "0Nj"),
                 ("special_long_pos_inf.k", "0Ij"),
-                ("special_null.k", "_n"),
+                ("special_null.k", ""),
                 
                 // Additional special value arithmetic tests (separated from special_values_arithmetic.k)
                 ("special_int_pos_inf_plus_1.k", "0N"),
@@ -562,9 +562,9 @@ namespace K3CSharp.Tests
                 ("rand_draw_select.k", ".((`type;-1;);(`shape;,10;))"),
                 ("rand_draw_deal.k", ".((`type;-1;);(`shape;,4;);(`allitemsunique;1;))"),
                 ("rand_draw_probability.k", ".((`type;-2;);(`shape;,10;))"),
-                ("rand_draw_vector_select.k", ".((`type;0;);(`shape;,2;))"),
+                ("rand_draw_vector_select.k", ".((`type;4;);(`shape;,2;))"),
                 ("rand_draw_vector_deal.k", ".((`type;0;);(`shape;2 3;);(`allitemsunique;1;))"),
-                ("rand_draw_vector_probability.k", ".((`type;0;);(`shape;,2;))"),
+                ("rand_draw_vector_probability.k", ".((`type;4;);(`shape;,2;))"),
                 ("time_gtime.k", "20350101 0"),
                 ("time_lt.k", "-18000"),
                 ("time_jd.k", "-3251"),

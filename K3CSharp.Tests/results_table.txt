@@ -175,7 +175,7 @@
 ║ special_long_neg_inf.k                             │ -0Ij                 │ -0Ij                 │                      ║
 ║ special_long_null.k                                │ 0Nj                  │ 0Nj                  │                      ║
 ║ special_long_pos_inf.k                             │ 0Ij                  │ 0Ij                  │                      ║
-║ special_null.k                                     │ _n                   │                      │ _n                   ║
+║ special_null.k                                     │ _n                   │                      │                      ║
 ║ special_int_pos_inf_plus_1.k                       │ 0I + 1               │ 0N                   │                      ║
 ║ special_int_null_plus_1.k                          │ 0N + 1               │ -0I                  │                      ║
 ║ special_int_neg_inf_plus_1.k                       │ -0I + 1              │ -2147483646          │                      ║
@@ -260,7 +260,7 @@
 ║ variable_assignment.k                              │ foo:7                │ 7                    │                      ║
 ║ variable_reassignment.k                            │ foo:7                │ 7.2 4.5              │                      ║
 ║ variable_scoping_global_access.k                   │ globalVar: 100  // Test function accessing global variable │ 150                  │                      ║
-║ variable_scoping_global_assignment.k               │ globalVar: 100  // Test global assignment from nested function │ 100                  │ 10                   ║
+║ variable_scoping_global_assignment.k               │ globalVar: 100  // Test global assignment from nested function │ 100                  │ 30                   ║
 ║ variable_scoping_global_unchanged.k                │ globalVar: 100  // Test verify global variable unchanged │ 100                  │                      ║
 ║ variable_scoping_local_hiding.k                    │ globalVar: 100  // Test function with local variable hiding global │ 60                   │                      ║
 ║ variable_scoping_nested_functions.k                │ globalVar: 100  // Test nested functions │ 140                  │                      ║
@@ -317,9 +317,9 @@
 ║ rand_draw_select.k                                 │ r:10 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;-1;);(...   │                      ║
 ║ rand_draw_deal.k                                   │ r:4 _draw -4; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;-1;);(...   │                      ║
 ║ rand_draw_probability.k                            │ r:10 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;-2;);(...   │                      ║
-║ rand_draw_vector_select.k                          │ r:2 3 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
+║ rand_draw_vector_select.k                          │ r:2 3 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │ .((`type;4;);(`...   ║
 ║ rand_draw_vector_deal.k                            │ r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;0;);(`...   │ .((`type;0;);(`...   ║
-║ rand_draw_vector_probability.k                     │ r:2 3 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
+║ rand_draw_vector_probability.k                     │ r:2 3 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │ .((`type;4;);(`...   ║
 ║ time_gtime.k                                       │ _gtime 0             │ 20350101 0           │                      ║
 ║ time_lt.k                                          │ _lt 0                │ -18000               │                      ║
 ║ time_jd.k                                          │ _jd 20260206         │ -3251                │                      ║
@@ -345,7 +345,7 @@
 ║ test_sm_basic.k                                    │ `foo _sm `foo        │ 1                    │                      ║
 ║ test_sm_simple.k                                   │ `a _sm `a            │ 1                    │                      ║
 ║ test_ss_basic.k                                    │ "hello world" _ss "world" │ ,6                   │                      ║
-║ io_read_basic.k                                    │ 0:`test              │ ("\"\"\"l\"\"\"...   │ ("line1";"line2...   ║
+║ io_read_basic.k                                    │ 0:`test              │ ("line1";"line2...   │                      ║
 ║ io_write_basic.k                                   │ `test 0: ("line1";"line2";"line3") │                      │                      ║
 ║ search_in_basic.k                                  │ 4 _in 1 2 3 4 5      │ 1                    │                      ║
 ║ search_in_notfound.k                               │ 6 _in 1 2 3 4 5      │ 0                    │                      ║
@@ -610,25 +610,25 @@ Input: (.((`a;1);(`b;2;.((`c;3);(`d;4))))) @ `b.
 Expected: .((`c;3;);(`d;4;))
 Actual: Error: Undefined variable: b.
 ──────────────────────────────────────────────────────────────────────────
-Test: special_null.k
-Input: _n
-Expected: _n
-Actual: 
-──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
-Expected: 10
+Expected: 30
 Actual: 100
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_vector_select.k
+Input: r:2 3 _draw 4; .((`type;4:r);(`shape;^r))
+Expected: .((`type;4;);(`shape;,2;))
+Actual: .((`type;0;);(`shape;,2;))
 ──────────────────────────────────────────────────────────────────────────
 Test: rand_draw_vector_deal.k
 Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
 Expected: .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
 Actual: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
 ──────────────────────────────────────────────────────────────────────────
-Test: io_read_basic.k
-Input: 0:`test
-Expected: ("line1";"line2";"line3")
-Actual: ("\"\"\"l\"\"\",\"\"\"i\"\"\",\"\"\"n\"\"\",\"\"\"e\"\"\",\"\"\"1\"\"\"";"\"\"\"l\"\"\",\"\"\"i\"\"\",\"\"\"n\"\"\",\"\"\"e\"\"\",\"\"\"2\"\"\"";"\"\"\"l\"\"\",\"\"\"i\"\"\",\"\"\"n\"\"\",\"\"\"e\"\"\",\"\"\"3\"\"\"")
+Test: rand_draw_vector_probability.k
+Input: r:2 3 _draw 0; .((`type;4:r);(`shape;^r))
+Expected: .((`type;4;);(`shape;,2;))
+Actual: .((`type;0;);(`shape;,2;))
 ──────────────────────────────────────────────────────────────────────────
 Test: lsq.k
 Input: _lsq
