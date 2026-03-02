@@ -461,7 +461,7 @@ namespace K3CSharp
                         "_sv" => Sv(left, right),
                         "_vs" => Vs(left, right),
                         "_ss" => SsFunction(left, right),
-                        "_setenv" => SetenvWithDebug(left, right),
+                        "_setenv" => SetenvFunction(left, right),
                         "?" => Find(left, right),
                         "TYPE" => IoVerbDyadic(left, right, 4),
                     "IO_VERB_0" => IoVerbDyadic(left, right, 0),

@@ -916,15 +916,8 @@ namespace K3CSharp
             return new VectorValue(value.Select(c => new CharacterValue(c.ToString())).Cast<K3Value>().ToList());
         }
 
-        private K3Value SetenvFunction(K3Value operand)
-        {
-            // _setenv is a dyadic verb, so operand should be a list with 2 elements
-            if (operand is not VectorValue vec || vec.Elements.Count != 2)
-                throw new Exception("_setenv: requires exactly 2 arguments (variable name and value)");
-            
-            var varNameArg = vec.Elements[0];
-            var valueArg = vec.Elements[1];
-            
+        private K3Value SetenvFunction(K3Value varNameArg, K3Value valueArg)
+        {            
             string varName = varNameArg switch
             {
                 SymbolValue sym => sym.Value,
