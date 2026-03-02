@@ -445,6 +445,8 @@ K3CSharp.Tests/TestScripts/testfile.txt
 K3CSharp.Tests/testW
 TestFiles/
 s
-# Typical Errors
-TestScripts/
+# Typical Errors and junk
+./TestScripts/
 K3CSharp/TestScripts/
+K3CSharp.Tests/final_test_results.txt
+K3CSharp.Tests/test_results.txt

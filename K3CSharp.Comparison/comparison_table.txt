@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-02 00:37:15
+Generated: 2026-03-02 00:53:48
 
 SUMMARY:
 --------
 Total Tests:     596
-✅ Matched:       586
-❌ Differed:      8
+✅ Matched:       588
+❌ Differed:      6
 ⚠️  Skipped:       0
 💥 Errors:        2
-Success Rate:    98.3%
+Success Rate:    98.7%
 
 DETAILED RESULTS:
 -----------------
@@ -255,7 +255,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   io_write_basic.k                                   ("line1";"line2";"line3")      ("line1";"line2";"line3")      Compact representation                            
 ✅ PASS   isolated.k                                         0.6                            0.6                                                                              
 ✅ PASS   join_operator.k                                    3 5                            3 5                                                                              
-❌ FAIL   k_tree_assignment_absolute_foo.k                   42                                                            Compact representation                            
+✅ PASS   k_tree_assignment_absolute_foo.k                                                                                 Compact representation                            
 ✅ PASS   k_tree_current_branch.k                            `.k                            `.k                            Compact representation                            
 ✅ PASS   k_tree_dictionary_assignment.k                     .((`a;1;);(`b;2;);(`c;3;))     .((`a;1;);(`b;2;);(`c;3;))     Compact representation                            
 ✅ PASS   k_tree_dictionary_indexing.k                       42                             42                             Compact representation                            
@@ -577,7 +577,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   unary_minus_operator.k                             -5                             -5                                                                               
 ✅ PASS   underflow_regular_int.k                            2147483617                     2147483617                                                                       
 ✅ PASS   unique_operator.k                                  1 2 3                          1 2 3                                                                            
-❌ FAIL   variable_assignment.k                              7                                                                                                               
+✅ PASS   variable_assignment.k                                                                                                                                              
 ✅ PASS   variable_reassignment.k                            7.2 4.5                        7.2 4.5                                                                          
 ✅ PASS   variable_scoping_global_access.k                   150                            150                                                                              
 ❌ FAIL   variable_scoping_global_assignment.k               100                            30
@@ -616,10 +616,6 @@ Status   Test File                                          K3Sharp Output      
 
 FAILED TESTS DETAILS:
 --------------------
-File: k_tree_assignment_absolute_foo.k
-K3Sharp: 42
-k.exe:   
-
 File: list_setenv.k
 K3Sharp: `TESTVAR
 k.exe:   
@@ -639,10 +635,6 @@ k.exe:   .((`type;0;);(`shape;2 3;))
 File: rand_draw_vector_select.k
 K3Sharp: .((`type;0;);(`shape;,2;))
 k.exe:   .((`type;0;);(`shape;2 3;))
-
-File: variable_assignment.k
-K3Sharp: 7
-k.exe:   
 
 File: variable_scoping_global_assignment.k
 K3Sharp: 100

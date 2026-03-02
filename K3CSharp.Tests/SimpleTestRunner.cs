@@ -492,7 +492,7 @@ namespace K3CSharp.Tests
                 
                 // Variable tests
                 ("amend_item_simple_no_semicolon.k", "1 12 3"),
-                ("variable_assignment.k", "7"),
+                ("variable_assignment.k", ""),
                 ("variable_reassignment.k", "7.2 4.5"),
                 ("variable_scoping_global_access.k", "150"),
                 ("variable_scoping_global_assignment.k", "30"),
@@ -724,7 +724,7 @@ namespace K3CSharp.Tests
                 ("string_parse.k", "30"),
                 
                 // K Tree tests - Following One Test Per File principle
-                ("k_tree_assignment_absolute_foo.k", "42"), // Absolute path assignment to foo
+                ("k_tree_assignment_absolute_foo.k", ""), // Absolute path assignment to foo
                 ("k_tree_retrieve_absolute_foo.k", "42"),  // Absolute path retrieval from foo
                 ("k_tree_retrieval_relative.k", "42"),         // Relative path retrieval only
                 ("k_tree_enumerate.k", "`k`t"),     // Root enumeration - compact symbol vector format

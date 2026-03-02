@@ -21,6 +21,9 @@ namespace K3CSharp
         // Reference to parent evaluator for global scope access
         private Evaluator? parentEvaluator = null;
 
+        // Track whether current assignment is intermediate (used by another operator) or terminal
+        private bool isIntermediateAssignment = false;
+
                 
         public void SetCurrentBranch(string branchPath)
         {
@@ -85,7 +88,9 @@ namespace K3CSharp
                         var assignName = node.Value is SymbolValue assignmentSym ? assignmentSym.Value : node.Value?.ToString() ?? "";
                         var value = Evaluate(node.Children[0]);
                         SetVariable(assignName, value); // Use local variables for regular assignments
-                        return value; // Return the assigned value
+                        
+                        // LRS behavior: Return value for intermediate assignments, null for terminal assignments
+                        return isIntermediateAssignment ? value : new NullValue();
                     }
 
                 case ASTNodeType.GlobalAssignment:
@@ -390,7 +395,12 @@ namespace K3CSharp
                 if (op.Value.ToString() == ":")
                 {
                     var leftNode = node.Children[0];
+                    
+                    // For assignment, the right side should be evaluated as intermediate if this is not terminal
+                    bool previousIntermediate = isIntermediateAssignment;
+                    isIntermediateAssignment = true; // Mark as intermediate for right side evaluation
                     var rightValue = Evaluate(node.Children[1]);
+                    isIntermediateAssignment = previousIntermediate; // Restore previous context
                     
                     // For assignment, the left side should be treated as a variable name, not evaluated
                     if (leftNode.Type == ASTNodeType.Variable)
@@ -406,8 +416,13 @@ namespace K3CSharp
                     }
                 }
                 
+                // For other binary operators, evaluate left side first, then right side as intermediate
                 var left = Evaluate(node.Children[0]);
+                
+                bool previousIntermediate2 = isIntermediateAssignment;
+                isIntermediateAssignment = true; // Mark as intermediate for right side evaluation
                 var right = Evaluate(node.Children[1]);
+                isIntermediateAssignment = previousIntermediate2; // Restore previous context
 
                 return op.Value.ToString() switch
                     {
@@ -1391,7 +1406,9 @@ namespace K3CSharp
             // Assignment: variable : value
             // Uses local variable assignment
             SetVariable(variableName, value);
-            return value;
+            
+            // LRS behavior: Return value for intermediate assignments, null for terminal assignments
+            return isIntermediateAssignment ? value : new NullValue();
         }
 
         private K3Value ColonOperator(K3Value left, K3Value right)
