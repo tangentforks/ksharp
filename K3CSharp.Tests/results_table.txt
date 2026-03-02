@@ -335,7 +335,7 @@
 ║ list_sv_base2.k                                    │ 2 _sv 1 0 0 1        │ 9                    │                      ║
 ║ list_sv_mixed.k                                    │ 10 10 10 10 _sv 1 9 9 5 │ 1995                 │                      ║
 ║ list_getenv.k                                      │ _getenv "PROMPT"     │ "$P$G"               │                      ║
-║ list_setenv.k                                      │ `TESTVAR _setenv "hello world" │ `TESTVAR             │                      ║
+║ list_setenv.k                                      │ `TESTVAR _setenv "hello world" │                      │                      ║
 ║ list_size_existing.k                               │ _size "C:\\Windows\\System32\\write.exe" │ 11264.0              │                      ║
 ║ test_ci_basic.k                                    │ _ci 65               │ "A"                  │                      ║
 ║ test_ci_vector.k                                   │ _ci 65 66 67         │ "ABC"                │                      ║

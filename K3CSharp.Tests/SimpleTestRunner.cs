@@ -584,7 +584,7 @@ namespace K3CSharp.Tests
                 
                 // Environment and file system tests
                 ("list_getenv.k", "\"$P$G\""), // PROMPT environment variable
-                ("list_setenv.k", "`TESTVAR"), // _setenv returns the variable name (not the value) - this is the current behavior
+                ("list_setenv.k", ""), // _setenv returns null (nothing) per spec
                 ("list_size_existing.k", "11264.0"), // Test with existing project file using absolute path
                 ("test_ci_basic.k", "\"A\""),
                 ("test_ci_vector.k", "\"ABC\""),

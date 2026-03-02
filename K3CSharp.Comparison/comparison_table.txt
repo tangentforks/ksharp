@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-02 00:53:48
+Generated: 2026-03-02 02:50:43
 
 SUMMARY:
 --------
 Total Tests:     596
-✅ Matched:       588
-❌ Differed:      6
+✅ Matched:       589
+❌ Differed:      5
 ⚠️  Skipped:       0
 💥 Errors:        2
-Success Rate:    98.7%
+Success Rate:    98.8%
 
 DETAILED RESULTS:
 -----------------
@@ -277,7 +277,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   list_dv_basic.k                                    3 5                            3 5                                                                              
 ✅ PASS   list_dv_nomatch.k                                  3 4 4 5                        3 4 4 5                                                                          
 ✅ PASS   list_getenv.k                                      "$P$G"                         "$P$G"                                                                           
-❌ FAIL   list_setenv.k                                      `TESTVAR                                                                                                        
+✅ PASS   list_setenv.k                                                                                                                                                      
 ✅ PASS   list_size_existing.k                               11264.0                        11264.0                                                                          
 ✅ PASS   list_sv_base10.k                                   1995                           1995                                                                             
 ✅ PASS   list_sv_base2.k                                    9                              9                                                                                
@@ -616,10 +616,6 @@ Status   Test File                                          K3Sharp Output      
 
 FAILED TESTS DETAILS:
 --------------------
-File: list_setenv.k
-K3Sharp: `TESTVAR
-k.exe:   
-
 File: monadic_format_dictionary.k
 K3Sharp: ".((`a;1;);(`b;2;);(`c;3;))"
 k.exe:   ".(..)"

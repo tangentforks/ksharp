@@ -941,7 +941,7 @@ namespace K3CSharp
             };
             
             Environment.SetEnvironmentVariable(varName, value);
-            return new VectorValue(value.Select(c => new CharacterValue(c.ToString())).Cast<K3Value>().ToList());
+            return new NullValue(); // _setenv returns null (nothing) per spec
         }
 
         private K3Value SizeFunction(K3Value operand)

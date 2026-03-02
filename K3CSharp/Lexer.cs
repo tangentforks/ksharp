@@ -802,7 +802,7 @@ namespace K3CSharp
                 "_mul" => new Token(TokenType.MUL, opName, start),
                 "_inv" => new Token(TokenType.INV, opName, start),
                 
-                // System functions (missing from current implementation)
+                // System functions
                 "_t" => new Token(TokenType.TIME, opName, start),
                 "_draw" => new Token(TokenType.DRAW, opName, start),
                 "_getenv" => new Token(TokenType.GETENV, opName, start),

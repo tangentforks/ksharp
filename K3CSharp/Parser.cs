@@ -2836,6 +2836,7 @@ namespace K3CSharp
                    Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
                    Match(TokenType.EQUAL) || Match(TokenType.IN) || Match(TokenType.BIN) || Match(TokenType.BINL) || Match(TokenType.LIN) ||
                    Match(TokenType.DV) || Match(TokenType.DI) || Match(TokenType.VS) || Match(TokenType.SV) || Match(TokenType.SS) || Match(TokenType.SM) || Match(TokenType.CI) || Match(TokenType.IC) ||
+                   Match(TokenType.GETENV) || Match(TokenType.SETENV) || Match(TokenType.SIZE) ||
                    Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
                    Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) ||
                    Match(TokenType.DOLLAR) || Match(TokenType.DRAW) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
@@ -2875,6 +2876,9 @@ namespace K3CSharp
                 "SM" => "_sm",
                         "CI" => "_ci",
                         "IC" => "_ic",
+                        "GETENV" => "_getenv",
+                        "SETENV" => "_setenv",
+                        "SIZE" => "_size",
                         "POWER" => "^",
                         "MODULUS" => "!",
                         "JOIN" => ",",
