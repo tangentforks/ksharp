@@ -345,7 +345,7 @@
 ║ test_sm_basic.k                                    │ `foo _sm `foo        │ 1                    │                      ║
 ║ test_sm_simple.k                                   │ `a _sm `a            │ 1                    │                      ║
 ║ test_ss_basic.k                                    │ "hello world" _ss "world" │ ,6                   │                      ║
-║ io_read_basic.k                                    │ 0:`test              │ ("\"\"\"l\"\"\"...   │ ("line1";"line2...   ║
+║ io_read_basic.k                                    │ 0:`test              │ ("line1";"line2...   │                      ║
 ║ io_write_basic.k                                   │ `test 0: ("line1";"line2";"line3") │                      │                      ║
 ║ io_write_csv.k                                     │ `"test.csv" 0: (("name";"age";"city");("John";25;"NYC");("Jane";30;"LA")) │ Error: Undefine...   │ null                 ║
 ║ search_in_basic.k                                  │ 4 _in 1 2 3 4 5      │ 1                    │                      ║
@@ -601,7 +601,7 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 590/597 tests passed (98.8%)                                                                               ║
+║ SUMMARY: 591/597 tests passed (99.0%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -625,11 +625,6 @@ Test: rand_draw_vector_deal.k
 Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
 Expected: .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
 Actual: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
-──────────────────────────────────────────────────────────────────────────
-Test: io_read_basic.k
-Input: 0:`test
-Expected: ("line1";"line2";"line3")
-Actual: ("\"\"\"l\"\"\",\"\"\"i\"\"\",\"\"\"n\"\"\",\"\"\"e\"\"\",\"\"\"1\"\"\"";"\"\"\"l\"\"\",\"\"\"i\"\"\",\"\"\"n\"\"\",\"\"\"e\"\"\",\"\"\"2\"\"\"";"\"\"\"l\"\"\",\"\"\"i\"\"\",\"\"\"n\"\"\",\"\"\"e\"\"\",\"\"\"3\"\"\"")
 ──────────────────────────────────────────────────────────────────────────
 Test: io_write_csv.k
 Input: `"test.csv" 0: (("name";"age";"city");("John";25;"NYC");("Jane";30;"LA"))
