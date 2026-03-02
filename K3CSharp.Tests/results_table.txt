@@ -47,7 +47,7 @@
 ║ cut_vector.k                                       │ (0 2 4) _ (0 1 2 3 4 5 6 7) │ (0 1;2 3;4 5 6 7)    │                      ║
 ║ dictionary_empty.k                                 │ .()                  │ .()                  │                      ║
 ║ dictionary_index.k                                 │ (.((`a;1);(`b;2))) @ `a │ 1                    │                      ║
-║ dictionary_index_attr.k                            │ (.((`a;1);(`b;2;.((`c;3);(`d;4))))) @ `b. │ Error: Undefine...   │ .((`c;3;);(`d;4;))   ║
+║ dictionary_index_attr.k                            │ (.((`a;1);(`b;2;.((`c;3);(`d;4))))) @ `b. │ .((`c;3;);(`d;4;))   │                      ║
 ║ dictionary_index_value.k                           │ (.((`a;1);(`b;2))) @ `a │ 1                    │                      ║
 ║ dictionary_index_value2.k                          │ (.((`a;1);(`b;2))) @ `b │ 2                    │                      ║
 ║ dictionary_multiple.k                              │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
@@ -195,6 +195,10 @@
 ║ symbol_simple.k                                    │ `foo                 │ `foo                 │                      ║
 ║ symbol_vector_compact.k                            │ `a`b`c               │ `a`b`c               │                      ║
 ║ symbol_vector_spaces.k                             │ `a `b `c             │ `a`b`c               │                      ║
+║ symbol_period_foo.k                                │ `foo.                │ `foo.                │                      ║
+║ symbol_period_foobar.k                             │ `foo.bar             │ `foo.bar             │                      ║
+║ symbol_period_dotbar.k                             │ `.bar                │ `.bar                │                      ║
+║ symbol_period_dotk.k                               │ `.k                  │ `.k                  │                      ║
 ║ take_operator_basic.k                              │ 3#1 2 3 4 5          │ 1 2 3                │                      ║
 ║ take_operator_empty_float.k                        │ 0#0.0                │ 0#0.0                │                      ║
 ║ take_operator_empty_symbol.k                       │ 0#``                 │ 0#`                  │                      ║
@@ -601,16 +605,11 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 591/597 tests passed (99.0%)                                                                               ║
+║ SUMMARY: 596/601 tests passed (99.2%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
-Test: dictionary_index_attr.k
-Input: (.((`a;1);(`b;2;.((`c;3);(`d;4))))) @ `b.
-Expected: .((`c;3;);(`d;4;))
-Actual: Error: Undefined variable: b.
-──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30

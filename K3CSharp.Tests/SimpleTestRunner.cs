@@ -388,6 +388,10 @@ namespace K3CSharp.Tests
                 ("symbol_simple.k", "`foo"),
                 ("symbol_vector_compact.k", "`a`b`c"),
                 ("symbol_vector_spaces.k", "`a`b`c"),
+                ("symbol_period_foo.k", "`foo."),
+                ("symbol_period_foobar.k", "`foo.bar"),
+                ("symbol_period_dotbar.k", "`.bar"),
+                ("symbol_period_dotk.k", "`.k"),
                 
                 // Take operator tests
                 ("take_operator_basic.k", "1 2 3"),

@@ -646,18 +646,10 @@ namespace K3CSharp
             {
                 var symbol = PreviousToken().Lexeme;
                 
-                // Check if this is a dotted notation for K tree access
-                // But NOT if it's a quoted symbol (starts with quote) - quoted symbols should always be treated as symbol literals
-                if (symbol.Contains(".") && !symbol.StartsWith("\""))
-                {
-                    // This is a K tree dotted notation variable
-                    result = ASTNode.MakeVariable(symbol);
-                }
-                else
-                {
-                    // Regular symbol (including quoted symbols)
-                    result = ASTNode.MakeLiteral(new SymbolValue(symbol));
-                }
+                // All symbols (including those with periods) should be treated as symbol literals
+                // Symbol literals are created with backtick syntax and should not be variable references
+                // The lexer already validates symbol names, so no additional validation needed here
+                result = ASTNode.MakeLiteral(new SymbolValue(symbol));
             }
             else if (Match(TokenType.PLUS))
             {

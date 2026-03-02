@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-02 02:50:43
+Generated: 2026-03-02 12:38:50
 
 SUMMARY:
 --------
-Total Tests:     596
-✅ Matched:       589
+Total Tests:     600
+✅ Matched:       594
 ❌ Differed:      5
 ⚠️  Skipped:       0
-💥 Errors:        2
-Success Rate:    98.8%
+💥 Errors:        1
+Success Rate:    99.0%
 
 DETAILED RESULTS:
 -----------------
@@ -125,8 +125,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   dictionary_dot_apply.k                             1                              1                                                                                
 ✅ PASS   dictionary_empty.k                                 .()                            .()                                                                              
 ✅ PASS   dictionary_enumerate.k                             `a`b                           `a`b                           Compact representation                            
-💥 ERROR dictionary_index_attr.k                                                           .((`c;3;)
-  (`d;4;))           K3Sharp error, k.exe succeeded                    
+✅ PASS   dictionary_index_attr.k                            .((`c;3;);(`d;4;))             .((`c;3;);(`d;4;))             Compact representation                            
 ✅ PASS   dictionary_index_value.k                           1                              1                                                                                
 ✅ PASS   dictionary_index_value2.k                          2                              2                                                                                
 ✅ PASS   dictionary_index.k                                 1                              1                                                                                
@@ -517,6 +516,10 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   string_representation_mixed.k                      "(1;2.5;\"a\")"                "(1;2.5;\"a\")"                                                                  
 ✅ PASS   string_representation_symbol.k                     "`symbol"                      "`symbol"                                                                        
 ✅ PASS   string_representation_vector.k                     "1 2 3"                        "1 2 3"                                                                          
+✅ PASS   symbol_period_dotbar.k                             `.bar                          `.bar                                                                            
+✅ PASS   symbol_period_dotk.k                               `.k                            `.k                                                                              
+✅ PASS   symbol_period_foo.k                                `foo.                          `foo.                                                                            
+✅ PASS   symbol_period_foobar.k                             `foo.bar                       `foo.bar                                                                         
 ✅ PASS   symbol_quoted.k                                    `"a symbol"                    `"a symbol"                                                                      
 ✅ PASS   symbol_simple.k                                    `foo                           `foo                                                                             
 ✅ PASS   symbol_special_chars.k                             `"hello-world!"                `"hello-world!"                                                                  
@@ -640,9 +643,6 @@ k.exe:   30
 
 ERROR TESTS DETAILS:
 -------------------
-File: dictionary_index_attr.k
-Error: K3Sharp Error: Undefined variable: b.
-
 File: lsq.k
 Error: K3Sharp Error: _lsq (least squares) operation reserved for future use
 
