@@ -434,6 +434,17 @@ updates_from_usr_and_ref.md
 K3CSharp_implementation_details.md
 K3CSharp.SerializationResearch/Kx annotated serialization.htm
 
+# Files produced by tests
+K3CSharp.Comparison/test
+K3CSharp.Comparison/testW
+K3CSharp.Tests/test
+K3CSharp.Tests/testW
+K3CSharp.Tests/TestScripts/test
+K3CSharp.Tests/TestScripts/test.txt
+K3CSharp.Tests/TestScripts/testfile.txt
+K3CSharp.Tests/testW
+TestFiles/
+s
 # Typical Errors
-/TestScripts/
+TestScripts/
 K3CSharp/TestScripts/

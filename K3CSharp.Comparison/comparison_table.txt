@@ -1,11 +1,11 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-01 21:43:45
+Generated: 2026-03-02 00:37:15
 
 SUMMARY:
 --------
-Total Tests:     595
-✅ Matched:       585
+Total Tests:     596
+✅ Matched:       586
 ❌ Differed:      8
 ⚠️  Skipped:       0
 💥 Errors:        2
@@ -56,6 +56,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   anonymous_function_empty.k                         {}                             {}                                                                               
 ✅ PASS   anonymous_function_simple.k                        {4+5}                          {4+5}                                                                            
 ✅ PASS   anonymous_function_single_param.k                  {[arg1] arg1+6}                {[arg1] arg1+6}                                                                  
+✅ PASS   assignment_lrs_return_value.k                      47 94                          47 94                                                                            
 ✅ PASS   atom_scalar.k                                      1                              1                                                                                
 ✅ PASS   atom_vector.k                                      0                              0                                                                                
 ✅ PASS   attribute_handle_symbol.k                          `a.                            `a.                                                                              
@@ -251,7 +252,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   integer_types_int.k                                42                             42                                                                               
 ✅ PASS   integer_types_long.k                               123456789j                     123456789j                                                                       
 ✅ PASS   io_read_basic.k                                    ("line1";"line2";"line3")      ("line1";"line2";"line3")      Compact representation                            
-✅ PASS   io_write_basic.k                                                                                                                                                   
+✅ PASS   io_write_basic.k                                   ("line1";"line2";"line3")      ("line1";"line2";"line3")      Compact representation                            
 ✅ PASS   isolated.k                                         0.6                            0.6                                                                              
 ✅ PASS   join_operator.k                                    3 5                            3 5                                                                              
 ❌ FAIL   k_tree_assignment_absolute_foo.k                   42                                                            Compact representation                            

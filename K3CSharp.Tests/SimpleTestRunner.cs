@@ -571,6 +571,7 @@ namespace K3CSharp.Tests
                 ("time_dj.k", "20350101"),
                 ("time_ltime.k", "20341231 190000"),
                 ("in.k", "1"),
+                ("assignment_lrs_return_value.k", "47 94"),
                 
                 // List operations tests
                 ("list_dv_basic.k", "3 5"),
@@ -597,7 +598,7 @@ namespace K3CSharp.Tests
                 
                 // I/O verb tests
                 ("io_read_basic.k", "(\"line1\";\"line2\";\"line3\")"),
-                ("io_write_basic.k", ""),
+                ("io_write_basic.k", "(\"line1\";\"line2\";\"line3\")"),
                                 
                 // New search function tests
                 ("search_in_basic.k", "1"),

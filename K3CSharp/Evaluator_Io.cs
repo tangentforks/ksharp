@@ -309,14 +309,15 @@ public partial class Evaluator
             if (right is VectorValue vec)
             {
                 // Check if this is a list of lists (structured data with separator)
-                if (vec.Elements.Count > 0 && vec.Elements[0] is VectorValue)
+                // Only treat as structured data if elements are actual nested vectors (not character vectors)
+                if (vec.Elements.Count > 0 && vec.Elements[0] is VectorValue nestedVec && nestedVec.VectorType != -3)
                 {
                     // This is structured data - write as fields with separators
                     WriteStructuredData(streamWriter, vec, lineEnding);
                 }
                 else
                 {
-                    // This is a simple list - write each item as a line
+                    // This is a simple list - write each item on its own line
                     WriteSimpleList(streamWriter, vec, lineEnding);
                 }
             }
@@ -383,7 +384,23 @@ public partial class Evaluator
     {
         foreach (var item in data.Elements)
         {
-            writer.Write(item.ToString());
+            // For character vectors, use ToString() result but remove outermost enclosing quotes
+            if (item is VectorValue charVec && charVec.VectorType == -3)
+            {
+                string toStringResult = item.ToString();
+                if (toStringResult.StartsWith("\"") && toStringResult.EndsWith("\"") && toStringResult.Length > 2)
+                {
+                    writer.Write(toStringResult.Substring(1, toStringResult.Length - 2));
+                }
+                else
+                {
+                    writer.Write(toStringResult);
+                }
+            }
+            else
+            {
+                writer.Write(item.ToString());
+            }
             writer.Write(lineEnding);
         }
     }
