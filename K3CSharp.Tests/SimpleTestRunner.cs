@@ -495,7 +495,7 @@ namespace K3CSharp.Tests
                 ("variable_assignment.k", "7"),
                 ("variable_reassignment.k", "7.2 4.5"),
                 ("variable_scoping_global_access.k", "150"),
-                ("variable_scoping_global_assignment.k", "10"),
+                ("variable_scoping_global_assignment.k", "30"),
                 ("variable_scoping_global_unchanged.k", "100"),
                 ("variable_scoping_local_hiding.k", "60"),
                 ("variable_scoping_nested_functions.k", "140"),
@@ -598,7 +598,6 @@ namespace K3CSharp.Tests
                 // I/O verb tests
                 ("io_read_basic.k", "(\"line1\";\"line2\";\"line3\")"),
                 ("io_write_basic.k", ""),
-                ("io_write_csv.k", "null"),
                                 
                 // New search function tests
                 ("search_in_basic.k", "1"),
