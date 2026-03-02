@@ -628,7 +628,7 @@ These official K documentation resources provide in-depth coverage of:
 
 ## 👨‍💻 **Authorship**
 
-This K3 interpreter implementation was written by **SWE-1.5** based on a specification, prompts, and comments provided by **Eusebio Rufian-Zilbermann**.
+This K3 interpreter implementation was written primarily by **SWE-1.5** based on a specification, prompts, comments and fixes provided by **Eusebio Rufian-Zilbermann**. Additional contributions by **Michal Wallace** using **Claude**
 
 ### Development Approach
 - **Test-Driven Development**: Every feature includes comprehensive test coverage
