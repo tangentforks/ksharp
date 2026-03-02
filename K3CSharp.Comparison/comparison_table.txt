@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-01 02:20:35
+Generated: 2026-03-01 20:50:21
 
 SUMMARY:
 --------
-Total Tests:     603
-✅ Matched:       559
-❌ Differed:      37
+Total Tests:     596
+✅ Matched:       585
+❌ Differed:      8
 ⚠️  Skipped:       0
-💥 Errors:        7
-Success Rate:    92.7%
+💥 Errors:        3
+Success Rate:    98.2%
 
 DETAILED RESULTS:
 -----------------
@@ -52,7 +52,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   amend_test_anonymous_func.k                        11 2 3                         11 2 3                                                                           
 ✅ PASS   amend_test_func_var.k                              11 2 3                         11 2 3                                                                           
 ✅ PASS   amend_test.k                                       (1 2 13 4 5;6 7 8 9 10)        (1 2 13 4 5;6 7 8 9 10)        Compact representation                            
-❌ FAIL   anonymous_function_double_param.k                  {[op1;op2] op1 * op2}          {[op1;op2] op1*op2}            Compact representation                            
+✅ PASS   anonymous_function_double_param.k                  {[op1;op2] op1 * op2}          {[op1;op2] op1 * op2}          Compact representation                            
 ✅ PASS   anonymous_function_empty.k                         {}                             {}                                                                               
 ✅ PASS   anonymous_function_simple.k                        {4+5}                          {4+5}                                                                            
 ✅ PASS   anonymous_function_single_param.k                  {[arg1] arg1+6}                {[arg1] arg1+6}                                                                  
@@ -63,7 +63,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   bd_dict_single_entry.k                             "\001\000\000\000(\000\00...   "\001\000\000\000(\000\00...                                                     
 ✅ PASS   bd_empty_list.k                                    "\001\000\000\000\b\000\0...   "\001\000\000\000\b\000\0...                                                     
 ✅ PASS   bd_enlist_single_int.k                             "\001\000\000\000\014\000...   "\001\000\000\000\014\000...                                                     
-❌ FAIL   bd_enlist_single_string.k                          "\001\000\000\000\n\000\0...   "\001\000\000\000\030\000...                                                     
+✅ PASS   bd_enlist_single_string.k                          "\001\000\000\000\030\000...   "\001\000\000\000\030\000...                                                     
 ✅ PASS   bd_enlist_single_symbol.k                          "\001\000\000\000\r\000\0...   "\001\000\000\000\r\000\0...                                                     
 ✅ PASS   bd_symbol_vector_longer.k                          "\001\000\000\000\031\000...   "\001\000\000\000\031\000...                                                     
 ✅ PASS   character_single.k                                 "f"                            "f"                                                                              
@@ -79,8 +79,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   db_char_vector_sentence.k                          "hello world"                  "hello world"                  Compact representation                            
 ✅ PASS   db_char_vector.k                                   "hello"                        "hello"                        Compact representation                            
 ✅ PASS   db_character.k                                     "a"                            "a"                            Compact representation                            
-💥 ERROR db_dict_complex_attributes.k                                                      .((`col01
-   11 12 13 14 ...   K3Sharp error, k.exe succeeded                    
+✅ PASS   db_dict_complex_attributes.k                       .((`col01;11 12 13 14 15;...   .((`col01;11 12 13 14 15;...   Compact representation                            
 ✅ PASS   db_dict_empty.k                                    .()                            .()                            Compact representation                            
 ✅ PASS   db_dict_five_entries.k                             .((`a;1;);(`b;2;);(`c;3;)...   .((`a;1;);(`b;2;);(`c;3;)...   Compact representation                            
 ✅ PASS   db_dict_larger.k                                   .((`a;1;);(`b;2;);(`c;3;)...   .((`a;1;);(`b;2;);(`c;3;)...   Compact representation                            
@@ -94,7 +93,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   db_dict_with_null_attrs.k                          .,(`a;1;.())                   .,(`a;1;.())                   Compact representation                            
 ✅ PASS   db_empty_list.k                                    ()                             ()                             Compact representation                            
 ✅ PASS   db_enlist_single_int.k                             ,5                             ,5                             Compact representation                            
-❌ FAIL   db_enlist_single_string.k                          ,"h"                           ,"hello"                       Compact representation                            
+✅ PASS   db_enlist_single_string.k                          ,"hello"                       ,"hello"                       Compact representation                            
 ✅ PASS   db_enlist_single_symbol.k                          ,`test                         ,`test                         Compact representation                            
 ✅ PASS   db_enlist_vector.k                                 ,1 2 3                         ,1 2 3                         Compact representation                            
 ✅ PASS   db_float_simple.k                                  1.5                            1.5                            Compact representation                            
@@ -109,9 +108,9 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   db_int_vector_longer.k                             1 2 3 4 5 6 7 8 9 10           1 2 3 4 5 6 7 8 9 10           Compact representation                            
 ✅ PASS   db_int_vector.k                                    1 2 3                          1 2 3                          Compact representation                            
 ✅ PASS   db_list_longer.k                                   1 2 3 4 5                      1 2 3 4 5                      Compact representation                            
-❌ FAIL   db_list_mixed_types.k                              1 `test 3.14 "h"               (1;`test;3.14;"hello")         Compact representation                            
+✅ PASS   db_list_mixed_types.k                              (1;`test;3.14;"hello")         (1;`test;3.14;"hello")         Compact representation                            
 ✅ PASS   db_list_simple.k                                   1 2 3                          1 2 3                          Compact representation                            
-❌ FAIL   db_mixed_list.k                                    1 `test 3.14                   (1;`test;3.14)                 Compact representation                            
+✅ PASS   db_mixed_list.k                                    (1;`test;3.14)                 (1;`test;3.14)                 Compact representation                            
 ✅ PASS   db_nested_dict_vectors.k                           .((`a;1 2 3;);(`b;`hello`...   .((`a;1 2 3;);(`b;`hello`...   Compact representation                            
 ✅ PASS   db_nested_lists.k                                  (1 2 3;`hello`world`test;...   (1 2 3;`hello`world`test;...   Compact representation                            
 ✅ PASS   db_nested_structures.k                             .((`a;1 2 3;);(`b;4 5 6;))     .((`a;1 2 3;);(`b;4 5 6;))     Compact representation                            
@@ -122,34 +121,6 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   db_symbol_vector_longer.k                          `hello`world`test              `hello`world`test              Compact representation                            
 ✅ PASS   db_symbol_vector.k                                 `a`b`c                         `a`b`c                         Compact representation                            
 ✅ PASS   db_symbol.k                                        `test                          `test                          Compact representation                            
-✅ PASS   debug_char_tostring.k                              { show c }                     { show c }                                                                       
-✅ PASS   debug_char_value.k                                 { show "line1" }               { show "line1" }                                                                 
-✅ PASS   debug_char_vector.k                                "line"                         "line"                                                                           
-❌ FAIL   debug_char.k                                       (,"line1";,"line2";,"line3")   ("line1"
- "line2"
- "line3")                                                      
-❌ FAIL   debug_direct_test.k                                "line1line2line3"              ("line1"
- "line2"
- "line3")                                                      
-❌ FAIL   debug_direct.k                                     "line1line2line3"              ("line1"
- "line2"
- "line3")                                                      
-❌ FAIL   debug_direct2.k                                    "line1line2line3"              ("line1"
- "line2"
- "line3")                                                      
-✅ PASS   debug_hello_func.k                                 {(x;"hello")}                  {(x;"hello")}                                                                    
-❌ FAIL   debug_nested.k                                     "line1line2line3"              ("line1"
- "line2"
- "line3")                                                      
-❌ FAIL   debug_nested2.k                                    "line1line2line3"              ("line1"
- "line2"
- "line3")                                                      
-❌ FAIL   debug_readtext.k                                   (,"line1";,"line2";,"line3")   ("line1"
- "line2"
- "line3")                                                      
-✅ PASS   debug_simple_char.k                                "line1"                        "line1"                                                                          
-✅ PASS   debug_single_char.k                                "l"                            "l"                                                                              
-✅ PASS   debug_test_concat.k                                { show "line1" }               { show "line1" }                                                                 
 ✅ PASS   dictionary_dot_apply.k                             1                              1                                                                                
 ✅ PASS   dictionary_empty.k                                 .()                            .()                                                                              
 ✅ PASS   dictionary_enumerate.k                             `a`b                           `a`b                           Compact representation                            
@@ -163,7 +134,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   dictionary_null_index.k                            1 2                            1 2                                                                              
 ✅ PASS   dictionary_single.k                                .,(`a;`b;)                     .,(`a;`b;)                                                                       
 ✅ PASS   dictionary_type.k                                  5                              5                                                                                
-❌ FAIL   dictionary_unmake.k                                (`a1;`b2)                      ((`a;1;);(`b;2;))              Compact representation                            
+✅ PASS   dictionary_unmake.k                                ((`a;1;);(`b;2;))              ((`a;1;);(`b;2;))              Compact representation                            
 ✅ PASS   dictionary_with_null_value.k                       .((`a;1;);(`b;;);(`c;3;))      .((`a;1;);(`b;;);(`c;3;))      Compact representation                            
 ✅ PASS   divide_float.k                                     0.6                            0.6                                                                              
 ✅ PASS   divide_integer.k                                   2.5                            2.5                                                                              
@@ -209,26 +180,34 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   float_exponential.k                                170.0                          170.0                                                                            
 ✅ PASS   float_types.k                                      3.14                           3.14                                                                             
 ✅ PASS   floor_operator.k                                   3                              3                                                                                
-✅ PASS   form_braces_arith.k                                8 15 2 12 20 5                 8 15 2 12 20 5                 smart integer division, inverse and exponenti...  
-✅ PASS   form_braces_complex_expressions.k                  14 20 10                       14 20 10                                                                         
-✅ PASS   form_braces_complex.k                              8.25 12.0 9.0                  8.25 12.0 9.0                  Do not use abbreviated float vectors              
-✅ PASS   form_braces_example.k                              8 9                            8 9                                                                              
-✅ PASS   form_braces_expressions.k                          8 15 2                         8 15 2                                                                           
-✅ PASS   form_braces_float.k                                4.0 3.75 0.6 -1.0              4.0 3.75 0.6 -1.0              Do not use abbreviated float vectors              
-✅ PASS   form_braces_function_calls.k                       5 20 12                        5 20 12                                                                          
-✅ PASS   form_braces_mixed_arith.k                          17.5 32.5 4.5                  17.5 32.5 4.5                                                                    
-💥 ERROR form_braces_mixed_type.k                                                          (42;"hello";`test;47;"hel...   K3Sharp error, k.exe succeeded                    
-✅ PASS   form_braces_nested_arith.k                         (7 10;(2;2.5);5 -1)            (7 10;(2;2.5);5 -1)            Compact representation                            
-✅ PASS   form_braces_nested_expr.k                          (12 20;(7;3.333333))           (12 20;(7;3.333333))           Compact representation                            
-✅ PASS   form_braces_nested_function_calls.k                5 8 25                         5 8 25                                                                           
-✅ PASS   form_braces_simple.k                               8                              8                                                                                
-❌ FAIL   form_braces_string.k                               "nameisageyears old"           ("John";"is";25;"years old")                                                     
+✅ PASS   form_0_float_string.k                              3.14                           3.14                                                                             
+✅ PASS   form_0_float_vector.k                              3.14 1e+048 1.4e-027           3.14 1e+048 1.4e-027           Allow variations in mantissa formatting           
+✅ PASS   form_0_string.k                                    123                            123                                                                              
+✅ PASS   form_0_vector.k                                    123 456                        123 456                                                                          
+✅ PASS   form_braces_complex_new.k                          ({y*z+x};{[t;a;v;s] s+(v*...   ({y*z+x};{[t;a;v;s] s+(v*...                                                     
+✅ PASS   form_braces_string_new.k                           {y*z+x}                        {y*z+x}                                                                          
 ✅ PASS   form_character_charvector.k                        "aaa"                          "aaa"                                                                            
 ✅ PASS   form_integer_charvector.k                          42                             42                                                                               
 ✅ PASS   form_long.k                                        42j                            42j                                                                              
-❌ FAIL   form_string_pad_left.k                             ""hello""                      "  hello"                                                                        
+✅ PASS   form_string_pad_left.k                             "  hello"                      "  hello"                                                                        
+✅ PASS   form_symbol_string.k                               `abc                           `abc                                                                             
+✅ PASS   form_symbol_vector.k                               `abc`de`f                      `abc`de`f                      Compact representation                            
 ✅ PASS   format_0_1.k                                       ""                             ""                                                                               
 ✅ PASS   format_1_1.k                                       ,"1"                           ,"1"                                                                             
+✅ PASS   format_braces_arith.k                              (8;15;2;12;20;3.333333)        (8;15;2;12;20;3.333333)                                                          
+✅ PASS   format_braces_complex_expressions.k                14 20 10                       14 20 10                                                                         
+✅ PASS   format_braces_complex.k                            8.25 12.0 9.0                  8.25 12.0 9.0                  Do not use abbreviated float vectors              
+✅ PASS   format_braces_example.k                            8 9                            8 9                                                                              
+✅ PASS   format_braces_expressions.k                        8 15 2                         8 15 2                                                                           
+✅ PASS   format_braces_float.k                              4.0 3.75 0.6 -1.0              4.0 3.75 0.6 -1.0              Do not use abbreviated float vectors              
+✅ PASS   format_braces_function_calls.k                     5 20 12                        5 20 12                                                                          
+✅ PASS   format_braces_mixed_arith.k                        17.5 32.5 4.5                  17.5 32.5 4.5                                                                    
+✅ PASS   format_braces_mixed_type.k                         (42;"hello";`test;47;"hel...   (42;"hello";`test;47;"hel...                                                     
+✅ PASS   format_braces_nested_arith.k                       (7 10;(2;2.5);5 -1)            (7 10;(2;2.5);5 -1)            Compact representation                            
+✅ PASS   format_braces_nested_expr.k                        (12 20;(7;3.333333))           (12 20;(7;3.333333))           Compact representation                            
+✅ PASS   format_braces_nested_function_calls.k              5 8 25                         5 8 25                                                                           
+✅ PASS   format_braces_simple.k                             8                              8                                                                                
+✅ PASS   format_braces_string.k                             ("John";"is";25;"years old")   ("John";"is";25;"years old")                                                     
 ✅ PASS   format_float_numeric.k                             ,"1"                           ,"1"                                                                             
 ✅ PASS   format_float_precision_complex_mixed.k             ("     1.234";"     2.567...   ("     1.234";"     2.567...   Compact representation                            
 ✅ PASS   format_float_precision_mixed_vector.k              ("   1.50";"   2.70";"   ...   ("   1.50";"   2.70";"   ...   Compact representation                            
@@ -236,20 +215,19 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   format_float_precision.k                           "    3.14"                     "    3.14"                                                                       
 ✅ PASS   format_float_vector.k                              (,"1";,"2";,"3";"42")          (,"1";,"2";,"3";"42")          Compact representation                            
 ✅ PASS   format_float_width_precision.k                     "      3.14"                   "      3.14"                                                                     
-❌ FAIL   format_int_vector.k                                ""                             ("";"";"";"")                  Compact representation                            
+✅ PASS   format_int_vector.k                                ("";"";"";"")                  ("";"";"";"")                  Compact representation                            
 ✅ PASS   format_integer.k                                   ""                             ""                                                                               
-❌ FAIL   format_long_vector.k                               ""                             (,"1";,"*";,"*";,"*")          Compact representation                            
 ✅ PASS   format_numeric.k                                   "    1"                        "    1"                                                                          
 ✅ PASS   format_pad_left.k                                  "   42"                        "   42"                                                                          
 ✅ PASS   format_pad_mixed_vector.k                          ("         1";"         2...   ("         1";"         2...   Compact representation                            
 ✅ PASS   format_pad_negative_mixed_vector.k                 ("1         ";"2         ...   ("1         ";"2         ...   Compact representation                            
 ✅ PASS   format_pad_right.k                                 "42   "                        "42   "                                                                          
-❌ FAIL   format_string_pad_left.k                           "   "hello""                   "     hello"                                                                     
-❌ FAIL   format_string_pad_right.k                          ""test"    "                   "test      "                                                                     
+✅ PASS   format_string_pad_left.k                           "     hello"                   "     hello"                                                                     
+✅ PASS   format_string_pad_right.k                          "test      "                   "test      "                                                                     
 ✅ PASS   format_symbol_pad_left_8.k                         "   hello"                     "   hello"                                                                       
 ✅ PASS   format_symbol_pad_left.k                           "     hello"                   "     hello"                                                                     
-❌ FAIL   format_symbol_string_mixed_vector.k                `helloworldtest                `hello`world`test              Compact representation                            
-❌ FAIL   format_vector_int.k                                ""                             ("";"";"")                     Compact representation                            
+✅ PASS   format_symbol_string_mixed_vector.k                `hello`world`test              `hello`world`test              Compact representation                            
+✅ PASS   format_vector_int.k                                ("";"";"")                     ("";"";"")                     Compact representation                            
 ✅ PASS   function_add7.k                                    12                             12                                                                               
 ✅ PASS   function_call_anonymous.k                          13                             13                                                                               
 ✅ PASS   function_call_chain.k                              20                             20                                                                               
@@ -272,9 +250,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   in.k                                               1                              1                                                                                
 ✅ PASS   integer_types_int.k                                42                             42                                                                               
 ✅ PASS   integer_types_long.k                               123456789j                     123456789j                                                                       
-❌ FAIL   io_read_basic.k                                    (,"line1";,"line2";,"line3")   ("line1"
- "line2"
- "line3")                                                      
+✅ PASS   io_read_basic.k                                    ("line1";"line2";"line3")      ("line1";"line2";"line3")      Compact representation                            
 ✅ PASS   io_write_basic.k                                                                                                                                                   
 💥 ERROR io_write_csv.k                                                                                                   Both K3Sharp and k.exe errors                     
 ✅ PASS   isolated.k                                         0.6                            0.6                                                                              
@@ -285,7 +261,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   k_tree_dictionary_indexing.k                       42                             42                             Compact representation                            
 ✅ PASS   k_tree_enumerate.k                                 `k`t                           `k`t                           Always create `t including when running scrip...  
 ✅ PASS   k_tree_flip_dictionary.k                           .((`a;1;);(`b;2;);(`c;3;))     .((`a;1;);(`b;2;);(`c;3;))     Compact representation                            
-❌ FAIL   k_tree_flip_test.k                                 (`a1;`b2;`c3)                  ((`a;1);(`b;2);(`c;3))         Compact representation                            
+✅ PASS   k_tree_flip_test.k                                 ((`a;1);(`b;2);(`c;3))         ((`a;1);(`b;2);(`c;3))         Compact representation                            
 ✅ PASS   k_tree_nested_indexing.k                           2                              2                              Compact representation                            
 ✅ PASS   k_tree_null_to_dict_conversion.k                   .,(`foo;42;)                   .,(`foo;42;)                   Compact representation                            
 ✅ PASS   k_tree_retrieval_relative.k                        42                             42                             Compact representation                            
@@ -436,11 +412,11 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   serialization_bd_db_list.k                         "\001\000\000\000(\000\00...   "\001\000\000\000(\000\00...                                                     
 ✅ PASS   serialization_bd_db_null.k                         "\001\000\000\000\b\000\0...   "\001\000\000\000\b\000\0...                                                     
 ✅ PASS   serialization_bd_db_roundtrip_integer.k            42                             42                                                                               
-❌ FAIL   serialization_bd_db_roundtrip_list.k               1 2.5 "a"                      (1;2.5;"a")                                                                      
+✅ PASS   serialization_bd_db_roundtrip_list.k               (1;2.5;"a")                    (1;2.5;"a")                                                                      
 ✅ PASS   serialization_bd_db_symbol.k                       "\001\000\000\000\013\000...   "\001\000\000\000\013\000...                                                     
 ✅ PASS   serialization_bd_db_symbolvector.k                 "\001\000\000\000\016\000...   "\001\000\000\000\016\000...                                                     
-❌ FAIL   serialization_bd_dictionary_with_symbol_vectors.k  "\001\000\000\000p\000\00...   "\001\000\000\000p\000\00...   Fix padding junk                                  
-❌ FAIL   serialization_bd_dictionary_with_vectors.k         "\001\000\000\000x\000\00...   "\001\000\000\000x\000\00...   Fix padding junk                                  
+✅ PASS   serialization_bd_dictionary_with_symbol_vectors.k  "\001\000\000\000p\000\00...   "\001\000\000\000p\000\00...   Fix padding junk                                  
+✅ PASS   serialization_bd_dictionary_with_vectors.k         "\001\000\000\000x\000\00...   "\001\000\000\000x\000\00...   Fix padding junk                                  
 ✅ PASS   serialization_bd_float_edge_-0.5.k                 "\001\000\000\000\020\000...   "\001\000\000\000\020\000...                                                     
 ✅ PASS   serialization_bd_float_edge_-0i.k                  "\001\000\000\000\020\000...   "\001\000\000\000\020\000...                                                     
 ✅ PASS   serialization_bd_float_edge_-1.0.k                 "\001\000\000\000\020\000...   "\001\000\000\000\020\000...                                                     
@@ -452,7 +428,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   serialization_bd_floatvector_random_1.k            "\001\000\000\000(\000\00...   "\001\000\000\000(\000\00...                                                     
 ✅ PASS   serialization_bd_floatvector_random_2.k            "\001\000\000\000\020\000...   "\001\000\000\000\020\000...                                                     
 ✅ PASS   serialization_bd_floatvector_random_3.k            "\001\000\000\000(\000\00...   "\001\000\000\000(\000\00...                                                     
-💥 ERROR serialization_bd_ic_symbol.k                                                      1 0 0 0 6 0 0 0 4 0 0 0 65 0   K3Sharp error, k.exe succeeded                    
+✅ PASS   serialization_bd_ic_symbol.k                       1 0 0 0 6 0 0 0 4 0 0 0 65 0   1 0 0 0 6 0 0 0 4 0 0 0 65 0                                                     
 ✅ PASS   serialization_bd_integer_edge_-0I.k                "\001\000\000\000\b\000\0...   "\001\000\000\000\b\000\0...                                                     
 ✅ PASS   serialization_bd_integer_edge_-1.k                 "\001\000\000\000\b\000\0...   "\001\000\000\000\b\000\0...                                                     
 ✅ PASS   serialization_bd_integer_edge_-2147483648.k        "\001\000\000\000\b\000\0...   "\001\000\000\000\b\000\0...                                                     
@@ -472,7 +448,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   serialization_bd_list_edge_nested.k                "\001\000\000\000(\000\00...   "\001\000\000\000(\000\00...                                                     
 ✅ PASS   serialization_bd_list_edge_null.k                  "\001\000\000\000\020\000...   "\001\000\000\000\020\000...                                                     
 ✅ PASS   serialization_bd_list_with_explicit_nulls.k        "\001\000\000\000H\000\00...   "\001\000\000\000H\000\00...                                                     
-❌ FAIL   serialization_bd_list_with_symbol_vectors.k        "\001\000\000\000`\000\00...   "\001\000\000\000`\000\00...                                                     
+✅ PASS   serialization_bd_list_with_symbol_vectors.k        "\001\000\000\000`\000\00...   "\001\000\000\000`\000\00...   Fix padding junk                                  
 ✅ PASS   serialization_bd_list_with_vectors.k               "\001\000\000\000h\000\00...   "\001\000\000\000h\000\00...                                                     
 ✅ PASS   serialization_bd_null_edge_0.k                     "\001\000\000\000\b\000\0...   "\001\000\000\000\b\000\0...                                                     
 ✅ PASS   serialization_bd_symbol_edge_001.k                 "\001\000\000\000\006\000...   "\001\000\000\000\006\000...                                                     
@@ -556,7 +532,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   test_dict_larger.k                                 .((`a;1;);(`b;2;);(`c;3;)...   .((`a;1;);(`b;2;);(`c;3;)...   Compact representation                            
 ✅ PASS   test_dict_simple.k                                 .((`a;1;);(`b;2;);(`c;3;))     .((`a;1;);(`b;2;);(`c;3;))     Compact representation                            
 ✅ PASS   test_ic_basic.k                                    65                             65                                                                               
-💥 ERROR test_ic_vector.k                                                                  65 66 67                       K3Sharp error, k.exe succeeded                    
+✅ PASS   test_ic_vector.k                                   65 66 67                       65 66 67                                                                         
 ✅ PASS   test_monadic_colon.k                               42                             42                                                                               
 ✅ PASS   test_quoted_symbol_serialization.k                 "\001\000\000\000\006\000...   "\001\000\000\000\006\000...                                                     
 ✅ PASS   test_quoted_symbol.k                               `"."                           `"."                                                                             
@@ -584,11 +560,11 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   type_operator_float.k                              2                              2                                                                                
 ✅ PASS   type_operator_null.k                               6                              6                                                                                
 ✅ PASS   type_operator_symbol.k                             4                              4                                                                                
-❌ FAIL   type_operator_vector_char.k                        3                              -3                                                                               
+✅ PASS   type_operator_vector_char.k                        -3                             -3                                                                               
 ✅ PASS   type_operator_vector_float.k                       -2                             -2                                                                               
 ✅ PASS   type_operator_vector_int.k                         -1                             -1                                                                               
 ✅ PASS   type_operator_vector_mixed.k                       0                              0                                                                                
-❌ FAIL   type_operator_vector_symbol.k                      3                              -3                                                                               
+✅ PASS   type_operator_vector_symbol.k                      -3                             -3                                                                               
 ✅ PASS   type_promotion_float_int.k                         3.5                            3.5                                                                              
 ✅ PASS   type_promotion_float_long.k                        2.5                            2.5                                                                              
 ✅ PASS   type_promotion_int_float.k                         3.5                            3.5                                                                              
@@ -640,124 +616,50 @@ Status   Test File                                          K3Sharp Output      
 
 FAILED TESTS DETAILS:
 --------------------
-File: anonymous_function_double_param.k
-K3Sharp: {[op1;op2] op1 * op2}
-k.exe:   {[op1;op2] op1*op2}
+File: k_tree_assignment_absolute_foo.k
+K3Sharp: 42
+k.exe:   
 
-File: bd_enlist_single_string.k
-K3Sharp: "\001\000\000\000\n\000\000\000\375\377\377\377\001\000\000\000h\000"
-k.exe:   "\001\000\000\000\030\000\000\000\000\000\000\000\001\000\000\000\375\377\377\377\005\000\000\000hello\000\000\000"
+File: list_setenv.k
+K3Sharp: `TESTVAR
+k.exe:   
 
-File: db_enlist_single_string.k
-K3Sharp: ,"h"
-k.exe:   ,"hello"
+File: monadic_format_dictionary.k
+K3Sharp: ".((`a;1;);(`b;2;);(`c;3;))"
+k.exe:   ".(..)"
 
-File: db_list_mixed_types.k
-K3Sharp: 1 `test 3.14 "h"
-k.exe:   (1;`test;3.14;"hello")
+File: rand_draw_vector_deal.k
+K3Sharp: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
+k.exe:   .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
 
-File: db_mixed_list.k
-K3Sharp: 1 `test 3.14
-k.exe:   (1;`test;3.14)
+File: rand_draw_vector_probability.k
+K3Sharp: .((`type;0;);(`shape;,2;))
+k.exe:   .((`type;0;);(`shape;2 3;))
 
-File: debug_char.k
-K3Sharp: (,"line1";,"line2";,"line3")
-k.exe:   ("line1"
- "line2"
- "line3")
+File: rand_draw_vector_select.k
+K3Sharp: .((`type;0;);(`shape;,2;))
+k.exe:   .((`type;0;);(`shape;2 3;))
 
-File: debug_direct_test.k
-K3Sharp: "line1line2line3"
-k.exe:   ("line1"
- "line2"
- "line3")
+File: variable_assignment.k
+K3Sharp: 7
+k.exe:   
 
-File: debug_direct.k
-K3Sharp: "line1line2line3"
-k.exe:   ("line1"
- "line2"
- "line3")
+File: variable_scoping_global_assignment.k
+K3Sharp: 100
+k.exe:   30
+30
 
-File: debug_direct2.k
-K3Sharp: "line1line2line3"
-k.exe:   ("line1"
- "line2"
- "line3")
-
-File: debug_nested.k
-K3Sharp: "line1line2line3"
-k.exe:   ("line1"
- "line2"
- "line3")
-
-File: debug_nested2.k
-K3Sharp: "line1line2line3"
-k.exe:   ("line1"
- "line2"
- "line3")
-
-File: debug_readtext.k
-K3Sharp: (,"line1";,"line2";,"line3")
-k.exe:   ("line1"
- "line2"
- "line3")
-
-File: dictionary_unmake.k
-K3Sharp: (`a1;`b2)
-k.exe:   ((`a;1;);(`b;2;))
-
-File: form_braces_string.k
-K3Sharp: "nameisageyears old"
-k.exe:   ("John";"is";25;"years old")
-
-File: form_string_pad_left.k
-K3Sharp: ""hello""
-k.exe:   "  hello"
-
-File: format_int_vector.k
-K3Sharp: ""
-k.exe:   ("";"";"";"")
-
-File: format_long_vector.k
-K3Sharp: ""
-k.exe:   (,"1";,"*";,"*";,"*")
-
-File: format_string_pad_left.k
-K3Sharp: "   "hello""
-k.exe:   "     hello"
-
-File: format_string_pad_right.k
-K3Sharp: ""test"    "
-k.exe:   "test      "
-
-File: format_symbol_string_mixed_vector.k
-K3Sharp: `helloworldtest
-k.exe:   `hello`world`test
-
-... and 17 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------
-File: db_dict_complex_attributes.k
-Error: K3Sharp Error: Unable to cast object of type 'K3CSharp.VectorValue' to type 'K3CSharp.CharacterValue'.
-
 File: dictionary_index_attr.k
 Error: K3Sharp Error: Undefined variable: b.
-
-File: form_braces_mixed_type.k
-Error: K3Sharp Error: Unable to cast object of type 'K3CSharp.IntegerValue' to type 'K3CSharp.CharacterValue'.
 
 File: io_write_csv.k
 Error: K3Sharp Error: Undefined variable: test.csv
 
 File: lsq.k
 Error: K3Sharp Error: _lsq (least squares) operation reserved for future use
-
-File: serialization_bd_ic_symbol.k
-Error: K3Sharp Error: _ic: operand must be a single character
-
-File: test_ic_vector.k
-Error: K3Sharp Error: _ic: operand must be a single character
 
 
 K.EXE FAILING TESTS:

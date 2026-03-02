@@ -66,6 +66,13 @@ namespace K3CSharp
                     str = charVal.Value; // Use raw value, not ToString() which adds quotes
                 else
                     str = value.ToString();
+                
+                // Handle empty string case - return empty character vector
+                if (string.IsNullOrEmpty(str))
+                {
+                    return new VectorValue(new List<K3Value>(), -3);
+                }
+                
                 var charElements = str.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
                 return new VectorValue(charElements);
             }
@@ -94,20 +101,10 @@ namespace K3CSharp
             // Otherwise, this is a format operation with numeric specifier
             if (left is IntegerValue intFormat)
             {
-                // Special case: k.exe treats format specifier 0 as always returning empty string
-                if (intFormat.Value == 0)
-                {
-                    return new CharacterValue("");
-                }
                 return FormatWithSpecifier(intFormat.Value, right);
             }
             else if (left is LongValue longFormat)
             {
-                // Special case: k.exe treats format specifier 0j as always returning empty string
-                if (longFormat.Value == 0)
-                {
-                    return new CharacterValue("");
-                }
                 return FormatWithSpecifier((int)longFormat.Value, right);
             }
             else if (left is FloatValue floatFormat)
@@ -197,6 +194,11 @@ namespace K3CSharp
                     str = str.PadRight(targetLength);
                 }
                 // If str.Length >= targetLength, return as-is (no truncation)
+            }
+            else // formatSpec == 0
+            {
+                // Format specifier 0: return empty character vector
+                return new VectorValue(new List<K3Value>(), -3);
             }
             
             // According to K3 spec: format operations should return character vectors

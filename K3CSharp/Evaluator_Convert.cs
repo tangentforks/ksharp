@@ -265,8 +265,21 @@ namespace K3CSharp
         
         private K3Value ConvertToFloat(K3Value value)
         {
-            if (value is VectorValue vec)
+            // Check for character vectors first (highest priority)
+            if (value is VectorValue charVec && charVec.Elements.Count > 0 && charVec.Elements.All(e => e is CharacterValue))
             {
+                // Convert character vector to float by concatenating characters and parsing
+                var chars = charVec.Elements.Select(e => ((CharacterValue)e).Value);
+                var str = string.Concat(chars);
+                if (double.TryParse(str, out double result))
+                {
+                    return new FloatValue(result);
+                }
+                throw new Exception($"Cannot convert character vector '{str}' to float");
+            }
+            else if (value is VectorValue vec)
+            {
+                // Handle general vectors (non-character vectors)
                 var result = new List<K3Value>();
                 foreach (var element in vec.Elements)
                 {
@@ -285,6 +298,15 @@ namespace K3CSharp
             else if (value is LongValue lv)
             {
                 return new FloatValue(lv.Value);
+            }
+            else if (value is CharacterValue cv)
+            {
+                // Convert character to float by parsing its string representation
+                if (double.TryParse(cv.Value, out double result))
+                {
+                    return new FloatValue(result);
+                }
+                throw new Exception($"Cannot convert character '{cv.Value}' to float");
             }
             else
             {

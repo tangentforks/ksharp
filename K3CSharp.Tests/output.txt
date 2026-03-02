@@ -1,0 +1,620 @@
+Test File Validation:
+  Expected tests: 606
+  Actual .k files: 605
+  ✅ Test counts match perfectly!
+=========================
+Running K3CSharp Tests...
+Total tests: 606
+=========================
+✓ adverb_each_vector_minus.k: 9 18 27
+✓ adverb_each_vector_multiply.k: 4 10 18
+✓ adverb_each_vector_plus.k: 6 8 10 12
+✓ adverb_over_divide.k: 10
+✓ adverb_over_max.k: 5
+✓ adverb_over_min.k: 1
+✓ adverb_over_minus.k: 4
+✓ adverb_over_multiply.k: 24
+✓ adverb_over_plus.k: 15
+✓ plus_over_empty.k: 0
+✓ multiply_over_empty.k: 1
+✓ adverb_over_power.k: 64
+✓ adverb_over_with_initialization_1.k: 15
+✓ adverb_over_with_initialization_2.k: 12
+✓ adverb_scan_divide.k: 100 50 10
+✓ adverb_scan_max.k: 1 3 3 5 5
+✓ adverb_scan_min.k: 5 3 3 1 1
+✓ adverb_scan_minus.k: 10 8 5 4
+✓ adverb_scan_multiply.k: 1 2 6 24
+✓ adverb_scan_plus.k: 1 3 6 10 15
+✓ adverb_scan_power.k: 2 8 64
+✓ adverb_scan_with_initialization_1.k: 1 3 6 10 15
+✓ adverb_scan_with_initialization_2.k: 2 3 5 8 12
+✓ adverb_scan_with_initialization_divide.k: (2;2;1;0.3333333;0.08333333)
+✓ adverb_scan_with_initialization_minus.k: 2 1 -1 -4 -8
+✓ adverb_scan_with_initialization.k: 2 2 4 12
+✓ anonymous_function_double_param.k: {[op1;op2] op1 * op2}
+✓ anonymous_function_empty.k: {}
+✓ anonymous_function_simple.k: {4+5}
+✓ anonymous_function_single_param.k: {[arg1] arg1+6}
+✓ lambda_string_literal.k: "hello"
+✓ lambda_symbol_literal.k: `abc
+✓ lambda_string_assign.k: "hello"
+✓ atom_scalar.k: 1
+✓ atom_vector.k: 0
+✓ attribute_handle_symbol.k: `a.
+✓ attribute_handle_vector.k: `a.`b.`c.
+✓ character_single.k: "f"
+✓ character_vector.k: "hello"
+✓ complex_function.k: 205
+✓ count_operator.k: 3
+✓ cut_vector.k: (0 1;2 3;4 5 6 7)
+✓ dictionary_empty.k: .()
+✓ dictionary_index.k: 1
+✗ dictionary_index_attr.k: Error - Undefined variable: b.
+✓ dictionary_index_value.k: 1
+✓ dictionary_index_value2.k: 2
+✓ dictionary_multiple.k: .((`a;1;);(`b;2;))
+✓ dictionary_null_attributes.k: .((`a;1;);(`b;2;))
+✓ dictionary_single.k: .,(`a;`b;)
+✓ dictionary_type.k: 5
+✓ dictionary_with_null_value.k: .((`a;1;);(`b;;);(`c;3;))
+✓ empty_char_vector.k: ""
+✓ empty_float_vector_test.k: 0#0.0
+✓ empty_symbol_atomic.k: 0#`
+✓ empty_dictionary.k: .()
+✓ empty_list.k: ()
+✓ test_symbol_take.k: 0#`
+✓ test_symbol_parsing.k: 0#`
+✓ drop_negative.k: 0 1 2 3
+✓ drop_positive.k: 4 5 6 7
+✓ empty_mixed_vector.k: ()
+✓ enlist_operator.k: ,5
+✓ enumerate_empty_int.k: !0
+✓ enumerate_operator.k: 0 1 2 3 4
+✓ equal_operator.k: 0
+✓ first_operator.k: 1
+✓ float_decimal_point.k: 10.0
+✓ float_exponential.k: 170.0
+✓ float_exponential_large.k: 1e+015
+✓ float_exponential_small.k: 1e-020
+✓ float_types.k: 3.14
+✓ function_add7.k: 12
+✓ function_call_anonymous.k: 13
+✓ function_call_chain.k: 20
+✓ function_call_double.k: 32
+✓ function_call_simple.k: 12
+✓ function_foo_chain.k: 20
+✓ function_mul.k: 32
+✓ where_generate_scalar.k: 0 0 0 0
+✓ grade_down_operator.k: 1 2 3 4 0
+✓ grade_up_operator.k: 0 4 2 3 1
+✓ greater_than_operator.k: 0
+✓ integer_types_int.k: 42
+✓ integer_types_long.k: 123456789j
+✓ join_operator.k: 3 5
+✓ less_than_operator.k: 1
+✓ math_abs.k: 5
+✓ math_exp.k: 7.389056
+✓ math_log.k: 2.302585
+✓ math_sin.k: 0.0
+✓ math_sqrt.k: 4.0
+✓ math_vector.k: 0.841471 0.9092974 0.14112
+✓ maximum_operator.k: 5
+✓ minimum_operator.k: 3
+✓ mixed_list_with_null.k: (1;;`test;42.5)
+✓ mixed_vector_empty_position.k: (1;;2)
+✓ mixed_vector_multiple_empty.k: (1;;;3)
+✓ mixed_vector_whitespace_position.k: (1;;2)
+✓ mod_integer.k: 1
+✓ mod_rotate.k: 3 4 1 2
+✓ mod_vector.k: 1 0 1 0
+✓ modulus_operator.k: 1
+✓ negate_operator.k: 1
+✓ nested_vector_test.k: (1 2 3;4 5 6)
+✓ overflow_int_max_plus1.k: 0N
+✓ overflow_int_neg_inf.k: 0N
+✓ overflow_int_neg_inf_minus2.k: 0I
+✓ overflow_int_null_minus1.k: 0I
+✓ overflow_int_pos_inf.k: 0N
+✓ overflow_int_pos_inf_plus2.k: -0I
+✓ overflow_long_max_plus1.k: 0Nj
+✓ overflow_long_min_minus1.k: 0Nj
+✓ overflow_long_neg_inf.k: 0Nj
+✓ overflow_long_neg_inf_minus2.k: 0Ij
+✓ overflow_long_pos_inf.k: 0Nj
+✓ overflow_long_pos_inf_plus2.k: -0Ij
+✓ overflow_regular_int.k: -2147483639
+✓ underflow_regular_int.k: 2147483617
+✓ parentheses_basic.k: 7
+✓ parentheses_grouping.k: 9
+✓ parentheses_nested.k: 7
+✓ parentheses_nested1.k: 21
+✓ parentheses_nested2.k: 0.7142857
+✓ parentheses_nested3.k: 24
+✓ parentheses_nested4.k: 15
+✓ parentheses_nested5.k: 29
+✓ parentheses_precedence.k: 7
+✓ parenthesized_vector.k: 1 2 3 4
+✓ power_operator.k: 8
+✓ precedence_chain1.k: 1410
+✓ precedence_chain2.k: 0.07092199
+✓ precedence_complex1.k: 0.7142857
+✓ precedence_complex2.k: 10.01667
+✓ precedence_mixed1.k: 0
+✓ precedence_mixed2.k: 25
+✓ precedence_mixed3.k: 11
+✓ precedence_power1.k: 128
+✓ precedence_power2.k: 83
+✓ precedence_spec1.k: 11.57143
+✓ precedence_spec2.k: 6
+✓ reciprocal_operator.k: 0.25
+✓ reverse_operator.k: 3 2 1
+✓ scalar_vector_addition.k: 4 5
+✓ scalar_vector_multiplication.k: 3 6
+✓ shape_operator.k: ,3
+✓ shape_operator_empty_vector.k: ,0
+✓ shape_operator_jagged.k: ,3
+✓ shape_operator_jagged_3d.k: 2 2
+✓ shape_operator_jagged_matrix.k: ,3
+✓ shape_operator_matrix.k: 3 3
+✓ shape_operator_matrix_2x3.k: 2 3
+✓ shape_operator_matrix_3x3.k: 3 3
+✓ shape_operator_scalar.k: !0
+✓ shape_operator_tensor_2x2x3.k: 2 2 3
+✓ shape_operator_tensor_3d.k: 3 2 2
+✓ shape_operator_vector.k: ,5
+✓ simple_addition.k: 3
+✓ divide_float.k: 0.6
+✓ divide_integer.k: 2.5
+✓ simple_multiplication.k: 12
+✓ simple_nested_test.k: 1 2 3
+✓ minus_integer.k: 2
+✓ special_float_neg_inf.k: -0i
+✓ special_float_null.k: 0n
+✓ special_float_pos_inf.k: 0i
+✓ special_int_neg_inf.k: -0I
+✓ special_int_null.k: 0N
+✓ special_int_pos_inf.k: 0I
+✓ special_long_neg_inf.k: -0Ij
+✓ special_long_null.k: 0Nj
+✓ special_long_pos_inf.k: 0Ij
+✗ special_null.k: Expected '_n', got ''
+✓ special_int_pos_inf_plus_1.k: 0N
+✓ special_int_null_plus_1.k: -0I
+✓ special_int_neg_inf_plus_1.k: -2147483646
+✓ special_float_null_plus_1.k: 0n
+✓ special_1_plus_int_pos_inf.k: 0N
+✓ special_1_plus_int_null.k: -0I
+✓ special_int_vector.k: 0I 0N -0I
+✓ special_float_vector.k: 0i 0n -0i
+✓ square_bracket_function.k: 2
+✓ square_bracket_vector_multiple.k: 14 16
+✓ square_bracket_vector_single.k: 14
+✓ string_representation_int.k: "42"
+✓ string_representation_mixed.k: "(1;2.5;\"a\")"
+✓ string_representation_symbol.k: "`symbol"
+✓ string_representation_vector.k: "1 2 3"
+✓ symbol_quoted.k: `"a symbol"
+✓ symbol_simple.k: `foo
+✓ symbol_vector_compact.k: `a`b`c
+✓ symbol_vector_spaces.k: `a`b`c
+✓ take_operator_basic.k: 1 2 3
+✓ take_operator_empty_float.k: 0#0.0
+✓ take_operator_empty_symbol.k: 0#`
+✓ take_operator_overflow.k: 1 2 3 1 2 3 1 2 3 1
+✓ take_operator_scalar.k: 42 42 42
+✓ reshape_basic.k: (0 1 2 3;4 5 6 7;8 9 10 11)
+✓ division_float_4_2.0.k: 2.0
+✓ division_float_5_2.5.k: 2.0
+✓ division_int_4_2.k: 2
+✓ division_int_5_2.k: 2.5
+✓ division_rules_10_3.k: 3.333333
+✓ division_rules_12_4.k: 3
+✓ division_rules_4_2.k: 2
+✓ division_rules_5_2.k: 2.5
+✓ enumerate.k: 0 1
+✓ grade_down_no_parens.k: 1 2 3 4 0
+✓ grade_up_no_parens.k: 0 4 2 3 1
+✓ mixed_types.k: (42;3.14;"hello";`symbol)
+✓ multiline_function_single.k: 20
+✓ null_vector.k: (;1;2)
+✓ scoping_single.k: 60
+✓ semicolon_simple.k: (7;11;-20.45)
+✓ semicolon_vars.k: 30 200 -10
+✓ semicolon_vector.k: (7;3 4;-20.45)
+✓ test_semicolon.k: 3 4
+✓ simple_scalar_div.k: 2.5
+✓ single_no_semicolon.k: 42
+✓ smart_division1.k: 2.5 5.0
+✓ smart_division2.k: 2 4
+✓ smart_division3.k: 2 4 6
+✓ special_0i_plus_1.k: 0N
+✓ special_0n_plus_1.k: -0I
+✓ special_1_plus_neg0i.k: -2147483646
+✓ special_neg0i_plus_1.k: -2147483646
+✓ special_underflow.k: 2147483622
+✓ special_underflow_2.k: 2147483549
+✓ special_underflow_3.k: 2147482649
+✓ type_char.k: 3
+✓ type_float.k: 2
+✓ type_null.k: 6
+✓ type_space.k: 3
+✓ type_symbol.k: 4
+✓ type_vector.k: -1
+✓ vector.k: 1 2 3
+✓ type_operator_char.k: 3
+✓ type_operator_float.k: 2
+✓ type_operator_null.k: 6
+✓ type_operator_symbol.k: 4
+✓ type_operator_vector_char.k: -3
+✓ type_operator_vector_float.k: -2
+✓ type_operator_vector_int.k: -1
+✓ type_operator_vector_mixed.k: 0
+✓ type_operator_vector_symbol.k: -3
+✓ type_promotion_float_int.k: 3.5
+✓ type_promotion_float_long.k: 2.5
+✓ type_promotion_int_float.k: 3.5
+✓ type_promotion_int_long.k: 3j
+✓ type_promotion_long_float.k: 2.5
+✓ type_promotion_long_int.k: 3j
+✓ unary_minus_operator.k: -5
+✓ unique_operator.k: 1 2 3
+✓ amend_item_simple_no_semicolon.k: 1 12 3
+✓ variable_assignment.k: 7
+✓ variable_reassignment.k: 7.2 4.5
+✓ variable_scoping_global_access.k: 150
+✗ variable_scoping_global_assignment.k: Expected '10', got '100'
+✓ variable_scoping_global_unchanged.k: 100
+✓ variable_scoping_local_hiding.k: 60
+✓ variable_scoping_nested_functions.k: 140
+✓ variable_usage.k: 30
+✓ dot_execute.k: 4
+✓ dot_execute_context.k: 8
+✓ dictionary_enumerate.k: `a`b
+✓ null_operations.k: 7
+✓ dictionary_dot_apply.k: 1
+✓ monadic_format_basic.k: ,"1"
+✓ monadic_format_types.k: "42.5"
+✓ monadic_format_vector.k: (,"1";,"2";,"3")
+✓ monadic_format_string_hello.k: "hello"
+✓ monadic_format_string_a.k: ,"a"
+✓ monadic_format_symbol_hello.k: "hello"
+✓ monadic_format_symbol_simple.k: "test"
+✓ monadic_format_dictionary.k: ".((`a;1;);(`b;2;);(`c;3;))"
+✓ monadic_format_nested_list.k: ((,"1";,"2";,"3");(,"4";,"5";,"6"))
+✓ monadic_format_integer.k: "42"
+✓ monadic_format_float.k: "3.14"
+✓ monadic_format_vector_simple.k: (,"1";,"2";,"3")
+✓ format_integer.k: ""
+✓ format_float_numeric.k: ,"1"
+✓ form_long.k: 42j
+✓ format_numeric.k: "    1"
+✓ form_string_pad_left.k: "  hello"
+✓ format_symbol_pad_left.k: "     hello"
+✓ format_symbol_pad_left_8.k: "   hello"
+✓ format_pad_left.k: "   42"
+✓ format_pad_right.k: "42   "
+✓ format_float_width_precision.k: "      3.14"
+✓ format_float_precision.k: "    3.14"
+✓ format_0_1.k: ""
+✓ format_1_1.k: ,"1"
+✓ format_symbol_string_mixed_vector.k: `hello`world`test
+✓ form_integer_charvector.k: 42
+✓ form_character_charvector.k: "aaa"
+✓ dot_execute_variables.k: 0.6
+✓ format_braces_expressions.k: 8 15 2
+✓ format_braces_nested_expr.k: (12 20;(7;3.333333))
+✓ format_braces_complex.k: 8.25 12.0 9.0
+✓ format_braces_string.k: ("John";"is";25;"years old")
+✗ format_braces_mixed_type.k: Expected '(42;"hello";`test;47;"helloworld")', got '42 "hello" `test 47 "helloworld"'
+✓ format_braces_simple.k: 8
+✓ format_braces_arith.k: 8 15 2 12 20 5
+✓ format_braces_nested_arith.k: (7 10;(2;2.5);5 -1)
+✓ format_braces_float.k: 4.0 3.75 0.6 -1.0
+✓ format_braces_mixed_arith.k: 17.5 32.5 4.5
+✓ format_braces_example.k: 8 9
+✓ format_braces_function_calls.k: 5 20 12
+✓ format_braces_nested_function_calls.k: 5 8 25
+✓ log.k: 2.302585
+✓ time_t.k: .((`type;1;);(`shape;!0;))
+✓ rand_draw_select.k: .((`type;-1;);(`shape;,10;))
+✓ rand_draw_deal.k: .((`type;-1;);(`shape;,4;);(`allitemsunique;1;))
+✓ rand_draw_probability.k: .((`type;-2;);(`shape;,10;))
+✓ rand_draw_vector_select.k: .((`type;0;);(`shape;,2;))
+✗ rand_draw_vector_deal.k: Expected '.((`type;0;);(`shape;2 3;);(`allitemsunique;1;))', got '.((`type;0;);(`shape;,2;);(`allitemsunique;1;))'
+✓ rand_draw_vector_probability.k: .((`type;0;);(`shape;,2;))
+✓ time_gtime.k: 20350101 0
+✓ time_lt.k: -18000
+✓ time_jd.k: -3251
+✓ time_dj.k: 20350101
+✓ time_ltime.k: 20341231 190000
+✓ in.k: 1
+✓ list_dv_basic.k: 3 5
+✓ list_dv_nomatch.k: 3 4 4 5
+✓ list_di_basic.k: 3 4 5
+✓ list_di_multiple.k: 3 4
+✓ list_sv_base10.k: 1995
+✓ list_sv_base2.k: 9
+✓ list_sv_mixed.k: 1995
+✗ list_getenv.k: Expected '"$P$G"', got '()'
+✓ list_setenv.k: `TESTVAR
+✓ list_size_existing.k: 11264.0
+✓ test_ci_basic.k: "A"
+✓ test_ci_vector.k: "ABC"
+✓ test_ic_basic.k: 65
+✓ test_vs_dyadic.k: 1 9 9 5
+✓ test_ic_vector.k: 65 66 67
+✓ test_monadic_colon.k: 42
+✓ test_sm_basic.k: 1
+✓ test_sm_simple.k: 1
+✓ test_ss_basic.k: ,6
+✗ io_read_basic.k: Expected '("line1";"line2";"line3")', got '("\"\"\"l\"\"\",\"\"\"i\"\"\",\"\"\"n\"\"\",\"\"\"e\"\"\",\"\"\"1\"\"\"";"\"\"\"l\"\"\",\"\"\"i\"\"\",\"\"\"n\"\"\",\"\"\"e\"\"\",\"\"\"2\"\"\"";"\"\"\"l\"\"\",\"\"\"i\"\"\",\"\"\"n\"\"\",\"\"\"e\"\"\",\"\"\"3\"\"\"")'
+✓ io_write_basic.k: 
+✗ io_write_csv.k: Error - Undefined variable: test.csv
+✓ debug_simple_char.k: "line1"
+✓ debug_nested.k: ("line1";"line2";"line3")
+✓ debug_nested2.k: ("line1";"line2";"line3")
+✓ debug_direct.k: ("line1";"line2";"line3")
+✓ debug_direct2.k: ("line1";"line2";"line3")
+✓ debug_direct_test.k: ("line1";"line2";"line3")
+✗ debug_readtext.k: Expected '("line1";"line2";"line3")', got '("\"\"\"l\"\"\",\"\"\"i\"\"\",\"\"\"n\"\"\",\"\"\"e\"\"\",\"\"\"1\"\"\"";"\"\"\"l\"\"\",\"\"\"i\"\"\",\"\"\"n\"\"\",\"\"\"e\"\"\",\"\"\"2\"\"\"";"\"\"\"l\"\"\",\"\"\"i\"\"\",\"\"\"n\"\"\",\"\"\"e\"\"\",\"\"\"3\"\"\"")'
+✓ debug_single_char.k: "l"
+✓ debug_char_vector.k: "line"
+✓ search_in_basic.k: 1
+✓ search_in_notfound.k: 0
+✓ search_bin_basic.k: 1
+✓ search_binl_eachleft.k: 0 1 1 2 2
+✓ search_lin_intersection.k: 1 1 1 0 0
+✓ amend_item_basic.k: 1 12 3
+✓ amend_item_multiple.k: 11 2 13
+✓ amend_item_monadic.k: 1 4 3
+✓ amend_test.k: (1 2 13 4 5;6 7 8 9 10)
+✓ find_basic.k: 2
+✓ find_notfound.k: 7
+✗ lsq.k: Error - _lsq (least squares) operation reserved for future use
+✓ format_float_precision_vector_simple.k: ("       1.5";"       2.5")
+✓ format_float_precision_mixed_vector.k: ("   1.50";"   2.70";"   3.14";"   4.20")
+✓ format_pad_mixed_vector.k: ("         1";"         2";"         3")
+✓ format_pad_negative_mixed_vector.k: ("1         ";"2         ";"3         ")
+✓ vector_notation_empty.k: ()
+✓ vector_notation_functions.k: 10 20 30
+✓ vector_notation_mixed_types.k: (42;3.14;"hello";`symbol)
+✓ vector_notation_nested.k: 3 7 11
+✓ vector_notation_semicolon.k: (7;11;-20.45)
+✓ vector_notation_single_group.k: 42
+✓ vector_notation_space.k: 1 2 3 4 5
+✓ vector_notation_variables.k: 30 200 -10
+✓ vector_addition.k: 4 6
+✓ vector_division.k: 0.3333333 0.5
+✓ vector_index_duplicate.k: 5 5
+✓ vector_index_first.k: 5
+✓ vector_index_multiple.k: 8 9
+✓ vector_index_reverse.k: 9 8
+✓ vector_index_single.k: 4
+✓ vector_multiplication.k: 3 8
+✓ vector_subtraction.k: -2 -2
+✓ vector_with_null.k: (;1;2)
+✓ vector_with_null_middle.k: (1;;3)
+✓ where_operator.k: 0 2 3
+✓ where_vector_counts.k: 0 0 0 1 1 2
+✓ floor_operator.k: 3
+✓ adverb_backslash_colon_basic.k: (5 6 7;6 7 8;7 8 9)
+✓ adverb_slash_colon_basic.k: (5 6 7;6 7 8;7 8 9)
+✓ adverb_tick_colon_basic.k: 4 1 3 8
+✓ amend_apply.k: (1 2 13 4 5;6 7 8 9 10)
+✓ amend_dot_test.k: 1 12 3
+✓ amend_parenthesized.k: 11 2 3
+✓ amend_test_anonymous_func.k: 11 2 3
+✓ amend_test_func_var.k: 11 2 3
+✓ conditional_bracket_test.k: "true"
+✓ conditional_false.k: "false"
+✓ conditional_simple_test.k: "true"
+✓ conditional_true.k: "true"
+✓ dictionary_null_index.k: 1 2
+✗ dictionary_unmake.k: Expected '((`a;1;);(`b;2;))', got '(`a1;`b2)'
+✓ do_bracket_test.k: 
+✓ do_loop.k: 
+✓ do_simple.k: 
+✓ dyadic_divide_bracket.k: 5
+✓ dyadic_minus_bracket.k: 7
+✓ dyadic_multiply_bracket.k: 24
+✓ dyadic_plus_bracket.k: 8
+✓ empty_brackets_dictionary.k: 1 2
+✓ empty_brackets_vector.k: 1 2 3 4
+✓ format_braces_complex_expressions.k: 14 20 10
+✓ format_float_precision_complex_mixed.k: ("     1.234";"     2.567";"     3.890";"     4.123")
+✓ format_float_vector.k: (,"1";,"2";,"3";"42")
+✗ format_int_vector.k: Expected '(""
+ ""
+ ""
+ "")', got '("";"";"";"")'
+✓ form_0_string.k: 123
+✓ form_0_vector.k: 123 456
+✓ form_0_float_string.k: 3.14
+✗ form_0_float_vector.k: Expected '3.14 1e+012 1.4e-027', got '3.14 1000000000000.0 1.4e-027'
+✓ form_symbol_string.k: `abc
+✗ form_symbol_vector.k: Expected '`abc `de `f', got '`abc`de`f'
+✓ form_braces_string_new.k: {y*z+x}
+✓ form_braces_complex_new.k: ({y*z+x};{[t;a;v;s] s+(v*t)+.5*a*t*t})
+✓ format_string_pad_left.k: "     hello"
+✓ format_string_pad_right.k: "test      "
+✗ format_vector_int.k: Expected '("";"";""))', got '("";"";"")'
+✓ group_operator.k: (0 1 6;2 7 16;3 5 12 15 17;,4;8 9;,10;,11;,13;14 18;,19)
+✓ if_bracket_test.k: 
+✓ if_simple_test.k: 
+✓ if_true.k: 
+✓ in_basic.k: 1
+✓ in_notfound.k: 0
+✓ in_simple.k: 0
+✓ isolated.k: 0.6
+✓ modulo.k: 0.6
+✓ monadic_format_mixed_vector.k: (,"1";"2.5";"hello";"symbol")
+✓ over_plus_empty.k: 0
+✓ simple_division.k: 4
+✓ simple_subtraction.k: 2
+✓ string_parse.k: 30
+✓ k_tree_assignment_absolute_foo.k: 42
+✓ k_tree_retrieve_absolute_foo.k: 42
+✓ k_tree_retrieval_relative.k: 42
+✓ k_tree_enumerate.k: `k`t
+✓ k_tree_current_branch.k: `.k
+✓ k_tree_dictionary_indexing.k: 42
+✓ k_tree_nested_indexing.k: 2
+✓ k_tree_verify_root.k: 
+✓ k_tree_flip_dictionary.k: .((`a;1;);(`b;2;);(`c;3;))
+✓ k_tree_null_to_dict_conversion.k: .,(`foo;42;)
+✓ k_tree_dictionary_assignment.k: .((`a;1;);(`b;2;);(`c;3;))
+✓ k_tree_test_bracket_indexing.k: 2
+✗ k_tree_flip_test.k: Expected '((`a;1);(`b;2);(`c;3))', got '(`a1;`b2;`c3)'
+✓ vector_null_index.k: 1 2 3 4
+✓ while_bracket_test.k: 
+✓ while_safe_test.k: 
+✓ while_simple_test.k: 
+✓ serialization_bd_db_integer.k: "\001\000\000\000\b\000\000\000\001\000\000\000*\000\000\000"
+✓ serialization_bd_db_float.k: "\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000n\206\033\360\371!\t@"
+✓ serialization_bd_db_character.k: "\001\000\000\000\b\000\000\000\003\000\000\000a\000\000\000"
+✓ serialization_bd_db_symbol.k: "\001\000\000\000\013\000\000\000\004\000\000\000symbol\000"
+✓ serialization_bd_db_null.k: "\001\000\000\000\b\000\000\000\006\000\000\000\000\000\000\000"
+✓ serialization_bd_db_integervector.k: "\001\000\000\000\024\000\000\000\377\377\377\377\003\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000"
+✓ serialization_bd_db_floatvector.k: "\001\000\000\000 \000\000\000\376\377\377\377\003\000\000\000\232\231\231\231\231\231\361?\232\231\231\231\231\231\001@ffffff\n@"
+✓ serialization_bd_db_charactervector.k: "\001\000\000\000\016\000\000\000\375\377\377\377\005\000\000\000hello\000"
+✓ serialization_bd_db_symbolvector.k: "\001\000\000\000\016\000\000\000\374\377\377\377\003\000\000\000a\000b\000c\000"
+✓ serialization_bd_db_list.k: "\001\000\000\000(\000\000\000\000\000\000\000\003\000\000\000\001\000\000\000\001\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\004@\003\000\000\000a\000\000\000"
+✓ serialization_bd_db_dictionary.k: "\001\000\000\000H\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\004\000\000\0001\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\004\000\000\0002\000\000\000\006\000\000\000\000\000\000\000"
+✓ serialization_bd_db_anonymousfunction.k: "\001\000\000\000\017\000\000\000\n\000\000\000\000{[x] x+1}\000"
+✓ serialization_bd_db_roundtrip_integer.k: 42
+✗ serialization_bd_db_roundtrip_list.k: Expected '(1;2.5;"a")', got '1 2.5 "a"'
+✓ serialization_bd_ic_symbol.k: 1 0 0 0 6 0 0 0 4 0 0 0 65 0
+✓ db_basic_integer.k: 42
+✓ db_float.k: 3.14
+✓ db_symbol.k: `test
+✓ db_int_vector.k: 1 2 3
+✓ db_symbol_vector.k: `a`b`c
+✓ db_char_vector.k: "hello"
+✓ db_list_simple.k: 1 2 3
+✓ db_dict_simple.k: .((`a;1;);(`b;2;);(`c;3;))
+✓ db_function_simple.k: {+}
+✓ db_function_params.k: {x+y}
+✓ db_null.k: 0N
+✓ db_empty_list.k: ()
+✓ db_character.k: "a"
+✓ db_float_simple.k: 1.5
+✓ db_int_vector_long.k: 1 2 3 4 5
+✓ db_float_vector.k: 1.1 2.2 3.3
+✓ db_char_vector_sentence.k: "hello world"
+✓ db_symbol_simple.k: `hello
+✓ db_list_longer.k: 1 2 3 4 5
+✗ db_list_mixed_types.k: Expected '(1;`test;3.14;"hello")', got '1 `test 3.14 "hello"'
+✓ db_function_complex.k: {[x;y] x*y+z}
+✓ db_function_simple_math.k: {x+y}
+✓ db_nested_dict_vectors.k: .((`a;1 2 3;);(`b;`hello`world`test;))
+✓ db_nested_lists.k: (1 2 3;`hello`world`test;4.5 6.7)
+✗ db_mixed_list.k: Expected '(1;`test;3.14)', got '1 `test 3.14'
+✓ db_dict_simple.k: .((`a;1;);(`b;2;);(`c;3;))
+✓ db_dict_single_entry.k: .,(`a;1;)
+✓ db_dict_symbol_2char.k: .,(`ab;1 2;)
+✓ db_dict_symbol_8char.k: .,(`abcdefgh;1 2 3 4 5 6 7 8;)
+✓ db_dict_multi_entry.k: .((`a;1;);(`b;2;))
+✓ db_dict_five_entries.k: .((`a;1;);(`b;2;);(`c;3;);(`d;4;);(`e;5;))
+✓ db_dict_complex_attributes.k: .((`col01;11 12 13 14 15;.((`format;,`n;);(`name;`ID;)));(`col02;`yellow`white`blue`red`black;.((`format;,`c;);(`name;`Color;)));(`col03;("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`c;);(`name;`Retailer;))))
+✓ db_dict_empty.k: .()
+✓ db_dict_with_null_attrs.k: .,(`a;1;.())
+✓ db_dict_with_empty_attrs.k: .((`a;1;);(`b;2;.()))
+✓ db_enlist_single_int.k: ,5
+✓ db_enlist_single_symbol.k: ,`test
+✓ db_enlist_single_string.k: ,"hello"
+✓ db_enlist_vector.k: ,1 2 3
+✓ serialization_bd_null_edge_0.k: "\001\000\000\000\b\000\000\000\006\000\000\000\000\000\000\000"
+✓ serialization_bd_integer_edge_0.k: "\001\000\000\000\b\000\000\000\001\000\000\000\000\000\000\000"
+✓ serialization_bd_integer_edge_1.k: "\001\000\000\000\b\000\000\000\001\000\000\000\001\000\000\000"
+✓ serialization_bd_integer_edge_-1.k: "\001\000\000\000\b\000\000\000\001\000\000\000\377\377\377\377"
+✓ serialization_bd_integer_edge_2147483647.k: "\001\000\000\000\b\000\000\000\001\000\000\000\377\377\377\177"
+✓ serialization_bd_integer_edge_-2147483648.k: "\001\000\000\000\b\000\000\000\001\000\000\000\001\000\000\200"
+✓ serialization_bd_integer_edge_0N.k: "\001\000\000\000\b\000\000\000\001\000\000\000\000\000\000\200"
+✓ serialization_bd_integer_edge_0I.k: "\001\000\000\000\b\000\000\000\001\000\000\000\377\377\377\177"
+✓ serialization_bd_integer_edge_-0I.k: "\001\000\000\000\b\000\000\000\001\000\000\000\001\000\000\200"
+✓ serialization_bd_float_edge_0.0.k: "\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\000\000"
+✓ serialization_bd_float_edge_1.0.k: "\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\360?"
+✓ serialization_bd_float_edge_-1.0.k: "\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\360\277"
+✓ serialization_bd_float_edge_0.5.k: "\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\340?"
+✓ serialization_bd_float_edge_-0.5.k: "\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\340\277"
+✓ serialization_bd_float_edge_0n.k: "\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\370\377"
+✓ serialization_bd_float_edge_0i.k: "\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\360\177"
+✓ serialization_bd_float_edge_-0i.k: "\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\360\377"
+✓ serialization_bd_symbol_edge_a.k: "\001\000\000\000\006\000\000\000\004\000\000\000a\000"
+✓ serialization_bd_symbol_edge_symbol.k: "\001\000\000\000\013\000\000\000\004\000\000\000symbol\000"
+✓ serialization_bd_symbol_edge_test123.k: "\001\000\000\000\014\000\000\000\004\000\000\000test123\000"
+✓ serialization_bd_symbol_edge_underscore.k: "\001\000\000\000\020\000\000\000\004\000\000\000_underscore\000"
+✓ serialization_bd_symbol_edge_hello.k: "\001\000\000\000\n\000\000\000\004\000\000\000hello\000"
+✓ serialization_bd_symbol_edge_newline_tab.k: "\001\000\000\000\007\000\000\000\004\000\000\000\n\t\000"
+✓ serialization_bd_symbol_edge_001.k: "\001\000\000\000\006\000\000\000\004\000\000\000\001\000"
+✓ serialization_bd_symbol_edge_empty.k: "\001\000\000\000\005\000\000\000\004\000\000\000\000"
+✓ serialization_bd_character_edge_a.k: "\001\000\000\000\b\000\000\000\003\000\000\000a\000\000\000"
+✓ serialization_bd_character_edge_b.k: "\001\000\000\000\b\000\000\000\003\000\000\000b\000\000\000"
+✓ serialization_bd_character_edge_z.k: "\001\000\000\000\b\000\000\000\003\000\000\000z\000\000\000"
+✓ serialization_bd_character_edge_A_upper.k: "\001\000\000\000\b\000\000\000\003\000\000\000A\000\000\000"
+✓ serialization_bd_character_edge_Z_upper.k: "\001\000\000\000\b\000\000\000\003\000\000\000Z\000\000\000"
+✓ serialization_bd_character_edge_0.k: "\001\000\000\000\b\000\000\000\003\000\000\0000\000\000\000"
+✓ serialization_bd_character_edge_9.k: "\001\000\000\000\b\000\000\000\003\000\000\0009\000\000\000"
+✓ serialization_bd_character_edge_space.k: "\001\000\000\000\b\000\000\000\003\000\000\000 \000\000\000"
+✓ serialization_bd_character_edge_newline.k: "\001\000\000\000\b\000\000\000\003\000\000\000\n\000\000\000"
+✓ serialization_bd_character_edge_tab.k: "\001\000\000\000\b\000\000\000\003\000\000\000\t\000\000\000"
+✓ serialization_bd_character_edge_carriage.k: "\001\000\000\000\b\000\000\000\003\000\000\000\r\000\000\000"
+✓ serialization_bd_character_edge_null.k: "\001\000\000\000\b\000\000\000\003\000\000\000\000\000\000\000"
+✓ serialization_bd_character_edge_001.k: "\001\000\000\000\b\000\000\000\003\000\000\000\001\000\000\000"
+✓ serialization_bd_character_edge_377.k: "\001\000\000\000\b\000\000\000\003\000\000\000\377\000\000\000"
+✓ serialization_bd_character_edge_backspace.k: "\001\000\000\000\b\000\000\000\003\000\000\000\b\000\000\000"
+✓ serialization_bd_charactervector_edge_empty.k: "\001\000\000\000\t\000\000\000\375\377\377\377\000\000\000\000\000"
+✓ serialization_bd_charactervector_edge_a.k: "\001\000\000\000\b\000\000\000\003\000\000\000a\000\000\000"
+✓ serialization_bd_charactervector_edge_hello.k: "\001\000\000\000\016\000\000\000\375\377\377\377\005\000\000\000hello\000"
+✓ serialization_bd_charactervector_edge_whitespace.k: "\001\000\000\000\014\000\000\000\375\377\377\377\003\000\000\000\n\t\r\000"
+✓ serialization_bd_integervector_edge_empty.k: "\001\000\000\000\b\000\000\000\377\377\377\377\000\000\000\000"
+✓ serialization_bd_integervector_edge_single.k: "\001\000\000\000\014\000\000\000\377\377\377\377\001\000\000\000\001\000\000\000"
+✓ serialization_bd_integervector_edge_123.k: "\001\000\000\000\024\000\000\000\377\377\377\377\003\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000"
+✓ serialization_bd_integervector_edge_special.k: "\001\000\000\000\024\000\000\000\377\377\377\377\003\000\000\000\000\000\000\200\377\377\377\177\001\000\000\200"
+✓ serialization_bd_list_edge_empty.k: "\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000\000"
+✓ serialization_bd_list_edge_null.k: "\001\000\000\000\020\000\000\000\000\000\000\000\001\000\000\000\006\000\000\000\000\000\000\000"
+✓ serialization_bd_list_edge_mixed.k: "\001\000\000\000(\000\000\000\000\000\000\000\003\000\000\000\001\000\000\000\001\000\000\000\002\000\000\000\001\000\000\000\000\000\000\000\000\000\004@\003\000\000\000a\000\000\000"
+✓ serialization_bd_list_edge_complex.k: "\001\000\000\0000\000\000\000\000\000\000\000\003\000\000\000\006\000\000\000\000\000\000\000\004\000\000\000symbol\000\000\000\000\000\000\n\000\000\000\000{[]}\000\000\000\000\000\000\000"
+✓ serialization_bd_list_edge_nested.k: "\001\000\000\000(\000\000\000\000\000\000\000\002\000\000\000\377\377\377\377\002\000\000\000\001\000\000\000\002\000\000\000\377\377\377\377\002\000\000\000\003\000\000\000\004\000\000\000"
+✓ serialization_bd_list_edge_dicts.k: "\001\000\000\000X\000\000\000\000\000\000\000\002\000\000\000\005\000\000\000\001\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\001\000\000\000\001\000\000\000\006\000\000\000\000\000\000\000\005\000\000\000\001\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\001\000\000\000\002\000\000\000\006\000\000\000\000\000\000\000"
+✓ serialization_bd_anonymousfunction_random_1.k: "\001\000\000\000\030\000\000\000\n\000\000\000\000{[x] x+7;x$1;x<=2}\000"
+✓ serialization_bd_anonymousfunction_random_2.k: "\001\000\000\000\022\000\000\000\n\000\000\000\000{[] 0|4;0&3}\000"
+✓ serialization_bd_anonymousfunction_random_3.k: "\001\000\000\000\024\000\000\000\n\000\000\000.k\000{[xyz] xy|3}\000"
+✓ serialization_bd_floatvector_random_1.k: "\001\000\000\000(\000\000\000\376\377\377\377\004\000\000\000sj\325/\312\006\bAl\315\227\234\217\353\023\301\026\270Yp\027/\n\301Z`\257\331\350\303\306@"
+✓ serialization_bd_floatvector_random_2.k: "\001\000\000\000\020\000\000\000\002\000\000\000\001\000\000\000:\321\254\250b*\002A"
+✓ serialization_bd_floatvector_random_3.k: "\001\000\000\000(\000\000\000\376\377\377\377\004\000\000\0002\377\004(g\334!A\253p.\342\211b!\301\317\3376\002\n*\342@zIO\0230;\030A"
+✓ serialization_bd_symbolvector_random_1.k: "\001\000\000\000&\000\000\000\374\377\377\377\006\000\000\000qzUM7\000g8X6P\000iay\000KgNQ5i\000< +\000b5\000"
+✓ serialization_bd_symbolvector_random_2.k: "\001\000\000\0001\000\000\000\374\377\377\377\n\000\000\000O 0\000D\000qCBI1b\000*H \000SS\000ULsyI\000F~\000C\000Mont\000O25B\000"
+✓ serialization_bd_symbolvector_random_3.k: "\001\000\000\000!\000\000\000\374\377\377\377\006\000\000\000o3\000EE5ijP\000trD0LuE\000OW\000.\000y\000"
+✓ test_quoted_symbol.k: `"."
+✓ test_quoted_symbol_serialization.k: "\001\000\000\000\006\000\000\000\004\000\000\000.\000"
+✓ test_simple_symbol.k: `a`"."`b
+✓ test_single_quoted_symbol.k: `"."
+✓ test_symbol_vector_with_quoted.k: `a`b`"."`c
+✓ serialization_bd_dictionary_with_symbol_vectors.k: "\001\000\000\000p\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000colA\000\000\000\000\000\000\000\000\374\377\377\377\003\000\000\000a\000b\000c\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000colB\000\000\000\000\000\000\000\000\374\377\377\377\003\000\000\000dd\000eee\000ffff\000\000\000\000\000\006\000\000\000\000\000\000\000"
+✓ serialization_bd_dictionary_with_vectors.k: "\001\000\000\000x\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000col1\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000\004\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000col2\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\005\000\000\000\006\000\000\000\007\000\000\000\b\000\000\000\006\000\000\000\000\000\000\000"
+✓ serialization_bd_list_with_explicit_nulls.k: "\001\000\000\000H\000\000\000\000\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\004\000\000\0001\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\004\000\000\0002\000\000\000\006\000\000\000\000\000\000\000"
+✓ serialization_bd_list_with_vectors.k: "\001\000\000\000h\000\000\000\000\000\000\000\002\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000col1\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\001\000\000\000\002\000\000\000\003\000\000\000\004\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000col2\000\000\000\000\000\000\000\000\377\377\377\377\004\000\000\000\005\000\000\000\006\000\000\000\007\000\000\000\b\000\000\000"
+✓ serialization_bd_list_with_symbol_vectors.k: "\001\000\000\000`\000\000\000\000\000\000\000\002\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000colA\000\000\000\000\000\000\000\000\374\377\377\377\003\000\000\000a\000b\000c\000\000\000\000\000\000\000\002\000\000\000\004\000\000\000colB\000\000\000\000\000\000\000\000\374\377\377\377\003\000\000\000dd\000eee\000ffff\000\000\000\000\000"
+✓ bd_dict_single_entry.k: "\001\000\000\000(\000\000\000\005\000\000\000\001\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\001\000\000\000\001\000\000\000\006\000\000\000\000\000\000\000"
+✓ db_dict_larger.k: .((`a;1;);(`b;2;);(`c;3;);(`d;4;))
+✓ db_dict_mixed_types.k: .((`key1;`value1;);(`key2;42;);(`key3;3.14;))
+✓ db_float_vector_longer.k: 1.1 2.2 3.3 4.4 5.5
+✓ db_int_vector_longer.k: 1 2 3 4 5 6 7 8 9 10
+✓ db_nested_structures.k: .((`a;1 2 3;);(`b;4 5 6;))
+✓ db_string_hello.k: "hello"
+✓ db_symbol_hello.k: `hello
+✓ db_symbol_vector_longer.k: `hello`world`test
+✓ test_dict_larger.k: .((`a;1;);(`b;2;);(`c;3;);(`d;4;))
+✓ test_dict_simple.k: .((`a;1;);(`b;2;);(`c;3;))
+✓ symbol_special_chars.k: `"hello-world!"
+✓ type_empty_int_vector.k: -1
+✓ bd_empty_list.k: "\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000\000"
+✓ bd_enlist_single_int.k: "\001\000\000\000\014\000\000\000\377\377\377\377\001\000\000\000\005\000\000\000"
+✓ bd_enlist_single_string.k: "\001\000\000\000\030\000\000\000\000\000\000\000\001\000\000\000\375\377\377\377\005\000\000\000hello\000\000\000"
+✓ bd_symbol_vector_longer.k: "\001\000\000\000\031\000\000\000\374\377\377\377\003\000\000\000hello\000world\000test\000"
+✓ bd_enlist_single_symbol.k: "\001\000\000\000\r\000\000\000\374\377\377\377\001\000\000\000test\000"
+
+Test Results: 587/606 passed (96.9%)
+Detailed results table written to: T:\_src\github.com\ERufian\ksharp\K3CSharp.Tests\results_table.txt

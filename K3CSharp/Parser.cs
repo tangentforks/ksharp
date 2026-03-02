@@ -633,23 +633,14 @@ namespace K3CSharp
             {
                 var value = PreviousToken().Lexeme;
                 
-                // Check if this looks like a complete string (word/sentence) vs character vector
-                // If it contains only letters and numbers, treat as single string
-                if (value.All(c => char.IsLetterOrDigit(c) || c == ' ') && value.Length > 1)
+                // Always create a VectorValue containing individual CharacterValue objects
+                // In K, "text" is always a character vector, not a single character
+                var charVector = new List<K3Value>();
+                foreach (char c in value)
                 {
-                    // Treat as complete string
-                    result = ASTNode.MakeLiteral(new CharacterValue(value));
+                    charVector.Add(new CharacterValue(c.ToString()));
                 }
-                else
-                {
-                    // Create a VectorValue containing individual CharacterValue objects
-                    var charVector = new List<K3Value>();
-                    foreach (char c in value)
-                    {
-                        charVector.Add(new CharacterValue(c.ToString()));
-                    }
-                    result = ASTNode.MakeLiteral(new VectorValue(charVector, -3)); // -3 = character vector type
-                }
+                result = ASTNode.MakeLiteral(new VectorValue(charVector, -3)); // -3 = character vector type
             }
             else if (Match(TokenType.SYMBOL))
             {

@@ -2172,7 +2172,12 @@ namespace K3CSharp
             {
                 // Error: return (1; error_message)
                 var errorFlag = new IntegerValue(1);
-                var errorMessage = new CharacterValue(ex.Message);
+                var errorMessageChars = new List<K3Value>();
+                foreach (char c in ex.Message)
+                {
+                    errorMessageChars.Add(new CharacterValue(c.ToString()));
+                }
+                var errorMessage = new VectorValue(errorMessageChars, -3);
                 var errorVector = new VectorValue(new List<K3Value> { errorFlag, errorMessage });
                 return errorVector;
             }
@@ -2186,14 +2191,14 @@ namespace K3CSharp
                 var serializer = new KSerializer();
                 var bytes = serializer.Serialize(primitiveValue!);
                 
-                // Convert raw bytes directly to character vector
-                var charString = "";
+                // Convert raw bytes to character vector (type -3)
+                var charElements = new List<K3Value>();
                 for (int i = 0; i < bytes.Length; i++)
                 {
-                    charString += (char)bytes[i];
+                    charElements.Add(new CharacterValue(((char)bytes[i]).ToString()));
                 }
                 
-                return new CharacterValue(charString); // Return CharacterValue directly (type -3)
+                return new VectorValue(charElements, -3); // Return character vector (type -3)
             }
             catch (Exception ex)
             {
@@ -2201,118 +2206,87 @@ namespace K3CSharp
             }
         }
         
-        private string ConvertBytesToCharacterString(byte[] bytes)
-        {
-            var result = new System.Text.StringBuilder();
-            result.Append('"');
-            
-            foreach (var b in bytes)
-            {
-                switch (b)
-                {
-                    case 8:   // Backspace
-                        result.Append("\\b");
-                        break;
-                    case 9:   // Tab
-                        result.Append("\\t");
-                        break;
-                    case 10:  // Newline
-                        result.Append("\\n");
-                        break;
-                    case 13:  // Carriage return
-                        result.Append("\\r");
-                        break;
-                    case 34:  // Double quote
-                        result.Append("\\\"");
-                        break;
-                    case 92:  // Backslash
-                        result.Append("\\\\");
-                        break;
-                    default:
-                        if (b >= 32 && b <= 126) // Printable ASCII
-                        {
-                            result.Append((char)b);
-                        }
-                        else // Non-printable or extended ASCII
-                        {
-                            result.Append($"\\{Convert.ToString(b, 8).PadLeft(3, '0')}"); // Octal with leading zeros
-                        }
-                        break;
-                }
-            }
-            
-            result.Append('"');
-            return result.ToString();
-        }
-        
         private K3Value DbFunction(K3Value operand)
         {
             try
             {
-                string charString;
-                
-                if (operand is CharacterValue charVal)
+                if (operand is VectorValue vec && vec.VectorType == -3)
                 {
-                    // Handle CharacterValue directly (from _bd operation)
-                    charString = "\"" + charVal.Value + "\"";
-                }
-                else if (operand is VectorValue charVector && charVector.Elements.Count == 1 && charVector.Elements[0] is CharacterValue nestedCharVal)
-                {
-                    // Handle character vector with single CharacterValue (legacy support)
-                    charString = "\"" + nestedCharVal.Value + "\"";
-                }
-                else if (operand is VectorValue vec)
-                {
-                    // Handle VectorValue of CharacterValue elements
-                    charString = "\"";
-                    foreach (var element in vec.Elements)
+                    // Handle character vector (type -3) - convert to string for deserialization
+                    var charString = string.Concat(vec.Elements.OfType<CharacterValue>().Select(cv => cv.Value));
+                    
+                    // Parse character string back to bytes (let K3Value handle escaping)
+                    var bytes = ParseCharacterStringToBytes("\"" + charString + "\"");
+                    
+                    var deserializer = new KDeserializer();
+                    var result = deserializer.Deserialize(bytes.ToArray());
+                    
+                    // Convert back to K3Value
+                    return result switch
                     {
-                        if (element is CharacterValue cv)
-                        {
-                            charString += cv.Value;
-                        }
-                        else
-                        {
-                            throw new Exception("_db: vector must contain only character values");
-                        }
-                    }
-                    charString += "\"";
+                        IntegerValue iv => iv,
+                        FloatValue fv => fv,
+                        CharacterValue cv => cv,
+                        SymbolValue sv => sv,
+                        VectorValue vv => vv,
+                        DictionaryValue dv => dv,
+                        FunctionValue fv => fv,
+                        NullValue nv => nv,
+                        int i => new IntegerValue(i),
+                        double d => new FloatValue(d),
+                        char c => new CharacterValue(c.ToString()),
+                        string s when s.StartsWith("`") => new SymbolValue(s),
+                        string s => CreateCharacterVectorFromString(s),
+                        null => new NullValue(),
+                        _ => throw new Exception($"Unsupported deserialized type: {result.GetType()}")
+                    };
                 }
                 else
                 {
-                    throw new Exception("_db (data from bytes) requires a character vector as input");
+                    throw new Exception("_db (data from bytes) requires a character vector (type -3) as input");
                 }
-                
-                // Parse character string with escape sequences back to bytes
-                var bytes = ParseCharacterStringToBytes(charString);
-                
-                var deserializer = new KDeserializer();
-                var result = deserializer.Deserialize(bytes.ToArray());
-                
-                // Convert back to K3Value
-                return result switch
-                {
-                    IntegerValue iv => iv,
-                    FloatValue fv => fv,
-                    CharacterValue cv => cv,
-                    SymbolValue sv => sv,
-                    VectorValue vv => vv,
-                    DictionaryValue dv => dv,
-                    FunctionValue fv => fv,
-                    NullValue nv => nv,
-                    int i => new IntegerValue(i),
-                    double d => new FloatValue(d),
-                    char c => new CharacterValue(c.ToString()),
-                    string s when s.StartsWith("`") => new SymbolValue(s),
-                    string s => new CharacterValue(s),
-                    null => new NullValue(),
-                    _ => throw new Exception($"Unsupported deserialized type: {result.GetType()}")
-                };
             }
             catch (Exception ex)
             {
                 throw new Exception($"_db (data from bytes) operation failed: {ex.Message}", ex);
             }
+        }
+        
+        private static VectorValue CreateCharacterVectorFromString(string s)
+        {
+            var charElements = new List<K3Value>();
+            foreach (char c in s)
+            {
+                charElements.Add(new CharacterValue(c.ToString()));
+            }
+            return new VectorValue(charElements, -3);
+        }
+        
+        private static VectorValue CreateCharacterVectorFromRawChars(string s)
+        {
+            var charElements = new List<K3Value>();
+            foreach (char c in s)
+            {
+                // Create CharacterValue directly from char without string processing
+                charElements.Add(new CharacterValue(c.ToString()));
+            }
+            return new VectorValue(charElements, -3);
+        }
+        
+        private static VectorValue CreateCharacterVectorFromRawString(string s)
+        {
+            var charElements = new List<K3Value>();
+            foreach (char c in s)
+            {
+                charElements.Add(new CharacterValue(c.ToString()));
+            }
+            return new VectorValue(charElements, -3);
+        }
+        
+        private static VectorValue CreateCharacterVectorDirect(string s)
+        {
+            // Create character vector directly using VectorValue constructor
+            return new VectorValue(new List<K3Value> { new CharacterValue(s) }, -3);
         }
         
         private List<byte> ParseCharacterStringToBytes(string charString)
@@ -2400,18 +2374,6 @@ namespace K3CSharp
             }
 
             return bytes;
-        }
-        private K3Value ConvertToK3Value(object obj)
-        {
-            return obj switch
-            {
-                int i => new IntegerValue(i),
-                double d => new FloatValue(d),
-                char c => new CharacterValue(c.ToString()),
-                string s => s.StartsWith("`") ? new SymbolValue(s[1..]) : new CharacterValue(s),
-                null => new NullValue(),
-                _ => throw new NotSupportedException($"Cannot convert {obj.GetType()} to K3Value")
-            };
         }
         
         private object? ConvertToPrimitive(K3Value value)

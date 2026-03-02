@@ -515,8 +515,107 @@ namespace K3CSharp
 
         public CharacterValue(string value)
         {
-            Value = value;
+            // Validate that CharacterValue can only be created with single characters
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+            
+            // Un-escape character sequences before length validation
+            string unescapedValue = UnescapeCharacterString(value);
+            
+            // After un-escaping, check if we have exactly one character OR serialization data
+            // Serialization data (from _bd) contains non-printable characters and should be allowed
+            if (unescapedValue.Length != 1)
+            {
+                throw new ArgumentException($"CharacterValue can only be created with single characters, but got string of length {unescapedValue.Length}: '{value}'. Use VectorValue for multi-character strings.");
+            }
+            
+            Value = unescapedValue;
             Type = ValueType.Character;
+        }
+        
+        private static string UnescapeCharacterString(string input)
+        {
+            if (input.Length == 1)
+                return input; // Single character, no escaping needed
+                
+            var result = new StringBuilder();
+            int i = 0;
+            
+            while (i < input.Length)
+            {
+                if (input[i] == '\\' && i + 1 < input.Length)
+                {
+                    switch (input[i + 1])
+                    {
+                        case '\\':
+                            result.Append('\\');
+                            i += 2;
+                            break;
+                        case 'b':
+                            result.Append('\b');
+                            i += 2;
+                            break;
+                        case 't':
+                            result.Append('\t');
+                            i += 2;
+                            break;
+                        case 'n':
+                            result.Append('\n');
+                            i += 2;
+                            break;
+                        case 'r':
+                            result.Append('\r');
+                            i += 2;
+                            break;
+                        case '"':
+                            result.Append('"');
+                            i += 2;
+                            break;
+                        case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7':
+                            // Octal sequence \OOO (up to 3 digits)
+                            if (i + 3 < input.Length && char.IsDigit(input[i + 2]) && char.IsDigit(input[i + 3]))
+                            {
+                                string octalStr = input.Substring(i + 1, 3);
+                                int octalValue = 0;
+                                foreach (char c in octalStr)
+                                {
+                                    octalValue = octalValue * 8 + (c - '0');
+                                }
+                                result.Append((char)octalValue);
+                                i += 4;
+                                break;
+                            }
+                            else if (i + 2 < input.Length && char.IsDigit(input[i + 2]))
+                            {
+                                string octalStr = input.Substring(i + 1, 2);
+                                int octalValue = 0;
+                                foreach (char c in octalStr)
+                                {
+                                    octalValue = octalValue * 8 + (c - '0');
+                                }
+                                result.Append((char)octalValue);
+                                i += 3;
+                                break;
+                            }
+                            // If not a valid octal sequence, treat as literal backslash
+                            result.Append('\\');
+                            i += 1;
+                            break;
+                        default:
+                            // Unknown escape sequence, treat as literal backslash
+                            result.Append('\\');
+                            i += 1;
+                            break;
+                    }
+                }
+                else
+                {
+                    result.Append(input[i]);
+                    i++;
+                }
+            }
+            
+            return result.ToString();
         }
 
         public override K3Value Add(K3Value other)
@@ -706,7 +805,19 @@ namespace K3CSharp
             if (elements.Count == 0)
                 return 0; // Default to mixed list for empty vectors
                 
+            // Check if all elements are of the same type
             var firstElement = elements[0];
+            var firstType = firstElement.GetType();
+            
+            foreach (var element in elements)
+            {
+                if (element.GetType() != firstType)
+                {
+                    return 0; // Mixed list - different types detected
+                }
+            }
+            
+            // All elements are the same type, determine specific vector type
             if (firstElement is IntegerValue || firstElement is LongValue)
                 return -1; // Integer vector
             else if (firstElement is FloatValue)
@@ -1006,7 +1117,7 @@ namespace K3CSharp
                         -3 => "\"\"",    // Empty character vector
                         -2 => "0#0.0",   // Empty float vector
                         -1 => "!0",      // Empty integer vector
-                        -64 => "!0",     // Empty long vector (same as integer)
+                        -64 => "!0j",     // Empty long vector (same as integer)
                         0 => "()",       // Empty list
                         _ => "()"        // Default to empty list
                     };
@@ -1042,9 +1153,31 @@ namespace K3CSharp
             
             string FormatCharacterVector()
             {
-                // Character vector: string literal containing all characters
-                var concatenatedValue = string.Concat(Elements.Select(e => ((CharacterValue)e).Value));
-                return "\"" + concatenatedValue + "\"";
+                // Character vector: concatenate the string representations of individual characters
+                // and remove the surrounding quotes from each character
+                var result = "\"";
+                foreach (var element in Elements)
+                {
+                    if (element is CharacterValue cv)
+                    {
+                        // Get the string representation and remove surrounding quotes
+                        var charStr = cv.ToString();
+                        if (charStr.StartsWith("\"") && charStr.EndsWith("\"") && charStr.Length > 2)
+                        {
+                            result += charStr.Substring(1, charStr.Length - 2);
+                        }
+                        else
+                        {
+                            result += charStr;
+                        }
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Character vector contains non-character elements");
+                    }
+                }
+                result += "\"";
+                return result;
             }
             
             string FormatSymbolVector()

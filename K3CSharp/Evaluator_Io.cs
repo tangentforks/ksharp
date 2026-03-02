@@ -97,10 +97,17 @@ public partial class Evaluator
     private K3Value StringRepresentation(K3Value value)
     {
         // 5: verb - produce string representation of argument with proper escaping
-        string representation = ToStringWithEscaping(value);
-        // Create character vector with individual characters
-        var charElements = representation.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
-        return new VectorValue(charElements, -3); // Character vector
+        // Use raw ToString() without additional escaping to avoid double-escaping
+        string representation = value.ToString();
+        
+        // Create character vector directly - each character as separate CharacterValue
+        var charElements = new List<K3Value>();
+        foreach (char c in representation)
+        {
+            // Create CharacterValue for each character without additional processing
+            charElements.Add(new CharacterValue(c.ToString()));
+        }
+        return new VectorValue(charElements, -3);
     }
     
     private string ToStringWithEscaping(K3Value value)
@@ -205,9 +212,13 @@ public partial class Evaluator
             
             while ((line = streamReader.ReadLine()) != null)
             {
-                // Convert line to character vector (single CharacterValue containing entire line)
-                var charVector = new List<K3Value> { new CharacterValue(line) };
-                lines.Add(new VectorValue(charVector, -3)); // -3 indicates character vector type
+                // Convert line to character vector (each character as separate CharacterValue)
+                var charElements = new List<K3Value>();
+                foreach (char c in line)
+                {
+                    charElements.Add(new CharacterValue(c.ToString()));
+                }
+                lines.Add(new VectorValue(charElements, -3)); // -3 indicates character vector type
             }
             
             return new VectorValue(lines, 0); // 0 indicates generic list (list of character vectors)
@@ -230,9 +241,13 @@ public partial class Evaluator
                 string? line = Console.ReadLine();
                 if (line == null) break; // EOF reached
                 
-                // Convert line to character vector (single CharacterValue containing entire line)
-                var charVector = new List<K3Value> { new CharacterValue(line) };
-                lines.Add(new VectorValue(charVector, -3)); // -3 indicates character vector type
+                // Convert line to character vector (each character as separate CharacterValue)
+                var charElements = new List<K3Value>();
+                foreach (char c in line)
+                {
+                    charElements.Add(new CharacterValue(c.ToString()));
+                }
+                lines.Add(new VectorValue(charElements, -3)); // -3 indicates character vector type
             }
         }
         catch (OperationCanceledException)

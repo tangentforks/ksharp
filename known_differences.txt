@@ -58,7 +58,7 @@ smart_division1 :: regex:space5:space5.0 :: Do not use abbreviated float vectors
 smart_division2 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
 smart_division3 :: regex:\.0\b: :: smart integer division, inverse and exponentiation
 form_braces_arith :: regex:\(|\)|\.0\b: &regex:[;]:space :: smart integer division, inverse and exponentiation
-anonymous_function_double_param :: regex:\s.\s:* :: Compact representation
+anonymous_function_double_param :: regex:\s\\\\\\\\*\s:* :: Compact representation
 attribute_handle_vector :: regex:\s+`:` :: Compact representation
 db_symbol_vector_longer :: regex:\s+`:` :: Compact representation
 db_enlist_single_symbol :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
@@ -74,8 +74,8 @@ format_float_precision_vector_simple :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact r
 format_pad_mixed_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 format_pad_negative_mixed_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 dictionary_unmake :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
-form_braces_nested_arith :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
-form_braces_nested_expr :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+format_braces_nested_arith :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+format_braces_nested_expr :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 group_operator :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 semicolon_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 monadic_format_mixed_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
@@ -147,16 +147,20 @@ db_dict_larger :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 test_dict_simple :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 reshape_basic :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 amend_apply :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
-serialization_bd_dictionary_with_symbol_vectors :: regex:colA\\\\000\\\\000\\\\000\\\\000\\\\001:colA\\000\\000\\000\\000\\000 & regex:ffff\\\\000\\\\001:ffff\\000\\000 :: Fix padding junk
-serialization_bd_dictionary_with_vectors :: regex:col1\\\\000\\\\001:col1\\000\\000 & col2\\\\000\\\\001:col2\\000\\000 :: Fix padding junk
+serialization_bd_dictionary_with_symbol_vectors :: regex:colA\\\\000\\\\000\\\\000\\\\000\\\\001:colA\\000\\000\\000\\000\\000 & regex:colB\\\\000\\\\000\\\\000\\\\000\\\\001:colB\\000\\000\\000\\000\\000 & regex:ffff\\\\000\\\\001:ffff\\000\\000 :: Fix padding junk
+serialization_bd_dictionary_with_vectors :: regex:col1\\\\000\\\\001:col1\\000\\000 & regex:col1\\\\000\\\\000\\\\000\\\\000;:col1\\000\\000\\000\\000\\000 & regex:col2\\\\000\\\\000\\\\000\\\\000c:col2\\000\\000\\000\\000\\000 :: Fix padding junk
+serialization_bd_list_with_symbol_vectors :: regex:colA\\\\000\\\\000\\\\000\\\\000e:colA\\000\\000\\000\\000\\000 & regex:\\\\0000:\\000\\000 & regex:ffff\\\\0001:ffff\\000\\000 :: Fix padding junk
 float_exponential_large :: regex:15:015 :: Allow k/e difference in mantissa width
 float_exponential_small :: regex:20:020 :: Allow k/e difference in mantissa width
 dyadic_divide_bracket :: regex:5.0:5 :: Smart division
 k_tree_dictionary_assignment :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 format_long_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 format_int_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
-form_braces_float :: regex:4:4.0 & regex:-1:-1.0 :: Do not use abbreviated float vectors
-form_braces_complex :: regex:12:12.0 & regex:9:9.0 :: Do not use abbreviated float vectors
+format_braces_float :: regex:4:4.0 & regex:-1:-1.0 :: Do not use abbreviated float vectors
+format_braces_complex :: regex:12:12.0 & regex:9:9.0 :: Do not use abbreviated float vectors
 k_tree_enumerate :: regex:,`k:`k`t :: Always create `t including when running scripts instead of interactive REPL
 test_simple_symbol :: regex:\s+`:` :: Compact representation
 test_symbol_vector_with_quoted :: regex:\s+`:` :: Compact representation
+form_symbol_vector :: regex:\s+`:` :: Compact representation
+form_0_float_vector :: regex:1e.48:1e+048 & regex:4e.27:4e-027 :: Allow variations in mantissa formatting
+io_read_basic :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
