@@ -48,33 +48,39 @@ namespace K3CSharp
             // Handle vector left operand
             else if (left is VectorValue leftVec && right is IntegerValue rightVal)
             {
-                var results = new List<K3Value>();
-                foreach (var element in leftVec.Elements)
+                if (leftVec.Elements.All(e => e is IntegerValue))
                 {
-                    if (element is IntegerValue elementInt)
+                    if (rightVal.Value < 0 && leftVec.Elements.Count >= 2)
                     {
-                        if (rightVal.Value > 0)
+                        // Deal case with vector left: creates a matrix
+                        // e.g., 2 3 _draw -10 creates 2 rows of 3 unique values from 0-9
+                        var dims = leftVec.Elements.Select(e => ((IntegerValue)e).Value).ToList();
+                        var rows = dims[0];
+                        var cols = dims[dims.Count - 1];
+
+                        var results = new List<K3Value>();
+                        for (int r = 0; r < rows; r++)
                         {
-                            // Select case
-                            results.Add(DrawSelect(elementInt.Value, rightVal.Value));
+                            results.Add(DrawDeal(cols, -rightVal.Value));
                         }
-                        else if (rightVal.Value == 0)
-                        {
-                            // Probability case
-                            results.Add(DrawProbability(elementInt, rightVal));
-                        }
-                        else
-                        {
-                            // Deal case
-                            results.Add(DrawDeal(elementInt.Value, -rightVal.Value));
-                        }
+                        return new VectorValue(results);
                     }
                     else
                     {
-                        throw new Exception("_draw requires integer or vector of integers");
+                        // Select/Probability: apply to each element individually
+                        var results = new List<K3Value>();
+                        foreach (var element in leftVec.Elements)
+                        {
+                            var elementInt = (IntegerValue)element;
+                            if (rightVal.Value > 0)
+                                results.Add(DrawSelect(elementInt.Value, rightVal.Value));
+                            else
+                                results.Add(DrawProbability(elementInt, rightVal));
+                        }
+                        return new VectorValue(results);
                     }
                 }
-                return new VectorValue(results);
+                throw new Exception("_draw requires integer or vector of integers");
             }
             else
             {
