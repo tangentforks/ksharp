@@ -1,11 +1,11 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-02 12:38:50
+Generated: 2026-03-02 21:54:04
 
 SUMMARY:
 --------
-Total Tests:     600
-✅ Matched:       594
+Total Tests:     607
+✅ Matched:       601
 ❌ Differed:      5
 ⚠️  Skipped:       0
 💥 Errors:        1
@@ -251,7 +251,14 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   integer_types_int.k                                42                             42                                                                               
 ✅ PASS   integer_types_long.k                               123456789j                     123456789j                                                                       
 ✅ PASS   io_read_basic.k                                    ("line1";"line2";"line3")      ("line1";"line2";"line3")      Compact representation                            
+✅ PASS   io_read_debug.k                                    123456                         123456                                                                           
+✅ PASS   io_read_float.k                                    0i                             0i                                                                               
+✅ PASS   io_read_int.k                                      123456                         123456                                                                           
+✅ PASS   io_read_intvec.k                                   5 6 7                          5 6 7                                                                            
+✅ PASS   io_read_symbol.k                                   `helllo                        `helllo                                                                          
+✅ PASS   io_roundtrip.k                                     (1;2.5;"hello")                (1;2.5;"hello")                                                                  
 ✅ PASS   io_write_basic.k                                   ("line1";"line2";"line3")      ("line1";"line2";"line3")      Compact representation                            
+✅ PASS   io_write_int.k                                                                                                                                                     
 ✅ PASS   isolated.k                                         0.6                            0.6                                                                              
 ✅ PASS   join_operator.k                                    3 5                            3 5                                                                              
 ✅ PASS   k_tree_assignment_absolute_foo.k                                                                                 Compact representation                            

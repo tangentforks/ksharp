@@ -199,13 +199,13 @@
 ║ symbol_period_foobar.k                             │ `foo.bar             │ `foo.bar             │                      ║
 ║ symbol_period_dotbar.k                             │ `.bar                │ `.bar                │                      ║
 ║ symbol_period_dotk.k                               │ `.k                  │ `.k                  │                      ║
-║ io_read_int.k                                      │ 2: "int.l"           │ 123456               │                      ║
-║ io_read_float.k                                    │ 2: "float.l"         │ 0i                   │                      ║
-║ io_read_symbol.k                                   │ 2: "symbol.l"        │ `helllo              │                      ║
-║ io_read_intvec.k                                   │ 2: "intvec.l"        │ 5 6 7                │                      ║
-║ io_read_debug.k                                    │ 2: "test.l"          │ 123456               │                      ║
-║ io_write_int.k                                     │ `test_write.l 1: 42  │                      │                      ║
-║ io_roundtrip.k                                     │ `test_roundtrip.l 1: (1;2.5;"hello") │ (1;2.5;"hello")      │                      ║
+║ io_read_int.k                                      │ 2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\int.l" │ 123456               │                      ║
+║ io_read_float.k                                    │ 2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\float.l" │ 0i                   │                      ║
+║ io_read_symbol.k                                   │ 2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\symbol.l" │ `helllo              │                      ║
+║ io_read_intvec.k                                   │ 2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\intvec.l" │ 5 6 7                │                      ║
+║ io_read_debug.k                                    │ 2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test.l" │ 123456               │                      ║
+║ io_write_int.k                                     │ "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test_write.l" 1: 42 │                      │                      ║
+║ io_roundtrip.k                                     │ "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test_roundtrip.l" 1: (1;2.5;"hello") │ (1;2.5;"hello")      │                      ║
 ║ take_operator_basic.k                              │ 3#1 2 3 4 5          │ 1 2 3                │                      ║
 ║ take_operator_empty_float.k                        │ 0#0.0                │ 0#0.0                │                      ║
 ║ take_operator_empty_symbol.k                       │ 0#``                 │ 0#`                  │                      ║

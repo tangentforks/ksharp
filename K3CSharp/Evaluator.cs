@@ -2229,11 +2229,15 @@ namespace K3CSharp
             {
                 if (operand is VectorValue vec && vec.VectorType == -3)
                 {
-                    // Handle character vector (type -3) - convert to string for deserialization
-                    var charString = string.Concat(vec.Elements.OfType<CharacterValue>().Select(cv => cv.Value));
-                    
-                    // Parse character string back to bytes (let K3Value handle escaping)
-                    var bytes = ParseCharacterStringToBytes("\"" + charString + "\"");
+                    // Extract bytes directly from character vector
+                    var bytes = new List<byte>();
+                    foreach (var element in vec.Elements.OfType<CharacterValue>())
+                    {
+                        if (element.Value.Length == 1)
+                        {
+                            bytes.Add((byte)element.Value[0]);
+                        }
+                    }
                     
                     var deserializer = new KDeserializer();
                     var result = deserializer.Deserialize(bytes.ToArray());
@@ -2325,6 +2329,20 @@ namespace K3CSharp
                             var escapeChar = charString[i + 1];
                             switch (escapeChar)
                             {
+                                case '0':
+                                    // Check if this is a null byte (\0) or start of octal
+                                    if (i + 2 < charString.Length - 1 && charString[i + 2] >= '0' && charString[i + 2] <= '7')
+                                    {
+                                        // This is start of octal sequence
+                                        goto case '1'; // Fall through to octal handling
+                                    }
+                                    else
+                                    {
+                                        // This is \0 (null byte)
+                                        bytes.Add(0);
+                                        i += 2;
+                                        break;
+                                    }
                                 case 'b':
                                     bytes.Add(8);  // Backspace
                                     i += 2;
@@ -2349,7 +2367,7 @@ namespace K3CSharp
                                     bytes.Add(92); // Backslash
                                     i += 2;
                                     break;
-                                case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7':
+                                case '1': case '2': case '3': case '4': case '5': case '6': case '7':
                                     // Octal escape sequence (up to 3 digits)
                                     var octalStr = "";
                                     var j = i + 1;

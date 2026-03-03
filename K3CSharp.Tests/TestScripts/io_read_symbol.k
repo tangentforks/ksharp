@@ -1,1 +1,1 @@
-2: "symbol.l"
+2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\symbol.l"

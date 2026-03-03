@@ -15,11 +15,18 @@ namespace K3CSharp
             if (data.Length < 8) throw new ArgumentException("Invalid data - minimum 8 bytes required");
             
             var reader = new KSerializationReader(data);
-            var messageType = reader.ReadInt32();  // First 4 bytes: Message Type (always 1)
-            var messageLength = reader.ReadInt32(); // Next 4 bytes: Message Length
+            var architecture = reader.ReadByte();    // Byte 0: Architecture (should be 1)
+            var messageType = reader.ReadByte();    // Byte 1: Message type (should be 0 for _bd)
+            var reserved1 = reader.ReadByte();       // Byte 2: Reserved
+            var reserved2 = reader.ReadByte();       // Byte 3: Reserved
+            var messageLength = reader.ReadInt32();  // Bytes 4-7: Message Length
             
-            // Message Type should always be 1 for serialized data from _bd
-            if (messageType != 1) 
+            // Architecture should be 1 for little-endian
+            if (architecture != 1) 
+                throw new ArgumentException($"Invalid architecture: {architecture}");
+            
+            // Message type should be 0 for _bd serialization
+            if (messageType != 0) 
                 throw new ArgumentException($"Invalid message type: {messageType}");
             
             // Read the actual serialized data payload
