@@ -363,7 +363,7 @@
 ║ list_sv_base10.k                                   │ 10 _sv 1 9 9 5       │ 1995                 │                      ║
 ║ list_sv_base2.k                                    │ 2 _sv 1 0 0 1        │ 9                    │                      ║
 ║ list_sv_mixed.k                                    │ 10 10 10 10 _sv 1 9 9 5 │ 1995                 │                      ║
-║ list_getenv.k                                      │ _getenv "PROMPT"     │ ()                   │ "$P$G"               ║
+║ list_getenv.k                                      │ _getenv "PROMPT"     │ "$P$G"               │                      ║
 ║ list_setenv.k                                      │ `TESTVAR _setenv "hello world" │                      │                      ║
 ║ list_size_existing.k                               │ _size "C:\\Windows\\System32\\write.exe" │ 11264.0              │                      ║
 ║ test_ci_basic.k                                    │ _ci 65               │ "A"                  │                      ║
@@ -630,7 +630,7 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 622/626 tests passed (99.4%)                                                                               ║
+║ SUMMARY: 623/626 tests passed (99.5%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -644,11 +644,6 @@ Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: 100
-──────────────────────────────────────────────────────────────────────────
-Test: list_getenv.k
-Input: _getenv "PROMPT"
-Expected: "$P$G"
-Actual: ()
 ──────────────────────────────────────────────────────────────────────────
 Test: lsq.k
 Input: _lsq

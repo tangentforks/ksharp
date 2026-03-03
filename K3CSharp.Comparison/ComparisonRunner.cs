@@ -407,6 +407,9 @@ namespace K3CSharp.Comparison
         
         private static string ExecuteK3Sharp(string scriptContent)
         {
+            // Set PROMPT environment variable to "$P$G" for consistency with test expectations
+            Environment.SetEnvironmentVariable("PROMPT", "$P$G");
+            
             var evaluator = new Evaluator();
             
             // Reset K tree before each test to ensure isolation

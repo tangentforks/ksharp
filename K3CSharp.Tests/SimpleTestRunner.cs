@@ -12,6 +12,9 @@ namespace K3CSharp.Tests
 
         public static void Main(string[] args)
         {
+            // Set PROMPT environment variable to "$P$G" for consistency with test expectations
+            Environment.SetEnvironmentVariable("PROMPT", "$P$G");
+            
             RunAllTests(args.Length > 0 ? args[0] : null);
         }
         

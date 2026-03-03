@@ -108,6 +108,9 @@ namespace K3CSharp
                 CreateNoWindow = true
             };
 
+            // Set PROMPT environment variable to "$P$G" for consistency with test expectations
+            startInfo.EnvironmentVariables["PROMPT"] = "$P$G";
+
             using var process = new Process { StartInfo = startInfo };
             
             try
