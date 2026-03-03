@@ -52,7 +52,7 @@ A comprehensive C# implementation of the K3 programming language core, a high-pe
 - ✅ **602/608 tests passing** (99.0% success rate)
 - ✅ **K serialization system implemented** (_bd, _db functions)
 - ✅ **All 11 K data types supported** in serialization
-- ✅ **Data I/O verbs implemented** (0: text write and read, 1: write, 2: read)
+- ✅ **Data I/O verbs implemented** (0: text write and read, 1: write and read, 2: read)
 - ✅ **General adverb parsing architecture** completed
 
 **📈 K.exe Compatibility Analysis:**
@@ -76,6 +76,7 @@ Successfully implemented complete binary file read/write operations for K data s
 
 ### ✅ **Data I/O Features Implemented:**
 - **Dyadic 1: (Write K Data)**: Write any K data structure to binary files with standard header
+- **Monadic 1: (Read K Data with memory mapping)**: Read large K data vectors (int, float, char, long int) from binary files with memory mapping optimizations.
 - **Monadic 2: (Read K Data)**: Read K data structures from binary files with validation
 - **File Header Support**: Standard K data file header `\375\377\377\377\001\000\000\000` for compatibility
 - **Path Processing**: Automatic `.l` extension handling and standard C# System.IO behavior
@@ -200,7 +201,7 @@ Based on comprehensive analysis of K3 features, current implementation represent
 - Dictionary and table operations
 - Form/Format operators with proper type handling
 - Complete K serialization system (_bd, _db) with all 11 data types
-- **Data I/O System**: Binary file read/write operations (0:, 1:, 2:) with full K specification compliance
+- **Data I/O System**: Binary file read/write operations (0:, 1:, 2:) with full K specification compliance for simple types and vectors (note that complex types like dictionaries and lists are currently not binary compatible)
 - Advanced list operations (search, string, database functions)
 - All mathematical functions (_log, _exp, _sin, _cos, etc.)
 - All 17 system information verbs
@@ -572,31 +573,29 @@ Based on comprehensive analysis of current implementation status, K3CSharp has a
 ### **🚀 Phase 1: Critical Infrastructure (Weeks 1-3) - HIGH PRIORITY**
 
 #### **I/O System Implementation**
-- **File Handle Operations**: `1:`, `2:`, `3:`, `4:` for comprehensive file I/O with proper error handling
-- **Mathematical Functions**: Implement `_lsq` (least squares) and complete trigonometric function validation
-- **Serialization Enhancement**: Extend current robust `_bd`/`_db` system for complex nested structures
+- **Foreign Function Interface**: .NET CLS Consumer capabilities with dynamic assembly loading and method invocation
+- **File Handle Operations**: `3:`, `4:` for IPC with proper error handling
+- **Mathematical Functions**: Implement `_lsq` (least squares) 
 
 ---
 
 ### **🚀 Phase 2: System Integration (Weeks 3-5) - MEDIUM PRIORITY**
 
 #### **Core System Completion**
+- **Advanced Dictionary Operations**: Complex nested dictionary and list operations and transformations (amend, amend-item)
 - **Time/Date System**: Automatic `.t` variable updates (core time functions already implemented)
-- **Advanced Dictionary Operations**: Complex nested dictionary operations and transformations
-- **Foreign Function Interface**: .NET CLS Consumer capabilities with dynamic assembly loading and method invocation
 
 ---
 
-### **🚀 Phase 3: Advanced Features (Weeks 5-7) - LOW PRIORITY**
+### **🚀 Phase 3: Advanced Features (Weeks 5-7) - LOWER PRIORITY**
 
 #### **Command System Enhancements**
-- **Command Line Editing**: Arrow key navigation through command history
 - **Advanced Debugging**: Debug flag (`\e`), suspended execution, error trap
 - **Command Completion**: Tab completion for commands and variables
 
 ---
 
-### **🚀 Phase 4: Production Polish (Weeks 7-9) - LOW PRIORITY**
+### **🚀 Phase 4: Production Polish (Weeks 7-9) - LOWER PRIORITY**
 
 #### **Performance Optimization & Documentation**
 - **Performance Optimization**: Advanced performance monitoring, memory management, and large dataset processing efficiency
@@ -607,13 +606,13 @@ Based on comprehensive analysis of current implementation status, K3CSharp has a
 
 ### **� Key Implementation Insights**
 
-#### **Already Completed (92.6%)**
+#### **Already Completed (95%)**
 - ✅ **Time/Date System**: 95% complete (all core functions implemented, only automatic `.t` updates missing)
 - ✅ **Random System**: 100% complete (fully K3 compliant with uniform distribution)
 - ✅ **Command System**: 95% complete (excellent foundation with comprehensive help and shell integration)
 
-#### **Critical Remaining Gaps (7.4%)**
-- 🟡 **I/O System**: File handle operations (0: 1:, 2:, 3:, 4:) - most critical gap
+#### **Critical Remaining Gaps (5%)**
+- 🟡 **I/O System**: IPC operations (3:, 4:) - most critical gap
 - 🟡 **Mathematical Functions**: `_lsq` function and its application to _inv
 - 🟡 **FFI Implementation**: .NET interoperability for unique differentiation
 
