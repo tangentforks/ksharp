@@ -218,7 +218,7 @@ namespace K3CSharp
                 }
                 else if (c == '~')
                 {
-                    tokens.Add(new Token(TokenType.NEGATE, "~", position));
+                    tokens.Add(new Token(TokenType.MATCH, "~", position));
                     Advance();
                 }
                 else if (c == ',')

@@ -407,14 +407,61 @@ namespace K3CSharp.Comparison
         
         private static string ExecuteK3Sharp(string scriptContent)
         {
-            var lexer = new Lexer(scriptContent);
-            var parser = new Parser(lexer.Tokenize(), scriptContent);
-            var ast = parser.Parse();
-            if (ast == null)
+            var evaluator = new Evaluator();
+            
+            // Reset K tree before each test to ensure isolation
+            evaluator.ResetKTree();
+            
+            var lines = scriptContent.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            K3Value? lastResult = null;
+            string accumulatedLine = "";
+            
+            foreach (var line in lines)
             {
-                return new NullValue().ToString();
+                var trimmedLine = line.Trim();
+                
+                // Skip empty lines and comments
+                if (string.IsNullOrWhiteSpace(trimmedLine) || trimmedLine.StartsWith("//"))
+                    continue;
+                
+                // Handle special commands
+                if (trimmedLine.StartsWith("\\seed "))
+                {
+                    var parts = trimmedLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length == 2 && int.TryParse(parts[1], out int newSeed))
+                    {
+                        Evaluator.RandomSeed = newSeed;
+                    }
+                    continue;
+                }
+                
+                accumulatedLine += line;
+                
+                // Try to parse and execute the accumulated line
+                try
+                {
+                    var lexer = new Lexer(accumulatedLine);
+                    var tokens = lexer.Tokenize();
+                    var parser = new Parser(tokens, accumulatedLine);
+                    var ast = parser.Parse();
+                    
+                    if (ast != null)
+                    {
+                        lastResult = evaluator.Evaluate(ast);
+                        accumulatedLine = "";
+                    }
+                }
+                catch
+                {
+                    // If parsing fails, continue accumulating lines
+                    if (!accumulatedLine.EndsWith("\n"))
+                    {
+                        accumulatedLine += "\n";
+                    }
+                }
             }
-            return new Evaluator().Evaluate(ast).ToString();
+            
+            return lastResult?.ToString() ?? new NullValue().ToString();
         }
         
         private static void GenerateComparisonReport(List<TestComparison> results, string reportPath, bool isFinal, string testScriptsPath)

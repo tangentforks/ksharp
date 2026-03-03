@@ -213,10 +213,11 @@
 ║ io_monadic_1_int_vector_last_index.k               │ result: 1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\intvec.l" │ 7                    │                      ║
 ║ io_monadic_1_char_vector_index.k                   │ result: 1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\charvec.l" │ "h"                  │                      ║
 ║ io_monadic_1_char_vector_last_index.k              │ result: 1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\charvec.l" │ "d"                  │                      ║
-║ io_monadic_1_vs_2_int_vector.k                     │ (1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\intvec.l") ~ (2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\intvec.l") │ 5 6 7                │                      ║
-║ io_monadic_1_vs_2_float_vector.k                   │ (1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\float.l") ~ (2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\float.l") │ 0i                   │                      ║
-║ io_monadic_1_vs_2_char_vector.k                    │ (1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\charvec.l") ~ (2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\charvec.l") │ "hello world"        │                      ║
+║ io_monadic_1_vs_2_int_vector.k                     │ (1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\intvec.l") ~ (2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\intvec.l") │ 1                    │                      ║
+║ io_monadic_1_vs_2_float_vector.k                   │ (1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\float.l") ~ (2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\float.l") │ 0                    │ 1                    ║
+║ io_monadic_1_vs_2_char_vector.k                    │ (1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\charvec.l") ~ (2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\charvec.l") │ Error: Cannot c...   │ 1                    ║
 ║ io_monadic_1_symbol_fallback.k                     │ 1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\symbol.l" │ `helllo              │                      ║
+║ match_simple_vectors.k                             │ 5 6 7 ~ 5 6 7        │ 1                    │                      ║
 ║ take_operator_basic.k                              │ 3#1 2 3 4 5          │ 1 2 3                │                      ║
 ║ take_operator_empty_float.k                        │ 0#0.0                │ 0#0.0                │                      ║
 ║ take_operator_empty_symbol.k                       │ 0#``                 │ 0#`                  │                      ║
@@ -623,11 +624,21 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 614/619 tests passed (99.2%)                                                                               ║
+║ SUMMARY: 613/620 tests passed (98.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
+Test: io_monadic_1_vs_2_float_vector.k
+Input: (1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\float.l") ~ (2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\float.l")
+Expected: 1
+Actual: 0
+──────────────────────────────────────────────────────────────────────────
+Test: io_monadic_1_vs_2_char_vector.k
+Input: (1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\charvec.l") ~ (2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\charvec.l")
+Expected: 1
+Actual: Error: Cannot compare Character and Character with =
+──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30

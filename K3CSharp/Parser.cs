@@ -91,7 +91,7 @@ namespace K3CSharp
                 TokenType.HASH => "#",
                 TokenType.UNDERSCORE => "_",
                 TokenType.QUESTION => "?",
-                TokenType.NEGATE => "~",
+                TokenType.MATCH => "~",
                 TokenType.DOLLAR => "$",
                 TokenType.APPLY => "@",
                 TokenType.DOT_APPLY => ".",
@@ -339,7 +339,7 @@ namespace K3CSharp
             return type == TokenType.PLUS || type == TokenType.MINUS || type == TokenType.MULTIPLY ||
                    type == TokenType.DIVIDE || type == TokenType.MIN || type == TokenType.MAX || 
                    type == TokenType.LESS || type == TokenType.GREATER || type == TokenType.EQUAL || 
-                   type == TokenType.IN || type == TokenType.BIN || type == TokenType.BINL || type == TokenType.LIN ||
+                   type == TokenType.MATCH || type == TokenType.IN || type == TokenType.BIN || type == TokenType.BINL || type == TokenType.LIN ||
                    type == TokenType.DV || type == TokenType.DI || type == TokenType.VS || type == TokenType.SV || type == TokenType.SS || type == TokenType.SM || type == TokenType.CI || type == TokenType.IC ||
                    type == TokenType.LT || type == TokenType.JD || type == TokenType.DJ || type == TokenType.GTIME || type == TokenType.LTIME ||
                    type == TokenType.POWER || type == TokenType.MODULUS || type == TokenType.JOIN ||
@@ -357,7 +357,7 @@ namespace K3CSharp
         private static readonly TokenType[] DefaultStopTokens = {
             TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.MIN, TokenType.MAX,
             TokenType.LESS, TokenType.GREATER, TokenType.EQUAL, TokenType.IN, TokenType.POWER, TokenType.MODULUS, TokenType.JOIN,
-            TokenType.COLON, TokenType.HASH, TokenType.UNDERSCORE, TokenType.QUESTION, TokenType.NEGATE, TokenType.DOLLAR, TokenType.RIGHT_PAREN,
+            TokenType.COLON, TokenType.HASH, TokenType.UNDERSCORE, TokenType.QUESTION, TokenType.MATCH, TokenType.NEGATE, TokenType.DOLLAR, TokenType.RIGHT_PAREN,
             TokenType.RIGHT_BRACE, TokenType.RIGHT_BRACKET, TokenType.SEMICOLON, TokenType.NEWLINE, TokenType.ASSIGNMENT, TokenType.GLOBAL_ASSIGNMENT,
             TokenType.LEFT_BRACKET, TokenType.APPLY, TokenType.DOT_APPLY, TokenType.TYPE, TokenType.STRING_REPRESENTATION,
             TokenType.ADVERB_SLASH, TokenType.ADVERB_BACKSLASH, TokenType.ADVERB_TICK,
@@ -1152,9 +1152,9 @@ namespace K3CSharp
                     }
                 }
             }
-            else if (Match(TokenType.NEGATE))
+            else if (Match(TokenType.MATCH))
             {
-                // Check if this is unary negate (at start of expression)
+                // Check if this is unary match (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -1170,18 +1170,22 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary negate
+                        // This is unary match (logical negate or attribute handle)
                         var operand = ParseExpression();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("NEGATE");
+                        node.Value = new SymbolValue("~");
                         if (operand != null) node.Children.Add(operand);
                         return node;
                     }
                 }
                 else
                 {
-                    // Binary negate symbol
-                    result = ASTNode.MakeLiteral(new SymbolValue("~"));
+                    // Binary match operator - create proper binary operation
+                    var right = ParseTerm();
+                    if (right != null)
+                    {
+                        result = ASTNode.MakeBinaryOp(TokenType.MATCH, result, right);
+                    }
                 }
             }
             else if (Match(TokenType.DOLLAR))
@@ -2772,6 +2776,7 @@ namespace K3CSharp
                             TokenType.HASH => "#",
                             TokenType.UNDERSCORE => "_",
                             TokenType.QUESTION => "?",
+                            TokenType.MATCH => "~",
                             TokenType.NEGATE => "~",
                             TokenType.DOLLAR => "$",
                             TokenType.APPLY => "@",
@@ -2826,7 +2831,7 @@ namespace K3CSharp
             // In K, there's no precedence among operators - they're all right-associative
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
                    Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
-                   Match(TokenType.EQUAL) || Match(TokenType.IN) || Match(TokenType.BIN) || Match(TokenType.BINL) || Match(TokenType.LIN) ||
+                   Match(TokenType.EQUAL) || Match(TokenType.MATCH) || Match(TokenType.IN) || Match(TokenType.BIN) || Match(TokenType.BINL) || Match(TokenType.LIN) ||
                    Match(TokenType.DV) || Match(TokenType.DI) || Match(TokenType.VS) || Match(TokenType.SV) || Match(TokenType.SS) || Match(TokenType.SM) || Match(TokenType.CI) || Match(TokenType.IC) ||
                    Match(TokenType.GETENV) || Match(TokenType.SETENV) || Match(TokenType.SIZE) ||
                    Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||

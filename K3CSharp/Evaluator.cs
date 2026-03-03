@@ -314,13 +314,12 @@ namespace K3CSharp
                     "=" => Group(operand),
                     "$" => Format(operand),
                     "DIRECTORY" => DirFunction(operand),
-                    "NEGATE" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue))
+                    "~" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue))
                     ? AttributeHandle(operand)
                     : LogicalNegate(operand),
                     ":" => ReturnOperator(operand),
                     "@" => Atom(operand),
                     "." => MakeFunction(operand),
-                    "~" => AttributeHandle(operand),
                     "_log" => MathLog(operand),
                     "_exp" => MathExp(operand),
                     "_abs" => MathAbs(operand),
@@ -438,6 +437,7 @@ namespace K3CSharp
                         "<" => LessThan(left, right),
                         ">" => More(left, right),
                         "=" => Match(left, right),
+                        "~" => Match(left, right),
                         "," => Join(left, right),
                         "#" => Take(left, right),
                         "_" => FloorBinary(left, right),

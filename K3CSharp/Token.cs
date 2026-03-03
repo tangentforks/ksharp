@@ -29,6 +29,7 @@ namespace K3CSharp
         EQUAL,
         POWER,
         MODULUS,
+        MATCH,          // ~ match operator
         NEGATE,
         JOIN,
         ASSIGNMENT,
