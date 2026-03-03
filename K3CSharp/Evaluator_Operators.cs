@@ -345,6 +345,10 @@ namespace K3CSharp
             // For match comparison (~ operator)
             if (a is FloatValue floatA && b is FloatValue floatB)
             {
+                // Check for equality first - important for special values like infinities
+                if (floatA.Value == floatB.Value)
+                    return new IntegerValue(1);
+                
                 double maxAbs = Math.Max(Math.Abs(floatA.Value), Math.Abs(floatB.Value));
                 double threshold = maxAbs * 0.00001; // 0.001 percent
                 return new IntegerValue(Math.Abs(floatA.Value - floatB.Value) < threshold ? 1 : 0);

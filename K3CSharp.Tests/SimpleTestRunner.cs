@@ -209,6 +209,12 @@ namespace K3CSharp.Tests
                 ("char_vector_different.k", "1 1 0"),
                 ("char_vector_match_equal.k", "1"),
                 ("char_vector_match_different.k", "0"),
+                ("float_infinity_match_equal.k", "1"),
+                ("float_neg_infinity_match_equal.k", "1"),
+                ("float_infinity_match_different.k", "0"),
+                ("float_infinity_equal.k", "1"),
+                ("float_neg_infinity_equal.k", "1"),
+                ("float_infinity_equal_different.k", "0"),
                 
                 // First operator
                 ("first_operator.k", "1"),

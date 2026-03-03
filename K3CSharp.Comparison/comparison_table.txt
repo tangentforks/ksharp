@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-03 14:30:00
+Generated: 2026-03-03 15:48:14
 
 SUMMARY:
 --------
-Total Tests:     619
-✅ Matched:       613
-❌ Differed:      6
+Total Tests:     631
+✅ Matched:       628
+❌ Differed:      3
 ⚠️  Skipped:       0
 💥 Errors:        0
-Success Rate:    99.0%
+Success Rate:    99.5%
 
 DETAILED RESULTS:
 -----------------
@@ -67,6 +67,12 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   bd_enlist_single_string.k                          "\001\000\000\000\030\000...   "\001\000\000\000\030\000...                                                     
 ✅ PASS   bd_enlist_single_symbol.k                          "\001\000\000\000\r\000\0...   "\001\000\000\000\r\000\0...                                                     
 ✅ PASS   bd_symbol_vector_longer.k                          "\001\000\000\000\031\000...   "\001\000\000\000\031\000...                                                     
+✅ PASS   char_compare_different.k                           0                              0                                                                                
+✅ PASS   char_compare_equal.k                               1                              1                                                                                
+✅ PASS   char_vector_different.k                            1 1 0                          1 1 0                                                                            
+✅ PASS   char_vector_equal.k                                1 1 1                          1 1 1                                                                            
+✅ PASS   char_vector_match_different.k                      0                              0                                                                                
+✅ PASS   char_vector_match_equal.k                          1                              1                                                                                
 ✅ PASS   character_single.k                                 "f"                            "f"                                                                              
 ✅ PASS   character_vector.k                                 "hello"                        "hello"                                                                          
 ✅ PASS   complex_function.k                                 205                            205                            smart integer division, inverse and exponenti...  
@@ -178,6 +184,12 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   float_exponential_large.k                          1e+015                         1e+015                         Allow k/e difference in mantissa width            
 ✅ PASS   float_exponential_small.k                          1e-020                         1e-020                         Allow k/e difference in mantissa width            
 ✅ PASS   float_exponential.k                                170.0                          170.0                                                                            
+✅ PASS   float_infinity_equal_different.k                   0                              0                                                                                
+✅ PASS   float_infinity_equal.k                             1                              1                                                                                
+✅ PASS   float_infinity_match_different.k                   0                              0                                                                                
+✅ PASS   float_infinity_match_equal.k                       1                              1                                                                                
+✅ PASS   float_neg_infinity_equal.k                         1                              1                                                                                
+✅ PASS   float_neg_infinity_match_equal.k                   1                              1                                                                                
 ✅ PASS   float_types.k                                      3.14                           3.14                                                                             
 ✅ PASS   floor_operator.k                                   3                              3                                                                                
 ✅ PASS   form_0_float_string.k                              3.14                           3.14                                                                             
@@ -258,8 +270,8 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   io_monadic_1_int_vector_last_index.k               7                              7                                                                                
 ✅ PASS   io_monadic_1_int_vector.k                          5 6 7                          5 6 7                                                                            
 ✅ PASS   io_monadic_1_symbol_fallback.k                     `helllo                        `helllo                                                                          
-❌ FAIL   io_monadic_1_vs_2_char_vector.k                                                   1                                                                                
-❌ FAIL   io_monadic_1_vs_2_float_vector.k                   0                              1                                                                                
+✅ PASS   io_monadic_1_vs_2_char_vector.k                    1                              1                                                                                
+✅ PASS   io_monadic_1_vs_2_float_vector.k                   1                              1                                                                                
 ✅ PASS   io_monadic_1_vs_2_int_vector.k                     1                              1                                                                                
 ✅ PASS   io_read_basic.k                                    ("line1";"line2";"line3")      ("line1";"line2";"line3")      Compact representation                            
 ✅ PASS   io_read_debug.k                                    123456                         123456                                                                           
@@ -293,7 +305,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   list_di_multiple.k                                 3 4                            3 4                                                                              
 ✅ PASS   list_dv_basic.k                                    3 5                            3 5                                                                              
 ✅ PASS   list_dv_nomatch.k                                  3 4 4 5                        3 4 4 5                                                                          
-❌ FAIL   list_getenv.k                                      ()                             "$P$G"                                                                           
+✅ PASS   list_getenv.k                                      "$P$G"                         "$P$G"                                                                           
 ✅ PASS   list_setenv.k                                                                                                                                                      
 ✅ PASS   list_size_existing.k                               11264.0                        11264.0                                                                          
 ✅ PASS   list_sv_base10.k                                   1995                           1995                                                                             
@@ -638,18 +650,6 @@ Status   Test File                                          K3Sharp Output      
 
 FAILED TESTS DETAILS:
 --------------------
-File: io_monadic_1_vs_2_char_vector.k
-K3Sharp: 
-k.exe:   1
-
-File: io_monadic_1_vs_2_float_vector.k
-K3Sharp: 0
-k.exe:   1
-
-File: list_getenv.k
-K3Sharp: ()
-k.exe:   "$P$G"
-
 File: lsq.k
 K3Sharp: 
 k.exe:   _lsq
