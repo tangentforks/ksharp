@@ -436,7 +436,7 @@ namespace K3CSharp
                         "|" => Max(left, right),
                         "<" => LessThan(left, right),
                         ">" => More(left, right),
-                        "=" => Match(left, right),
+                        "=" => Equal(left, right),
                         "~" => Match(left, right),
                         "," => Join(left, right),
                         "#" => Take(left, right),

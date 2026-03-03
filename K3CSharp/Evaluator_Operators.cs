@@ -368,8 +368,30 @@ namespace K3CSharp
                 return new IntegerValue(intA.Value == intB.Value ? 1 : 0);
             if (a is LongValue longA && b is LongValue longB)
                 return new IntegerValue(longA.Value == longB.Value ? 1 : 0);
+            if (a is CharacterValue charA && b is CharacterValue charB)
+                return new IntegerValue(charA.Value == charB.Value ? 1 : 0);
             
             throw new Exception($"Cannot compare {a.Type} and {b.Type} with =");
+        }
+
+        public K3Value Equal(K3Value a, K3Value b)
+        {
+            // For element-wise equality comparison (= operator)
+            if (a is VectorValue vecA && b is VectorValue vecB)
+            {
+                if (vecA.Elements.Count != vecB.Elements.Count)
+                    throw new Exception($"length error: {vecA.Elements.Count} != {vecB.Elements.Count}");
+                
+                var results = new List<K3Value>();
+                for (int i = 0; i < vecA.Elements.Count; i++)
+                {
+                    results.Add(Equal(vecA.Elements[i], vecB.Elements[i]));
+                }
+                return new VectorValue(results);
+            }
+            
+            // For scalar comparison, delegate to Match
+            return Match(a, b);
         }
 
         private K3Value Power(K3Value a, K3Value b)

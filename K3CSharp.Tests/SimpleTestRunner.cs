@@ -200,6 +200,12 @@ namespace K3CSharp.Tests
                 
                 // Equal operator
                 ("equal_operator.k", "0"),
+                ("char_compare_equal.k", "1"),
+                ("char_compare_different.k", "0"),
+                ("char_vector_equal.k", "1 1 1"),
+                ("char_vector_different.k", "1 1 0"),
+                ("char_vector_match_equal.k", "1"),
+                ("char_vector_match_different.k", "0"),
                 
                 // First operator
                 ("first_operator.k", "1"),
