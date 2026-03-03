@@ -402,6 +402,19 @@ namespace K3CSharp.Tests
                 ("io_write_int.k", ""),
                 ("io_roundtrip.k", "(1;2.5;\"hello\")"),
                 
+                // Monadic 1: memory-mapped I/O tests
+                ("io_monadic_1_int_vector.k", "5 6 7"),
+                ("io_monadic_1_float_vector.k", "0i"),
+                ("io_monadic_1_char_vector.k", "\"hello world\""),
+                ("io_monadic_1_int_vector_index.k", "5"),
+                ("io_monadic_1_int_vector_last_index.k", "7"),
+                ("io_monadic_1_char_vector_index.k", "\"h\""),
+                ("io_monadic_1_char_vector_last_index.k", "\"d\""),
+                ("io_monadic_1_vs_2_int_vector.k", "5 6 7"),
+                ("io_monadic_1_vs_2_float_vector.k", "0i"),
+                ("io_monadic_1_vs_2_char_vector.k", "\"hello world\""),
+                ("io_monadic_1_symbol_fallback.k", "`helllo"),
+                
                 // Take operator tests
                 ("take_operator_basic.k", "1 2 3"),
                 ("take_operator_empty_float.k", "0#0.0"),

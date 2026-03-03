@@ -260,7 +260,34 @@ public partial class Evaluator
     
     private K3Value ReadMemoryMappedKData(K3Value operand)
     {
-        throw new NotImplementedException("1: READ MEMORY MAPPED K DATA not yet implemented");
+        try
+        {
+            // Get file path from operand (symbol or character vector)
+            string path = GetPathFromValue(operand);
+            
+            // Ensure .l extension
+            path = EnsureLExtension(path);
+            
+            // Try to validate file and get vector type information
+            var (isValid, vectorType, length) = MemoryMappedFileUtils.ValidateKDataFile(path);
+            
+            if (isValid && MemoryMappedFileUtils.IsOptimizableType(vectorType))
+            {
+                // Create optimized memory-mapped vector
+                return new MemoryMappedKVector(path, vectorType, length);
+            }
+            else
+            {
+                // For non-optimizable types or validation failures, fall back to regular ReadRawKData
+                // This ensures identical behavior to 2: for all data types
+                return ReadRawKData(operand);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Re-throw as K signal with same format as ReadRawKData
+            throw new Exception(ex.Message);
+        }
     }
     
     private K3Value ReadRawKData(K3Value operand)

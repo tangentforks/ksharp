@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-02 21:54:04
+Generated: 2026-03-03 02:13:02
 
 SUMMARY:
 --------
-Total Tests:     607
-✅ Matched:       601
-❌ Differed:      5
+Total Tests:     618
+✅ Matched:       605
+❌ Differed:      8
 ⚠️  Skipped:       0
-💥 Errors:        1
-Success Rate:    99.0%
+💥 Errors:        5
+Success Rate:    97.9%
 
 DETAILED RESULTS:
 -----------------
@@ -250,6 +250,17 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   in.k                                               1                              1                                                                                
 ✅ PASS   integer_types_int.k                                42                             42                                                                               
 ✅ PASS   integer_types_long.k                               123456789j                     123456789j                                                                       
+💥 ERROR io_monadic_1_char_vector_index.k                                                  "h"                            K3Sharp error, k.exe succeeded                    
+💥 ERROR io_monadic_1_char_vector_last_index.k                                             "d"                            K3Sharp error, k.exe succeeded                    
+✅ PASS   io_monadic_1_char_vector.k                         "hello world"                  "hello world"                                                                    
+✅ PASS   io_monadic_1_float_vector.k                        0i                             0i                                                                               
+💥 ERROR io_monadic_1_int_vector_index.k                                                   5                              K3Sharp error, k.exe succeeded                    
+💥 ERROR io_monadic_1_int_vector_last_index.k                                              7                              K3Sharp error, k.exe succeeded                    
+✅ PASS   io_monadic_1_int_vector.k                          5 6 7                          5 6 7                                                                            
+✅ PASS   io_monadic_1_symbol_fallback.k                     `helllo                        `helllo                                                                          
+❌ FAIL   io_monadic_1_vs_2_char_vector.k                    "hello world"                  1                                                                                
+❌ FAIL   io_monadic_1_vs_2_float_vector.k                   0i                             1                                                                                
+❌ FAIL   io_monadic_1_vs_2_int_vector.k                     5 6 7                          1                                                                                
 ✅ PASS   io_read_basic.k                                    ("line1";"line2";"line3")      ("line1";"line2";"line3")      Compact representation                            
 ✅ PASS   io_read_debug.k                                    123456                         123456                                                                           
 ✅ PASS   io_read_float.k                                    0i                             0i                                                                               
@@ -626,6 +637,18 @@ Status   Test File                                          K3Sharp Output      
 
 FAILED TESTS DETAILS:
 --------------------
+File: io_monadic_1_vs_2_char_vector.k
+K3Sharp: "hello world"
+k.exe:   1
+
+File: io_monadic_1_vs_2_float_vector.k
+K3Sharp: 0i
+k.exe:   1
+
+File: io_monadic_1_vs_2_int_vector.k
+K3Sharp: 5 6 7
+k.exe:   1
+
 File: monadic_format_dictionary.k
 K3Sharp: ".((`a;1;);(`b;2;);(`c;3;))"
 k.exe:   ".(..)"
@@ -650,6 +673,18 @@ k.exe:   30
 
 ERROR TESTS DETAILS:
 -------------------
+File: io_monadic_1_char_vector_index.k
+Error: K3Sharp Error: Undefined variable: result
+
+File: io_monadic_1_char_vector_last_index.k
+Error: K3Sharp Error: Undefined variable: result
+
+File: io_monadic_1_int_vector_index.k
+Error: K3Sharp Error: Undefined variable: result
+
+File: io_monadic_1_int_vector_last_index.k
+Error: K3Sharp Error: Undefined variable: result
+
 File: lsq.k
 Error: K3Sharp Error: _lsq (least squares) operation reserved for future use
 
