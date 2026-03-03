@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-03 13:34:28
+Generated: 2026-03-03 13:58:03
 
 SUMMARY:
 --------
 Total Tests:     619
-✅ Matched:       611
-❌ Differed:      8
+✅ Matched:       614
+❌ Differed:      5
 ⚠️  Skipped:       0
 💥 Errors:        0
-Success Rate:    98.7%
+Success Rate:    99.2%
 
 DETAILED RESULTS:
 -----------------
@@ -380,9 +380,9 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   rand_draw_deal.k                                   .((`type;-1;);(`shape;,4;...   .((`type;-1;);(`shape;,4;...   Compact representation                            
 ✅ PASS   rand_draw_probability.k                            .((`type;-2;);(`shape;,10;))   .((`type;-2;);(`shape;,10;))   Compact representation                            
 ✅ PASS   rand_draw_select.k                                 .((`type;-1;);(`shape;,10;))   .((`type;-1;);(`shape;,10;))   Compact representation                            
-❌ FAIL   rand_draw_vector_deal.k                            .((`type;0;);(`shape;,2;)...   .((`type;0;);(`shape;2 3;...   Compact representation                            
-❌ FAIL   rand_draw_vector_probability.k                     .((`type;0;);(`shape;,2;))     .((`type;0;);(`shape;2 3;))    Compact representation                            
-❌ FAIL   rand_draw_vector_select.k                          .((`type;0;);(`shape;,2;))     .((`type;0;);(`shape;2 3;))    Compact representation                            
+✅ PASS   rand_draw_vector_deal.k                            .((`type;0;);(`shape;2 3;...   .((`type;0;);(`shape;2 3;...   Compact representation                            
+✅ PASS   rand_draw_vector_probability.k                     .((`type;0;);(`shape;2 3;))    .((`type;0;);(`shape;2 3;))    Compact representation                            
+✅ PASS   rand_draw_vector_select.k                          .((`type;0;);(`shape;2 3;))    .((`type;0;);(`shape;2 3;))    Compact representation                            
 ✅ PASS   reciprocal_operator.k                              0.25                           0.25                                                                             
 ✅ PASS   reshape_basic.k                                    (0 1 2 3;4 5 6 7;8 9 10 11)    (0 1 2 3;4 5 6 7;8 9 10 11)    Compact representation                            
 ✅ PASS   reverse_operator.k                                 3 2 1                          3 2 1                                                                            
@@ -653,18 +653,6 @@ k.exe:   _lsq
 File: monadic_format_dictionary.k
 K3Sharp: ".((`a;1;);(`b;2;);(`c;3;))"
 k.exe:   ".(..)"
-
-File: rand_draw_vector_deal.k
-K3Sharp: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
-k.exe:   .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
-
-File: rand_draw_vector_probability.k
-K3Sharp: .((`type;0;);(`shape;,2;))
-k.exe:   .((`type;0;);(`shape;2 3;))
-
-File: rand_draw_vector_select.k
-K3Sharp: .((`type;0;);(`shape;,2;))
-k.exe:   .((`type;0;);(`shape;2 3;))
 
 File: variable_scoping_global_assignment.k
 K3Sharp: 100

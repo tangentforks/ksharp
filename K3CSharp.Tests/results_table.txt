@@ -340,9 +340,9 @@
 ║ rand_draw_select.k                                 │ r:10 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;-1;);(...   │                      ║
 ║ rand_draw_deal.k                                   │ r:4 _draw -4; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;-1;);(...   │                      ║
 ║ rand_draw_probability.k                            │ r:10 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;-2;);(...   │                      ║
-║ rand_draw_vector_select.k                          │ r:2 3 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │ .((`type;4;);(`...   ║
-║ rand_draw_vector_deal.k                            │ r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;0;);(`...   │ .((`type;0;);(`...   ║
-║ rand_draw_vector_probability.k                     │ r:2 3 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │ .((`type;4;);(`...   ║
+║ rand_draw_vector_select.k                          │ r:2 3 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
+║ rand_draw_vector_deal.k                            │ r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;0;);(`...   │                      ║
+║ rand_draw_vector_probability.k                     │ r:2 3 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
 ║ time_gtime.k                                       │ _gtime 0             │ 20350101 0           │                      ║
 ║ time_lt.k                                          │ _lt 0                │ -18000               │                      ║
 ║ time_jd.k                                          │ _jd 20260206         │ -3251                │                      ║
@@ -624,7 +624,7 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 613/620 tests passed (98.9%)                                                                               ║
+║ SUMMARY: 616/620 tests passed (99.4%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -643,21 +643,6 @@ Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: 100
-──────────────────────────────────────────────────────────────────────────
-Test: rand_draw_vector_select.k
-Input: r:2 3 _draw 4; .((`type;4:r);(`shape;^r))
-Expected: .((`type;4;);(`shape;,2;))
-Actual: .((`type;0;);(`shape;,2;))
-──────────────────────────────────────────────────────────────────────────
-Test: rand_draw_vector_deal.k
-Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
-Expected: .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
-Actual: .((`type;0;);(`shape;,2;);(`allitemsunique;1;))
-──────────────────────────────────────────────────────────────────────────
-Test: rand_draw_vector_probability.k
-Input: r:2 3 _draw 0; .((`type;4:r);(`shape;^r))
-Expected: .((`type;4;);(`shape;,2;))
-Actual: .((`type;0;);(`shape;,2;))
 ──────────────────────────────────────────────────────────────────────────
 Test: lsq.k
 Input: _lsq

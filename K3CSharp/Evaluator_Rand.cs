@@ -67,15 +67,21 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // Select/Probability: apply to each element individually
+                        // Select/Probability with vector left: create matrix using same logic as deal case
+                        // e.g., 2 3 _draw 4 creates 2 rows of 3 random selections from 0-3
+                        var dims = leftVec.Elements.Select(e => ((IntegerValue)e).Value).ToList();
+                        var rows = dims[0];
+                        var cols = dims[dims.Count - 1];
+
                         var results = new List<K3Value>();
-                        foreach (var element in leftVec.Elements)
+                        for (int r = 0; r < rows; r++)
                         {
-                            var elementInt = (IntegerValue)element;
+                            K3Value rowResult;
                             if (rightVal.Value > 0)
-                                results.Add(DrawSelect(elementInt.Value, rightVal.Value));
+                                rowResult = DrawSelect(cols, rightVal.Value);
                             else
-                                results.Add(DrawProbability(elementInt, rightVal));
+                                rowResult = DrawProbability(new IntegerValue(cols), rightVal);
+                            results.Add(rowResult);
                         }
                         return new VectorValue(results);
                     }
