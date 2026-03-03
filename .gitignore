@@ -444,7 +444,9 @@ K3CSharp.Tests/TestScripts/test.txt
 K3CSharp.Tests/TestScripts/testfile.txt
 K3CSharp.Tests/testW
 TestFiles/
-s
+K3CSharp.Tests/*.l
+K3CSharp.Comparison/*.l
+
 # Typical Errors and junk
 ./TestScripts/
 K3CSharp/TestScripts/

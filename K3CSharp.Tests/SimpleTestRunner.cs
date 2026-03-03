@@ -393,6 +393,15 @@ namespace K3CSharp.Tests
                 ("symbol_period_dotbar.k", "`.bar"),
                 ("symbol_period_dotk.k", "`.k"),
                 
+                // Data I/O tests
+                ("io_read_int.k", "123456"),
+                ("io_read_float.k", "0i"),
+                ("io_read_symbol.k", "`helllo"),
+                ("io_read_intvec.k", "5 6 7"),
+                ("io_read_debug.k", "123456"),
+                ("io_write_int.k", ""),
+                ("io_roundtrip.k", "(1;2.5;\"hello\")"),
+                
                 // Take operator tests
                 ("take_operator_basic.k", "1 2 3"),
                 ("take_operator_empty_float.k", "0#0.0"),

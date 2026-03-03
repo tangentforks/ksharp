@@ -41,8 +41,8 @@ public partial class Evaluator
         return digit switch
         {
             0 => WriteText(left, right),          // WRITE TEXT
-            1 => WriteMemoryMappedKData(left, right), // WRITE MEMORY MAPPED K DATA
-            2 => WriteData(left, right),          // WRITE DATA (and FFI dynamic load)
+            1 => WriteData(left, right),          // WRITE K DATA
+            2 => WriteMemoryMappedKData(left, right), // WRITE MEMORY MAPPED K DATA (and FFI dynamic load)
             3 => IpcGet(left, right),            // IPC GET
             4 => IpcSet(left, right),            // IPC SET
             5 => AppendData(left, right),          // APPEND DATA
@@ -265,7 +265,74 @@ public partial class Evaluator
     
     private K3Value ReadRawKData(K3Value operand)
     {
-        throw new NotImplementedException("2: READ RAW K DATA not yet implemented");
+        try
+        {
+            // Get file path from operand (symbol or character vector)
+            string path = GetPathFromValue(operand);
+            
+            // Ensure .l extension
+            path = EnsureLExtension(path);
+            
+            // Read entire file into memory
+            if (!File.Exists(path))
+            {
+                throw new Exception($"The system cannot find the file specified: {path}");
+            }
+            
+            var fileBytes = File.ReadAllBytes(path);
+            
+            // Validate file header (first 8 bytes should be: FD FF FF FF 01 00 00 00)
+            byte[] expectedHeader = new byte[] { 0xFD, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x00, 0x00 };
+            if (fileBytes.Length < expectedHeader.Length)
+            {
+                throw new Exception("Invalid K data file");
+            }
+            
+            for (int i = 0; i < expectedHeader.Length; i++)
+            {
+                if (fileBytes[i] != expectedHeader[i])
+                {
+                    throw new Exception("Invalid K data file");
+                }
+            }
+            
+            // Discard file header, get data portion
+            var dataBytes = fileBytes.Skip(expectedHeader.Length).ToArray();
+            
+            // Construct _bd message with standard header: 01 00 00 00 + 4-byte length + data
+            var bdMessage = new List<byte>();
+            
+            // Standard _bd header (octal: \001\000\000\000)
+            bdMessage.AddRange(new byte[] { 0x01, 0x00, 0x00, 0x00 });
+            
+            // 4-byte length in little-endian format
+            byte[] lengthBytes = BitConverter.GetBytes(dataBytes.Length);
+            if (!BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(lengthBytes);
+            }
+            bdMessage.AddRange(lengthBytes);
+            
+            // Add the data
+            bdMessage.AddRange(dataBytes);
+            
+            // Convert to character vector for _db function
+            var charElements = new List<K3Value>();
+            for (int i = 0; i < bdMessage.Count; i++)
+            {
+                charElements.Add(new CharacterValue(((char)bdMessage[i]).ToString()));
+            }
+            
+            var bdVector = new VectorValue(charElements, -3);
+            
+            // Use existing _db function to deserialize
+            return DbFunction(bdVector);
+        }
+        catch (Exception ex)
+        {
+            // Re-throw as K signal
+            throw new Exception(ex.Message);
+        }
     }
     
     private K3Value OpenClosePort(K3Value operand)
@@ -452,7 +519,57 @@ public partial class Evaluator
     
     private K3Value WriteData(K3Value left, K3Value right)
     {
-        throw new NotImplementedException("2: WRITE DATA not yet implemented");
+        try
+        {
+            // Get file path from left argument (symbol or character vector)
+            string path = GetPathFromValue(left);
+            
+            // Ensure .l extension
+            path = EnsureLExtension(path);
+            
+            // Serialize the right argument using _bd function
+            var bdResult = BdFunction(right);
+            
+            if (bdResult is VectorValue bdVector && bdVector.VectorType == -3)
+            {
+                // Convert character vector back to bytes
+                var bdBytes = new List<byte>();
+                foreach (var element in bdVector.Elements.OfType<CharacterValue>())
+                {
+                    bdBytes.Add((byte)element.Value[0]);
+                }
+                
+                // Skip first 8 bytes (header and length) to get data portion
+                if (bdBytes.Count < 8)
+                {
+                    throw new Exception("Serialized data too short");
+                }
+                
+                var dataBytes = bdBytes.Skip(8).ToArray();
+                
+                // Create file with standard header: FD FF FF FF 01 00 00 00
+                byte[] fileHeader = new byte[] { 0xFD, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x00, 0x00 };
+                
+                // Write file: header + data
+                var fileBytes = new List<byte>();
+                fileBytes.AddRange(fileHeader);
+                fileBytes.AddRange(dataBytes);
+                
+                File.WriteAllBytes(path, fileBytes.ToArray());
+                
+                // Return null per specification
+                return new NullValue();
+            }
+            else
+            {
+                throw new Exception("_bd function did not return character vector");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Re-throw as K signal
+            throw new Exception(ex.Message);
+        }
     }
     
     private K3Value IpcGet(K3Value left, K3Value right)
@@ -473,5 +590,44 @@ public partial class Evaluator
     private K3Value WriteBytes(K3Value left, K3Value right)
     {
         throw new NotImplementedException("6: WRITE BYTES not yet implemented");
+    }
+    
+    /// <summary>
+    /// Extract file path from a K value (symbol or character vector)
+    /// </summary>
+    private string GetPathFromValue(K3Value value)
+    {
+        if (value is SymbolValue symbol)
+        {
+            return symbol.Value;
+        }
+        else if (value is VectorValue vec && vec.VectorType == -3)
+        {
+            // Character vector - concatenate characters
+            return string.Concat(vec.Elements.OfType<CharacterValue>().Select(cv => cv.Value));
+        }
+        else
+        {
+            throw new Exception("Path must be a symbol or character vector");
+        }
+    }
+    
+    /// <summary>
+    /// Ensure file path has .l extension according to specification
+    /// </summary>
+    private string EnsureLExtension(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return ".l";
+        }
+        
+        string extension = Path.GetExtension(path);
+        if (string.IsNullOrEmpty(extension) || extension.ToLower() != ".l")
+        {
+            return path + ".l";
+        }
+        
+        return path;
     }
 }
