@@ -1,6 +1,6 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-04 05:19:39
+Generated: 2026-03-04 11:33:41
 
 SUMMARY:
 --------
@@ -343,9 +343,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   math_mul_basic.k                                   1 2 3                          1 2 3                                                                            
 ❌ FAIL   math_mul_matrix_2x2.k                              (19.0 22.0;43.0 50.0)          (19 22;43 50)                  Compact representation and Don't use abbrevia...  
 ❌ FAIL   math_mul_matrix_2x3_3x2.k                          (58.0 64.0;139.0 154.0)        (58 64;139 154)                Compact representation                            
-❌ FAIL   math_mul_matrix_3x3.k                              (30.0 24.0 18.0;84.0 69.0...   (30 24 18
- 84 69 54
- 138 ...                                                     
+❌ FAIL   math_mul_matrix_3x3.k                              (30.0 24.0 18.0;84.0 69.0...   (30 24 18;84 69 54;138 11...   Compact representation and Don't use abbrevia...  
 ❌ FAIL   math_mul_matrix_4x2_2x4.k                          (35.0 38.0 41.0 44.0;79.0...   (35 38 41 44;79 86 93 100...   Compact representation                            
 ❌ FAIL   math_not_basic.k                                                                  -6                                                                               
 ✅ PASS   math_not_vector.k                                  1 2 3                          1 2 3                                                                            
@@ -713,9 +711,7 @@ k.exe:   (58 64;139 154)
 
 File: math_mul_matrix_3x3.k
 K3Sharp: (30.0 24.0 18.0;84.0 69.0 54.0;138.0 114.0 90.0)
-k.exe:   (30 24 18
- 84 69 54
- 138 114 90)
+k.exe:   (30 24 18;84 69 54;138 114 90)
 
 File: math_mul_matrix_4x2_2x4.k
 K3Sharp: (35.0 38.0 41.0 44.0;79.0 86.0 93.0 100.0;123.0 134.0 145.0 156.0;167.0 182.0 197.0 212.0)
