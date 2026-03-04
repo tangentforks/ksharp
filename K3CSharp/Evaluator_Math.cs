@@ -1145,6 +1145,16 @@ namespace K3CSharp
                     return new LongValue(longLeft.Value >> -(int)longRight.Value);
                 }
             }
+            else if (left is VectorValue vecLeft && right is IntegerValue shiftRight)
+            {
+                // Apply shift to each element of the vector
+                var result = new List<K3Value>();
+                foreach (var element in vecLeft.Elements)
+                {
+                    result.Add(MathShift(element, right));
+                }
+                return new VectorValue(result, vecLeft.VectorType ?? 0);
+            }
             else
             {
                 throw new Exception("_shift can only be applied to int/long values");

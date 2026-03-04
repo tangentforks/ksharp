@@ -651,12 +651,12 @@
 ║ bd_enlist_single_string.k                          │ _bd ,"hello"         │ "\001\000\000\0...   │                      ║
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
-║ math_and_basic.k                                   │ 5 _and 3             │ Error: Unexpect...   │ 1                    ║
-║ math_and_vector.k                                  │ (5 6 3) _and (1 2 3) │ Error: Unexpect...   │ 1 2 3                ║
-║ math_ceil_basic.k                                  │ _ceil 4.7            │ Error: Unexpect...   │ 5.0                  ║
-║ math_ceil_integer.k                                │ _ceil 5              │ Error: Unexpect...   │ 5.0                  ║
-║ math_ceil_negative.k                               │ _ceil -3.2           │ Error: Unexpect...   │ -3.0                 ║
-║ math_ceil_vector.k                                 │ _ceil 1.2 2.7 3.5    │ Error: Unexpect...   │ 2.0 3.0 4.0          ║
+║ math_and_basic.k                                   │ 5 _and 3             │ 1                    │                      ║
+║ math_and_vector.k                                  │ (5 6 3) _and (1 2 3) │ 1 2 3                │                      ║
+║ math_ceil_basic.k                                  │ _ceil 4.7            │ 5.0                  │                      ║
+║ math_ceil_integer.k                                │ _ceil 5              │ 5.0                  │                      ║
+║ math_ceil_negative.k                               │ _ceil -3.2           │ -3.0                 │                      ║
+║ math_ceil_vector.k                                 │ _ceil 1.2 2.7 3.5    │ 2.0 3.0 4.0          │                      ║
 ║ math_div_float.k                                   │ 7 _div 2             │ 3                    │                      ║
 ║ math_div_integer.k                                 │ 7 _div 3             │ 2                    │                      ║
 ║ math_div_vector.k                                  │ (7 14 21) _div 3     │ 2 4 7                │                      ║
@@ -666,15 +666,15 @@
 ║ math_mul_basic.k                                   │ 1 2 3                │ 1 2 3                │                      ║
 ║ math_not_basic.k                                   │ _not 5               │                      │ -6                   ║
 ║ math_not_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
-║ math_or_basic.k                                    │ 5 _or 3              │ Error: Unexpect...   │ 7                    ║
+║ math_or_basic.k                                    │ 5 _or 3              │ 7                    │                      ║
 ║ math_or_vector.k                                   │ 1 2 3                │ 1 2 3                │                      ║
-║ math_rot_basic.k                                   │ 8 _rot 2             │ Error: Unexpect...   │ 32                   ║
-║ math_shift_basic.k                                 │ 8 _shift 2           │ Error: Unexpect...   │ 32                   ║
-║ math_shift_vector.k                                │ (8 16 32 64) _shift 2 │ Error: Unexpect...   │ 32 64 128 256        ║
-║ math_xor_basic.k                                   │ 5 _xor 3             │ Error: Unexpect...   │ 6                    ║
+║ math_rot_basic.k                                   │ 8 _rot 2             │ 32                   │                      ║
+║ math_shift_basic.k                                 │ 8 _shift 2           │ 32                   │                      ║
+║ math_shift_vector.k                                │ (8 16 32 64) _shift 2 │ 32 64 128 256        │                      ║
+║ math_xor_basic.k                                   │ 5 _xor 3             │ 6                    │                      ║
 ║ math_xor_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 649/670 tests passed (96.9%)                                                                               ║
+║ SUMMARY: 660/670 tests passed (98.5%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -724,63 +724,8 @@ Input: _db _bd (1;`test;3.14)
 Expected: (1;`test;3.14)
 Actual: 1 `test 3.14
 ──────────────────────────────────────────────────────────────────────────
-Test: math_and_basic.k
-Input: 5 _and 3
-Expected: 1
-Actual: Error: Unexpected token: AND(_and)
-──────────────────────────────────────────────────────────────────────────
-Test: math_and_vector.k
-Input: (5 6 3) _and (1 2 3)
-Expected: 1 2 3
-Actual: Error: Unexpected token: AND(_and)
-──────────────────────────────────────────────────────────────────────────
-Test: math_ceil_basic.k
-Input: _ceil 4.7
-Expected: 5.0
-Actual: Error: Unexpected token: CEIL(_ceil)
-──────────────────────────────────────────────────────────────────────────
-Test: math_ceil_integer.k
-Input: _ceil 5
-Expected: 5.0
-Actual: Error: Unexpected token: CEIL(_ceil)
-──────────────────────────────────────────────────────────────────────────
-Test: math_ceil_negative.k
-Input: _ceil -3.2
-Expected: -3.0
-Actual: Error: Unexpected token: CEIL(_ceil)
-──────────────────────────────────────────────────────────────────────────
-Test: math_ceil_vector.k
-Input: _ceil 1.2 2.7 3.5
-Expected: 2.0 3.0 4.0
-Actual: Error: Unexpected token: CEIL(_ceil)
-──────────────────────────────────────────────────────────────────────────
 Test: math_not_basic.k
 Input: _not 5
 Expected: -6
 Actual: 
-──────────────────────────────────────────────────────────────────────────
-Test: math_or_basic.k
-Input: 5 _or 3
-Expected: 7
-Actual: Error: Unexpected token: OR(_or)
-──────────────────────────────────────────────────────────────────────────
-Test: math_rot_basic.k
-Input: 8 _rot 2
-Expected: 32
-Actual: Error: Unexpected token: ROT(_rot)
-──────────────────────────────────────────────────────────────────────────
-Test: math_shift_basic.k
-Input: 8 _shift 2
-Expected: 32
-Actual: Error: Unexpected token: SHIFT(_shift)
-──────────────────────────────────────────────────────────────────────────
-Test: math_shift_vector.k
-Input: (8 16 32 64) _shift 2
-Expected: 32 64 128 256
-Actual: Error: Unexpected token: SHIFT(_shift)
-──────────────────────────────────────────────────────────────────────────
-Test: math_xor_basic.k
-Input: 5 _xor 3
-Expected: 6
-Actual: Error: Unexpected token: XOR(_xor)
 ──────────────────────────────────────────────────────────────────────────

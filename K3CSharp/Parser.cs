@@ -101,6 +101,12 @@ namespace K3CSharp
                 TokenType.DOT_APPLY => ".",
                 TokenType.TYPE => "TYPE",
                 TokenType.STRING_REPRESENTATION => "STRING_REPRESENTATION",
+                TokenType.AND => "_and",
+                TokenType.OR => "_or",
+                TokenType.XOR => "_xor",
+                TokenType.ROT => "_rot",
+                TokenType.SHIFT => "_shift",
+                TokenType.CEIL => "_ceil",
                 TokenType.DO => "do",
                 TokenType.WHILE => "while",
                 TokenType.IF_FUNC => "if",
@@ -351,6 +357,7 @@ namespace K3CSharp
                    type == TokenType.DOLLAR || type == TokenType.DRAW || type == TokenType.GETENV || type == TokenType.SETENV || type == TokenType.SIZE || type == TokenType.STRING_REPRESENTATION ||
                    type == TokenType.IO_VERB_0 || type == TokenType.IO_VERB_1 || type == TokenType.IO_VERB_2 || type == TokenType.IO_VERB_3 ||
                    type == TokenType.IO_VERB_6 || type == TokenType.IO_VERB_7 || type == TokenType.IO_VERB_8 || type == TokenType.IO_VERB_9 ||
+                   type == TokenType.AND || type == TokenType.OR || type == TokenType.XOR || type == TokenType.ROT || type == TokenType.SHIFT ||
                    type == TokenType.APPLY;
         }
 
@@ -368,6 +375,7 @@ namespace K3CSharp
             TokenType.ADVERB_SLASH_COLON, TokenType.ADVERB_BACKSLASH_COLON, TokenType.ADVERB_TICK_COLON,
             TokenType.TIME, TokenType.IN, TokenType.BIN, TokenType.BINL, TokenType.LSQ, TokenType.LIN,
             TokenType.GTIME, TokenType.LTIME, TokenType.VS, TokenType.SV, TokenType.SS, TokenType.CI, TokenType.IC,
+            TokenType.AND, TokenType.OR, TokenType.XOR, TokenType.ROT, TokenType.SHIFT,
             TokenType.DIRECTORY, TokenType.BD, TokenType.DB, TokenType.DO, TokenType.WHILE, TokenType.IF_FUNC, TokenType.EXIT, TokenType.EOF
         };
         
@@ -1419,6 +1427,15 @@ namespace K3CSharp
                 if (operand != null) node.Children.Add(operand);
                 return node;
             }
+            else if (Match(TokenType.CEIL))
+            {
+                // Mathematical ceiling operation
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_ceil");
+                if (operand != null) node.Children.Add(operand);
+                return node;
+            }
             else if (Match(TokenType.DOT))
             {
                 // Linear algebra dot product operation
@@ -2239,7 +2256,7 @@ namespace K3CSharp
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
                    Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) || Match(TokenType.EQUAL) || Match(TokenType.IN) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
                    Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || Match(TokenType.DOLLAR) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
-                   Match(TokenType.LSQ) || Match(TokenType.APPLY))
+                   Match(TokenType.LSQ) || Match(TokenType.AND) || Match(TokenType.OR) || Match(TokenType.XOR) || Match(TokenType.ROT) || Match(TokenType.SHIFT) || Match(TokenType.APPLY))
             {
                 var op = PreviousToken().Type;
                 
@@ -2943,6 +2960,7 @@ namespace K3CSharp
                    Match(TokenType.EQUAL) || Match(TokenType.IN) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
                    Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || 
                    Match(TokenType.DOLLAR) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
+                   Match(TokenType.AND) || Match(TokenType.OR) || Match(TokenType.XOR) || Match(TokenType.ROT) || Match(TokenType.SHIFT) ||
                    Match(TokenType.APPLY))
             {
                 var op = PreviousToken().Type;
@@ -3029,6 +3047,7 @@ namespace K3CSharp
                        Match(TokenType.EQUAL) || Match(TokenType.IN) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
                        Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || 
                        Match(TokenType.DOLLAR) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
+                       Match(TokenType.AND) || Match(TokenType.OR) || Match(TokenType.XOR) || Match(TokenType.ROT) || Match(TokenType.SHIFT) ||
                        Match(TokenType.APPLY))
                 {
                     var op = PreviousToken().Type;
