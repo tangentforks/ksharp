@@ -106,6 +106,7 @@ namespace K3CSharp
                 TokenType.XOR => "_xor",
                 TokenType.ROT => "_rot",
                 TokenType.SHIFT => "_shift",
+                TokenType.NOT => "_not",
                 TokenType.CEIL => "_ceil",
                 TokenType.DO => "do",
                 TokenType.WHILE => "while",
@@ -1424,6 +1425,15 @@ namespace K3CSharp
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 node.Value = new SymbolValue("_floor");
+                if (operand != null) node.Children.Add(operand);
+                return node;
+            }
+            else if (Match(TokenType.NOT))
+            {
+                // Bitwise NOT operation
+                var operand = ParseExpression();
+                var node = new ASTNode(ASTNodeType.BinaryOp);
+                node.Value = new SymbolValue("_not");
                 if (operand != null) node.Children.Add(operand);
                 return node;
             }

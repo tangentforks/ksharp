@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-04 11:33:41
+Generated: 2026-03-04 16:04:53
 
 SUMMARY:
 --------
 Total Tests:     670
-✅ Matched:       660
-❌ Differed:      10
+✅ Matched:       668
+❌ Differed:      2
 ⚠️  Skipped:       0
 💥 Errors:        0
-Success Rate:    98.5%
+Success Rate:    99.7%
 
 DETAILED RESULTS:
 -----------------
@@ -323,7 +323,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   math_div_float.k                                   3                              3                                                                                
 ✅ PASS   math_div_integer.k                                 2                              2                                                                                
 ✅ PASS   math_div_vector.k                                  2 4 7                          2 4 7                                                                            
-❌ FAIL   math_dot_basic.k                                   32.0                           32                                                                               
+✅ PASS   math_dot_basic.k                                   32                             32                                                                               
 ✅ PASS   math_exp_basic.k                                   2.718282                       2.718282                                                                         
 ✅ PASS   math_exp.k                                         7.389056                       7.389056                                                                         
 ✅ PASS   math_floor_nan.k                                   0N                             0N                                                                               
@@ -331,8 +331,8 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   math_floor_special_values.k                        0I                             0I                                                                               
 ✅ PASS   math_hyperbolic_basic.k                            1.175201                       1.175201                                                                         
 ✅ PASS   math_inv_matrix_2x2.k                              (-2 1.0;1.5 -0.5)              (-2 1.0;1.5 -0.5)              Compact representation                            
-❌ FAIL   math_inv_matrix_3x3.k                              (-24 18 5;20 -15 -4;-5 4 1)    (-24.0 1.08 5.0.0;20 -1.0...   Compact representation and smart division         
-❌ FAIL   math_inv_matrix_identity_3x3.k                     (1.0 0.0 0.0;0.0 1.0 0.0;...   (1 0;0 1.0 0 1)                Compact representation and smart division         
+✅ PASS   math_inv_matrix_3x3.k                              (-24.0 18.0 5.0;20.0 -15....   (-24.0 18.0 5.0;20.0 -15....   Compact representation                            
+✅ PASS   math_inv_matrix_identity_3x3.k                     (1.0 0.0 0.0;0.0 1.0 0.0;...   (1.0 0.0 0.0;0.0 1.0 0.0;...   Compact representation and don't compress         
 ✅ PASS   math_log_negative.k                                0n                             0n                                                                               
 ✅ PASS   math_log_zero.k                                    -0i                            -0i                                                                              
 ✅ PASS   math_log.k                                         2.302585                       2.302585                                                                         
@@ -341,11 +341,11 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   math_lsq_non_square.k                              -1.0 2.0                       -1.0 2.0                       Don't use abbreviated float vectors               
 ✅ PASS   math_lsq_regression.k                              0.5 0.6428571                  0.5 0.6428571                                                                    
 ✅ PASS   math_mul_basic.k                                   1 2 3                          1 2 3                                                                            
-❌ FAIL   math_mul_matrix_2x2.k                              (19.0 22.0;43.0 50.0)          (19 22;43 50)                  Compact representation and Don't use abbrevia...  
-❌ FAIL   math_mul_matrix_2x3_3x2.k                          (58.0 64.0;139.0 154.0)        (58 64;139 154)                Compact representation                            
-❌ FAIL   math_mul_matrix_3x3.k                              (30.0 24.0 18.0;84.0 69.0...   (30 24 18;84 69 54;138 11...   Compact representation and Don't use abbrevia...  
-❌ FAIL   math_mul_matrix_4x2_2x4.k                          (35.0 38.0 41.0 44.0;79.0...   (35 38 41 44;79 86 93 100...   Compact representation                            
-❌ FAIL   math_not_basic.k                                                                  -6                                                                               
+✅ PASS   math_mul_matrix_2x2.k                              (19 22;43 50)                  (19 22;43 50)                  Compact representation                            
+✅ PASS   math_mul_matrix_2x3_3x2.k                          (58 64;139 154)                (58 64;139 154)                Compact representation                            
+✅ PASS   math_mul_matrix_3x3.k                              (30 24 18;84 69 54;138 11...   (30 24 18;84 69 54;138 11...   Compact representation                            
+✅ PASS   math_mul_matrix_4x2_2x4.k                          (35 38 41 44;79 86 93 100...   (35 38 41 44;79 86 93 100...   Compact representation                            
+✅ PASS   math_not_basic.k                                   -6                             -6                                                                               
 ✅ PASS   math_not_vector.k                                  1 2 3                          1 2 3                                                                            
 ✅ PASS   math_or_basic.k                                    7                              7                                                                                
 ✅ PASS   math_or_vector.k                                   1 2 3                          1 2 3                                                                            
@@ -689,38 +689,6 @@ Status   Test File                                          K3Sharp Output      
 
 FAILED TESTS DETAILS:
 --------------------
-File: math_dot_basic.k
-K3Sharp: 32.0
-k.exe:   32
-
-File: math_inv_matrix_3x3.k
-K3Sharp: (-24 18 5;20 -15 -4;-5 4 1)
-k.exe:   (-24.0 1.08 5.0.0;20 -1.05.0 -4.0.0;-5.0 4.0 1.0.0)
-
-File: math_inv_matrix_identity_3x3.k
-K3Sharp: (1.0 0.0 0.0;0.0 1.0 0.0;0.0 0.0 1.0)
-k.exe:   (1 0;0 1.0 0 1)
-
-File: math_mul_matrix_2x2.k
-K3Sharp: (19.0 22.0;43.0 50.0)
-k.exe:   (19 22;43 50)
-
-File: math_mul_matrix_2x3_3x2.k
-K3Sharp: (58.0 64.0;139.0 154.0)
-k.exe:   (58 64;139 154)
-
-File: math_mul_matrix_3x3.k
-K3Sharp: (30.0 24.0 18.0;84.0 69.0 54.0;138.0 114.0 90.0)
-k.exe:   (30 24 18;84 69 54;138 114 90)
-
-File: math_mul_matrix_4x2_2x4.k
-K3Sharp: (35.0 38.0 41.0 44.0;79.0 86.0 93.0 100.0;123.0 134.0 145.0 156.0;167.0 182.0 197.0 212.0)
-k.exe:   (35 38 41 44;79 86 93 100;123 134 145 156;167 182 197 212)
-
-File: math_not_basic.k
-K3Sharp: 
-k.exe:   -6
-
 File: monadic_format_dictionary.k
 K3Sharp: ".((`a;1;);(`b;2;);(`c;3;))"
 k.exe:   ".(..)"

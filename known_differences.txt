@@ -167,11 +167,11 @@ io_read_basic :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 io_write_basic :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 math_ceil_vector :: regex:2:2.0 & regex:3:3.0 :: Don't use abbreviated float vectors
 math_inv_matrix_2x2 :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
-math_inv_matrix_3x3 :: regex:^\s+|\s+$|\s*\n\s*:\; & regex:1:1.0 & regex:4:4.0 & regex:5:5.0 :: Compact representation and smart division
-math_inv_matrix_identity_3x3 :: regex:^\s+|\s+$|\s*\n\s*:\; & regex:1.0:1 & regex:0.0:0 :: Compact representation and smart division
+math_inv_matrix_3x3 :: regex:^\s+|\s+$|\s*\n\s*:\; & regex:24\s18:24.0space18.0 & regex:20..15:20.0space-15.0 & regex:5.4:5.0space4.0 :: Compact representation
+math_inv_matrix_identity_3x3 :: regex:^\s+|\s+$|\s*\n\s*:\; & regex:0\s:0.0space & regex:1\s:1.0space :: Compact representation and don't compress 
 math_lsq_high_rank :: regex:8:8.0 :: Don't use abbreviated float vectors
 math_lsq_non_square :: regex:1:1.0 :: Don't use abbreviated float vectors
-math_mul_matrix_2x2 :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation and Don't use abbreviated float vectors
-math_mul_matrix_3x3 :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation and Don't use abbreviated float vectors
+math_mul_matrix_2x2 :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+math_mul_matrix_3x3 :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 math_mul_matrix_2x3_3x2 :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 math_mul_matrix_4x2_2x4 :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation

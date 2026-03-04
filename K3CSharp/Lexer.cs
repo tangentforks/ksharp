@@ -249,12 +249,31 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // Check for _n null value first
+                        // Check for _n null value first (only if not followed by letters)
                         if (position + 1 < input.Length && input[position + 1] == 'n')
                         {
-                            tokens.Add(new Token(TokenType.NULL, "_n", position));
-                            Advance(); // Skip _
-                            Advance(); // Skip n
+                            // Check if this is just _n (not followed by more letters)
+                            bool isJustN = (position + 2 >= input.Length) || !char.IsLetter(input[position + 2]);
+                            
+                            if (isJustN)
+                            {
+                                tokens.Add(new Token(TokenType.NULL, "_n", position));
+                                Advance(); // Skip _
+                                Advance(); // Skip n
+                            }
+                            else
+                            {
+                                // This is _n followed by letters, let ReadMathOperation handle it
+                                var mathOp = ReadMathOperation();
+                                if (mathOp != null)
+                                {
+                                    tokens.Add(mathOp);
+                                }
+                                else
+                                {
+                                    tokens.Add(new Token(TokenType.UNDERSCORE, "_", position));
+                                }
+                            }
                         }
                         else
                         {

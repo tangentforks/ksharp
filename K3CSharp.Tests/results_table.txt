@@ -114,14 +114,14 @@
 ║ math_floor_special_values.k                        │ _ 0i                 │ 0I                   │                      ║
 ║ math_hyperbolic_basic.k                            │ _sinh 1              │ 1.175201             │                      ║
 ║ math_inv_matrix_2x2.k                              │ _inv ((1 2);(3 4))   │ (-2 1.0;1.5 -0.5)    │                      ║
-║ math_inv_matrix_3x3.k                              │ _inv ((1 2 3);(0 1 4);(5 6 0)) │ (-24 18 5;20 -1...   │                      ║
+║ math_inv_matrix_3x3.k                              │ _inv ((1 2 3);(0 1 4);(5 6 0)) │ (-24.0 18.0 5.0...   │                      ║
 ║ math_inv_matrix_identity_3x3.k                     │ _inv ((1 0 0);(0 1 0);(0 0 1)) │ (1.0 0.0 0.0;0....   │                      ║
 ║ math_log_negative.k                                │ _log -1              │ 0n                   │                      ║
 ║ math_log_zero.k                                    │ _log 0               │ -0i                  │                      ║
-║ math_mul_matrix_2x2.k                              │ ((1 2);(3 4)) _mul ((5 6);(7 8)) │ (19.0 22.0;43.0...   │                      ║
-║ math_mul_matrix_2x3_3x2.k                          │ ((1 2 3);(4 5 6)) _mul ((7 8);(9 10);(11 12)) │ (58.0 64.0;139....   │                      ║
-║ math_mul_matrix_3x3.k                              │ ((1 2 3);(4 5 6);(7 8 9)) _mul ((9 8 7);(6 5 4);(3 2 1)) │ (30.0 24.0 18.0...   │                      ║
-║ math_mul_matrix_4x2_2x4.k                          │ ((1 2);(3 4);(5 6);(7 8)) _mul ((9 10 11 12);(13 14 15 16)) │ (35.0 38.0 41.0...   │                      ║
+║ math_mul_matrix_2x2.k                              │ ((1 2);(3 4)) _mul ((5 6);(7 8)) │ (19 22;43 50)        │                      ║
+║ math_mul_matrix_2x3_3x2.k                          │ ((1 2 3);(4 5 6)) _mul ((7 8);(9 10);(11 12)) │ (58 64;139 154)      │                      ║
+║ math_mul_matrix_3x3.k                              │ ((1 2 3);(4 5 6);(7 8 9)) _mul ((9 8 7);(6 5 4);(3 2 1)) │ (30 24 18;84 69...   │                      ║
+║ math_mul_matrix_4x2_2x4.k                          │ ((1 2);(3 4);(5 6);(7 8)) _mul ((9 10 11 12);(13 14 15 16)) │ (35 38 41 44;79...   │                      ║
 ║ math_trig_basic.k                                  │ _sin 0               │ 0.0                  │                      ║
 ║ math_trig_pi.k                                     │ _cos 3.141592653589793 │ -1.0                 │                      ║
 ║ maximum_operator.k                                 │ 3 | 5                │ 5                    │                      ║
@@ -659,13 +659,13 @@
 ║ math_div_float.k                                   │ 7 _div 2             │ 3                    │                      ║
 ║ math_div_integer.k                                 │ 7 _div 3             │ 2                    │                      ║
 ║ math_div_vector.k                                  │ (7 14 21) _div 3     │ 2 4 7                │                      ║
-║ math_dot_basic.k                                   │ 1 2 3 _dot 4 5 6     │ 32.0                 │                      ║
+║ math_dot_basic.k                                   │ 1 2 3 _dot 4 5 6     │ 32                   │                      ║
 ║ math_lsq_non_square.k                              │ // Non-square matrix: 2x3 matrix (more columns than rows) │ -1.0 2.0             │                      ║
 ║ math_lsq_high_rank.k                               │ // Rectangular matrix: 2x4 matrix (more columns than rows) │ -8.0 9.0             │                      ║
 ║ math_lsq_complex.k                                 │ // Complex non-square case with mixed values │ 0.1232877 1.506849   │                      ║
 ║ math_lsq_regression.k                              │ (1 2 3.0) _lsq (1 1 1.0;1 2 4.0) │ 0.5 0.6428571        │                      ║
 ║ math_mul_basic.k                                   │ 1 2 3                │ 1 2 3                │                      ║
-║ math_not_basic.k                                   │ _not 5               │                      │ -6                   ║
+║ math_not_basic.k                                   │ _not 5               │ -6                   │                      ║
 ║ math_not_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
 ║ math_or_basic.k                                    │ 5 _or 3              │ 7                    │                      ║
 ║ math_or_vector.k                                   │ 1 2 3                │ 1 2 3                │                      ║
@@ -675,7 +675,7 @@
 ║ math_xor_basic.k                                   │ 5 _xor 3             │ 6                    │                      ║
 ║ math_xor_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 669/671 tests passed (99.7%)                                                                               ║
+║ SUMMARY: 670/671 tests passed (99.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -684,9 +684,4 @@ Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: 100
-──────────────────────────────────────────────────────────────────────────
-Test: math_not_basic.k
-Input: _not 5
-Expected: -6
-Actual: 
 ──────────────────────────────────────────────────────────────────────────

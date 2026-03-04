@@ -219,6 +219,12 @@ namespace K3CSharp
                 if (leftVec.Elements.Count != rightVec.Elements.Count)
                     throw new Exception("_dot requires vectors of the same length");
                 
+                // Determine result type based on input types
+                bool leftIsFloat = leftVec.Elements.Any(e => e is FloatValue);
+                bool rightIsFloat = rightVec.Elements.Any(e => e is FloatValue);
+                bool leftIsLong = leftVec.Elements.Any(e => e is LongValue);
+                bool rightIsLong = rightVec.Elements.Any(e => e is LongValue);
+                
                 double sum = 0.0;
                 for (int i = 0; i < leftVec.Elements.Count; i++)
                 {
@@ -231,7 +237,19 @@ namespace K3CSharp
                     sum += leftVal * rightVal;
                 }
                 
-                return new FloatValue(sum);
+                // Return appropriate type based on promotion rules
+                if (leftIsFloat || rightIsFloat)
+                {
+                    return new FloatValue(sum);
+                }
+                else if (leftIsLong || rightIsLong)
+                {
+                    return new LongValue((long)sum);
+                }
+                else
+                {
+                    return new IntegerValue((int)sum);
+                }
             }
             else if (left is VectorValue vec)
             {
@@ -267,6 +285,12 @@ namespace K3CSharp
                         throw new Exception($"Matrix multiplication dimensions incompatible: {leftMatrix.Length}x{leftMatrix[0].Length} cannot be multiplied by {rightMatrix.Length}x{rightMatrix[0].Length}");
                     }
                     
+                    // Determine result type based on input types
+                    bool leftHasFloat = leftVec.Elements.Any(e => e is FloatValue);
+                    bool rightHasFloat = rightVec.Elements.Any(e => e is FloatValue);
+                    bool leftHasLong = leftVec.Elements.Any(e => e is LongValue);
+                    bool rightHasLong = rightVec.Elements.Any(e => e is LongValue);
+                    
                     // Perform matrix multiplication: C = A * B
                     var result = new double[leftMatrix.Length][];
                     for (int i = 0; i < leftMatrix.Length; i++)
@@ -274,7 +298,6 @@ namespace K3CSharp
                         result[i] = new double[rightMatrix[0].Length];
                         for (int j = 0; j < rightMatrix[0].Length; j++)
                         {
-                            result[i][j] = 0;
                             for (int k = 0; k < leftMatrix[0].Length; k++)
                             {
                                 result[i][j] += leftMatrix[i][k] * rightMatrix[k][j];
@@ -282,16 +305,27 @@ namespace K3CSharp
                         }
                     }
                     
-                    // Convert result back to K3Sharp matrix format
+                    // Convert result back to K3Sharp matrix format with proper type promotion
                     var resultRows = new List<K3Value>();
                     for (int i = 0; i < result.Length; i++)
                     {
                         var rowElements = new List<K3Value>();
                         for (int j = 0; j < result[i].Length; j++)
                         {
-                            rowElements.Add(new FloatValue(result[i][j]));
+                            if (leftHasFloat || rightHasFloat)
+                            {
+                                rowElements.Add(new FloatValue(result[i][j]));
+                            }
+                            else if (leftHasLong || rightHasLong)
+                            {
+                                rowElements.Add(new LongValue((long)result[i][j]));
+                            }
+                            else
+                            {
+                                rowElements.Add(new IntegerValue((int)result[i][j]));
+                            }
                         }
-                        resultRows.Add(new VectorValue(rowElements));
+                        resultRows.Add(new VectorValue(rowElements, -64)); // Long vector type
                     }
                     
                     return new VectorValue(resultRows);
@@ -439,14 +473,19 @@ namespace K3CSharp
                 for (int i = 0; i < n; i++)
                 {
                     var rowElements = new List<K3Value>();
+                    
                     for (int j = n; j < 2 * n; j++)
                     {
-                        rowElements.Add(new FloatValue(augmented[i][j]));
+                        var value = augmented[i][j];
+                        rowElements.Add(new FloatValue(value));
                     }
-                    resultRows.Add(new VectorValue(rowElements));
+                    // Create row as float vector to ensure space separation
+                    resultRows.Add(new VectorValue(rowElements, -2)); // Float vector type
                 }
                 
-                return new VectorValue(resultRows);
+                // Create matrix and multiply by 1.0 to ensure all elements display as floats
+                var inverseMatrix = new VectorValue(resultRows);
+                return inverseMatrix.Multiply(new FloatValue(1.0));
             }
             
             // For scalars, return reciprocal

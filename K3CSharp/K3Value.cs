@@ -268,7 +268,7 @@ namespace K3CSharp
             Value = value;
             Type = ValueType.Float;
             IsSpecial = false;
-            HasZeroFractionalPart = (Math.Abs(value % 1) < double.Epsilon);
+            HasZeroFractionalPart = (Math.Abs(value % 1) < 1e-10); // Use more reasonable epsilon
             
             // Check if this value should be treated as special
             if (double.IsNaN(value))
@@ -829,13 +829,13 @@ namespace K3CSharp
                 }
             }
             
-            // Check if all elements are integers/longs
-            bool allIntegers = true;
+            // Check if all elements are integers/longs (ignoring floats for this check)
+            bool allIntegersOrLongs = true;
             foreach (var element in elements)
             {
                 if (!(element is IntegerValue || element is LongValue))
                 {
-                    allIntegers = false;
+                    allIntegersOrLongs = false;
                     break;
                 }
             }
@@ -854,7 +854,7 @@ namespace K3CSharp
             // Determine type based on element composition
             if (allFloats)
                 return -2; // Float vector
-            else if (allIntegers && !hasFloats)
+            else if (allIntegersOrLongs && !hasFloats)
                 return -1; // Integer vector
             else if (allSymbols)
                 return -4; // Symbol vector
