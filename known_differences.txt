@@ -165,3 +165,13 @@ form_symbol_vector :: regex:\s+`:` :: Compact representation
 form_0_float_vector :: regex:1e.48:1e+048 & regex:4e.27:4e-027 :: Allow variations in mantissa formatting
 io_read_basic :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 io_write_basic :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+math_ceil_vector :: regex:2:2.0 & regex:3:3.0 :: Don't use abbreviated float vectors
+math_inv_matrix_2x2 :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+math_inv_matrix_3x3 :: regex:^\s+|\s+$|\s*\n\s*:\; & regex:1:1.0 & regex:4:4.0 & regex:5:5.0 :: Compact representation and smart division
+math_inv_matrix_identity_3x3 :: regex:^\s+|\s+$|\s*\n\s*:\; & regex:1.0:1 & regex:0.0:0 :: Compact representation and smart division
+math_lsq_high_rank :: regex:8:8.0 :: Don't use abbreviated float vectors
+math_lsq_non_square :: regex:1:1.0 :: Don't use abbreviated float vectors
+math_mul_matrix_2x2 :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation and Don't use abbreviated float vectors
+math_mul_matrix_3x3 :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation and Don't use abbreviated float vectors
+math_mul_matrix_2x3_3x2 :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+math_mul_matrix_4x2_2x4 :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation

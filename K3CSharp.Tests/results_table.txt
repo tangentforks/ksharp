@@ -449,7 +449,7 @@
 ║ conditional_simple_test.k                          │ :[1; "true"; "false"] │ "true"               │                      ║
 ║ conditional_true.k                                 │ :[1; "true"; "false"]  // Conditional evaluation - condition true │ "true"               │                      ║
 ║ dictionary_null_index.k                            │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
-║ dictionary_unmake.k                                │ d: .((`a;1);(`b;2)); result:. d; result │ (`a1;`b2)            │ ((`a;1;);(`b;2;))    ║
+║ dictionary_unmake.k                                │ d: .((`a;1);(`b;2)); result:. d; result │ ((`a;1;);(`b;2;))    │                      ║
 ║ do_bracket_test.k                                  │ do[3; 42]  // Do function with bracket notation │                      │                      ║
 ║ do_loop.k                                          │ i: 0; do[3; i+: 1]  // Do loop - increment i 3 times │                      │                      ║
 ║ do_simple.k                                        │ do[3; 42]  // Do loop - simple test │                      │                      ║
@@ -500,7 +500,7 @@
 ║ k_tree_null_to_dict_conversion.k                   │ .k.foo: 42           │ .,(`foo;42;)         │                      ║
 ║ k_tree_dictionary_assignment.k                     │ .k.dd: .((`a;1);(`b;2);(`c;3)) │ .((`a;1;);(`b;2...   │                      ║
 ║ k_tree_test_bracket_indexing.k                     │ d: .((`a;1);(`b;2);(`c;3)) │ 2                    │                      ║
-║ k_tree_flip_test.k                                 │ +(`a`b`c;1 2 3)      │ (`a1;`b2;`c3)        │ ((`a;1);(`b;2);...   ║
+║ k_tree_flip_test.k                                 │ +(`a`b`c;1 2 3)      │ ((`a;1);(`b;2);...   │                      ║
 ║ vector_null_index.k                                │ v: 1 2 3 4           │ 1 2 3 4              │                      ║
 ║ while_bracket_test.k                               │ i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation │                      │                      ║
 ║ while_safe_test.k                                  │ i: 0                 │                      │                      ║
@@ -675,7 +675,7 @@
 ║ math_xor_basic.k                                   │ 5 _xor 3             │ 6                    │                      ║
 ║ math_xor_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 667/671 tests passed (99.4%)                                                                               ║
+║ SUMMARY: 669/671 tests passed (99.7%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -684,16 +684,6 @@ Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: 100
-──────────────────────────────────────────────────────────────────────────
-Test: dictionary_unmake.k
-Input: d: .((`a;1);(`b;2)); result:. d; result
-Expected: ((`a;1;);(`b;2;))
-Actual: (`a1;`b2)
-──────────────────────────────────────────────────────────────────────────
-Test: k_tree_flip_test.k
-Input: +(`a`b`c;1 2 3)
-Expected: ((`a;1);(`b;2);(`c;3))
-Actual: (`a1;`b2;`c3)
 ──────────────────────────────────────────────────────────────────────────
 Test: math_not_basic.k
 Input: _not 5

@@ -840,12 +840,26 @@ namespace K3CSharp
                 }
             }
             
-            if (allIntegers && !hasFloats)
+            // Check if all elements are symbols
+            bool allSymbols = true;
+            foreach (var element in elements)
+            {
+                if (!(element is SymbolValue))
+                {
+                    allSymbols = false;
+                    break;
+                }
+            }
+            
+            // Determine type based on element composition
+            if (allFloats)
+                return -2; // Float vector
+            else if (allIntegers && !hasFloats)
                 return -1; // Integer vector
+            else if (allSymbols)
+                return -4; // Symbol vector
             else if (elements[0] is CharacterValue)
                 return -3; // Character vector
-            else if (elements[0] is SymbolValue)
-                return -4; // Symbol vector
             else
                 return 0; // Default to mixed list (for mixed types)
         }
