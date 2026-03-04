@@ -805,11 +805,28 @@ namespace K3CSharp
             if (elements.Count == 0)
                 return 0; // Default to mixed list for empty vectors
                 
-            // Check if any element is a float - if so, the whole vector should be float
+            // Check if all elements are floats
+            bool allFloats = true;
+            foreach (var element in elements)
+            {
+                if (!(element is FloatValue))
+                {
+                    allFloats = false;
+                    break;
+                }
+            }
+            if (allFloats)
+                return -2; // Float vector
+                
+            // Check if any element is a float (mixed integers and floats)
+            bool hasFloats = false;
             foreach (var element in elements)
             {
                 if (element is FloatValue)
-                    return -2; // Float vector
+                {
+                    hasFloats = true;
+                    break;
+                }
             }
             
             // Check if all elements are integers/longs
@@ -823,14 +840,14 @@ namespace K3CSharp
                 }
             }
             
-            if (allIntegers)
+            if (allIntegers && !hasFloats)
                 return -1; // Integer vector
             else if (elements[0] is CharacterValue)
                 return -3; // Character vector
             else if (elements[0] is SymbolValue)
                 return -4; // Symbol vector
             else
-                return 0; // Default to mixed list
+                return 0; // Default to mixed list (for mixed types)
         }
 
         public override K3Value Add(K3Value other)

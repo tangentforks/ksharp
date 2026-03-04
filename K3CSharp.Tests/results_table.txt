@@ -233,7 +233,7 @@
 ║ io_read_intvec.k                                   │ 2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\intvec.l" │ 5 6 7                │                      ║
 ║ io_read_debug.k                                    │ 2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test.l" │ 123456               │                      ║
 ║ io_write_int.k                                     │ "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test_write.l" 1: 42 │                      │                      ║
-║ io_roundtrip.k                                     │ "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test_roundtrip.l" 1: (1;2.5;"hello") │ 1 2.5 "hello"        │ (1;2.5;"hello")      ║
+║ io_roundtrip.k                                     │ "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test_roundtrip.l" 1: (1;2.5;"hello") │ (1;2.5;"hello")      │                      ║
 ║ io_monadic_1_int_vector.k                          │ 1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\intvec.l" │ 5 6 7                │                      ║
 ║ io_monadic_1_float_vector.k                        │ 1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\float.l" │ 0i                   │                      ║
 ║ io_monadic_1_char_vector.k                         │ 1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\charvec.l" │ "hello world"        │                      ║
@@ -356,7 +356,7 @@
 ║ format_braces_string.k                             │ name:"John"          │ ("John";"is";25...   │                      ║
 ║ format_braces_mixed_type.k                         │ num:42;txt:"hello";sym:`test;{}$("num";"txt";"sym";"num+5";"txt,\"world\"") │ (42;"hello";`te...   │                      ║
 ║ format_braces_simple.k                             │ a:5                  │ 8                    │                      ║
-║ format_braces_arith.k                              │ a:5;b:3;x:10;y:2;{}$("a+b";"a*b";"a-b";"x+y";"x*y";"x%b") │ 8 15 2 12 20 3....   │ (8;15;2;12;20;3...   ║
+║ format_braces_arith.k                              │ a:5;b:3;x:10;y:2;{}$("a+b";"a*b";"a-b";"x+y";"x*y";"x%b") │ (8;15;2;12;20;3...   │                      ║
 ║ format_braces_nested_arith.k                       │ a:5                  │ (7 10;(2;2.5);5...   │                      ║
 ║ format_braces_float.k                              │ a:1.5                │ 4.0 3.75 0.6 -1.0    │                      ║
 ║ format_braces_mixed_arith.k                        │ x:10                 │ 17.5 32.5 4.5        │                      ║
@@ -519,7 +519,7 @@
 ║ serialization_bd_db_dictionary.k                   │ _bd .((`a;`"1");(`b;`"2")) │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_anonymousfunction.k            │ _bd {[x] x+1}        │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_roundtrip_integer.k            │ // Test _bd and _db round-trip serialization │ 42                   │                      ║
-║ serialization_bd_db_roundtrip_list.k               │ _db _bd (1;2.5;"a")  │ 1 2.5 "a"            │ (1;2.5;"a")          ║
+║ serialization_bd_db_roundtrip_list.k               │ _db _bd (1;2.5;"a")  │ (1;2.5;"a")          │                      ║
 ║ serialization_bd_ic_symbol.k                       │ _ic _bd `A           │ 1 0 0 0 6 0 0 0...   │                      ║
 ║ db_basic_integer.k                                 │ _db _bd 42           │ 42                   │                      ║
 ║ db_float.k                                         │ _db _bd 3.14         │ 3.14                 │                      ║
@@ -540,12 +540,12 @@
 ║ db_char_vector_sentence.k                          │ _db _bd "hello world" │ "hello world"        │                      ║
 ║ db_symbol_simple.k                                 │ _db _bd `hello       │ `hello               │                      ║
 ║ db_list_longer.k                                   │ _db _bd (1;2;3;4;5)  │ 1 2 3 4 5            │                      ║
-║ db_list_mixed_types.k                              │ _db _bd (1;`test;3.14;"hello") │ 1 `test 3.14 "h...   │ (1;`test;3.14;"...   ║
+║ db_list_mixed_types.k                              │ _db _bd (1;`test;3.14;"hello") │ (1;`test;3.14;"...   │                      ║
 ║ db_function_complex.k                              │ _db _bd {[x;y] x*y+z} │ {[x;y] x*y+z}        │                      ║
 ║ db_function_simple_math.k                          │ _db _bd {x+y}        │ {x+y}                │                      ║
 ║ db_nested_dict_vectors.k                           │ _db _bd .((`a;(1;2;3));(`b;(`hello;`world;`test))) │ .((`a;1 2 3;);(...   │                      ║
 ║ db_nested_lists.k                                  │ _db _bd ((1;2;3);(`hello;`world;`test);(4.5;6.7)) │ (1 2 3;`hello`w...   │                      ║
-║ db_mixed_list.k                                    │ _db _bd (1;`test;3.14) │ 1 `test 3.14         │ (1;`test;3.14)       ║
+║ db_mixed_list.k                                    │ _db _bd (1;`test;3.14) │ (1;`test;3.14)       │                      ║
 ║ db_dict_simple.k                                   │ _db _bd .((`a;1);(`b;2);(`c;3;)) │ .((`a;1;);(`b;2...   │                      ║
 ║ db_dict_single_entry.k                             │ _db _bd .,(`a;1)     │ .,(`a;1;)            │                      ║
 ║ db_dict_symbol_2char.k                             │ _db _bd .,(`ab;1 2)  │ .,(`ab;1 2;)         │                      ║
@@ -674,25 +674,15 @@
 ║ math_xor_basic.k                                   │ 5 _xor 3             │ 6                    │                      ║
 ║ math_xor_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 660/670 tests passed (98.5%)                                                                               ║
+║ SUMMARY: 665/670 tests passed (99.3%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
-Test: io_roundtrip.k
-Input: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test_roundtrip.l" 1: (1;2.5;"hello")
-Expected: (1;2.5;"hello")
-Actual: 1 2.5 "hello"
-──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: 100
-──────────────────────────────────────────────────────────────────────────
-Test: format_braces_arith.k
-Input: a:5;b:3;x:10;y:2;{}$("a+b";"a*b";"a-b";"x+y";"x*y";"x%b")
-Expected: (8;15;2;12;20;3.333333)
-Actual: 8 15 2 12 20 3.333333
 ──────────────────────────────────────────────────────────────────────────
 Test: lsq.k
 Input: _lsq
@@ -708,21 +698,6 @@ Test: k_tree_flip_test.k
 Input: +(`a`b`c;1 2 3)
 Expected: ((`a;1);(`b;2);(`c;3))
 Actual: (`a1;`b2;`c3)
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_db_roundtrip_list.k
-Input: _db _bd (1;2.5;"a")
-Expected: (1;2.5;"a")
-Actual: 1 2.5 "a"
-──────────────────────────────────────────────────────────────────────────
-Test: db_list_mixed_types.k
-Input: _db _bd (1;`test;3.14;"hello")
-Expected: (1;`test;3.14;"hello")
-Actual: 1 `test 3.14 "hello"
-──────────────────────────────────────────────────────────────────────────
-Test: db_mixed_list.k
-Input: _db _bd (1;`test;3.14)
-Expected: (1;`test;3.14)
-Actual: 1 `test 3.14
 ──────────────────────────────────────────────────────────────────────────
 Test: math_not_basic.k
 Input: _not 5
