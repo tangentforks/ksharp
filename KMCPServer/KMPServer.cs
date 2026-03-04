@@ -17,7 +17,7 @@ namespace KMCPServer
 
         public KMCPServer(string? interpreterPath, int timeout)
         {
-            this.wrapper = new KInterpreterWrapper(interpreterPath ?? "", timeout);
+            this.wrapper = new KInterpreterWrapper(interpreterPath ?? @"c:\k\e.exe", timeout);
         }
 
         public void Start()
