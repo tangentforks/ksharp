@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-04 16:04:53
+Generated: 2026-03-04 16:45:54
 
 SUMMARY:
 --------
-Total Tests:     670
-✅ Matched:       668
-❌ Differed:      2
+Total Tests:     674
+✅ Matched:       670
+❌ Differed:      4
 ⚠️  Skipped:       0
 💥 Errors:        0
-Success Rate:    99.7%
+Success Rate:    99.4%
 
 DETAILED RESULTS:
 -----------------
@@ -324,6 +324,10 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   math_div_integer.k                                 2                              2                                                                                
 ✅ PASS   math_div_vector.k                                  2 4 7                          2 4 7                                                                            
 ✅ PASS   math_dot_basic.k                                   32                             32                                                                               
+✅ PASS   math_dot_matrix_2x2.k                              26 44                          26 44                                                                            
+❌ FAIL   math_dot_matrix_each_right.k                                                      (47 64 81;52 71 90;57 78 99)   Compact representation                            
+✅ PASS   math_dot_matrix_matrix.k                           47 71 99                       47 71 99                                                                         
+❌ FAIL   math_dot_vector_each_left.k                                                       (8 10;16 20)                   Compact representation                            
 ✅ PASS   math_exp_basic.k                                   2.718282                       2.718282                                                                         
 ✅ PASS   math_exp.k                                         7.389056                       7.389056                                                                         
 ✅ PASS   math_floor_nan.k                                   0N                             0N                                                                               
@@ -689,6 +693,14 @@ Status   Test File                                          K3Sharp Output      
 
 FAILED TESTS DETAILS:
 --------------------
+File: math_dot_matrix_each_right.k
+K3Sharp: 
+k.exe:   (47 64 81;52 71 90;57 78 99)
+
+File: math_dot_vector_each_left.k
+K3Sharp: 
+k.exe:   (8 10;16 20)
+
 File: monadic_format_dictionary.k
 K3Sharp: ".((`a;1;);(`b;2;);(`c;3;))"
 k.exe:   ".(..)"
