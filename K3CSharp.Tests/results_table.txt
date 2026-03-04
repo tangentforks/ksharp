@@ -410,7 +410,6 @@
 ║ amend_test.k                                       │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)  // Amend: add 10 to elements at indices 0 and 2 │ (1 2 13 4 5;6 7...   │                      ║
 ║ find_basic.k                                       │ 9 8 7 6 5 4 3 ? 7  // Find operator - basic functionality │ 2                    │                      ║
 ║ find_notfound.k                                    │ 9 8 7 6 5 4 3 ? 1  // Find operator - not found case │ 7                    │                      ║
-║ lsq.k                                              │ _lsq                 │ Error: Unexpect...   │ Error - _lsq (l...   ║
 ║ format_float_precision_vector_simple.k             │ 10.1$(1.5;2.5)       │ ("       1.5";"...   │                      ║
 ║ format_float_precision_mixed_vector.k              │ 7.2$(1.5;2.7;3.14159;4.2) │ ("   1.50";"   ...   │                      ║
 ║ format_pad_mixed_vector.k                          │ 10$(1;2;3)           │ ("         1";"...   │                      ║
@@ -661,7 +660,9 @@
 ║ math_div_integer.k                                 │ 7 _div 3             │ 2                    │                      ║
 ║ math_div_vector.k                                  │ (7 14 21) _div 3     │ 2 4 7                │                      ║
 ║ math_dot_basic.k                                   │ 1 2 3 _dot 4 5 6     │ 32.0                 │                      ║
-║ math_lsq_basic.k                                   │ 1 2 3 _lsq           │ 1 2 3                │                      ║
+║ math_lsq_non_square.k                              │ // Non-square matrix: 2x3 matrix (more columns than rows) │ -1.0 2.0             │                      ║
+║ math_lsq_high_rank.k                               │ // Rectangular matrix: 2x4 matrix (more columns than rows) │ -8.0 9.0             │                      ║
+║ math_lsq_complex.k                                 │ // Complex non-square case with mixed values │ 0.1232877 1.506849   │                      ║
 ║ math_lsq_regression.k                              │ (1 2 3.0) _lsq (1 1 1.0;1 2 4.0) │ 0.5 0.6428571        │                      ║
 ║ math_mul_basic.k                                   │ 1 2 3                │ 1 2 3                │                      ║
 ║ math_not_basic.k                                   │ _not 5               │                      │ -6                   ║
@@ -674,7 +675,7 @@
 ║ math_xor_basic.k                                   │ 5 _xor 3             │ 6                    │                      ║
 ║ math_xor_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 665/670 tests passed (99.3%)                                                                               ║
+║ SUMMARY: 667/671 tests passed (99.4%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -683,11 +684,6 @@ Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: 100
-──────────────────────────────────────────────────────────────────────────
-Test: lsq.k
-Input: _lsq
-Expected: Error - _lsq (least squares) operation reserved for future use
-Actual: Error: Unexpected token: LSQ(_lsq)
 ──────────────────────────────────────────────────────────────────────────
 Test: dictionary_unmake.k
 Input: d: .((`a;1);(`b;2)); result:. d; result

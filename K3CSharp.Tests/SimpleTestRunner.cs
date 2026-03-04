@@ -677,8 +677,6 @@ namespace K3CSharp.Tests
                 ("find_basic.k", "2"),
                 ("find_notfound.k", "7"),
                 
-                ("lsq.k", "Error - _lsq (least squares) operation reserved for future use"),
-                
                 // Form specifiers on mixed vectors
                 ("format_float_precision_vector_simple.k", "(\"       1.5\";\"       2.5\")"),
                 ("format_float_precision_mixed_vector.k", "(\"   1.50\";\"   2.70\";\"   3.14\";\"   4.20\")"),
@@ -973,7 +971,9 @@ namespace K3CSharp.Tests
                 ("math_div_integer.k", "2"),
                 ("math_div_vector.k", "2 4 7"),
                 ("math_dot_basic.k", "32.0"),
-                ("math_lsq_basic.k", "1 2 3"),
+                ("math_lsq_non_square.k", "-1.0 2.0"),
+                ("math_lsq_high_rank.k", "-8.0 9.0"),
+                ("math_lsq_complex.k", "0.1232877 1.506849"),
                 ("math_lsq_regression.k", "0.5 0.6428571"),
                 ("math_mul_basic.k", "1 2 3"),
                 ("math_not_basic.k", "-6"),
