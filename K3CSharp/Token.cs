@@ -82,10 +82,20 @@ namespace K3CSharp
         COSH,           // _cosh hyperbolic cosine
         TANH,           // _tanh hyperbolic tangent
         
+        // Integer and bitwise operations
+        DIV,            // _div integer division
+        AND,            // _and bitwise-and
+        OR,             // _or bitwise-or
+        XOR,            // _xor bitwise-xor
+        NOT,            // _not bitwise-not
+        ROT,            // _rot bitwise-rotation
+        SHIFT,          // _shift bitwise-shift
+        
         // Linear algebra operations
         DOT,            // _dot dot product
         MUL,            // _mul matrix multiplication
         INV,            // _inv matrix inverse
+        CEIL,           // _ceil ceiling function
         
         // System functions (missing from current implementation)
         TIME,           // _t current time

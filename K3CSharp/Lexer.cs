@@ -815,6 +815,7 @@ namespace K3CSharp
                 "_binl" => new Token(TokenType.BINL, opName, start),
                 "_lsq" => new Token(TokenType.LSQ, opName, start),
                 "_lin" => new Token(TokenType.LIN, opName, start),
+                "_ceil" => new Token(TokenType.CEIL, opName, start),
                 "_gtime" => new Token(TokenType.GTIME, opName, start),
                 "_ltime" => new Token(TokenType.LTIME, opName, start),
                 "_lt" => new Token(TokenType.LT, opName, start),
@@ -833,6 +834,15 @@ namespace K3CSharp
                 "_while" => new Token(TokenType.WHILE, opName, start),
                 "_if" => new Token(TokenType.IF_FUNC, opName, start),
                 "_exit" => new Token(TokenType.EXIT, opName, start),
+                
+                // Integer and bitwise operations
+                "_div" => new Token(TokenType.DIV, opName, start),
+                "_and" => new Token(TokenType.AND, opName, start),
+                "_or" => new Token(TokenType.OR, opName, start),
+                "_xor" => new Token(TokenType.XOR, opName, start),
+                "_not" => new Token(TokenType.NOT, opName, start),
+                "_rot" => new Token(TokenType.ROT, opName, start),
+                "_shift" => new Token(TokenType.SHIFT, opName, start),
                 
                 // Control flow functions without underscores (K3 syntax)
                 "do" => new Token(TokenType.DO, opName, start),

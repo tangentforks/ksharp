@@ -108,6 +108,22 @@
 ║ math_sin.k                                         │ _sin 0               │ 0.0                  │                      ║
 ║ math_sqrt.k                                        │ _sqrt 16             │ 4.0                  │                      ║
 ║ math_vector.k                                      │ _sin 1 2 3           │ 0.841471 0.9092...   │                      ║
+║ math_exp_basic.k                                   │ _exp 1               │ 2.718282             │                      ║
+║ math_floor_nan.k                                   │ _ 0n                 │ 0N                   │                      ║
+║ math_floor_negative_infinity.k                     │ _ -0i                │ -0I                  │                      ║
+║ math_floor_special_values.k                        │ _ 0i                 │ 0I                   │                      ║
+║ math_hyperbolic_basic.k                            │ _sinh 1              │ 1.175201             │                      ║
+║ math_inv_matrix_2x2.k                              │ _inv ((1 2);(3 4))   │ (-2 1.0;1.5 -0.5)    │                      ║
+║ math_inv_matrix_3x3.k                              │ _inv ((1 2 3);(0 1 4);(5 6 0)) │ (-24 18 5;20 -1...   │                      ║
+║ math_inv_matrix_identity_3x3.k                     │ _inv ((1 0 0);(0 1 0);(0 0 1)) │ (1.0 0.0 0.0;0....   │                      ║
+║ math_log_negative.k                                │ _log -1              │ 0n                   │                      ║
+║ math_log_zero.k                                    │ _log 0               │ -0i                  │                      ║
+║ math_mul_matrix_2x2.k                              │ ((1 2);(3 4)) _mul ((5 6);(7 8)) │ (19.0 22.0;43.0...   │                      ║
+║ math_mul_matrix_2x3_3x2.k                          │ ((1 2 3);(4 5 6)) _mul ((7 8);(9 10);(11 12)) │ (58.0 64.0;139....   │                      ║
+║ math_mul_matrix_3x3.k                              │ ((1 2 3);(4 5 6);(7 8 9)) _mul ((9 8 7);(6 5 4);(3 2 1)) │ (30.0 24.0 18.0...   │                      ║
+║ math_mul_matrix_4x2_2x4.k                          │ ((1 2);(3 4);(5 6);(7 8)) _mul ((9 10 11 12);(13 14 15 16)) │ (35.0 38.0 41.0...   │                      ║
+║ math_trig_basic.k                                  │ _sin 0               │ 0.0                  │                      ║
+║ math_trig_pi.k                                     │ _cos 3.141592653589793 │ -1.0                 │                      ║
 ║ maximum_operator.k                                 │ 3 | 5                │ 5                    │                      ║
 ║ minimum_operator.k                                 │ 3 & 5                │ 3                    │                      ║
 ║ mixed_list_with_null.k                             │ (1;_n;`test;42.5)    │ (1;;`test;42.5)      │                      ║
@@ -217,7 +233,7 @@
 ║ io_read_intvec.k                                   │ 2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\intvec.l" │ 5 6 7                │                      ║
 ║ io_read_debug.k                                    │ 2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test.l" │ 123456               │                      ║
 ║ io_write_int.k                                     │ "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test_write.l" 1: 42 │                      │                      ║
-║ io_roundtrip.k                                     │ "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test_roundtrip.l" 1: (1;2.5;"hello") │ (1;2.5;"hello")      │                      ║
+║ io_roundtrip.k                                     │ "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test_roundtrip.l" 1: (1;2.5;"hello") │ 1 2.5 "hello"        │ (1;2.5;"hello")      ║
 ║ io_monadic_1_int_vector.k                          │ 1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\intvec.l" │ 5 6 7                │                      ║
 ║ io_monadic_1_float_vector.k                        │ 1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\float.l" │ 0i                   │                      ║
 ║ io_monadic_1_char_vector.k                         │ 1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\charvec.l" │ "hello world"        │                      ║
@@ -340,7 +356,7 @@
 ║ format_braces_string.k                             │ name:"John"          │ ("John";"is";25...   │                      ║
 ║ format_braces_mixed_type.k                         │ num:42;txt:"hello";sym:`test;{}$("num";"txt";"sym";"num+5";"txt,\"world\"") │ (42;"hello";`te...   │                      ║
 ║ format_braces_simple.k                             │ a:5                  │ 8                    │                      ║
-║ format_braces_arith.k                              │ a:5;b:3;x:10;y:2;{}$("a+b";"a*b";"a-b";"x+y";"x*y";"x%b") │ (8;15;2;12;20;3...   │                      ║
+║ format_braces_arith.k                              │ a:5;b:3;x:10;y:2;{}$("a+b";"a*b";"a-b";"x+y";"x*y";"x%b") │ 8 15 2 12 20 3....   │ (8;15;2;12;20;3...   ║
 ║ format_braces_nested_arith.k                       │ a:5                  │ (7 10;(2;2.5);5...   │                      ║
 ║ format_braces_float.k                              │ a:1.5                │ 4.0 3.75 0.6 -1.0    │                      ║
 ║ format_braces_mixed_arith.k                        │ x:10                 │ 17.5 32.5 4.5        │                      ║
@@ -394,7 +410,7 @@
 ║ amend_test.k                                       │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)  // Amend: add 10 to elements at indices 0 and 2 │ (1 2 13 4 5;6 7...   │                      ║
 ║ find_basic.k                                       │ 9 8 7 6 5 4 3 ? 7  // Find operator - basic functionality │ 2                    │                      ║
 ║ find_notfound.k                                    │ 9 8 7 6 5 4 3 ? 1  // Find operator - not found case │ 7                    │                      ║
-║ lsq.k                                              │ _lsq                 │ Error: _lsq (le...   │ Error - _lsq (l...   ║
+║ lsq.k                                              │ _lsq                 │ Error: Unexpect...   │ Error - _lsq (l...   ║
 ║ format_float_precision_vector_simple.k             │ 10.1$(1.5;2.5)       │ ("       1.5";"...   │                      ║
 ║ format_float_precision_mixed_vector.k              │ 7.2$(1.5;2.7;3.14159;4.2) │ ("   1.50";"   ...   │                      ║
 ║ format_pad_mixed_vector.k                          │ 10$(1;2;3)           │ ("         1";"...   │                      ║
@@ -434,7 +450,7 @@
 ║ conditional_simple_test.k                          │ :[1; "true"; "false"] │ "true"               │                      ║
 ║ conditional_true.k                                 │ :[1; "true"; "false"]  // Conditional evaluation - condition true │ "true"               │                      ║
 ║ dictionary_null_index.k                            │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
-║ dictionary_unmake.k                                │ d: .((`a;1);(`b;2)); result:. d; result │ ((`a;1;);(`b;2;))    │                      ║
+║ dictionary_unmake.k                                │ d: .((`a;1);(`b;2)); result:. d; result │ (`a1;`b2)            │ ((`a;1;);(`b;2;))    ║
 ║ do_bracket_test.k                                  │ do[3; 42]  // Do function with bracket notation │                      │                      ║
 ║ do_loop.k                                          │ i: 0; do[3; i+: 1]  // Do loop - increment i 3 times │                      │                      ║
 ║ do_simple.k                                        │ do[3; 42]  // Do loop - simple test │                      │                      ║
@@ -485,7 +501,7 @@
 ║ k_tree_null_to_dict_conversion.k                   │ .k.foo: 42           │ .,(`foo;42;)         │                      ║
 ║ k_tree_dictionary_assignment.k                     │ .k.dd: .((`a;1);(`b;2);(`c;3)) │ .((`a;1;);(`b;2...   │                      ║
 ║ k_tree_test_bracket_indexing.k                     │ d: .((`a;1);(`b;2);(`c;3)) │ 2                    │                      ║
-║ k_tree_flip_test.k                                 │ +(`a`b`c;1 2 3)      │ ((`a;1);(`b;2);...   │                      ║
+║ k_tree_flip_test.k                                 │ +(`a`b`c;1 2 3)      │ (`a1;`b2;`c3)        │ ((`a;1);(`b;2);...   ║
 ║ vector_null_index.k                                │ v: 1 2 3 4           │ 1 2 3 4              │                      ║
 ║ while_bracket_test.k                               │ i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation │                      │                      ║
 ║ while_safe_test.k                                  │ i: 0                 │                      │                      ║
@@ -503,7 +519,7 @@
 ║ serialization_bd_db_dictionary.k                   │ _bd .((`a;`"1");(`b;`"2")) │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_anonymousfunction.k            │ _bd {[x] x+1}        │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_roundtrip_integer.k            │ // Test _bd and _db round-trip serialization │ 42                   │                      ║
-║ serialization_bd_db_roundtrip_list.k               │ _db _bd (1;2.5;"a")  │ (1;2.5;"a")          │                      ║
+║ serialization_bd_db_roundtrip_list.k               │ _db _bd (1;2.5;"a")  │ 1 2.5 "a"            │ (1;2.5;"a")          ║
 ║ serialization_bd_ic_symbol.k                       │ _ic _bd `A           │ 1 0 0 0 6 0 0 0...   │                      ║
 ║ db_basic_integer.k                                 │ _db _bd 42           │ 42                   │                      ║
 ║ db_float.k                                         │ _db _bd 3.14         │ 3.14                 │                      ║
@@ -524,12 +540,12 @@
 ║ db_char_vector_sentence.k                          │ _db _bd "hello world" │ "hello world"        │                      ║
 ║ db_symbol_simple.k                                 │ _db _bd `hello       │ `hello               │                      ║
 ║ db_list_longer.k                                   │ _db _bd (1;2;3;4;5)  │ 1 2 3 4 5            │                      ║
-║ db_list_mixed_types.k                              │ _db _bd (1;`test;3.14;"hello") │ (1;`test;3.14;"...   │                      ║
+║ db_list_mixed_types.k                              │ _db _bd (1;`test;3.14;"hello") │ 1 `test 3.14 "h...   │ (1;`test;3.14;"...   ║
 ║ db_function_complex.k                              │ _db _bd {[x;y] x*y+z} │ {[x;y] x*y+z}        │                      ║
 ║ db_function_simple_math.k                          │ _db _bd {x+y}        │ {x+y}                │                      ║
 ║ db_nested_dict_vectors.k                           │ _db _bd .((`a;(1;2;3));(`b;(`hello;`world;`test))) │ .((`a;1 2 3;);(...   │                      ║
 ║ db_nested_lists.k                                  │ _db _bd ((1;2;3);(`hello;`world;`test);(4.5;6.7)) │ (1 2 3;`hello`w...   │                      ║
-║ db_mixed_list.k                                    │ _db _bd (1;`test;3.14) │ (1;`test;3.14)       │                      ║
+║ db_mixed_list.k                                    │ _db _bd (1;`test;3.14) │ 1 `test 3.14         │ (1;`test;3.14)       ║
 ║ db_dict_simple.k                                   │ _db _bd .((`a;1);(`b;2);(`c;3;)) │ .((`a;1;);(`b;2...   │                      ║
 ║ db_dict_single_entry.k                             │ _db _bd .,(`a;1)     │ .,(`a;1;)            │                      ║
 ║ db_dict_symbol_2char.k                             │ _db _bd .,(`ab;1 2)  │ .,(`ab;1 2;)         │                      ║
@@ -635,19 +651,136 @@
 ║ bd_enlist_single_string.k                          │ _bd ,"hello"         │ "\001\000\000\0...   │                      ║
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
+║ math_and_basic.k                                   │ 5 _and 3             │ Error: Unexpect...   │ 1                    ║
+║ math_and_vector.k                                  │ (5 6 3) _and (1 2 3) │ Error: Unexpect...   │ 1 2 3                ║
+║ math_ceil_basic.k                                  │ _ceil 4.7            │ Error: Unexpect...   │ 5.0                  ║
+║ math_ceil_integer.k                                │ _ceil 5              │ Error: Unexpect...   │ 5.0                  ║
+║ math_ceil_negative.k                               │ _ceil -3.2           │ Error: Unexpect...   │ -3.0                 ║
+║ math_ceil_vector.k                                 │ _ceil 1.2 2.7 3.5    │ Error: Unexpect...   │ 2.0 3.0 4.0          ║
+║ math_div_float.k                                   │ 7 _div 2             │ 3                    │                      ║
+║ math_div_integer.k                                 │ 7 _div 3             │ 2                    │                      ║
+║ math_div_vector.k                                  │ (7 14 21) _div 3     │ 2 4 7                │                      ║
+║ math_dot_basic.k                                   │ 1 2 3 _dot 4 5 6     │ 32.0                 │                      ║
+║ math_lsq_basic.k                                   │ 1 2 3 _lsq           │ 1 2 3                │                      ║
+║ math_lsq_regression.k                              │ (1 2 3.0) _lsq (1 1 1.0;1 2 4.0) │ 0.5 0.6428571        │                      ║
+║ math_mul_basic.k                                   │ 1 2 3                │ 1 2 3                │                      ║
+║ math_not_basic.k                                   │ _not 5               │                      │ -6                   ║
+║ math_not_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
+║ math_or_basic.k                                    │ 5 _or 3              │ Error: Unexpect...   │ 7                    ║
+║ math_or_vector.k                                   │ 1 2 3                │ 1 2 3                │                      ║
+║ math_rot_basic.k                                   │ 8 _rot 2             │ Error: Unexpect...   │ 32                   ║
+║ math_shift_basic.k                                 │ 8 _shift 2           │ Error: Unexpect...   │ 32                   ║
+║ math_shift_vector.k                                │ (8 16 32 64) _shift 2 │ Error: Unexpect...   │ 32 64 128 256        ║
+║ math_xor_basic.k                                   │ 5 _xor 3             │ Error: Unexpect...   │ 6                    ║
+║ math_xor_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 630/632 tests passed (99.7%)                                                                               ║
+║ SUMMARY: 649/670 tests passed (96.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
+Test: io_roundtrip.k
+Input: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test_roundtrip.l" 1: (1;2.5;"hello")
+Expected: (1;2.5;"hello")
+Actual: 1 2.5 "hello"
+──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: 100
 ──────────────────────────────────────────────────────────────────────────
+Test: format_braces_arith.k
+Input: a:5;b:3;x:10;y:2;{}$("a+b";"a*b";"a-b";"x+y";"x*y";"x%b")
+Expected: (8;15;2;12;20;3.333333)
+Actual: 8 15 2 12 20 3.333333
+──────────────────────────────────────────────────────────────────────────
 Test: lsq.k
 Input: _lsq
 Expected: Error - _lsq (least squares) operation reserved for future use
-Actual: Error: _lsq (least squares) operation reserved for future use
+Actual: Error: Unexpected token: LSQ(_lsq)
+──────────────────────────────────────────────────────────────────────────
+Test: dictionary_unmake.k
+Input: d: .((`a;1);(`b;2)); result:. d; result
+Expected: ((`a;1;);(`b;2;))
+Actual: (`a1;`b2)
+──────────────────────────────────────────────────────────────────────────
+Test: k_tree_flip_test.k
+Input: +(`a`b`c;1 2 3)
+Expected: ((`a;1);(`b;2);(`c;3))
+Actual: (`a1;`b2;`c3)
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_db_roundtrip_list.k
+Input: _db _bd (1;2.5;"a")
+Expected: (1;2.5;"a")
+Actual: 1 2.5 "a"
+──────────────────────────────────────────────────────────────────────────
+Test: db_list_mixed_types.k
+Input: _db _bd (1;`test;3.14;"hello")
+Expected: (1;`test;3.14;"hello")
+Actual: 1 `test 3.14 "hello"
+──────────────────────────────────────────────────────────────────────────
+Test: db_mixed_list.k
+Input: _db _bd (1;`test;3.14)
+Expected: (1;`test;3.14)
+Actual: 1 `test 3.14
+──────────────────────────────────────────────────────────────────────────
+Test: math_and_basic.k
+Input: 5 _and 3
+Expected: 1
+Actual: Error: Unexpected token: AND(_and)
+──────────────────────────────────────────────────────────────────────────
+Test: math_and_vector.k
+Input: (5 6 3) _and (1 2 3)
+Expected: 1 2 3
+Actual: Error: Unexpected token: AND(_and)
+──────────────────────────────────────────────────────────────────────────
+Test: math_ceil_basic.k
+Input: _ceil 4.7
+Expected: 5.0
+Actual: Error: Unexpected token: CEIL(_ceil)
+──────────────────────────────────────────────────────────────────────────
+Test: math_ceil_integer.k
+Input: _ceil 5
+Expected: 5.0
+Actual: Error: Unexpected token: CEIL(_ceil)
+──────────────────────────────────────────────────────────────────────────
+Test: math_ceil_negative.k
+Input: _ceil -3.2
+Expected: -3.0
+Actual: Error: Unexpected token: CEIL(_ceil)
+──────────────────────────────────────────────────────────────────────────
+Test: math_ceil_vector.k
+Input: _ceil 1.2 2.7 3.5
+Expected: 2.0 3.0 4.0
+Actual: Error: Unexpected token: CEIL(_ceil)
+──────────────────────────────────────────────────────────────────────────
+Test: math_not_basic.k
+Input: _not 5
+Expected: -6
+Actual: 
+──────────────────────────────────────────────────────────────────────────
+Test: math_or_basic.k
+Input: 5 _or 3
+Expected: 7
+Actual: Error: Unexpected token: OR(_or)
+──────────────────────────────────────────────────────────────────────────
+Test: math_rot_basic.k
+Input: 8 _rot 2
+Expected: 32
+Actual: Error: Unexpected token: ROT(_rot)
+──────────────────────────────────────────────────────────────────────────
+Test: math_shift_basic.k
+Input: 8 _shift 2
+Expected: 32
+Actual: Error: Unexpected token: SHIFT(_shift)
+──────────────────────────────────────────────────────────────────────────
+Test: math_shift_vector.k
+Input: (8 16 32 64) _shift 2
+Expected: 32 64 128 256
+Actual: Error: Unexpected token: SHIFT(_shift)
+──────────────────────────────────────────────────────────────────────────
+Test: math_xor_basic.k
+Input: 5 _xor 3
+Expected: 6
+Actual: Error: Unexpected token: XOR(_xor)
 ──────────────────────────────────────────────────────────────────────────

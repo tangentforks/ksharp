@@ -805,26 +805,29 @@ namespace K3CSharp
             if (elements.Count == 0)
                 return 0; // Default to mixed list for empty vectors
                 
-            // Check if all elements are of the same type
-            var firstElement = elements[0];
-            var firstType = firstElement.GetType();
-            
+            // Check if any element is a float - if so, the whole vector should be float
             foreach (var element in elements)
             {
-                if (element.GetType() != firstType)
+                if (element is FloatValue)
+                    return -2; // Float vector
+            }
+            
+            // Check if all elements are integers/longs
+            bool allIntegers = true;
+            foreach (var element in elements)
+            {
+                if (!(element is IntegerValue || element is LongValue))
                 {
-                    return 0; // Mixed list - different types detected
+                    allIntegers = false;
+                    break;
                 }
             }
             
-            // All elements are the same type, determine specific vector type
-            if (firstElement is IntegerValue || firstElement is LongValue)
+            if (allIntegers)
                 return -1; // Integer vector
-            else if (firstElement is FloatValue)
-                return -2; // Float vector  
-            else if (firstElement is CharacterValue)
+            else if (elements[0] is CharacterValue)
                 return -3; // Character vector
-            else if (firstElement is SymbolValue)
+            else if (elements[0] is SymbolValue)
                 return -4; // Symbol vector
             else
                 return 0; // Default to mixed list

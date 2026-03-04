@@ -1176,7 +1176,17 @@ namespace K3CSharp
             if (a is LongValue longA)
                 return longA;
             if (a is FloatValue floatA)
-                return new IntegerValue((int)Math.Floor(floatA.Value));
+            {
+                // Handle special values according to speclet
+                if (double.IsPositiveInfinity(floatA.Value))
+                    return new IntegerValue("0I");
+                else if (double.IsNegativeInfinity(floatA.Value))
+                    return new IntegerValue("-0I");
+                else if (double.IsNaN(floatA.Value))
+                    return new IntegerValue("0N");
+                else
+                    return new IntegerValue((int)Math.Floor(floatA.Value));
+            }
             
             throw new Exception($"Cannot floor {a.Type}");
         }

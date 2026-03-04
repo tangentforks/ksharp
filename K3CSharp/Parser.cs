@@ -57,6 +57,10 @@ namespace K3CSharp
                 TokenType.MINUS => "-",
                 TokenType.MULTIPLY => "*",
                 TokenType.DIVIDE => "%",
+                TokenType.DIV => "_div",
+                TokenType.DOT => "_dot",
+                TokenType.MUL => "_mul",
+                TokenType.LSQ => "_lsq",
                 TokenType.MIN => "&",
                 TokenType.MAX => "|",
                 TokenType.LESS => "<",
@@ -337,7 +341,7 @@ namespace K3CSharp
         private bool IsBinaryOperator(TokenType type)
         {
             return type == TokenType.PLUS || type == TokenType.MINUS || type == TokenType.MULTIPLY ||
-                   type == TokenType.DIVIDE || type == TokenType.MIN || type == TokenType.MAX || 
+                   type == TokenType.DIVIDE || type == TokenType.DIV || type == TokenType.DOT || type == TokenType.MUL || type == TokenType.LSQ || type == TokenType.MIN || type == TokenType.MAX || 
                    type == TokenType.LESS || type == TokenType.GREATER || type == TokenType.EQUAL || 
                    type == TokenType.MATCH || type == TokenType.IN || type == TokenType.BIN || type == TokenType.BINL || type == TokenType.LIN ||
                    type == TokenType.DV || type == TokenType.DI || type == TokenType.VS || type == TokenType.SV || type == TokenType.SS || type == TokenType.SM || type == TokenType.CI || type == TokenType.IC ||
@@ -506,10 +510,21 @@ namespace K3CSharp
                 if (nextElement?.Type != firstElementType || 
                     (nextElement?.Value?.GetType() != firstValueType && firstValueType != null))
                 {
-                    // Mixed types detected - this should be an arithmetic expression, not a vector
-                    // Put the element back and let ParseExpression handle it
-                    // For now, just break the vector parsing
-                    break;
+                    // Check if this is int/float mixing - allow it as it will be converted to float
+                    bool firstIsNumber = elements[0]?.Value is IntegerValue || elements[0]?.Value is LongValue || elements[0]?.Value is FloatValue;
+                    bool nextIsNumber = nextElement?.Value is IntegerValue || nextElement?.Value is LongValue || nextElement?.Value is FloatValue;
+                    
+                    if (firstIsNumber && nextIsNumber)
+                    {
+                        if (nextElement != null) elements.Add(nextElement);
+                    }
+                    else
+                    {
+                        // Mixed types detected - this should be an arithmetic expression, not a vector
+                        // Put the element back and let ParseExpression handle it
+                        // For now, just break the vector parsing
+                        break;
+                    }
                 }
                 else
                 {
@@ -1542,15 +1557,6 @@ namespace K3CSharp
                 if (operand != null) node.Children.Add(operand);
                 return node;
             }
-            else if (Match(TokenType.LSQ))
-            {
-                // Least squares function
-                var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("_lsq");
-                if (operand != null) node.Children.Add(operand);
-                return node;
-            }
             else if (Match(TokenType.GTIME))
             {
                 // GMT time conversion function
@@ -2233,7 +2239,7 @@ namespace K3CSharp
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
                    Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) || Match(TokenType.EQUAL) || Match(TokenType.IN) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
                    Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || Match(TokenType.DOLLAR) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
-                   Match(TokenType.APPLY))
+                   Match(TokenType.LSQ) || Match(TokenType.APPLY))
             {
                 var op = PreviousToken().Type;
                 
@@ -2830,7 +2836,7 @@ namespace K3CSharp
             // Handle binary operators with Long Right Scope (LRS)
             // In K, there's no precedence among operators - they're all right-associative
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
-                   Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
+                   Match(TokenType.DIVIDE) || Match(TokenType.DIV) || Match(TokenType.DOT) || Match(TokenType.MUL) || Match(TokenType.AND) || Match(TokenType.OR) || Match(TokenType.XOR) || Match(TokenType.ROT) || Match(TokenType.SHIFT) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
                    Match(TokenType.EQUAL) || Match(TokenType.MATCH) || Match(TokenType.IN) || Match(TokenType.BIN) || Match(TokenType.BINL) || Match(TokenType.LIN) ||
                    Match(TokenType.DV) || Match(TokenType.DI) || Match(TokenType.VS) || Match(TokenType.SV) || Match(TokenType.SS) || Match(TokenType.SM) || Match(TokenType.CI) || Match(TokenType.IC) ||
                    Match(TokenType.GETENV) || Match(TokenType.SETENV) || Match(TokenType.SIZE) ||
@@ -2839,7 +2845,7 @@ namespace K3CSharp
                    Match(TokenType.DOLLAR) || Match(TokenType.DRAW) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
                    Match(TokenType.IO_VERB_0) || Match(TokenType.IO_VERB_1) || Match(TokenType.IO_VERB_2) || Match(TokenType.IO_VERB_3) ||
                    Match(TokenType.IO_VERB_6) || Match(TokenType.IO_VERB_7) || Match(TokenType.IO_VERB_8) || Match(TokenType.IO_VERB_9) ||
-                   Match(TokenType.APPLY) || Match(TokenType.DOT_APPLY))
+                   Match(TokenType.LSQ) || Match(TokenType.APPLY) || Match(TokenType.DOT_APPLY))
             {
                 var op = PreviousToken().Type;
                 

@@ -255,13 +255,29 @@ namespace K3CSharp.Tests
                 // Less than operator
                 ("less_than_operator.k", "1"),
                 
-                // Math functions
+                // Math function tests
                 ("math_abs.k", "5"),
                 ("math_exp.k", "7.389056"),
                 ("math_log.k", "2.302585"),
                 ("math_sin.k", "0.0"),
                 ("math_sqrt.k", "4.0"),
                 ("math_vector.k", "0.841471 0.9092974 0.14112"),
+                ("math_exp_basic.k", "2.718282"),
+                ("math_floor_nan.k", "0N"),
+                ("math_floor_negative_infinity.k", "-0I"),
+                ("math_floor_special_values.k", "0I"),
+                ("math_hyperbolic_basic.k", "1.175201"),
+                ("math_inv_matrix_2x2.k", "(-2 1.0;1.5 -0.5)"),
+                ("math_inv_matrix_3x3.k", "(-24 18 5;20 -15 -4;-5 4 1)"),
+                ("math_inv_matrix_identity_3x3.k", "(1.0 0.0 0.0;0.0 1.0 0.0;0.0 0.0 1.0)"),
+                ("math_log_negative.k", "0n"),
+                ("math_log_zero.k", "-0i"),
+                ("math_mul_matrix_2x2.k", "(19.0 22.0;43.0 50.0)"),
+                ("math_mul_matrix_2x3_3x2.k", "(58.0 64.0;139.0 154.0)"),
+                ("math_mul_matrix_3x3.k", "(30.0 24.0 18.0;84.0 69.0 54.0;138.0 114.0 90.0)"),
+                ("math_mul_matrix_4x2_2x4.k", "(35.0 38.0 41.0 44.0;79.0 86.0 93.0 100.0;123.0 134.0 145.0 156.0;167.0 182.0 197.0 212.0)"),
+                ("math_trig_basic.k", "0.0"),
+                ("math_trig_pi.k", "-1.0"),
                 
                 // Maximum operator
                 ("maximum_operator.k", "5"),
@@ -945,6 +961,30 @@ namespace K3CSharp.Tests
                 ("bd_enlist_single_string.k", "\"\\001\\000\\000\\000\\030\\000\\000\\000\\000\\000\\000\\000\\001\\000\\000\\000\\375\\377\\377\\377\\005\\000\\000\\000hello\\000\\000\\000\""),
                 ("bd_symbol_vector_longer.k", "\"\\001\\000\\000\\000\\031\\000\\000\\000\\374\\377\\377\\377\\003\\000\\000\\000hello\\000world\\000test\\000\""),
                 ("bd_enlist_single_symbol.k", "\"\\001\\000\\000\\000\\r\\000\\000\\000\\374\\377\\377\\377\\001\\000\\000\\000test\\000\""),
+                
+                // Math function tests
+                ("math_and_basic.k", "1"),
+                ("math_and_vector.k", "1 2 3"),
+                ("math_ceil_basic.k", "5.0"),
+                ("math_ceil_integer.k", "5.0"),
+                ("math_ceil_negative.k", "-3.0"),
+                ("math_ceil_vector.k", "2.0 3.0 4.0"),
+                ("math_div_float.k", "3"),
+                ("math_div_integer.k", "2"),
+                ("math_div_vector.k", "2 4 7"),
+                ("math_dot_basic.k", "32.0"),
+                ("math_lsq_basic.k", "1 2 3"),
+                ("math_lsq_regression.k", "0.5 0.6428571"),
+                ("math_mul_basic.k", "1 2 3"),
+                ("math_not_basic.k", "-6"),
+                ("math_not_vector.k", "1 2 3"),
+                ("math_or_basic.k", "7"),
+                ("math_or_vector.k", "1 2 3"),
+                ("math_rot_basic.k", "32"),
+                ("math_shift_basic.k", "32"),
+                ("math_shift_vector.k", "32 64 128 256"),
+                ("math_xor_basic.k", "6"),
+                ("math_xor_vector.k", "1 2 3"),
             };
 
             // Filter tests if a pattern was provided

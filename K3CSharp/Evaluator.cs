@@ -335,9 +335,9 @@ namespace K3CSharp
                     "_sinh" => MathSinh(operand),
                     "_cosh" => MathCosh(operand),
                     "_tanh" => MathTanh(operand),
-                    "_dot" => MathDot(operand),
-                    "_mul" => MathMul(operand),
                     "_inv" => MathInv(operand),
+                    "_ceil" => MathCeil(operand),
+                    "_not" => MathNot(operand),
                     "_lt" => LtFunction(operand),
                     "_jd" => JdFunction(operand),
                     "_dj" => DjFunction(operand),
@@ -451,6 +451,16 @@ namespace K3CSharp
                         "_in" => In(left, right),
                         "_draw" => Draw(left, right),
                         "_bin" => Bin(left, right),
+                        "_div" => MathDiv(left, right),
+                        "_dot" => MathDot(left, right),
+                        "_mul" => MathMul(left, right),
+                        "_inv" => MathInv(left, right),
+                        "_lsq" => MathLsq(left, right),
+                        "_and" => MathAnd(left, right),
+                        "_or" => MathOr(left, right),
+                        "_xor" => MathXor(left, right),
+                        "_rot" => MathRot(left, right),
+                        "_shift" => MathShift(left, right),
                         "_binl" => Binl(left, right),
                         "_lin" => Lin(left, right),
                         "_dv" => Dv(left, right),
@@ -502,10 +512,6 @@ namespace K3CSharp
             else if (node.Children.Count == 0)
             {
                 // Handle niladic operators
-                if (op.Value == "_lsq")
-                {
-                    throw new Exception("_lsq (least squares) operation reserved for future use");
-                }
                 throw new Exception($"Binary operator must have exactly 2 children, got {node.Children.Count}");
             }
             else
@@ -519,14 +525,29 @@ namespace K3CSharp
             if (elements.Count == 0)
                 return 0; // Default to mixed list for empty vectors
                 
-            var firstElement = elements[0];
-            if (firstElement is IntegerValue || firstElement is LongValue)
+            // Check if any element is a float - if so, the whole vector should be float
+            foreach (var element in elements)
+            {
+                if (element is FloatValue)
+                    return -2; // Float vector
+            }
+            
+            // Check if all elements are integers/longs
+            bool allIntegers = true;
+            foreach (var element in elements)
+            {
+                if (!(element is IntegerValue || element is LongValue))
+                {
+                    allIntegers = false;
+                    break;
+                }
+            }
+            
+            if (allIntegers)
                 return -1; // Integer vector
-            else if (firstElement is FloatValue)
-                return -2; // Float vector  
-            else if (firstElement is CharacterValue)
+            else if (elements[0] is CharacterValue)
                 return -3; // Character vector
-            else if (firstElement is SymbolValue)
+            else if (elements[0] is SymbolValue)
                 return -4; // Symbol vector
             else
                 return 0; // Default to mixed list
@@ -555,6 +576,23 @@ namespace K3CSharp
             {
                 // Create homogeneous VectorValue with proper type
                 int vectorType = DetermineVectorTypeFromElements(elements);
+                
+                // If this is a float vector, convert all integer elements to floats
+                if (vectorType == -2) // Float vector
+                {
+                    var convertedElements = new List<K3Value>();
+                    foreach (var element in elements)
+                    {
+                        if (element is IntegerValue intValue)
+                            convertedElements.Add(new FloatValue((double)intValue.Value));
+                        else if (element is LongValue longValue)
+                            convertedElements.Add(new FloatValue((double)longValue.Value));
+                        else
+                            convertedElements.Add(element);
+                    }
+                    return new VectorValue(convertedElements, vectorType);
+                }
+                
                 return new VectorValue(elements, vectorType);
             }
             else
