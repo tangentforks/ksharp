@@ -8,8 +8,24 @@ namespace K3CSharp
     {
         private K3Value ApplyVerb(string verbName, K3Value left, K3Value right)
         {
+            // Special handling for _dot with scalar arguments
+            if (verbName == "_dot")
+            {
+                // If left is scalar, wrap it in a single-element vector
+                if (IsScalar(left))
+                {
+                    left = new VectorValue(new List<K3Value> { left });
+                }
+                // If right is scalar, wrap it in a single-element vector  
+                if (IsScalar(right))
+                {
+                    right = new VectorValue(new List<K3Value> { right });
+                }
+            }
+            
             return verbName switch
             {
+                // Basic operators
                 "+" => Plus(left, right),
                 "-" => Minus(left, right),
                 "*" => Times(left, right),
@@ -22,6 +38,40 @@ namespace K3CSharp
                 "^" => Power(left, right),
                 "!" => ModRotate(left, right),
                 "," => Join(left, right),
+                "#" => Take(left, right),
+                "_" => FloorBinary(left, right),
+                "@" => AtIndex(left, right),
+                "." => DotApply(left, right),
+                "$" => Format(left, right),
+                "~" => Match(left, right),
+                "?" => Find(left, right),
+                
+                // System verbs
+                "_in" => In(left, right),
+                "_draw" => Draw(left, right),
+                "_bin" => Bin(left, right),
+                "_div" => MathDiv(left, right),
+                "_dot" => MathDot(left, right),
+                "_mul" => MathMul(left, right),
+                "_inv" => MathInv(left, right),
+                "_lsq" => MathLsq(left, right),
+                "_and" => MathAnd(left, right),
+                "_or" => MathOr(left, right),
+                "_xor" => MathXor(left, right),
+                "_rot" => MathRot(left, right),
+                "_shift" => MathShift(left, right),
+                "_binl" => Binl(left, right),
+                "_lin" => Lin(left, right),
+                "_dv" => Dv(left, right),
+                "_di" => Di(left, right),
+                "_ci" => CiFunction(left),
+                "_ic" => IcFunction(left),
+                "_sm" => Sm(left, right),
+                "_sv" => Sv(left, right),
+                "_vs" => Vs(left, right),
+                "_ss" => SsFunction(left, right),
+                "_setenv" => SetenvFunction(left, right),
+                
                 _ => throw new Exception($"Unknown operator: {verbName}")
             };
         }

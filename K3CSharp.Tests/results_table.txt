@@ -662,8 +662,8 @@
 ║ math_dot_basic.k                                   │ 1 2 3 _dot 4 5 6     │ 32                   │                      ║
 ║ math_dot_matrix_matrix.k                           │ (1 2 3;4 5 6) _dot (7 8 9;10 11 12) │ 47 71 99             │                      ║
 ║ math_dot_matrix_2x2.k                              │ (1 2;3 4) _dot (5 6;7 8) │ 26 44                │                      ║
-║ math_dot_matrix_each_right.k                       │ (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12) │ Error: Unknown ...   │ (47 64 81;52 71...   ║
-║ math_dot_vector_each_left.k                        │ (1 2) _dot\: (3 4;5 6) │ Error: Unknown ...   │ (8 10;16 20)         ║
+║ math_dot_matrix_each_right.k                       │ (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12) │ (50 68;122 167)      │ (47 64 81;52 71...   ║
+║ math_dot_vector_each_left.k                        │ (1 2) _dot\: (3 4;5 6) │ 11 17                │ (8 10;16 20)         ║
 ║ math_lsq_non_square.k                              │ // Non-square matrix: 2x3 matrix (more columns than rows) │ -1.0 2.0             │                      ║
 ║ math_lsq_high_rank.k                               │ // Rectangular matrix: 2x4 matrix (more columns than rows) │ -8.0 9.0             │                      ║
 ║ math_lsq_complex.k                                 │ // Complex non-square case with mixed values │ 0.1232877 1.506849   │                      ║
@@ -692,10 +692,10 @@ Actual: 100
 Test: math_dot_matrix_each_right.k
 Input: (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12)
 Expected: (47 64 81;52 71 90;57 78 99)
-Actual: Error: Unknown operator: /:
+Actual: (50 68;122 167)
 ──────────────────────────────────────────────────────────────────────────
 Test: math_dot_vector_each_left.k
 Input: (1 2) _dot\: (3 4;5 6)
 Expected: (8 10;16 20)
-Actual: Error: Unknown operator: \:
+Actual: 11 17
 ──────────────────────────────────────────────────────────────────────────

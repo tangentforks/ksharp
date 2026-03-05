@@ -2903,7 +2903,7 @@ namespace K3CSharp
                         "VS" => "_vs",
                         "SV" => "_sv",
                         "SS" => "_ss",
-                "SM" => "_sm",
+                        "SM" => "_sm",
                         "CI" => "_ci",
                         "IC" => "_ic",
                         "GETENV" => "_getenv",
@@ -2920,6 +2920,7 @@ namespace K3CSharp
                         "TYPE" => "@",
                         "STRING_REPRESENTATION" => "$",
                         "APPLY" => "@",
+                        "DOT" => "_dot",
                         _ => PreviousToken().Lexeme
                     };
                     var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
@@ -2932,7 +2933,7 @@ namespace K3CSharp
                     adverbNode.Value = new SymbolValue(adverbType);
                     adverbNode.Children.Add(verbNode);
                     adverbNode.Children.Add(left);
-                    if (rightSide != null) if (rightSide != null) adverbNode.Children.Add(rightSide);
+                    if (rightSide != null) adverbNode.Children.Add(rightSide);
                     
                     return adverbNode;
                 }
@@ -2942,7 +2943,8 @@ namespace K3CSharp
                     // In K, the right argument is everything to the right (right-associative)
                     var right = ParseExpressionWithoutSemicolons();
                     if (right != null)
-                        if (right != null) return ASTNode.MakeBinaryOp(op, left, right); return left;
+                        return ASTNode.MakeBinaryOp(op, left, right);
+                    return left;
                 }
             }
             

@@ -418,20 +418,23 @@ namespace K3CSharp
         
         private K3Value VectorMatrixDot(VectorValue leftVec, VectorValue rightMatrix)
         {
-            // Element-wise dot product: dot left vector with each row of right matrix
+            // Element-wise dot product: dot left vector with each column of right matrix
             var resultRows = new List<K3Value>();
             var rightRows = ExtractMatrix(rightMatrix);
             
-            foreach (var rightRow in rightRows)
+            // Transpose right matrix to get columns
+            var rightCols = TransposeMatrix(rightRows);
+            
+            foreach (var rightCol in rightCols)
             {
-                if (leftVec.Elements.Count != rightRow.Length)
+                if (leftVec.Elements.Count != rightCol.Length)
                     throw new Exception("_dot requires vectors of the same length");
                 
                 double sum = 0.0;
                 for (int i = 0; i < leftVec.Elements.Count; i++)
                 {
                     double leftVal = GetNumericValue(leftVec.Elements[i]);
-                    double rightVal = rightRow[i];
+                    double rightVal = rightCol[i];
                     sum += leftVal * rightVal;
                 }
                 
