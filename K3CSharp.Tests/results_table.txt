@@ -666,12 +666,12 @@
 ║ math_dot_vector_each_left.k                        │ (1 2) _dot\: (3 4;5 6) │ (8 10;16 20)         │                      ║
 ║ adverb_complex_vector_each_right.k                 │ 10 11 12 +/: ((1 2 3);(4 5 6);(7 8 9)) │ (11 13 15;14 16...   │                      ║
 ║ adverb_complex_matrix_each_right.k                 │ ((1 2 3);(4 5 6);(7 8 9)) +/: 10 11 12 │ ((11 12 13;12 1...   │                      ║
-║ adverb_chaining_join_each_left.k                   │ ((1 2 3);(4 5 6);(7 8 9)),/:\:((9 8 7);(6 5 4);(3 2 1)) │ (1 4;1 5;1 6;2 ...   │ ((1 2 3 9 8 7;1...   ║
+║ adverb_chaining_join_each_left.k                   │ ((1 2 3);(4 5 6);(7 8 9)),/:\:((9 8 7);(6 5 4);(3 2 1)) │ ((1 2 3 9 8 7;1...   │                      ║
 ║ adverb_complex_string_each_left.k                  │ (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),\:" " │ (("hello";"worl...   │ (("hello";"worl...   ║
 ║ adverb_chaining_string_each_left.k                 │ (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),\:\:"  " │ (("hello";"worl...   │ (("hello  ";"wo...   ║
 ║ debug_vector_each_right.k                          │ (1 2 3) +/: 10 11 12 │ (11 12 13;12 13...   │                      ║
 ║ debug_join_each_left.k                             │ (1 2 3),\: (4 5 6)   │ (1 4 5 6;2 4 5 ...   │                      ║
-║ debug_simple_chaining.k                            │ 1 2 3,/:\:4 5 6      │ (1 4;1 5;1 6;2 ...   │ ((1 4;1 5;1 6);...   ║
+║ debug_simple_chaining.k                            │ 1 2 3,/:\:4 5 6      │ ((1 4;1 5;1 6);...   │                      ║
 ║ debug_simple.k                                     │ 1 2 3                │ 1 2 3                │                      ║
 ║ math_lsq_non_square.k                              │ // Non-square matrix: 2x3 matrix (more columns than rows) │ -1.0 2.0             │                      ║
 ║ math_lsq_high_rank.k                               │ // Rectangular matrix: 2x4 matrix (more columns than rows) │ -8.0 9.0             │                      ║
@@ -688,7 +688,7 @@
 ║ math_xor_basic.k                                   │ 5 _xor 3             │ 6                    │                      ║
 ║ math_xor_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 679/684 tests passed (99.3%)                                                                               ║
+║ SUMMARY: 681/684 tests passed (99.6%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -698,11 +698,6 @@ Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: 100
 ──────────────────────────────────────────────────────────────────────────
-Test: adverb_chaining_join_each_left.k
-Input: ((1 2 3);(4 5 6);(7 8 9)),/:\:((9 8 7);(6 5 4);(3 2 1))
-Expected: ((1 2 3 9 8 7;1 2 3 6 5 4;1 2 3 3 2 1);(4 5 6 9 8 7;4 5 6 6 5 4;4 5 6 3 2 1);(7 8 9 9 8 7;7 8 9 6 5 4;7 8 9 3 2 1))
-Actual: (1 4;1 5;1 6;2 4;2 5;2 6;3 4;3 5;3 6)
-──────────────────────────────────────────────────────────────────────────
 Test: adverb_complex_string_each_left.k
 Input: (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),\:" "
 Expected: (("hello";"world.";" ");("It's";"me";"ksharp.";" ");("Have";"fun";"with";"me!";" "))
@@ -711,10 +706,5 @@ Actual: (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!");
 Test: adverb_chaining_string_each_left.k
 Input: (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),\:\:"  "
 Expected: (("hello  ";"world.  ");("It's  ";"me  ";"ksharp.  ");("Have  ";"fun  ";"with  ";"me!  "))
-Actual: (("hello";"world.";" ";" ");("It's";"me";"ksharp.";" ";" ");("Have";"fun";"with";"me!";" ";" "))
-──────────────────────────────────────────────────────────────────────────
-Test: debug_simple_chaining.k
-Input: 1 2 3,/:\:4 5 6
-Expected: ((1 4;1 5;1 6);(2 4;2 5;2 6);(3 4;3 5;3 6))
-Actual: (1 4;1 5;1 6;2 4;2 5;2 6;3 4;3 5;3 6)
+Actual: (("hello";"world.";" ";" ";0);("It's";"me";"ksharp.";" ";" ";0);("Have";"fun";"with";"me!";" ";" ";0))
 ──────────────────────────────────────────────────────────────────────────

@@ -1244,6 +1244,9 @@ namespace K3CSharp
         // Associated K tree for anonymous functions
         public KTree AssociatedKTree { get; private set; }
         
+        // For adverb chaining: store the right argument when this function is created by an adverb
+        public K3Value? RightArgument { get; set; }
+        
         public FunctionValue(string bodyText, List<string> parameters, List<Token> preParsedTokens = null!, string originalSourceText = "")
         {
             BodyText = bodyText;

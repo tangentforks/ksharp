@@ -248,13 +248,19 @@ namespace K3CSharp
                 var left = vec.Elements[1];
                 var right = vec.Elements[2];
                 
+                Console.WriteLine($"DEBUG ApplyAdverbSlashColon: verb={verb}, left={left}, right={right}");
+                
                 // Special handling for comma operator in adverb chains
                 if (verb is SymbolValue commaSymbol && commaSymbol.Value == ",")
                 {
-                    Console.WriteLine($"DEBUG ApplyAdverbSlashColon: Creating comma /: function for chaining");
+                    Console.WriteLine($"DEBUG ApplyAdverbSlashColon: Creating comma /: function for chaining with data {left}");
                     // For comma /: right, create the function {x ,/: y} that will be used by the next adverb
                     var functionBody = "x ,/: y";
                     var commaFunction = new FunctionValue(functionBody, new List<string>{"x", "y"}, new List<Token>(), functionBody);
+                    
+                    // For /: (each-right), the data to apply each-right to is in the left position
+                    // Store the left argument (the actual data) for the outer adverb to use
+                    commaFunction.RightArgument = left;
                     
                     return commaFunction;
                 }
@@ -317,6 +323,64 @@ namespace K3CSharp
                 var verb = vec.Elements[0];
                 var left = vec.Elements[1];
                 var right = vec.Elements[2];
+                
+                // Check if the right argument is a function from adverb chaining
+                if (right is FunctionValue func)
+                {
+                    Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: right argument is function '{func.BodyText}' with left {left}");
+                    
+                    // This is adverb chaining: verb \: (function from previous adverb)
+                    // We need to execute the function with the left argument
+                    if (func.BodyText == "x ,/: y")
+                    {
+                        Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: executing comma /: function with left {left}");
+                        
+                        // For {x ,/: y} \: left, we need to apply the function to each element of left
+                        if (left is VectorValue leftVec)
+                        {
+                            var results = new List<K3Value>();
+                            foreach (var leftElement in leftVec.Elements)
+                            {
+                                // Execute the inner function: leftElement ,/: rightArg
+                                // Extract the right argument from the function
+                                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: processing left element {leftElement}");
+                                 
+                                // Get the right argument that was stored when the inner function was created
+                                var rightArg = func.RightArgument;
+                                if (rightArg == null)
+                                {
+                                    Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: ERROR - RightArgument is null");
+                                    continue;
+                                }
+                                 
+                                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: using right argument {rightArg}");
+                                 
+                                // Execute comma /: with leftElement and rightArg
+                                // For each-right: apply comma to leftElement with each element of rightArg
+                                if (rightArg is VectorValue rightVec)
+                                {
+                                    var eachRightResults = new List<K3Value>();
+                                    foreach (var rightElement in rightVec.Elements)
+                                    {
+                                        var commaResult = Join(leftElement, rightElement);
+                                        eachRightResults.Add(commaResult);
+                                    }
+                                    // Create a vector of the results: (1 4;1 5;1 6)
+                                    var nestedResult = new VectorValue(eachRightResults, 0);
+                                    results.Add(nestedResult);
+                                }
+                                else
+                                {
+                                    // Fallback for non-vector right argument
+                                    var commaResult = Join(leftElement, rightArg);
+                                    results.Add(commaResult);
+                                }
+                            }
+                            
+                            return new VectorValue(results, 0);
+                        }
+                    }
+                }
                 
                 // Special handling for comma operator in adverb chains
                 if (verb is SymbolValue commaSymbol && commaSymbol.Value == ",")

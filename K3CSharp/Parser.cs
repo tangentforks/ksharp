@@ -2971,22 +2971,28 @@ namespace K3CSharp
                         
                         Console.WriteLine($"DEBUG Parser: Parsed right side for adverb chaining: {rightSide?.Value}, after parse position: {current}/{tokens.Count}");
                         
-                        // Create a composite adverb structure: ADVERB2(ADVERB1(verb, left, rightSide))
-                        // This represents {x verb y} adverb1 adverb2
-                        var firstAdverbNode = new ASTNode(ASTNodeType.BinaryOp);
-                        firstAdverbNode.Value = new SymbolValue(adverbType);
-                        firstAdverbNode.Children.Add(verbNode);
-                        firstAdverbNode.Children.Add(left);
-                        if (rightSide != null) firstAdverbNode.Children.Add(rightSide);
+                        // Create the correct adverb chaining structure according to K specification
+                        // For {x verb y} adverb1 adverb2, the structure should be:
+                        // ADVERB2(verb, x, ADVERB1(verb, y))
                         
-                        // Create the second adverb node that wraps the first
-                        // For adverb chaining, the second adverb should apply to the result of the first
-                        // But the evaluator expects 3 arguments, so we need to create the proper structure
-                        var secondAdverbNode = new ASTNode(ASTNodeType.BinaryOp);
-                        secondAdverbNode.Value = new SymbolValue(secondAdverbType);
-                        secondAdverbNode.Children.Add(firstAdverbNode);
+                        // First, create the inner adverb that applies to the right side
+                        // For /: (each-right), the structure is ADVERB_SLASH_COLON(verb, rightSide, 0)
+                        var innerAdverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        innerAdverbNode.Value = new SymbolValue(adverbType);
+                        innerAdverbNode.Children.Add(verbNode); // The verb
+                        innerAdverbNode.Children.Add(rightSide); // Right side becomes the data to apply each-right to
+                        innerAdverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0))); // Initialize with 0
                         
-                        return secondAdverbNode;
+                        // Then create the outer adverb that applies to the verb with left side
+                        var outerAdverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        outerAdverbNode.Value = new SymbolValue(secondAdverbType);
+                        outerAdverbNode.Children.Add(verbNode); // The verb
+                        outerAdverbNode.Children.Add(left); // Left side
+                        outerAdverbNode.Children.Add(innerAdverbNode); // Inner adverb result as right side
+                        
+                        Console.WriteLine($"DEBUG Parser: Created adverb chaining structure: {secondAdverbType}({verbNode?.Value}, {left?.Value}, {adverbType}({verbNode?.Value}, {rightSide?.Value}))");
+                        
+                        return outerAdverbNode;
                     }
                     else
                     {
