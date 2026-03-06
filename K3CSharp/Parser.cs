@@ -394,7 +394,25 @@ namespace K3CSharp
                 return null;
             }
             
-            var result = ParsePrimary();
+            ASTNode? result;
+            
+            // Check if current token is an adverb - if so, we're in a chaining context
+            // and need to handle it specially since ParsePrimary will throw an exception
+            if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                              CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                              CurrentToken().Type == TokenType.ADVERB_TICK ||
+                              CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
+                              CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON ||
+                              CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+            {
+                // Create a placeholder node that will be replaced by the adverb chaining logic
+                result = new ASTNode(ASTNodeType.Literal);
+                result.Value = new IntegerValue(0); // Placeholder value
+            }
+            else
+            {
+                result = ParsePrimary();
+            }
 
             // Handle case where ParsePrimary returned null
             if (result == null)
@@ -423,7 +441,7 @@ namespace K3CSharp
                 adverbNode.Children.Add(result); // verb
                 adverbNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(0))); // left argument (default for dyadic adverbs)
                 if (rightArg != null) adverbNode.Children.Add(rightArg); // right argument
-                return adverbNode;
+                result = adverbNode;
             }
 
             // Handle postfix operations: bracket notation for indexing or function calls
@@ -481,13 +499,14 @@ namespace K3CSharp
             while (!ShouldStopParsing(stopTokens))
             {
                 // Check if this would create a mixed-type vector
-                // If the current token is an operator, it would create a mixed-type vector
+                // If current token is an operator, it would create a mixed-type vector
                 if (IsBinaryOperator(CurrentToken().Type))
                 {
                     // This would create a mixed-type vector, so stop parsing and let ParseExpression handle it
                     break;
                 }
                 
+                                
                 var nextElement = ParsePrimary();
                 
                 // Special case: function calls (variable followed by expression)
@@ -2274,7 +2293,7 @@ namespace K3CSharp
                 if (Match(TokenType.ADVERB_SLASH) || Match(TokenType.ADVERB_BACKSLASH) || Match(TokenType.ADVERB_TICK) ||
                     Match(TokenType.ADVERB_SLASH_COLON) || Match(TokenType.ADVERB_BACKSLASH_COLON) || Match(TokenType.ADVERB_TICK_COLON))
                 {
-                    var adverbType = PreviousToken().Type.ToString().Replace("TokenType.", "");
+                    var firstAdverbType = PreviousToken().Type.ToString().Replace("TokenType.", "");
                     
                     // Convert the binary operator to a verb symbol
                     var verbName = op.ToString() switch
@@ -2319,10 +2338,10 @@ namespace K3CSharp
                     
                     // Create the correct adverb structure: ADVERB(verb, left, right)
                     var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
-                    adverbNode.Value = new SymbolValue(adverbType);
+                    adverbNode.Value = new SymbolValue(firstAdverbType);
                     if (verbNode != null) adverbNode.Children.Add(verbNode);
                     if (left != null) adverbNode.Children.Add(left);
-                    if (rightSide != null) if (rightSide != null) adverbNode.Children.Add(rightSide);
+                    if (rightSide != null) adverbNode.Children.Add(rightSide);
                     
                     left = adverbNode;
                 }

@@ -662,8 +662,17 @@
 ║ math_dot_basic.k                                   │ 1 2 3 _dot 4 5 6     │ 32                   │                      ║
 ║ math_dot_matrix_matrix.k                           │ (1 2 3;4 5 6) _dot (7 8 9;10 11 12) │ 47 71 99             │                      ║
 ║ math_dot_matrix_2x2.k                              │ (1 2;3 4) _dot (5 6;7 8) │ 26 44                │                      ║
-║ math_dot_matrix_each_right.k                       │ (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12) │ (50 68;122 167)      │ (47 64 81;52 71...   ║
+║ math_dot_matrix_each_right.k                       │ (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12) │ Error: _dot req...   │ (47 64 81;52 71...   ║
 ║ math_dot_vector_each_left.k                        │ (1 2) _dot\: (3 4;5 6) │ 11 17                │ (8 10;16 20)         ║
+║ adverb_complex_vector_each_right.k                 │ 10 11 12 +/: ((1 2 3);(4 5 6);(7 8 9)) │ (11 13 15;14 16...   │                      ║
+║ adverb_complex_matrix_each_right.k                 │ ((1 2 3);(4 5 6);(7 8 9)) +/: 10 11 12 │ ((11 12 13;12 1...   │                      ║
+║ adverb_chaining_join_each_left.k                   │ ((1 2 3);(4 5 6);(7 8 9)),/:\:((9 8 7);(6 5 4);(3 2 1)) │ Error: EachLeft...   │ ((1 2 3 9 8 7;1...   ║
+║ adverb_complex_string_each_left.k                  │ (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),\:" " │ (("hello";"worl...   │ (("hello";"worl...   ║
+║ adverb_chaining_string_each_left.k                 │ (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),\:\:"  " │ Error: EachLeft...   │ (("hello  ";"wo...   ║
+║ debug_vector_each_right.k                          │ (1 2 3) +/: 10 11 12 │ (11 12 13;12 13...   │                      ║
+║ debug_join_each_left.k                             │ (1 2 3),\: (4 5 6)   │ (1 2 3 4;1 2 3 ...   │ (1 4 5 6;2 4 5 ...   ║
+║ debug_simple_chaining.k                            │ 1 2 3,/:\:4 5 6      │ Error: EachLeft...   │ ((1 4;1 5;1 6);...   ║
+║ debug_simple.k                                     │ 1 2 3                │ 1 2 3                │                      ║
 ║ math_lsq_non_square.k                              │ // Non-square matrix: 2x3 matrix (more columns than rows) │ -1.0 2.0             │                      ║
 ║ math_lsq_high_rank.k                               │ // Rectangular matrix: 2x4 matrix (more columns than rows) │ -8.0 9.0             │                      ║
 ║ math_lsq_complex.k                                 │ // Complex non-square case with mixed values │ 0.1232877 1.506849   │                      ║
@@ -679,7 +688,7 @@
 ║ math_xor_basic.k                                   │ 5 _xor 3             │ 6                    │                      ║
 ║ math_xor_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 672/675 tests passed (99.6%)                                                                               ║
+║ SUMMARY: 676/684 tests passed (98.8%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -692,10 +701,35 @@ Actual: 100
 Test: math_dot_matrix_each_right.k
 Input: (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12)
 Expected: (47 64 81;52 71 90;57 78 99)
-Actual: (50 68;122 167)
+Actual: Error: _dot requires vectors of the same length
 ──────────────────────────────────────────────────────────────────────────
 Test: math_dot_vector_each_left.k
 Input: (1 2) _dot\: (3 4;5 6)
 Expected: (8 10;16 20)
 Actual: 11 17
+──────────────────────────────────────────────────────────────────────────
+Test: adverb_chaining_join_each_left.k
+Input: ((1 2 3);(4 5 6);(7 8 9)),/:\:((9 8 7);(6 5 4);(3 2 1))
+Expected: ((1 2 3 9 8 7;1 2 3 6 5 4;1 2 3 3 2 1);(4 5 6 9 8 7;4 5 6 6 5 4;4 5 6 3 2 1);(7 8 9 9 8 7;7 8 9 6 5 4;7 8 9 3 2 1))
+Actual: Error: EachLeft not implemented for types: Integer, Integer, Vector
+──────────────────────────────────────────────────────────────────────────
+Test: adverb_complex_string_each_left.k
+Input: (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),\:" "
+Expected: (("hello";"world.";" ");("It's";"me";"ksharp.";" ");("Have";"fun";"with";"me!";" "))
+Actual: (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!");" ")
+──────────────────────────────────────────────────────────────────────────
+Test: adverb_chaining_string_each_left.k
+Input: (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),\:\:"  "
+Expected: (("hello  ";"world.  ");("It's  ";"me  ";"ksharp.  ");("Have  ";"fun  ";"with  ";"me!  "))
+Actual: Error: EachLeft not implemented for types: Integer, Integer, Vector
+──────────────────────────────────────────────────────────────────────────
+Test: debug_join_each_left.k
+Input: (1 2 3),\: (4 5 6)
+Expected: (1 4 5 6;2 4 5 6;3 4 5 6)
+Actual: (1 2 3 4;1 2 3 5;1 2 3 6)
+──────────────────────────────────────────────────────────────────────────
+Test: debug_simple_chaining.k
+Input: 1 2 3,/:\:4 5 6
+Expected: ((1 4;1 5;1 6);(2 4;2 5;2 6);(3 4;3 5;3 6))
+Actual: Error: EachLeft not implemented for types: Integer, Integer, Vector
 ──────────────────────────────────────────────────────────────────────────

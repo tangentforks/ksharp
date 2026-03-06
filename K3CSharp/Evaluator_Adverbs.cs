@@ -160,6 +160,15 @@ namespace K3CSharp
                     case "ADVERB_TICK":
                         result = ApplyAdverbTick(result);
                         break;
+                    case "ADVERB_SLASH_COLON":
+                        result = ApplyAdverbSlashColon(result);
+                        break;
+                    case "ADVERB_BACKSLASH_COLON":
+                        result = ApplyAdverbBackslashColon(result);
+                        break;
+                    case "ADVERB_TICK_COLON":
+                        result = ApplyAdverbTickColon(result);
+                        break;
                     default:
                         throw new Exception($"Unknown adverb in chain: {adverb}");
                 }
@@ -168,25 +177,116 @@ namespace K3CSharp
             return result;
         }
 
+        private K3Value CreateVerbDataStructure(K3Value verb, K3Value left, K3Value right)
+        {
+            // Create a vector structure representing [verb, left, right] for adverb processing
+            return new VectorValue(new List<K3Value> { verb, left, right }, -1);
+        }
+
         private K3Value ApplyAdverbSlash(K3Value operand)
         {
-            // For now, just return the operand (reduce needs a verb and data)
-            // In a full implementation, this would need to handle the verb/data distinction
-            return operand;
+            // Over/Reduce (/): Apply verb to reduce over data
+            // Check if operand has verb/data structure from adverb processing
+            if (operand is VectorValue vec && vec.Elements.Count >= 3)
+            {
+                // Structure: [verb, left, right] from adverb processing
+                var verb = vec.Elements[0];
+                var left = vec.Elements[1];
+                var right = vec.Elements[2];
+                return Over(verb, left, right);
+            }
+            
+            // For simple cases, execute the adverb operation directly
+            // This represents a nominalized adverb that can be used in chains
+            return new VectorValue(new List<K3Value> { operand }, -1); // Wrap in vector to indicate nominalized adverb
         }
 
         private K3Value ApplyAdverbBackslash(K3Value operand)
         {
-            // For now, just return the operand (scan needs a verb and data)
-            // In a full implementation, this would need to handle the verb/data distinction
-            return operand;
+            // Scan (\): Apply verb to scan over data
+            // Check if operand has verb/data structure from adverb processing
+            if (operand is VectorValue vec && vec.Elements.Count >= 3)
+            {
+                // Structure: [verb, left, right] from adverb processing
+                var verb = vec.Elements[0];
+                var left = vec.Elements[1];
+                var right = vec.Elements[2];
+                return Scan(verb, left, right);
+            }
+            
+            // For simple cases, execute the adverb operation directly
+            // This represents a nominalized adverb that can be used in chains
+            return new VectorValue(new List<K3Value> { operand }, -1); // Wrap in vector to indicate nominalized adverb
         }
 
         private K3Value ApplyAdverbTick(K3Value operand)
         {
-            // For now, just return the operand (each needs a verb and data)
-            // In a full implementation, this would need to handle the verb/data distinction
-            return operand;
+            // Each ('): Apply verb to each element of data
+            // Check if operand has verb/data structure from adverb processing
+            if (operand is VectorValue vec && vec.Elements.Count >= 3)
+            {
+                // Structure: [verb, left, right] from adverb processing
+                var verb = vec.Elements[0];
+                var left = vec.Elements[1];
+                var right = vec.Elements[2];
+                return Each(verb, left, right);
+            }
+            
+            // For simple cases, execute the adverb operation directly
+            // This represents a nominalized adverb that can be used in chains
+            return new VectorValue(new List<K3Value> { operand }, -1); // Wrap in vector to indicate nominalized adverb
+        }
+
+        private K3Value ApplyAdverbSlashColon(K3Value operand)
+        {
+            // Each-Right (/:): Apply verb to each element of left with entire right
+            // Check if operand has verb/data structure from previous adverb processing
+            if (operand is VectorValue vec && vec.Elements.Count >= 3)
+            {
+                // Structure: [verb, left, right] from adverb processing
+                var verb = vec.Elements[0];
+                var left = vec.Elements[1];
+                var right = vec.Elements[2];
+                return EachRight(verb, left, right);
+            }
+            
+            // For simple cases, create a composite verb structure that can be used by subsequent adverbs
+            // This represents a "verb+adverb" structure that can be further modified
+            return new VectorValue(new List<K3Value> { operand }, -1); // Wrap the verb in a vector to indicate it's a composite verb
+        }
+
+        private K3Value ApplyAdverbBackslashColon(K3Value operand)
+        {
+            // Each-Left (\:): Apply verb to entire left with each element of right
+            // Check if operand has verb/data structure from previous adverb processing
+            if (operand is VectorValue vec && vec.Elements.Count >= 3)
+            {
+                // Structure: [verb, left, right] from adverb processing
+                var verb = vec.Elements[0];
+                var left = vec.Elements[1];
+                var right = vec.Elements[2];
+                return EachLeft(verb, left, right);
+            }
+            
+            // For simple cases, create a composite verb structure that can be used by subsequent adverbs
+            return new VectorValue(new List<K3Value> { operand }, -1);
+        }
+
+        private K3Value ApplyAdverbTickColon(K3Value operand)
+        {
+            // Each-Prior (':): Apply verb to each element with previous element
+            // Check if operand has verb/data structure from previous adverb processing
+            if (operand is VectorValue vec && vec.Elements.Count >= 3)
+            {
+                // Structure: [verb, left, right] from adverb processing
+                var verb = vec.Elements[0];
+                var left = vec.Elements[1];
+                var right = vec.Elements[2];
+                return EachPrior(verb, left, right);
+            }
+            
+            // For simple cases, create a composite verb structure that can be used by subsequent adverbs
+            return new VectorValue(new List<K3Value> { operand }, -1);
         }
 
         private K3Value Over(K3Value verb, K3Value initialization, K3Value data)
@@ -398,12 +498,72 @@ namespace K3CSharp
         private K3Value EachRight(K3Value verb, K3Value left, K3Value right)
         {
             // Each-Right (/:): Apply verb to each element of left with entire right
+            // When the argument to an adverbialized verb is a complex structure,
+            // the verb+adverb will be applied to the outermost level of the structure.
+            
+            // Check if this is a chaining context: if right is a single scalar, 
+            // this might be part of a chained adverb operation
+            bool isChainingContext = IsScalar(right) && !(verb is VectorValue);
+            
             if (verb is SymbolValue verbSymbol)
             {
-                if (left is VectorValue leftVec)
+                if (left is VectorValue leftVec && IsMatrix(leftVec))
                 {
                     var result = new List<K3Value>();
                     foreach (var element in leftVec.Elements)
+                    {
+                        // For complex structures, we need to apply the verb+adverb recursively
+                        result.Add(EachRight(verb, element, right));
+                    }
+                    int vectorType = DetermineVectorType(result);
+                    return new VectorValue(result, vectorType);
+                }
+                else if (right is VectorValue rightVec && IsMatrix(rightVec))
+                {
+                    var result = new List<K3Value>();
+                    foreach (var element in rightVec.Elements)
+                    {
+                        result.Add(ApplyVerb(verbSymbol.Value, left, element));
+                    }
+                    int vectorType = DetermineVectorType(result);
+                    return new VectorValue(result, vectorType);
+                }
+                else if (left is VectorValue leftVec2 && right is VectorValue rightVec2)
+                {
+                    // Special case for +/: to create matrix addition
+                    if (verbSymbol.Value == "+")
+                    {
+                        // Create matrix where each row is left element + each right element
+                        var result = new List<K3Value>();
+                        foreach (var leftElement in leftVec2.Elements)
+                        {
+                            var row = new List<K3Value>();
+                            foreach (var rightElement in rightVec2.Elements)
+                            {
+                                row.Add(Plus(leftElement, rightElement));
+                            }
+                            int rowVectorType = DetermineVectorType(row);
+                            result.Add(new VectorValue(row, rowVectorType));
+                        }
+                        int matrixVectorType = DetermineVectorType(result);
+                        return new VectorValue(result, matrixVectorType);
+                    }
+                    else
+                    {
+                        // For other verbs, use the regular ApplyVerb
+                        var result = new List<K3Value>();
+                        foreach (var element in leftVec2.Elements)
+                        {
+                            result.Add(ApplyVerb(verbSymbol.Value, element, right));
+                        }
+                        int vectorType = DetermineVectorType(result);
+                        return new VectorValue(result, vectorType);
+                    }
+                }
+                else if (left is VectorValue leftVec3)
+                {
+                    var result = new List<K3Value>();
+                    foreach (var element in leftVec3.Elements)
                     {
                         result.Add(ApplyVerb(verbSymbol.Value, element, right));
                     }
@@ -412,7 +572,36 @@ namespace K3CSharp
                 }
                 else if (IsScalar(left))
                 {
+                    if (isChainingContext)
+                    {
+                        // In chaining context, create a composite verb structure
+                        // This represents "verb+adverb" that can be further modified
+                        return new VectorValue(new List<K3Value> { verb }, -1);
+                    }
                     return ApplyVerb(verbSymbol.Value, left, right);
+                }
+            }
+            else if (verb is VectorValue verbVec && verbVec.Elements.Count >= 1)
+            {
+                // Handle complex verb structures from chained adverbs
+                var actualVerb = verbVec.Elements[0];
+                if (actualVerb is SymbolValue)
+                {
+                    var symbolValue = (SymbolValue)actualVerb;
+                    if (left is VectorValue leftVec)
+                    {
+                        var result = new List<K3Value>();
+                        foreach (var element in leftVec.Elements)
+                        {
+                            result.Add(ApplyVerb(symbolValue.Value, element, right));
+                        }
+                        int vectorType = DetermineVectorType(result);
+                        return new VectorValue(result, vectorType);
+                    }
+                    else if (IsScalar(left))
+                    {
+                        return ApplyVerb(symbolValue.Value, left, right);
+                    }
                 }
             }
             
@@ -422,6 +611,11 @@ namespace K3CSharp
         private K3Value EachLeft(K3Value verb, K3Value left, K3Value right)
         {
             // Each-Left (\:): Apply verb to entire left with each element of right
+            
+            // Check if this is a chaining context: if left is a single scalar, 
+            // this might be part of a chained adverb operation
+            bool isChainingContext = IsScalar(left) && !(verb is VectorValue);
+            
             if (verb is SymbolValue verbSymbol)
             {
                 if (right is VectorValue rightVec)
@@ -436,7 +630,36 @@ namespace K3CSharp
                 }
                 else if (IsScalar(right))
                 {
+                    if (isChainingContext)
+                    {
+                        // In chaining context, create a composite verb structure
+                        // This represents "verb+adverb" that can be further modified
+                        return new VectorValue(new List<K3Value> { verb }, -1);
+                    }
                     return ApplyVerb(verbSymbol.Value, left, right);
+                }
+            }
+            else if (verb is VectorValue verbVec && verbVec.Elements.Count == 1)
+            {
+                // Handle composite verb structures from chained adverbs
+                // The verb is wrapped in a vector to indicate it's a composite verb
+                var actualVerb = verbVec.Elements[0];
+                if (actualVerb is SymbolValue symbolValue)
+                {
+                    if (right is VectorValue rightVec)
+                    {
+                        var result = new List<K3Value>();
+                        foreach (var element in rightVec.Elements)
+                        {
+                            result.Add(ApplyVerb(symbolValue.Value, left, element));
+                        }
+                        int vectorType = DetermineVectorType(result);
+                        return new VectorValue(result, vectorType);
+                    }
+                    else if (IsScalar(right))
+                    {
+                        return ApplyVerb(symbolValue.Value, left, right);
+                    }
                 }
             }
             

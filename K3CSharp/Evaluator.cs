@@ -496,12 +496,12 @@ namespace K3CSharp
 
                 return op.Value.ToString() switch
                 {
-                    "ADVERB_SLASH" => Over(verb, left, right),
-                    "ADVERB_BACKSLASH" => Scan(verb, left, right),
-                    "ADVERB_TICK" => Each(verb, left, right),
-                    "ADVERB_SLASH_COLON" => EachRight(verb, left, right),
-                    "ADVERB_BACKSLASH_COLON" => EachLeft(verb, left, right),
-                    "ADVERB_TICK_COLON" => EachPrior(verb, left, right),
+                    "ADVERB_SLASH" => ApplyAdverbSlash(CreateVerbDataStructure(verb, left, right)),
+                    "ADVERB_BACKSLASH" => ApplyAdverbBackslash(CreateVerbDataStructure(verb, left, right)),
+                    "ADVERB_TICK" => ApplyAdverbTick(CreateVerbDataStructure(verb, left, right)),
+                    "ADVERB_SLASH_COLON" => ApplyAdverbSlashColon(CreateVerbDataStructure(verb, left, right)),
+                    "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(CreateVerbDataStructure(verb, left, right)),
+                    "ADVERB_TICK_COLON" => ApplyAdverbTickColon(CreateVerbDataStructure(verb, left, right)),
                     _ => throw new Exception($"Unknown adverb: {op.Value}")
                 };
             }

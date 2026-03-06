@@ -61,8 +61,8 @@ form_braces_arith :: regex:\(|\)|\.0\b: &regex:[;]:space :: smart integer divisi
 anonymous_function_double_param :: regex:\s\\\\\\\\*\s:* :: Compact representation
 attribute_handle_vector :: regex:\s+`:` :: Compact representation
 db_symbol_vector_longer :: regex:\s+`:` :: Compact representation
-db_enlist_single_symbol :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 cut_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+adverb_complex_matrix_each_right :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 dictionary_index_attr :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 dictionary_multiple :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 dictionary_null_attributes :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
@@ -177,3 +177,8 @@ math_mul_matrix_2x3_3x2 :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 math_mul_matrix_4x2_2x4 :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 math_dot_matrix_each_right :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 math_dot_vector_each_left :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+adverb_chaining_join_each_left :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+adverb_chaining_string_each_left :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+adverb_complex_matrix_each_right :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+adverb_complex_string_each_left :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+adverb_complex_vector_each_right :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
