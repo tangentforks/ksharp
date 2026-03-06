@@ -247,6 +247,18 @@ namespace K3CSharp
                 var verb = vec.Elements[0];
                 var left = vec.Elements[1];
                 var right = vec.Elements[2];
+                
+                // Special handling for comma operator in adverb chains
+                if (verb is SymbolValue commaSymbol && commaSymbol.Value == ",")
+                {
+                    Console.WriteLine($"DEBUG ApplyAdverbSlashColon: Creating comma /: function for chaining");
+                    // For comma /: right, create the function {x ,/: y} that will be used by the next adverb
+                    var functionBody = "x ,/: y";
+                    var commaFunction = new FunctionValue(functionBody, new List<string>{"x", "y"}, new List<Token>(), functionBody);
+                    
+                    return commaFunction;
+                }
+                
                 return EachRight(verb, left, right);
             }
             
@@ -258,6 +270,46 @@ namespace K3CSharp
         private K3Value ApplyAdverbBackslashColon(K3Value operand)
         {
             // Each-Left (\:): Apply verb to entire left with each element of right
+            
+            // Check if operand is a function from previous adverb processing
+            if (operand is FunctionValue prevFunc)
+            {
+                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: operand is function from previous adverb with body '{prevFunc.BodyText}'");
+                
+                // This is a function from the previous adverb, we need to apply \: to it
+                // For {x ,/: y} \: left right, we need to apply the function to each element of left with right
+                // But we need to get the left and right arguments from the calling context
+                // The calling context should pass us a vector with [function, left, right]
+                
+                // For adverb chaining, we need to execute the function immediately
+                // The issue is that we need to get the actual arguments from the parser structure
+                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: attempting to execute chained adverb function");
+                
+                // For now, we'll create a special case for comma adverb chaining
+                if (prevFunc.BodyText == "x ,/: y")
+                {
+                    Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: detected comma /: function, attempting execution");
+                    
+                    // This is the comma /: function, we need to execute it with the arguments
+                    // But we need to get the arguments from somewhere - they should be in the parent context
+                    // For now, let's return a special marker that the evaluator can recognize
+                    return new VectorValue(new List<K3Value> { prevFunc }, -1);
+                }
+                
+                // For now, let's create a composed function that represents {x ,/: y}\:
+                string composedBody = $"{prevFunc.BodyText}\\:";
+                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: creating composed function with body '{composedBody}'");
+                
+                var composedFunction = new FunctionValue(
+                    composedBody,
+                    new List<string>(),
+                    new List<Token>(),
+                    composedBody
+                );
+                
+                return composedFunction;
+            }
+            
             // Check if operand has verb/data structure from previous adverb processing
             if (operand is VectorValue vec && vec.Elements.Count >= 3)
             {
@@ -265,6 +317,31 @@ namespace K3CSharp
                 var verb = vec.Elements[0];
                 var left = vec.Elements[1];
                 var right = vec.Elements[2];
+                
+                // Special handling for comma operator in adverb chains
+                if (verb is SymbolValue commaSymbol && commaSymbol.Value == ",")
+                {
+                    Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Executing comma \\: directly");
+                    // For comma \: right, apply comma to each element of left with entire right
+                    // This is the direct execution of {x ,\: y}
+                    if (left is VectorValue leftVec && right is VectorValue rightVec)
+                    {
+                        var results = new List<K3Value>();
+                        foreach (var leftElement in leftVec.Elements)
+                        {
+                            // Apply comma to left element and entire right vector: leftElement , right
+                            var result = Join(leftElement, right);
+                            results.Add(result);
+                        }
+                        return new VectorValue(results, 0); // mixed list
+                    }
+                    else
+                    {
+                        // Fallback for non-vector arguments
+                        return Join(left, right);
+                    }
+                }
+                
                 return EachLeft(verb, left, right);
             }
             
@@ -542,26 +619,6 @@ namespace K3CSharp
                         result.Add(ApplyVerb(verbSymbol.Value, leftElement, rightElement));
                     }
                     
-                    // Determine vector type based on result elements
-                    int vectorType = DetermineVectorType(result);
-                    return new VectorValue(result, vectorType);
-                }
-                
-                // Handle scalar + vector case
-                if (IsScalar(left) && right is VectorValue vec)
-                {
-                    var result = new List<K3Value>();
-                    foreach (var element in vec.Elements)
-                    {
-                        result.Add(ApplyVerb(verbSymbol.Value, left, element));
-                    }
-                    int vectorType = DetermineVectorType(result);
-                    return new VectorValue(result, vectorType);
-                }
-                
-                // Handle scalar + scalar case
-                if (IsScalar(left) && IsScalar(right))
-                {
                     return ApplyVerb(verbSymbol.Value, left, right);
                 }
             }

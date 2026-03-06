@@ -301,14 +301,20 @@ namespace K3CSharp
         
         private K3Value CallFunction(K3Value function, List<K3Value> arguments)
         {
+            Console.WriteLine($"DEBUG CallFunction: function={function} (Type: {function.Type}), arguments={string.Join(", ", arguments.Select(a => a.ToString()))}");
+            
             if (function is FunctionValue func)
             {
+                Console.WriteLine($"DEBUG CallFunction: calling CallDirectFunction with FunctionValue '{func.BodyText}'");
                 var tempFunctionNode = new ASTNode(ASTNodeType.Function);
                 tempFunctionNode.Value = func;
-                return CallDirectFunction(tempFunctionNode, arguments);
+                var result = CallDirectFunction(tempFunctionNode, arguments);
+                Console.WriteLine($"DEBUG CallFunction: CallDirectFunction result={result}");
+                return result;
             }
             else if (function is SymbolValue symbol)
             {
+                Console.WriteLine($"DEBUG CallFunction: calling CallVariableFunction with symbol '{symbol.Value}'");
                 return CallVariableFunction(symbol.Value, arguments);
             }
             else

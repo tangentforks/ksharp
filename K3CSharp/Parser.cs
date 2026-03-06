@@ -2887,60 +2887,165 @@ namespace K3CSharp
                     Advance(); // Consume the adverb token
                     var adverbType = adverbToken.Type.ToString().Replace("TokenType.", "");
                     
-                    // Convert the binary operator to a verb symbol
-                    var verbName = op.ToString() switch
+                    // Check if this adverb is followed by another adverb (adverb chaining)
+                    if (IsAdverbToken(CurrentToken().Type))
                     {
-                        "PLUS" => "+",
-                        "MINUS" => "-",
-                        "MULTIPLY" => "*",
-                        "DIVIDE" => "%",
-                        "MIN" => "&",
-                        "MAX" => "|",
-                        "LESS" => "<",
-                        "GREATER" => ">",
-                        "EQUAL" => "=",
-                        "IN" => "in",
-                        "BIN" => "_bin",
-                        "BINL" => "_binl",
-                        "LIN" => "_lin",
-                        "DV" => "_dv",
-                        "DI" => "_di",
-                        "VS" => "_vs",
-                        "SV" => "_sv",
-                        "SS" => "_ss",
-                        "SM" => "_sm",
-                        "CI" => "_ci",
-                        "IC" => "_ic",
-                        "GETENV" => "_getenv",
-                        "SETENV" => "_setenv",
-                        "SIZE" => "_size",
-                        "POWER" => "^",
-                        "MODULUS" => "!",
-                        "JOIN" => ",",
-                        "COLON" => ":",
-                        "HASH" => "#",
-                        "UNDERSCORE" => "_",
-                        "QUESTION" => "?",
-                        "DOLLAR" => "$",
-                        "TYPE" => "@",
-                        "STRING_REPRESENTATION" => "$",
-                        "APPLY" => "@",
-                        "DOT" => "_dot",
-                        _ => PreviousToken().Lexeme
-                    };
-                    var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
-                    
-                    // Parse the right side of the adverb with LRS
-                    var rightSide = ParseExpressionWithoutSemicolons();
-                    
-                    // Create the correct adverb structure: ADVERB(verb, left, right)
-                    var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
-                    adverbNode.Value = new SymbolValue(adverbType);
-                    adverbNode.Children.Add(verbNode);
-                    adverbNode.Children.Add(left);
-                    if (rightSide != null) adverbNode.Children.Add(rightSide);
-                    
-                    return adverbNode;
+                        // This is adverb chaining (e.g., ,/:\:)
+                        // Create a composite function representing the chained adverbs
+                        var secondAdverbToken = CurrentToken();
+                        Advance(); // Consume the second adverb token
+                        var secondAdverbType = secondAdverbToken.Type.ToString().Replace("TokenType.", "");
+                        
+                        // Convert the binary operator to a verb symbol
+                        var verbName = op.ToString() switch
+                        {
+                            "PLUS" => "+",
+                            "MINUS" => "-",
+                            "MULTIPLY" => "*",
+                            "DIVIDE" => "%",
+                            "MIN" => "&",
+                            "MAX" => "|",
+                            "LESS" => "<",
+                            "GREATER" => ">",
+                            "EQUAL" => "=",
+                            "IN" => "in",
+                            "BIN" => "_bin",
+                            "BINL" => "_binl",
+                            "LIN" => "_lin",
+                            "DV" => "_dv",
+                            "DI" => "_di",
+                            "VS" => "_vs",
+                            "SV" => "_sv",
+                            "SS" => "_ss",
+                            "SM" => "_sm",
+                            "CI" => "_ci",
+                            "IC" => "_ic",
+                            "GETENV" => "_getenv",
+                            "SETENV" => "_setenv",
+                            "SIZE" => "_size",
+                            "POWER" => "^",
+                            "MODULUS" => "!",
+                            "JOIN" => ",",
+                            "COLON" => ":",
+                            "HASH" => "#",
+                            "UNDERSCORE" => "_",
+                            "QUESTION" => "?",
+                            "DOLLAR" => "$",
+                            "TYPE" => "@",
+                            "STRING_REPRESENTATION" => "$",
+                            "APPLY" => "@",
+                            "DOT" => "_dot",
+                            _ => PreviousToken().Lexeme
+                        };
+                        var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
+                        
+                        // For adverb chaining, parse the right side as a vector (multiple terms)
+                        // This prevents LRS from interfering with the chained adverbs
+                        Console.WriteLine($"DEBUG Parser: About to parse right side for adverb chaining, current token: {CurrentToken().Type}, lexeme: '{CurrentToken().Lexeme}', position: {current}/{tokens.Count}");
+                        
+                        // Parse a vector by collecting multiple terms until we hit a delimiter or end
+                        var rightElements = new List<ASTNode>();
+                        while (!IsAtEnd() && CurrentToken().Type != TokenType.SEMICOLON && CurrentToken().Type != TokenType.NEWLINE && CurrentToken().Type != TokenType.RIGHT_PAREN && CurrentToken().Type != TokenType.RIGHT_BRACE && CurrentToken().Type != TokenType.RIGHT_BRACKET)
+                        {
+                            var term = ParseTerm();
+                            if (term != null)
+                            {
+                                rightElements.Add(term);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        
+                        ASTNode? rightSide = null;
+                        if (rightElements.Count == 1)
+                        {
+                            rightSide = rightElements[0];
+                        }
+                        else if (rightElements.Count > 1)
+                        {
+                            rightSide = new ASTNode(ASTNodeType.Vector);
+                            rightSide.Children.AddRange(rightElements);
+                        }
+                        
+                        Console.WriteLine($"DEBUG Parser: Parsed right side for adverb chaining: {rightSide?.Value}, after parse position: {current}/{tokens.Count}");
+                        
+                        // Create a composite adverb structure: ADVERB2(ADVERB1(verb, left, rightSide))
+                        // This represents {x verb y} adverb1 adverb2
+                        var firstAdverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        firstAdverbNode.Value = new SymbolValue(adverbType);
+                        firstAdverbNode.Children.Add(verbNode);
+                        firstAdverbNode.Children.Add(left);
+                        if (rightSide != null) firstAdverbNode.Children.Add(rightSide);
+                        
+                        // Create the second adverb node that wraps the first
+                        // For adverb chaining, the second adverb should apply to the result of the first
+                        // But the evaluator expects 3 arguments, so we need to create the proper structure
+                        var secondAdverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        secondAdverbNode.Value = new SymbolValue(secondAdverbType);
+                        secondAdverbNode.Children.Add(firstAdverbNode);
+                        
+                        return secondAdverbNode;
+                    }
+                    else
+                    {
+                        // Single adverb case
+                        // Convert the binary operator to a verb symbol
+                        var verbName = op.ToString() switch
+                        {
+                            "PLUS" => "+",
+                            "MINUS" => "-",
+                            "MULTIPLY" => "*",
+                            "DIVIDE" => "%",
+                            "MIN" => "&",
+                            "MAX" => "|",
+                            "LESS" => "<",
+                            "GREATER" => ">",
+                            "EQUAL" => "=",
+                            "IN" => "in",
+                            "BIN" => "_bin",
+                            "BINL" => "_binl",
+                            "LIN" => "_lin",
+                            "DV" => "_dv",
+                            "DI" => "_di",
+                            "VS" => "_vs",
+                            "SV" => "_sv",
+                            "SS" => "_ss",
+                            "SM" => "_sm",
+                            "CI" => "_ci",
+                            "IC" => "_ic",
+                            "GETENV" => "_getenv",
+                            "SETENV" => "_setenv",
+                            "SIZE" => "_size",
+                            "POWER" => "^",
+                            "MODULUS" => "!",
+                            "JOIN" => ",",
+                            "COLON" => ":",
+                            "HASH" => "#",
+                            "UNDERSCORE" => "_",
+                            "QUESTION" => "?",
+                            "DOLLAR" => "$",
+                            "TYPE" => "@",
+                            "STRING_REPRESENTATION" => "$",
+                            "APPLY" => "@",
+                            "DOT" => "_dot",
+                            _ => PreviousToken().Lexeme
+                        };
+                        var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
+                        
+                        // Parse the right side of the adverb with LRS
+                        var rightSide = ParseExpressionWithoutSemicolons();
+                        
+                        // Create the correct adverb structure: ADVERB(verb, left, right)
+                        var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        adverbNode.Value = new SymbolValue(adverbType);
+                        adverbNode.Children.Add(verbNode);
+                        adverbNode.Children.Add(left);
+                        if (rightSide != null) adverbNode.Children.Add(rightSide);
+                        
+                        return adverbNode;
+                    }
                 }
                 else
                 {
