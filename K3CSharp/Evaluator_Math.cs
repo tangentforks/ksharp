@@ -220,26 +220,48 @@ namespace K3CSharp
                 bool leftIsMatrix = IsMatrix(leftVec);
                 bool rightIsMatrix = IsMatrix(rightVec);
                 
+                // Check if we have compatible shapes for specialized dot operations
+                bool hasCompatibleShape = false;
+                
                 if (leftIsMatrix && rightIsMatrix)
                 {
-                    // Matrix-matrix dot product: return diagonal of left dot each column of right
-                    return MatrixMatrixDot(leftVec, rightVec);
+                    // Matrix-matrix dot product: check if dimensions are compatible
+                    hasCompatibleShape = AreMatrixDimensionsCompatible(leftVec, rightVec);
+                    if (hasCompatibleShape)
+                    {
+                        return MatrixMatrixDot(leftVec, rightVec);
+                    }
                 }
                 else if (leftIsMatrix && !rightIsMatrix)
                 {
-                    // Left is matrix, right is vector: element-wise dot product
-                    return MatrixVectorDot(leftVec, rightVec);
+                    // Left is matrix, right is vector: check if dimensions are compatible
+                    hasCompatibleShape = AreMatrixVectorDimensionsCompatible(leftVec, rightVec);
+                    if (hasCompatibleShape)
+                    {
+                        return MatrixVectorDot(leftVec, rightVec);
+                    }
                 }
                 else if (!leftIsMatrix && rightIsMatrix)
                 {
-                    // Left is vector, right is matrix: element-wise dot product
-                    return VectorMatrixDot(leftVec, rightVec);
+                    // Left is vector, right is matrix: check if dimensions are compatible
+                    hasCompatibleShape = AreVectorMatrixDimensionsCompatible(leftVec, rightVec);
+                    if (hasCompatibleShape)
+                    {
+                        return VectorMatrixDot(leftVec, rightVec);
+                    }
                 }
                 else
                 {
-                    // Vector-vector dot product (original implementation)
-                    return VectorVectorDot(leftVec, rightVec);
+                    // Vector-vector dot product: check if same length
+                    hasCompatibleShape = (leftVec.Elements.Count == rightVec.Elements.Count);
+                    if (hasCompatibleShape)
+                    {
+                        return VectorVectorDot(leftVec, rightVec);
+                    }
                 }
+                
+                // If shapes are not compatible for specialized operations, fall back to +/x*y
+                return DotProductFallback(left, right);
             }
             else if (left is VectorValue vec)
             {
@@ -254,10 +276,177 @@ namespace K3CSharp
             }
             else
             {
-                throw new Exception("_dot requires vector arguments");
+                // Fallback case: for non-vector arguments, use K operation +/x*y
+                // According to speclet: "If applied to numeric arguments of shapes other than simple vectors 
+                // (e.g., scalars or lists of vectors) it will return the result from the K operation +/x*y"
+                return DotProductFallback(left, right);
             }
         }
         
+        private bool AreMatrixDimensionsCompatible(VectorValue leftMatrix, VectorValue rightMatrix)
+        {
+            // For matrix-matrix dot product, check if columns of left match rows of right
+            var leftRows = ExtractMatrix(leftMatrix);
+            var rightRows = ExtractMatrix(rightMatrix);
+            
+            if (leftRows.Length == 0 || rightRows.Length == 0)
+                return false;
+                
+            return leftRows[0].Length == rightRows.Length;
+        }
+        
+        private bool AreMatrixVectorDimensionsCompatible(VectorValue matrix, VectorValue vector)
+        {
+            // For matrix-vector dot product, check if matrix columns match vector length
+            var matrixRows = ExtractMatrix(matrix);
+            
+            if (matrixRows.Length == 0)
+                return false;
+                
+            return matrixRows[0].Length == vector.Elements.Count;
+        }
+        
+        private bool AreVectorMatrixDimensionsCompatible(VectorValue vector, VectorValue matrix)
+        {
+            // For vector-matrix dot product, check if vector length matches matrix rows
+            var matrixRows = ExtractMatrix(matrix);
+            
+            if (matrixRows.Length == 0)
+                return false;
+                
+            return vector.Elements.Count == matrixRows.Length;
+        }
+        
+        private K3Value DotProductFallback(K3Value left, K3Value right)
+        {
+            // Implement the K operation +/x*y for non-vector arguments
+            // This is equivalent to: sum over (element-wise multiplication of left and right)
+            
+            // Handle different multiplication cases that Times() might not support
+            K3Value product;
+            
+            try
+            {
+                // Try regular multiplication first
+                product = Times(left, right);
+            }
+            catch
+            {
+                // If Times fails, implement custom multiplication for special cases
+                product = MultiplyWithBroadcasting(left, right);
+            }
+            
+            // Then sum the result using the over adverb (/)
+            // This is equivalent to +/product
+            // For sum, we use 0 as initialization
+            return Over(new SymbolValue("+"), new IntegerValue(0), product);
+        }
+        
+        private K3Value MultiplyWithBroadcasting(K3Value left, K3Value right)
+        {
+            // Handle scalar-matrix multiplication and other broadcasting cases
+            if (IsScalar(left) && right is VectorValue rightVec && IsMatrix(rightVec))
+            {
+                // Scalar * matrix: multiply each element of matrix by scalar
+                var resultElements = new List<K3Value>();
+                foreach (var row in rightVec.Elements)
+                {
+                    if (row is VectorValue rowVec)
+                    {
+                        var newRowElements = new List<K3Value>();
+                        foreach (var element in rowVec.Elements)
+                        {
+                            var elementProduct = Times(left, element);
+                            newRowElements.Add(elementProduct);
+                        }
+                        resultElements.Add(new VectorValue(newRowElements));
+                    }
+                }
+                return new VectorValue(resultElements);
+            }
+            else if (IsScalar(right) && left is VectorValue leftVec && IsMatrix(leftVec))
+            {
+                // Matrix * scalar: multiply each element of matrix by scalar
+                var resultElements = new List<K3Value>();
+                foreach (var row in leftVec.Elements)
+                {
+                    if (row is VectorValue rowVec)
+                    {
+                        var newRowElements = new List<K3Value>();
+                        foreach (var element in rowVec.Elements)
+                        {
+                            var elementProduct = Times(element, right);
+                            newRowElements.Add(elementProduct);
+                        }
+                        resultElements.Add(new VectorValue(newRowElements));
+                    }
+                }
+                return new VectorValue(resultElements);
+            }
+            else if (left is VectorValue singleLeftVec && singleLeftVec.Elements.Count == 1 && right is VectorValue rightMatrix && IsMatrix(rightMatrix))
+            {
+                // Single-element vector * matrix: treat as scalar * matrix
+                var scalar = singleLeftVec.Elements[0];
+                var resultElements = new List<K3Value>();
+                foreach (var row in rightMatrix.Elements)
+                {
+                    if (row is VectorValue rowVec)
+                    {
+                        var newRowElements = new List<K3Value>();
+                        foreach (var element in rowVec.Elements)
+                        {
+                            var elementProduct = Times(scalar, element);
+                            newRowElements.Add(elementProduct);
+                        }
+                        resultElements.Add(new VectorValue(newRowElements));
+                    }
+                }
+                return new VectorValue(resultElements);
+            }
+            else if (right is VectorValue singleRightVec && singleRightVec.Elements.Count == 1 && left is VectorValue leftMatrix && IsMatrix(leftMatrix))
+            {
+                // Matrix * single-element vector: treat as matrix * scalar
+                var scalar = singleRightVec.Elements[0];
+                var resultElements = new List<K3Value>();
+                foreach (var row in leftMatrix.Elements)
+                {
+                    if (row is VectorValue rowVec)
+                    {
+                        var newRowElements = new List<K3Value>();
+                        foreach (var element in rowVec.Elements)
+                        {
+                            var elementProduct = Times(element, scalar);
+                            newRowElements.Add(elementProduct);
+                        }
+                        resultElements.Add(new VectorValue(newRowElements));
+                    }
+                }
+                return new VectorValue(resultElements);
+            }
+            
+            else if (left is VectorValue leftVector && right is VectorValue rightVector && !IsMatrix(leftVector) && !IsMatrix(rightVector))
+            {
+                // Vector-vector multiplication with different lengths: use element-wise with broadcasting
+                var resultElements = new List<K3Value>();
+                int maxLength = Math.Max(leftVector.Elements.Count, rightVector.Elements.Count);
+                
+                for (int i = 0; i < maxLength; i++)
+                {
+                    K3Value leftElement = (i < leftVector.Elements.Count) ? leftVector.Elements[i] : new IntegerValue(1);
+                    K3Value rightElement = (i < rightVector.Elements.Count) ? rightVector.Elements[i] : new IntegerValue(1);
+                    
+                    var elementProduct = Times(leftElement, rightElement);
+                    resultElements.Add(elementProduct);
+                }
+                
+                return new VectorValue(resultElements);
+            }
+            
+            // Fallback: try Times again (will throw if still incompatible)
+            return Times(left, right);
+        }
+        
+                
         private K3Value VectorVectorDot(VectorValue leftVec, VectorValue rightVec)
         {
             if (leftVec.Elements.Count != rightVec.Elements.Count)

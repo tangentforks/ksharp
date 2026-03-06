@@ -348,18 +348,22 @@ namespace K3CSharp
         private bool IsBinaryOperator(TokenType type)
         {
             return type == TokenType.PLUS || type == TokenType.MINUS || type == TokenType.MULTIPLY ||
-                   type == TokenType.DIVIDE || type == TokenType.DIV || type == TokenType.DOT || type == TokenType.MUL || type == TokenType.LSQ || type == TokenType.MIN || type == TokenType.MAX || 
-                   type == TokenType.LESS || type == TokenType.GREATER || type == TokenType.EQUAL || 
-                   type == TokenType.MATCH || type == TokenType.IN || type == TokenType.BIN || type == TokenType.BINL || type == TokenType.LIN ||
+                   type == TokenType.DIVIDE || type == TokenType.DIV || type == TokenType.DOT || type == TokenType.MUL || type == TokenType.AND || type == TokenType.OR || type == TokenType.XOR || type == TokenType.ROT || type == TokenType.SHIFT || type == TokenType.MIN || type == TokenType.MAX || type == TokenType.LESS || type == TokenType.GREATER ||
+                   type == TokenType.EQUAL || type == TokenType.MATCH || type == TokenType.IN || type == TokenType.BIN || type == TokenType.BINL || type == TokenType.LIN ||
                    type == TokenType.DV || type == TokenType.DI || type == TokenType.VS || type == TokenType.SV || type == TokenType.SS || type == TokenType.SM || type == TokenType.CI || type == TokenType.IC ||
-                   type == TokenType.LT || type == TokenType.JD || type == TokenType.DJ || type == TokenType.GTIME || type == TokenType.LTIME ||
+                   type == TokenType.GETENV || type == TokenType.SETENV || type == TokenType.SIZE ||
                    type == TokenType.POWER || type == TokenType.MODULUS || type == TokenType.JOIN ||
-                   type == TokenType.COLON || type == TokenType.HASH || type == TokenType.UNDERSCORE || type == TokenType.QUESTION || 
-                   type == TokenType.DOLLAR || type == TokenType.DRAW || type == TokenType.GETENV || type == TokenType.SETENV || type == TokenType.SIZE || type == TokenType.STRING_REPRESENTATION ||
+                   type == TokenType.COLON || type == TokenType.HASH || type == TokenType.UNDERSCORE || type == TokenType.QUESTION ||
+                   type == TokenType.DOLLAR || type == TokenType.DRAW || type == TokenType.TYPE || type == TokenType.STRING_REPRESENTATION ||
                    type == TokenType.IO_VERB_0 || type == TokenType.IO_VERB_1 || type == TokenType.IO_VERB_2 || type == TokenType.IO_VERB_3 ||
                    type == TokenType.IO_VERB_6 || type == TokenType.IO_VERB_7 || type == TokenType.IO_VERB_8 || type == TokenType.IO_VERB_9 ||
-                   type == TokenType.AND || type == TokenType.OR || type == TokenType.XOR || type == TokenType.ROT || type == TokenType.SHIFT ||
-                   type == TokenType.APPLY;
+                   type == TokenType.LSQ || type == TokenType.APPLY || type == TokenType.DOT_APPLY;
+        }
+
+        private bool IsAdverbToken(TokenType type)
+        {
+            return type == TokenType.ADVERB_SLASH || type == TokenType.ADVERB_BACKSLASH || type == TokenType.ADVERB_TICK ||
+                   type == TokenType.ADVERB_SLASH_COLON || type == TokenType.ADVERB_BACKSLASH_COLON || type == TokenType.ADVERB_TICK_COLON;
         }
 
         private static readonly TokenType[] ParseUntilEndStopTokens = {
@@ -1863,57 +1867,38 @@ namespace K3CSharp
                     bodyTokens.Add(tokens[ti]);
                 }
                 
+                // If no explicit parameters were provided, extract implicit parameters from the body
+                if (parameters.Count == 0 && bodyTokens.Count > 0)
+                {
+                    parameters = ExtractImplicitParameters(bodyTokens);
+                }
+                
                 // Reconstruct the function body text from tokens
                 if (bodyTokens.Count > 0)
                 {
-                    // Reconstruct body text preserving original spacing as much as possible
+                    // Reconstruct body text preserving original spacing exactly
                     var bodyParts = new List<string>();
                     for (int i = 0; i < bodyTokens.Count; i++)
                     {
                         var token = bodyTokens[i];
                         var lexeme = ReconstructTokenLexeme(token);
 
-                        // Handle operators that should be attached to operands (no spaces)
-                        if ((lexeme == "+" || lexeme == "-" || lexeme == "*" || lexeme == "/" ||
-                             lexeme == "^" || lexeme == "!" || lexeme == "=" || lexeme == "<" ||
-                             lexeme == ">" || lexeme == "&" || lexeme == "|" || lexeme == ","))
+                        // Check if there should be a space before this token based on original positions
+                        bool addSpaceBefore = false;
+                        if (i > 0)
                         {
-                            // Check if this operator should be attached to previous token (no space before)
-                            if (i > 0)
-                            {
-                                var prevToken = bodyTokens[i - 1];
-                                if (prevToken.Type == TokenType.IDENTIFIER || prevToken.Type == TokenType.INTEGER ||
-                                    prevToken.Type == TokenType.FLOAT || prevToken.Type == TokenType.RIGHT_PAREN ||
-                                    prevToken.Type == TokenType.RIGHT_BRACKET)
-                                {
-                                    // Attach operator to previous token (no space before)
-                                    bodyParts[bodyParts.Count - 1] += lexeme;
-
-                                    // Check if next token should also be attached (no space after)
-                                    if (i + 1 < bodyTokens.Count)
-                                    {
-                                        var nextToken = bodyTokens[i + 1];
-                                        if (nextToken.Type == TokenType.IDENTIFIER || nextToken.Type == TokenType.INTEGER ||
-                                            nextToken.Type == TokenType.FLOAT || nextToken.Type == TokenType.LEFT_PAREN ||
-                                            nextToken.Type == TokenType.LEFT_BRACKET)
-                                        {
-                                            // Attach next token to operator as well (no space after)
-                                            if (i + 1 < bodyTokens.Count)
-                                            {
-                                                bodyParts[bodyParts.Count - 1] += ReconstructTokenLexeme(bodyTokens[i + 1]);
-                                                i++; // Skip the next token since we already processed it
-                                            }
-                                        }
-                                    }
-                                    continue;
-                                }
-                            }
+                            var prevToken = bodyTokens[i - 1];
+                            int prevEnd = prevToken.Position + prevToken.Lexeme.Length;
+                            addSpaceBefore = (token.Position > prevEnd);
                         }
-
-                        bodyParts.Add(lexeme);
+                        
+                        if (addSpaceBefore)
+                            bodyParts.Add(" " + lexeme);
+                        else
+                            bodyParts.Add(lexeme);
                     }
                     
-                    bodyText = string.Join(" ", bodyParts);
+                    bodyText = string.Join("", bodyParts);
                     
                     // Pre-parse the function body for better performance
                     try
@@ -2290,10 +2275,11 @@ namespace K3CSharp
                 var op = PreviousToken().Type;
                 
                 // Check if this is followed by an adverb
-                if (Match(TokenType.ADVERB_SLASH) || Match(TokenType.ADVERB_BACKSLASH) || Match(TokenType.ADVERB_TICK) ||
-                    Match(TokenType.ADVERB_SLASH_COLON) || Match(TokenType.ADVERB_BACKSLASH_COLON) || Match(TokenType.ADVERB_TICK_COLON))
+                if (IsAdverbToken(CurrentToken().Type))
                 {
-                    var firstAdverbType = PreviousToken().Type.ToString().Replace("TokenType.", "");
+                    var adverbToken = CurrentToken();
+                    Advance(); // Consume the adverb token
+                    var firstAdverbType = adverbToken.Type.ToString().Replace("TokenType.", "");
                     
                     // Convert the binary operator to a verb symbol
                     var verbName = op.ToString() switch
@@ -2565,10 +2551,11 @@ namespace K3CSharp
             var adverbs = new List<string> { firstAdverb };
             
             // Collect additional adverbs for chaining
-            while (Match(TokenType.ADVERB_SLASH) || Match(TokenType.ADVERB_BACKSLASH) || Match(TokenType.ADVERB_TICK) ||
-                  Match(TokenType.ADVERB_SLASH_COLON) || Match(TokenType.ADVERB_BACKSLASH_COLON) || Match(TokenType.ADVERB_TICK_COLON))
+            while (IsAdverbToken(CurrentToken().Type))
             {
-                adverbs.Add(PreviousToken().Type.ToString().Replace("TokenType.", ""));
+                var adverbToken = CurrentToken();
+                Advance(); // Consume the adverb token
+                adverbs.Add(adverbToken.Type.ToString().Replace("TokenType.", ""));
             }
             
             // Parse the operand (the verb or data the adverbs apply to)
@@ -2792,10 +2779,8 @@ namespace K3CSharp
                         var operand = ParseTerm();
                         if (operand == null)
                         {
-                            throw new Exception($"Expected operand after unary operator {opToken.Type}");
+                            // Special handling for adverbs: don't attach if previous token is a verb or adverbator node
                         }
-                        
-                        // Create unary operator node
                         var unaryNode = new ASTNode(ASTNodeType.BinaryOp);
                         var symbolValue = opToken.Type switch
                         {
@@ -2896,10 +2881,11 @@ namespace K3CSharp
                 var op = PreviousToken().Type;
                 
                 // Check if this is followed by an adverb (infix adverb)
-                if (Match(TokenType.ADVERB_SLASH) || Match(TokenType.ADVERB_BACKSLASH) || Match(TokenType.ADVERB_TICK) ||
-                    Match(TokenType.ADVERB_SLASH_COLON) || Match(TokenType.ADVERB_BACKSLASH_COLON) || Match(TokenType.ADVERB_TICK_COLON))
+                if (IsAdverbToken(CurrentToken().Type))
                 {
-                    var adverbType = PreviousToken().Type.ToString().Replace("TokenType.", "");
+                    var adverbToken = CurrentToken();
+                    Advance(); // Consume the adverb token
+                    var adverbType = adverbToken.Type.ToString().Replace("TokenType.", "");
                     
                     // Convert the binary operator to a verb symbol
                     var verbName = op.ToString() switch
@@ -2997,10 +2983,11 @@ namespace K3CSharp
                 var op = PreviousToken().Type;
                 
                 // Check if this is followed by an adverb (infix adverb)
-                if (Match(TokenType.ADVERB_SLASH) || Match(TokenType.ADVERB_BACKSLASH) || Match(TokenType.ADVERB_TICK) ||
-                    Match(TokenType.ADVERB_SLASH_COLON) || Match(TokenType.ADVERB_BACKSLASH_COLON) || Match(TokenType.ADVERB_TICK_COLON))
+                if (IsAdverbToken(CurrentToken().Type))
                 {
-                    var adverbType = PreviousToken().Type.ToString().Replace("TokenType.", "");
+                    var adverbToken = CurrentToken();
+                    Advance(); // Consume the adverb token
+                    var adverbType = adverbToken.Type.ToString().Replace("TokenType.", "");
                     
                     // Convert the binary operator to a verb symbol
                     var verbName = op.ToString() switch
@@ -3084,10 +3071,11 @@ namespace K3CSharp
                     var op = PreviousToken().Type;
                     
                     // Check if this is followed by an adverb (infix adverb)
-                    if (Match(TokenType.ADVERB_SLASH) || Match(TokenType.ADVERB_BACKSLASH) || Match(TokenType.ADVERB_TICK) ||
-                    Match(TokenType.ADVERB_SLASH_COLON) || Match(TokenType.ADVERB_BACKSLASH_COLON) || Match(TokenType.ADVERB_TICK_COLON))
+                    if (IsAdverbToken(CurrentToken().Type))
                     {
-                        var adverbType = PreviousToken().Type.ToString().Replace("TokenType.", "");
+                        var adverbToken = CurrentToken();
+                        Advance(); // Consume the adverb token
+                        var adverbType = adverbToken.Type.ToString().Replace("TokenType.", "");
                         
                         // Convert the binary operator to a verb symbol
                         var verbName = op.ToString() switch
@@ -3328,6 +3316,32 @@ namespace K3CSharp
                 default:
                     return token.Lexeme;
             }
+        }
+
+        /// <summary>
+        /// Extract implicit parameters from function body tokens.
+        /// In K, implicit parameters are single lowercase letters that appear in the function body.
+        /// The parameters are extracted in alphabetical order of first appearance.
+        /// </summary>
+        private List<string> ExtractImplicitParameters(List<Token> bodyTokens)
+        {
+            var parameters = new List<string>();
+            var seenParameters = new HashSet<string>();
+            
+            foreach (var token in bodyTokens)
+            {
+                // Look for identifier tokens that are single lowercase letters (a-z)
+                if (token.Type == TokenType.IDENTIFIER && 
+                    token.Lexeme.Length == 1 && 
+                    char.IsLower(token.Lexeme[0]) &&
+                    !seenParameters.Contains(token.Lexeme))
+                {
+                    parameters.Add(token.Lexeme);
+                    seenParameters.Add(token.Lexeme);
+                }
+            }
+            
+            return parameters;
         }
     }
 }

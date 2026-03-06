@@ -365,6 +365,80 @@ namespace K3CSharp
                 return result;
             }
             
+            // Handle matrix case (VectorValue of VectorValues)
+            if (data is VectorValue matrixData && matrixData.Elements.Count > 0 && matrixData.Elements[0] is VectorValue)
+            {
+                // This is a matrix - apply verb to each row separately
+                var result = new List<K3Value>();
+                
+                if (verb is SymbolValue verbSymbol)
+                {
+                    // For each row in the matrix, apply the verb over that row
+                    for (int i = 0; i < matrixData.Elements.Count; i++)
+                    {
+                        var row = (VectorValue)matrixData.Elements[i];
+                        K3Value current = initialization;
+                        
+                        // If initialization is 0, use first element as initialization (K behavior for / without explicit init)
+                        if (initialization is IntegerValue intInit && intInit.Value == 0 && row.Elements.Count > 0)
+                        {
+                            current = row.Elements[0]; // Use first element as starting point
+                            var startIndex = 1; // Start from second element
+                            
+                            // Apply verb to remaining elements of this row
+                            for (int j = startIndex; j < row.Elements.Count; j++)
+                            {
+                                current = ApplyVerb(verbSymbol.Value, current, row.Elements[j]);
+                            }
+                        }
+                        else
+                        {
+                            // Use provided initialization value
+                            current = initialization;
+                            for (int j = 0; j < row.Elements.Count; j++)
+                            {
+                                current = ApplyVerb(verbSymbol.Value, current, row.Elements[j]);
+                            }
+                        }
+                        
+                        result.Add(current);
+                    }
+                }
+                else
+                {
+                    // If verb is not a symbol, treat it as a value to apply with operator
+                    for (int i = 0; i < matrixData.Elements.Count; i++)
+                    {
+                        var row = (VectorValue)matrixData.Elements[i];
+                        K3Value current = initialization;
+                        
+                        // If initialization is 0, use first element as initialization
+                        if (initialization is IntegerValue intInit && intInit.Value == 0 && row.Elements.Count > 0)
+                        {
+                            current = row.Elements[0];
+                            var startIndex = 1;
+                            
+                            for (int j = startIndex; j < row.Elements.Count; j++)
+                            {
+                                current = ApplyVerbWithOperator(verb, current, row.Elements[j]);
+                            }
+                        }
+                        else
+                        {
+                            current = initialization;
+                            for (int j = 0; j < row.Elements.Count; j++)
+                            {
+                                current = ApplyVerbWithOperator(verb, current, row.Elements[j]);
+                            }
+                        }
+                        
+                        result.Add(current);
+                    }
+                }
+                
+                return new VectorValue(result);
+            }
+            
             // Handle scalar case
             if (IsScalar(data))
             {
@@ -507,9 +581,9 @@ namespace K3CSharp
             
             if (verb is SymbolValue verbSymbol)
             {
-                if (left is VectorValue leftVec && IsMatrix(leftVec))
+                if (left is VectorValue leftVec && IsMatrix(leftVec) && !(verbSymbol.Value == "_dot" && right is VectorValue rightMatrix && IsMatrix(rightMatrix)))
                 {
-                    var result = new List<K3Value>();
+                                        var result = new List<K3Value>();
                     foreach (var element in leftVec.Elements)
                     {
                         // For complex structures, we need to apply the verb+adverb recursively
@@ -523,7 +597,16 @@ namespace K3CSharp
                     var result = new List<K3Value>();
                     foreach (var element in rightVec.Elements)
                     {
-                        result.Add(ApplyVerb(verbSymbol.Value, left, element));
+                        // Special handling for _dot to use fallback operation
+                        if (verbSymbol.Value == "_dot")
+                        {
+                            var fallbackResult = DotProductFallback(left, element);
+                            result.Add(fallbackResult);
+                        }
+                        else
+                        {
+                            result.Add(ApplyVerb(verbSymbol.Value, left, element));
+                        }
                     }
                     int vectorType = DetermineVectorType(result);
                     return new VectorValue(result, vectorType);
@@ -610,25 +693,25 @@ namespace K3CSharp
 
         private K3Value EachLeft(K3Value verb, K3Value left, K3Value right)
         {
-            // Each-Left (\:): Apply verb to entire left with each element of right
+            // Each-Left (\:): Apply verb to entire right with each element of left
             
-            // Check if this is a chaining context: if left is a single scalar, 
+            // Check if this is a chaining context: if right is a single scalar, 
             // this might be part of a chained adverb operation
-            bool isChainingContext = IsScalar(left) && !(verb is VectorValue);
+            bool isChainingContext = IsScalar(right) && !(verb is VectorValue);
             
             if (verb is SymbolValue verbSymbol)
             {
-                if (right is VectorValue rightVec)
+                if (left is VectorValue leftVec)
                 {
                     var result = new List<K3Value>();
-                    foreach (var element in rightVec.Elements)
+                    foreach (var element in leftVec.Elements)
                     {
-                        result.Add(ApplyVerb(verbSymbol.Value, left, element));
+                        result.Add(ApplyVerb(verbSymbol.Value, element, right));
                     }
                     int vectorType = DetermineVectorType(result);
                     return new VectorValue(result, vectorType);
                 }
-                else if (IsScalar(right))
+                else if (IsScalar(left))
                 {
                     if (isChainingContext)
                     {
@@ -646,17 +729,17 @@ namespace K3CSharp
                 var actualVerb = verbVec.Elements[0];
                 if (actualVerb is SymbolValue symbolValue)
                 {
-                    if (right is VectorValue rightVec)
+                    if (left is VectorValue leftVec)
                     {
                         var result = new List<K3Value>();
-                        foreach (var element in rightVec.Elements)
+                        foreach (var element in leftVec.Elements)
                         {
-                            result.Add(ApplyVerb(symbolValue.Value, left, element));
+                            result.Add(ApplyVerb(symbolValue.Value, element, right));
                         }
                         int vectorType = DetermineVectorType(result);
                         return new VectorValue(result, vectorType);
                     }
-                    else if (IsScalar(right))
+                    else if (IsScalar(left))
                     {
                         return ApplyVerb(symbolValue.Value, left, right);
                     }

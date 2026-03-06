@@ -152,6 +152,12 @@ namespace K3CSharp
         
         private K3Value GetVariable(string variableName)
         {
+            // Check local variables first (function parameters and local assignments)
+            if (localVariables.TryGetValue(variableName, out var localValue))
+            {
+                return localValue;
+            }
+            
             // Check if this is a K tree dotted notation variable
             if (variableName.Contains('.'))
             {
@@ -192,13 +198,7 @@ namespace K3CSharp
                 }
             }
             
-            // Check local scope first
-            if (localVariables.TryGetValue(variableName, out var localValue))
-            {
-                return localValue;
-            }
-            
-            // Check global scope
+            // Check global variables
             if (globalVariables.TryGetValue(variableName, out var globalValue))
             {
                 return globalValue;
@@ -800,6 +800,7 @@ namespace K3CSharp
             var parameters = functionValue.Parameters;
             var bodyText = functionValue.BodyText;
             
+                        
             // Vector argument unpacking: if we have 1 vector argument but need multiple parameters, unpack it
             // Only unpack if the vector has multiple elements (for single-param functions, keep as is)
             if (arguments.Count == 1 && parameters.Count > 1 && arguments[0] is VectorValue vectorArg && vectorArg.Elements.Count > 1)
@@ -874,6 +875,7 @@ namespace K3CSharp
 
         private K3Value ExecuteFunctionBody(string bodyText, Evaluator functionEvaluator, List<Token>? preParsedTokens = null)
         {
+                        
             if (string.IsNullOrWhiteSpace(bodyText))
             {
                 return new IntegerValue(0); // Empty function result
@@ -911,16 +913,17 @@ namespace K3CSharp
                 {
                     // Cache the parsed AST for future use
                     functionEvaluator.currentFunctionValue?.CacheAst(ast);
-                    return functionEvaluator.Evaluate(ast) ?? new NullValue();
+                    var result = functionEvaluator.Evaluate(ast) ?? new NullValue();
+                                        return result;
                 }
                 else
                 {
-                    return new NullValue();
+                                        return new NullValue();
                 }
             }
             catch (Exception ex)
             {
-                throw new Exception($"Function execution error: {ex.Message}");
+                                throw new Exception($"Function execution error: {ex.Message}");
             }
         }
         
@@ -1845,6 +1848,7 @@ namespace K3CSharp
 
         private K3Value DotApply(K3Value left, K3Value right)
         {
+                        
             // Check if this is Amend operation: .[d; i; f; y] or .[d; i; f]
             // This happens when left is null (from bracket notation) or when left is the dot symbol
             if (left is NullValue || (left is SymbolValue sym && sym.Value == "."))
