@@ -6,9 +6,35 @@ namespace K3CSharp
 {
     public partial class Evaluator
     {
-        private K3Value ApplyVerb(string verbName, K3Value left, K3Value right)
+        private K3Value ApplyVerb(K3Value verb, K3Value left, K3Value right)
         {
-            // Generic verb application that works with any verb type
+            // Generic verb application that works with K3Value verbs
+            
+            // Handle SymbolValue verbs (most common case)
+            if (verb is SymbolValue verbSymbol)
+            {
+                return ApplySymbolVerb(verbSymbol.Value, left, right);
+            }
+            
+            // Handle FunctionValue verbs
+            if (verb is FunctionValue func)
+            {
+                return ApplyFunctionValue(func, left, right);
+            }
+            
+            // Handle VectorValue verbs (composite verbs)
+            if (verb is VectorValue verbVec)
+            {
+                return ApplyVectorVerb(verbVec, left, right);
+            }
+            
+            // Handle other verb types by treating them as values with operators
+            return ApplyVerbWithOperator(verb, left, right);
+        }
+        
+        private K3Value ApplySymbolVerb(string verbName, K3Value left, K3Value right)
+        {
+            // Handle SymbolValue verbs by name
             
             // Check if it's a built-in operator (single character)
             if (verbName.Length == 1)
@@ -36,6 +62,40 @@ namespace K3CSharp
             }
             
             throw new Exception($"Unknown verb: {verbName}");
+        }
+        
+        private K3Value ApplyVectorVerb(VectorValue verbVec, K3Value left, K3Value right)
+        {
+            // Handle VectorValue verbs (composite verbs)
+            if (verbVec.Elements.Count == 1)
+            {
+                // Single element vector - apply the verb directly
+                return ApplyVerb(verbVec.Elements[0], left, right);
+            }
+            else if (verbVec.Elements.Count >= 2)
+            {
+                // Multi-element vector - this might be a modified verb or function
+                var firstElement = verbVec.Elements[0];
+                if (firstElement is SymbolValue symbol)
+                {
+                    // Apply the symbol verb with the remaining elements as modifiers
+                    return ApplySymbolVerb(symbol.Value, left, right);
+                }
+                else
+                {
+                    // Treat as a composite function
+                    return ApplyFunctionValue(verbVec, left, right);
+                }
+            }
+            
+            throw new Exception($"Invalid verb vector: {verbVec}");
+        }
+        
+        // Legacy method for backward compatibility - marked as obsolete
+        [System.Obsolete("Use ApplyVerb(K3Value verb, K3Value left, K3Value right) instead")]
+        private K3Value ApplyVerb(string verbName, K3Value left, K3Value right)
+        {
+            return ApplySymbolVerb(verbName, left, right);
         }
         
         private K3Value ApplyBuiltInOperator(char op, K3Value left, K3Value right)
@@ -343,128 +403,91 @@ namespace K3CSharp
 
         private K3Value ApplyAdverbBackslashColon(K3Value operand)
         {
-            // Each-Left (\:): Apply verb to entire left with each element of right
-            
             Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Called with operand: {operand} (Type: {operand.Type})");
             
-            // Special case for nested adverbs: If the verb is a SymbolValue and we have a VectorValue with 3 elements
-            // where the first element is a SymbolValue that represents a verb, and the third element is a VectorValue
-            // this might be a nested adverb case like 1 2 3 ,/:\: 4 5 6
-            if (operand is VectorValue vec && vec.Elements.Count == 3)
+            // Try to handle verb data structure case
+            var verbDataResult = HandleVerbDataStructureForBackslashColon(operand);
+            if (verbDataResult != null)
+                return verbDataResult;
+            
+            // Try to handle function value case
+            var functionResult = HandleFunctionValueForBackslashColon(operand);
+            if (functionResult != null)
+                return functionResult;
+            
+            // Default fallback case
+            return HandleFallbackForBackslashColon(operand);
+        }
+        
+        private K3Value HandleVerbDataStructureForBackslashColon(K3Value operand)
+        {
+            if (!(operand is VectorValue verbData) || verbData.Elements.Count < 3)
+                return null;
+                
+            var verb = verbData.Elements[0];
+            var left = verbData.Elements[1];
+            var right = verbData.Elements[2];
+            
+            Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: verb={verb} (Type: {verb.Type}), left={left} (Type: {left.Type}), right={right} (Type: {right.Type})");
+            
+            // Handle nested adverb case
+            var nestedResult = HandleNestedAdverbCase(verb, left, right);
+            if (nestedResult != null)
+                return nestedResult;
+                
+            return null;
+        }
+        
+        private K3Value HandleNestedAdverbCase(K3Value verb, K3Value left, K3Value right)
+        {
+            if (!(right is VectorValue rightVec))
+                return null;
+                
+            Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Detected nested adverb case with verb: {verb}");
+            
+            var leftElements = left is VectorValue leftVec ? leftVec.Elements : new List<K3Value> { left };
+            var rightElements = rightVec.Elements;
+            
+            return PerformEachLeftOperation(verb, leftElements, rightElements);
+        }
+        
+        private K3Value PerformEachLeftOperation(K3Value verb, List<K3Value> leftElements, List<K3Value> rightElements)
+        {
+            var result = new List<K3Value>();
+            foreach (var leftElement in leftElements)
             {
-                var verb = vec.Elements[0];
-                var left = vec.Elements[1];
-                var right = vec.Elements[2];
-                
-                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: verb={verb} (Type: {verb.Type}), left={left} (Type: {left.Type}), right={right} (Type: {right.Type})");
-                
-                // Check if this is the nested adverb case: verb is SymbolValue and right is VectorValue
-                if (verb is SymbolValue verbSym && right is VectorValue rightVec && verbSym.Value == ",")
+                var operationResults = new List<K3Value>();
+                foreach (var rightElement in rightElements)
                 {
-                    Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Detected nested adverb case with JOIN verb");
-                    
-                    // This is the case: 1 2 3 ,/:\: 4 5 6
-                    // We need to implement: for each element in left, join it with each element in right
-                    var leftElements = left is VectorValue leftVec ? leftVec.Elements : new List<K3Value> { left };
-                    var rightElements = rightVec.Elements;
-                    
-                    var result = new List<K3Value>();
-                    foreach (var leftElement in leftElements)
-                    {
-                        var joinedElements = new List<K3Value>();
-                        foreach (var rightElement in rightElements)
-                        {
-                            var joined = ApplyVerb(",", leftElement, rightElement);
-                            joinedElements.Add(joined);
-                        }
-                        result.Add(new VectorValue(joinedElements, DetermineVectorType(joinedElements)));
-                    }
-                    
-                    return new VectorValue(result, DetermineVectorType(result));
+                    var operationResult = ApplyVerb(verb, leftElement, rightElement);
+                    operationResults.Add(operationResult);
                 }
+                result.Add(new VectorValue(operationResults, DetermineVectorType(operationResults)));
             }
             
-            // Check if operand is a function from previous adverb processing
-            if (operand is FunctionValue prevFunc)
-            {
-                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Taking FunctionValue case");
-                // This is a function from the previous adverb, we need to apply \: to it
-                // But we need to get the left and right arguments from the calling context
-                // The calling context should pass us a vector with [function, left, right]
+            return new VectorValue(result, DetermineVectorType(result));
+        }
+        
+        private K3Value HandleFunctionValueForBackslashColon(K3Value operand)
+        {
+            if (!(operand is FunctionValue func))
+                return null;
                 
-                // For adverb chaining, we need to execute the function immediately
-                // The issue is that we need to get the actual arguments from the parser structure
-                
-                // For now, let's create a composed function 
-                string composedBody = $"{prevFunc.BodyText}\\:";
-                
-                var composedFunction = new FunctionValue(
-                    composedBody,
-                    new List<string>(),
-                    new List<Token>(),
-                    composedBody
-                );
-                
-                return composedFunction;
-            }
+            Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Taking FunctionValue case");
             
-            // Check if operand is a composite verb structure (VectorValue with single element)
-            if (operand is VectorValue compositeVec && compositeVec.Elements.Count == 1)
-            {
-                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Taking single-element VectorValue case");
-                // This is a composite verb from previous adverb processing
-                // Extract the verb from the composite structure
-                var compositeVerb = compositeVec.Elements[0];
-                
-                // Create a function that represents the composite verb
-                var functionBody = $"{{x y}} {compositeVerb}";
-                var function = new FunctionValue(
-                    functionBody,
-                    new List<string> { "x", "y" },
-                    new List<Token>(),
-                    functionBody
-                );
-                
-                return function;
-            }
+            // Create a composite function that represents the verb+adverb combination
+            // Instead of string concatenation, create a proper K3Value structure
+            var adverbSymbol = new SymbolValue("\\:");
+            var composedElements = new List<K3Value> { func, adverbSymbol };
             
-            // Check if operand has verb/data structure from previous adverb processing
-            if (operand is VectorValue verbDataVec && verbDataVec.Elements.Count >= 3)
-            {
-                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Taking 3+ element VectorValue case");
-                // Structure: [verb, left, right] from adverb processing
-                var verb = verbDataVec.Elements[0];
-                var left = verbDataVec.Elements[1];
-                var right = verbDataVec.Elements[2];
-                
-                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: verb={verb}, left={left}, right={right}");
-                
-                // Check if the right argument is a function from adverb chaining
-                if (right is FunctionValue func)
-                {
-                    Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Right argument is FunctionValue");
-                    return EachLeft(verb, left, func);
-                }
-                
-                // Check if verb is actually the left argument (common parsing issue)
-                // For expressions like "list ,\: char", the parser sometimes passes:
-                // verb=list, left=0, right=char instead of verb=",", left=list, right=char
-                if (verb is VectorValue && left is IntegerValue intValue && intValue.Value == 0)
-                {
-                    Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Swapping arguments case");
-                    // This is the case where verb is actually the left argument
-                    // Swap the arguments: verb becomes the actual verb (comma), left becomes the real left argument
-                    var realLeft = verb;
-                    var realVerb = new SymbolValue(","); // Default to comma for ,\: case
-                    
-                    return EachLeft(realVerb, realLeft, right);
-                }               
-                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Calling EachLeft with verb={verb}, left={left}, right={right}");
-                return EachLeft(verb, left, right);
-            }
+            var composedFunction = new VectorValue(composedElements, -1);
             
+            return composedFunction;
+        }
+        
+        private K3Value HandleFallbackForBackslashColon(K3Value operand)
+        {
             Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Taking fallback case");
-            // For simple cases, create a composite verb structure that can be used by subsequent adverbs
             return new VectorValue(new List<K3Value> { operand }, -1);
         }
 
@@ -484,155 +507,20 @@ namespace K3CSharp
             // For simple cases, create a composite verb structure that can be used by subsequent adverbs
             return new VectorValue(new List<K3Value> { operand }, -1);
         }
+        
 
         private K3Value Over(K3Value verb, K3Value initialization, K3Value data)
         {
             // Handle vector case (over)
             if (data is VectorValue dataVec)
             {
-                // Special case: empty vector
-                if (dataVec.Elements.Count == 0)
-                {
-                    // For +/!0 and +/!0L, return 0 (identity element for addition)
-                    if (verb is SymbolValue verbSymbol && verbSymbol.Value == "+")
-                    {
-                        return new IntegerValue(0);
-                    }
-                    // For */!0 and */!0L, return 1 (identity element for multiplication)
-                    else if (verb is SymbolValue verbSymbolMul && verbSymbolMul.Value == "*")
-                    {
-                        return new IntegerValue(1);
-                    }
-                    // For other verbs with empty vectors, return initialization value
-                    else
-                    {
-                        return initialization;
-                    }
-                }
-                
-                K3Value result;
-                
-                // If initialization is 0, use first element as initialization (K behavior for / without explicit init)
-                if (initialization is IntegerValue intInit && intInit.Value == 0 && dataVec.Elements.Count > 0)
-                {
-                    result = dataVec.Elements[0]; // Use first element as starting point
-                    var startIndex = 1; // Start from second element
-                    
-                    if (verb is SymbolValue verbSymbol)
-                    {
-                        // Apply verb to remaining elements
-                        for (int i = startIndex; i < dataVec.Elements.Count; i++)
-                        {
-                            result = ApplyVerb(verbSymbol.Value, result, dataVec.Elements[i]);
-                        }
-                    }
-                    else
-                    {
-                        // If verb is not a symbol, treat it as a value to apply with operator
-                        for (int i = startIndex; i < dataVec.Elements.Count; i++)
-                        {
-                            result = ApplyVerbWithOperator(verb, result, dataVec.Elements[i]);
-                        }
-                    }
-                }
-                else
-                {
-                    // Use provided initialization value
-                    result = initialization;
-                    
-                    if (verb is SymbolValue verbSymbol)
-                    {
-                        // Apply verb to each element of vector, accumulating result
-                        for (int i = 0; i < dataVec.Elements.Count; i++)
-                        {
-                            result = ApplyVerb(verbSymbol.Value, result, dataVec.Elements[i]);
-                        }
-                    }
-                    else
-                    {
-                        // If verb is not a symbol, treat it as a value to apply with operator
-                        for (int i = 0; i < dataVec.Elements.Count; i++)
-                        {
-                            result = ApplyVerbWithOperator(verb, result, dataVec.Elements[i]);
-                        }
-                    }
-                }
-                
-                return result;
+                return OverVector(verb, initialization, dataVec);
             }
             
             // Handle matrix case (VectorValue of VectorValues)
             if (data is VectorValue matrixData && matrixData.Elements.Count > 0 && matrixData.Elements[0] is VectorValue)
             {
-                // This is a matrix - apply verb to each row separately
-                var result = new List<K3Value>();
-                
-                if (verb is SymbolValue verbSymbol)
-                {
-                    // For each row in the matrix, apply the verb over that row
-                    for (int i = 0; i < matrixData.Elements.Count; i++)
-                    {
-                        var row = (VectorValue)matrixData.Elements[i];
-                        K3Value current = initialization;
-                        
-                        // If initialization is 0, use first element as initialization (K behavior for / without explicit init)
-                        if (initialization is IntegerValue intInit && intInit.Value == 0 && row.Elements.Count > 0)
-                        {
-                            current = row.Elements[0]; // Use first element as starting point
-                            var startIndex = 1; // Start from second element
-                            
-                            // Apply verb to remaining elements of this row
-                            for (int j = startIndex; j < row.Elements.Count; j++)
-                            {
-                                current = ApplyVerb(verbSymbol.Value, current, row.Elements[j]);
-                            }
-                        }
-                        else
-                        {
-                            // Use provided initialization value
-                            current = initialization;
-                            for (int j = 0; j < row.Elements.Count; j++)
-                            {
-                                current = ApplyVerb(verbSymbol.Value, current, row.Elements[j]);
-                            }
-                        }
-                        
-                        result.Add(current);
-                    }
-                }
-                else
-                {
-                    // If verb is not a symbol, treat it as a value to apply with operator
-                    for (int i = 0; i < matrixData.Elements.Count; i++)
-                    {
-                        var row = (VectorValue)matrixData.Elements[i];
-                        K3Value current = initialization;
-                        
-                        // If initialization is 0, use first element as initialization
-                        if (initialization is IntegerValue intInit && intInit.Value == 0 && row.Elements.Count > 0)
-                        {
-                            current = row.Elements[0];
-                            var startIndex = 1;
-                            
-                            for (int j = startIndex; j < row.Elements.Count; j++)
-                            {
-                                current = ApplyVerbWithOperator(verb, current, row.Elements[j]);
-                            }
-                        }
-                        else
-                        {
-                            current = initialization;
-                            for (int j = 0; j < row.Elements.Count; j++)
-                            {
-                                current = ApplyVerbWithOperator(verb, current, row.Elements[j]);
-                            }
-                        }
-                        
-                        result.Add(current);
-                    }
-                }
-                
-                return new VectorValue(result);
+                return OverMatrix(verb, initialization, matrixData);
             }
             
             // Handle scalar case
@@ -643,75 +531,219 @@ namespace K3CSharp
             
             throw new Exception($"Over not implemented for types: {verb.Type}, {data.Type}");
         }
+        
+        private K3Value OverVector(K3Value verb, K3Value initialization, VectorValue dataVec)
+        {
+            // Special case: empty vector
+            if (dataVec.Elements.Count == 0)
+            {
+                return HandleEmptyVectorOver(verb, initialization);
+            }
+            
+            // If initialization is 0, use first element as initialization (K behavior for / without explicit init)
+            if (initialization is IntegerValue intInit && intInit.Value == 0 && dataVec.Elements.Count > 0)
+            {
+                return OverVectorWithFirstElementInit(verb, dataVec);
+            }
+            else
+            {
+                return OverVectorWithProvidedInit(verb, initialization, dataVec);
+            }
+        }
+        
+        private K3Value HandleEmptyVectorOver(K3Value verb, K3Value initialization)
+        {
+            // For +/!0 and +/!0L, return 0 (identity element for addition)
+            if (verb is SymbolValue verbSymbol && verbSymbol.Value == "+")
+            {
+                return new IntegerValue(0);
+            }
+            // For */!0 and */!0L, return 1 (identity element for multiplication)
+            else if (verb is SymbolValue verbSymbolMul && verbSymbolMul.Value == "*")
+            {
+                return new IntegerValue(1);
+            }
+            // For other verbs with empty vectors, return initialization value
+            else
+            {
+                return initialization;
+            }
+        }
+        
+        private K3Value OverVectorWithFirstElementInit(K3Value verb, VectorValue dataVec)
+        {
+            var result = dataVec.Elements[0]; // Use first element as starting point
+            var startIndex = 1; // Start from second element
+            
+            if (verb is SymbolValue verbSymbol)
+            {
+                // Apply verb to remaining elements
+                for (int i = startIndex; i < dataVec.Elements.Count; i++)
+                {
+                    result = ApplyVerb(verbSymbol.Value, result, dataVec.Elements[i]);
+                }
+            }
+            else
+            {
+                // If verb is not a symbol, treat it as a value to apply with operator
+                for (int i = startIndex; i < dataVec.Elements.Count; i++)
+                {
+                    result = ApplyVerbWithOperator(verb, result, dataVec.Elements[i]);
+                }
+            }
+            
+            return result;
+        }
+        
+        private K3Value OverVectorWithProvidedInit(K3Value verb, K3Value initialization, VectorValue dataVec)
+        {
+            var result = initialization;
+            
+            if (verb is SymbolValue verbSymbol)
+            {
+                // Apply verb to each element of vector, accumulating result
+                for (int i = 0; i < dataVec.Elements.Count; i++)
+                {
+                    result = ApplyVerb(verbSymbol.Value, result, dataVec.Elements[i]);
+                }
+            }
+            else
+            {
+                // If verb is not a symbol, treat it as a value to apply with operator
+                for (int i = 0; i < dataVec.Elements.Count; i++)
+                {
+                    result = ApplyVerbWithOperator(verb, result, dataVec.Elements[i]);
+                }
+            }
+            
+            return result;
+        }
+        
+        private K3Value OverMatrix(K3Value verb, K3Value initialization, VectorValue matrixData)
+        {
+            var result = new List<K3Value>();
+            
+            if (verb is SymbolValue verbSymbol)
+            {
+                return OverMatrixWithSymbolVerb(verbSymbol, initialization, matrixData);
+            }
+            else
+            {
+                return OverMatrixWithValueVerb(verb, initialization, matrixData);
+            }
+        }
+        
+        private K3Value OverMatrixWithSymbolVerb(SymbolValue verbSymbol, K3Value initialization, VectorValue matrixData)
+        {
+            var result = new List<K3Value>();
+            
+            // For each row in the matrix, apply the verb over that row
+            for (int i = 0; i < matrixData.Elements.Count; i++)
+            {
+                var row = (VectorValue)matrixData.Elements[i];
+                var rowResult = OverVector(verbSymbol, initialization, row);
+                result.Add(rowResult);
+            }
+            
+            return new VectorValue(result);
+        }
+        
+        private K3Value OverMatrixWithValueVerb(K3Value verb, K3Value initialization, VectorValue matrixData)
+        {
+            var result = new List<K3Value>();
+            
+            for (int i = 0; i < matrixData.Elements.Count; i++)
+            {
+                var row = (VectorValue)matrixData.Elements[i];
+                var rowResult = OverVector(verb, initialization, row);
+                result.Add(rowResult);
+            }
+            
+            return new VectorValue(result);
+        }
 
         private K3Value Scan(K3Value verb, K3Value initialization, K3Value data)
         {
             // Handle vector case with initialization
             if (data is VectorValue dataVec && dataVec.Elements.Count > 0)
             {
-                var result = new List<K3Value>();
-                K3Value current;
-                
-                // If initialization is 0, use first element as initialization (K behavior for \ without explicit init)
-                if (initialization is IntegerValue intInit && intInit.Value == 0 && dataVec.Elements.Count > 0)
-                {
-                    current = dataVec.Elements[0]; // Use first element as starting point
-                    result.Add(current); // Add first element to result
-                    
-                    var startIndex = 1; // Start from second element
-                    
-                    if (verb is SymbolValue verbSymbol)
-                    {
-                        // Apply verb to remaining elements
-                        for (int i = startIndex; i < dataVec.Elements.Count; i++)
-                        {
-                            current = ApplyVerb(verbSymbol.Value, current, dataVec.Elements[i]);
-                            result.Add(current);
-                        }
-                    }
-                    else
-                    {
-                        // If verb is not a symbol, treat it as a value to apply with operator
-                        for (int i = startIndex; i < dataVec.Elements.Count; i++)
-                        {
-                            current = ApplyVerbWithOperator(verb, current, dataVec.Elements[i]);
-                            result.Add(current);
-                        }
-                    }
-                }
-                else
-                {
-                    // Use provided initialization value
-                    current = initialization;
-                    
-                    // Add initialization value as first element
-                    result.Add(current);
-                    
-                    if (verb is SymbolValue verbSymbol)
-                    {
-                        // Apply verb to each element, accumulating result
-                        for (int i = 0; i < dataVec.Elements.Count; i++)
-                        {
-                            current = ApplyVerb(verbSymbol.Value, current, dataVec.Elements[i]);
-                            result.Add(current);
-                        }
-                    }
-                    else
-                    {
-                        // If verb is not a symbol, treat it as a value to apply with operator
-                        for (int i = 0; i < dataVec.Elements.Count; i++)
-                        {
-                            current = ApplyVerbWithOperator(verb, current, dataVec.Elements[i]);
-                            result.Add(current);
-                        }
-                    }
-                }
-                
-                int vectorType = DetermineVectorType(result);
-                return new VectorValue(result, vectorType);
+                return ScanVector(verb, initialization, dataVec);
             }
             
             return data;
+        }
+        
+        private K3Value ScanVector(K3Value verb, K3Value initialization, VectorValue dataVec)
+        {
+            // If initialization is 0, use first element as initialization (K behavior for \ without explicit init)
+            if (initialization is IntegerValue intInit && intInit.Value == 0 && dataVec.Elements.Count > 0)
+            {
+                return ScanVectorWithFirstElementInit(verb, dataVec);
+            }
+            else
+            {
+                return ScanVectorWithProvidedInit(verb, initialization, dataVec);
+            }
+        }
+        
+        private K3Value ScanVectorWithFirstElementInit(K3Value verb, VectorValue dataVec)
+        {
+            var result = new List<K3Value>();
+            var current = dataVec.Elements[0]; // Use first element as starting point
+            result.Add(current); // Add first element to result
+            
+            var startIndex = 1; // Start from second element
+            
+            if (verb is SymbolValue verbSymbol)
+            {
+                // Apply verb to remaining elements
+                for (int i = startIndex; i < dataVec.Elements.Count; i++)
+                {
+                    current = ApplyVerb(verbSymbol.Value, current, dataVec.Elements[i]);
+                    result.Add(current);
+                }
+            }
+            else
+            {
+                // If verb is not a symbol, treat it as a value to apply with operator
+                for (int i = startIndex; i < dataVec.Elements.Count; i++)
+                {
+                    current = ApplyVerbWithOperator(verb, current, dataVec.Elements[i]);
+                    result.Add(current);
+                }
+            }
+            
+            return new VectorValue(result, DetermineVectorType(result));
+        }
+        
+        private K3Value ScanVectorWithProvidedInit(K3Value verb, K3Value initialization, VectorValue dataVec)
+        {
+            var result = new List<K3Value>();
+            var current = initialization;
+            
+            // Add initialization value as first element
+            result.Add(current);
+            
+            if (verb is SymbolValue verbSymbol)
+            {
+                // Apply verb to each element, accumulating result
+                for (int i = 0; i < dataVec.Elements.Count; i++)
+                {
+                    current = ApplyVerb(verbSymbol.Value, current, dataVec.Elements[i]);
+                    result.Add(current);
+                }
+            }
+            else
+            {
+                // If verb is not a symbol, treat it as a value to apply with operator
+                for (int i = 0; i < dataVec.Elements.Count; i++)
+                {
+                    current = ApplyVerbWithOperator(verb, current, dataVec.Elements[i]);
+                    result.Add(current);
+                }
+            }
+            
+            return new VectorValue(result, DetermineVectorType(result));
         }
 
         private K3Value Each(K3Value verb, K3Value left, K3Value right)
@@ -1048,6 +1080,22 @@ namespace K3CSharp
             }
             
             throw new Exception($"Each not implemented for types: {verb.Type}, {data.Type}");
+        }
+
+        private K3Value EvaluateAdverbNode(string adverbType, K3Value left, K3Value right)
+        {
+            Console.WriteLine($"DEBUG EvaluateAdverbNode: {adverbType} with left={left} (Type: {left.Type}), right={right} (Type: {right.Type})");
+            
+            return adverbType switch
+            {
+                "ADVERB_SLASH" => ApplyAdverbSlash(CreateVerbDataStructure(new SymbolValue("+"), left, right)),
+                "ADVERB_BACKSLASH" => ApplyAdverbBackslash(CreateVerbDataStructure(new SymbolValue("+"), left, right)),
+                "ADVERB_TICK" => ApplyAdverbTick(CreateVerbDataStructure(new SymbolValue("+"), left, right)),
+                "ADVERB_SLASH_COLON" => ApplyAdverbSlashColon(CreateVerbDataStructure(new SymbolValue("+"), left, right)),
+                "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(CreateVerbDataStructure(new SymbolValue("+"), left, right)),
+                "ADVERB_TICK_COLON" => ApplyAdverbTickColon(CreateVerbDataStructure(new SymbolValue("+"), left, right)),
+                _ => throw new Exception($"Unknown adverb: {adverbType}")
+            };
         }
 
         private int DetermineVectorType(List<K3Value> elements)
