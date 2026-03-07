@@ -182,3 +182,7 @@ adverb_chaining_string_each_left :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact repre
 adverb_complex_matrix_each_right :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 adverb_complex_string_each_left :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 adverb_complex_vector_each_right :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+Compactrepresentation :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+test_nested_adverb :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+join_each_left :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+debug_join_spaces :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation

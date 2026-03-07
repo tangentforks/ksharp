@@ -494,7 +494,20 @@ namespace K3CSharp
                     (op.Value.ToString() == "ADVERB_SLASH" || op.Value.ToString() == "ADVERB_BACKSLASH" || op.Value.ToString() == "ADVERB_TICK" ||
                      op.Value.ToString() == "ADVERB_SLASH_COLON" || op.Value.ToString() == "ADVERB_BACKSLASH_COLON" || op.Value.ToString() == "ADVERB_TICK_COLON"))
             {
-                var verb = Evaluate(node.Children[0]);
+                // Check if the verb is itself an adverb node (nested adverb structure)
+                K3Value verb;
+                if (node.Children[0].Type == ASTNodeType.BinaryOp && 
+                    node.Children[0].Value is SymbolValue verbSym &&
+                    (verbSym.Value.ToString().StartsWith("ADVERB_")))
+                {
+                    // Evaluate the inner adverb first to create a composite verb
+                    verb = Evaluate(node.Children[0]);
+                }
+                else
+                {
+                    verb = Evaluate(node.Children[0]);
+                }
+                
                 var left = Evaluate(node.Children[1]);
                 
                 // Check if the right argument is an adverb (for adverb chaining)

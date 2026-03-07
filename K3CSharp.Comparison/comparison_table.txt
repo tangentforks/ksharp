@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-06 13:04:01
+Generated: 2026-03-07 15:25:08
 
 SUMMARY:
 --------
-Total Tests:     683
+Total Tests:     680
 ✅ Matched:       675
-❌ Differed:      8
+❌ Differed:      5
 ⚠️  Skipped:       0
 💥 Errors:        0
-Success Rate:    98.8%
+Success Rate:    99.3%
 
 DETAILED RESULTS:
 -----------------
@@ -17,9 +17,8 @@ Status   Test File                                          K3Sharp Output      
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ✅ PASS   adverb_backslash_colon_basic.k                     (5 6 7;6 7 8;7 8 9)            (5 6 7;6 7 8;7 8 9)            Compact representation                            
 ✅ PASS   adverb_chaining_join_each_left.k                   ((1 2 3 9 8 7;1 2 3 6 5 4...   ((1 2 3 9 8 7;1 2 3 6 5 4...   Compact representation                            
-❌ FAIL   adverb_chaining_string_each_left.k                 (("hello  ";"world.  ");(...   ((("hello";"world.";" ");...   Compact representation                            
 ❌ FAIL   adverb_complex_matrix_each_right.k                 ((11 12 13;12 13 14;13 14...   ((11 12 13;14 15 16;17 18...   Compact representation                            
-❌ FAIL   adverb_complex_string_each_left.k                  (("hello";"world.");("It'...   (("hello";"world.";" ");(...   Compact representation                            
+❌ FAIL   adverb_complex_string_each_left.k                  (("hello";"world.";" ";" ...   ((("hello";"world.";" ");...   Compact representation                            
 ✅ PASS   adverb_complex_vector_each_right.k                 (11 13 15;14 16 18;17 19 21)   (11 13 15;14 16 18;17 19 21)   Compact representation                            
 ✅ PASS   adverb_each_vector_minus.k                         9 18 27                        9 18 27                                                                          
 ✅ PASS   adverb_each_vector_multiply.k                      4 10 18                        4 10 18                                                                          
@@ -133,18 +132,6 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   db_symbol_vector_longer.k                          `hello`world`test              `hello`world`test              Compact representation                            
 ✅ PASS   db_symbol_vector.k                                 `a`b`c                         `a`b`c                         Compact representation                            
 ✅ PASS   db_symbol.k                                        `test                          `test                          Compact representation                            
-❌ FAIL   debug_join_each_left.k                             (1 4 5 6;2 4 5 6;3 4 5 6)      (1 4 5 6
- 2 4 5 6
- 3 4 5 6)                                                      
-❌ FAIL   debug_simple_chaining.k                            ((1 4;1 5;1 6);(2 4;2 5;2...   ((1 4
-  1 5
-  1 6)
- (2 4
-...                                                     
-✅ PASS   debug_simple.k                                     1 2 3                          1 2 3                                                                            
-❌ FAIL   debug_vector_each_right.k                          (11 12 13;12 13 14;13 14 15)   (11 12 13
- 12 13 14
- 13 1...                                                     
 ✅ PASS   dictionary_dot_apply.k                             1                              1                                                                                
 ✅ PASS   dictionary_empty.k                                 .()                            .()                                                                              
 ✅ PASS   dictionary_enumerate.k                             `a`b                           `a`b                           Compact representation                            
@@ -300,6 +287,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   io_write_basic.k                                   ("line1";"line2";"line3")      ("line1";"line2";"line3")      Compact representation                            
 ✅ PASS   io_write_int.k                                                                                                                                                     
 ✅ PASS   isolated.k                                         0.6                            0.6                                                                              
+❌ FAIL   join_each_left.k                                   ((1 4;1 5;1 6);(2 4;2 5;2...   (1 4 5 6;2 4 5 6;3 4 5 6)      Compact representation                            
 ✅ PASS   join_operator.k                                    3 5                            3 5                                                                              
 ✅ PASS   k_tree_assignment_absolute_foo.k                                                                                 Compact representation                            
 ✅ PASS   k_tree_current_branch.k                            `.k                            `.k                            Compact representation                            
@@ -628,6 +616,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   test_ic_basic.k                                    65                             65                                                                               
 ✅ PASS   test_ic_vector.k                                   65 66 67                       65 66 67                                                                         
 ✅ PASS   test_monadic_colon.k                               42                             42                                                                               
+✅ PASS   test_nested_adverb.k                               ((1 4;1 5;1 6);(2 4;2 5;2...   ((1 4;1 5;1 6);(2 4;2 5;2...   Compact representation                            
 ✅ PASS   test_quoted_symbol_serialization.k                 "\001\000\000\000\006\000...   "\001\000\000\000\006\000...                                                     
 ✅ PASS   test_quoted_symbol.k                               `"."                           `"."                                                                             
 ✅ PASS   test_semicolon.k                                   3 4                            3 4                                                                              
@@ -710,41 +699,17 @@ Status   Test File                                          K3Sharp Output      
 
 FAILED TESTS DETAILS:
 --------------------
-File: adverb_chaining_string_each_left.k
-K3Sharp: (("hello  ";"world.  ");("It's  ";"me  ";"ksharp.  ");("Have  ";"fun  ";"with  ";"me!  "))
-k.exe:   ((("hello";"world.";" ");("hello";"world.";" "));(("It's";"me";"ksharp.";" ");("It's";"me";"ksharp.";" "));(("Have";"fun";"with";"me!";" ");("Have";"fun";"with";"me!";" ")))
-
 File: adverb_complex_matrix_each_right.k
 K3Sharp: ((11 12 13;12 13 14;13 14 15);(14 15 16;15 16 17;16 17 18);(17 18 19;18 19 20;19 20 21))
 k.exe:   ((11 12 13;14 15 16;17 18 19);(12 13 14;15 16 17;18 19 20);(13 14 15;16 17 18;19 20 21))
 
 File: adverb_complex_string_each_left.k
-K3Sharp: (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!");" ")
-k.exe:   (("hello";"world.";" ");("It's";"me";"ksharp.";" ");("Have";"fun";"with";"me!";" "))
+K3Sharp: (("hello";"world.";" ";" ");("It's";"me";"ksharp.";" ";" ");("Have";"fun";"with";"me!";" ";" "))
+k.exe:   ((("hello";"world.";" ");("hello";"world.";" "));(("It's";"me";"ksharp.";" ");("It's";"me";"ksharp.";" "));(("Have";"fun";"with";"me!";" ");("Have";"fun";"with";"me!";" ")))
 
-File: debug_join_each_left.k
-K3Sharp: (1 4 5 6;2 4 5 6;3 4 5 6)
-k.exe:   (1 4 5 6
- 2 4 5 6
- 3 4 5 6)
-
-File: debug_simple_chaining.k
+File: join_each_left.k
 K3Sharp: ((1 4;1 5;1 6);(2 4;2 5;2 6);(3 4;3 5;3 6))
-k.exe:   ((1 4
-  1 5
-  1 6)
- (2 4
-  2 5
-  2 6)
- (3 4
-  3 5
-  3 6))
-
-File: debug_vector_each_right.k
-K3Sharp: (11 12 13;12 13 14;13 14 15)
-k.exe:   (11 12 13
- 12 13 14
- 13 14 15)
+k.exe:   (1 4 5 6;2 4 5 6;3 4 5 6)
 
 File: monadic_format_dictionary.k
 K3Sharp: ".((`a;1;);(`b;2;);(`c;3;))"

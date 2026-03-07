@@ -2788,6 +2788,7 @@ namespace K3CSharp
                         if (operand == null)
                         {
                             // Special handling for adverbs: don't attach if previous token is a verb or adverbator node
+                            throw new Exception($"Expected operand after unary operator {opToken.Type} at position {opToken.Position}");
                         }
                         var unaryNode = new ASTNode(ASTNodeType.BinaryOp);
                         var symbolValue = opToken.Type switch
@@ -3040,13 +3041,21 @@ namespace K3CSharp
                         
                         // Create the correct adverb nesting structure according to K specification
                         // For {x verb y} adverb1 adverb2, the structure should be:
-                        // ADVERB2(verb, x, y) where verb represents the nested adverb operation
+                        // ADVERB2(ADVERB1(verb), x, y) where ADVERB1(verb) creates a composite verb
                         
-                        // For nested adverbs like 1 2 3 ,/:\: 4 5 6, create a special structure
-                        // that represents the nested iteration: for each element in left, join with each element in right
+                        // For nested adverbs like 1 2 3 ,/:\: 4 5 6:
+                        // First create ADVERB_SLASH_COLON(,) as a composite verb
+                        // Then create ADVERB_BACKSLASH_COLON(ADVERB_SLASH_COLON(,), left, right)
+                        
+                        // Create the inner adverb structure (composite verb)
+                        var innerAdverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        innerAdverbNode.Value = new SymbolValue(adverbType); // First adverb (e.g., ADVERB_SLASH_COLON)
+                        innerAdverbNode.Children.Add(verbNode); // The verb (,)
+                        
+                        // Create the outer adverb structure
                         var nestedAdverbNode = new ASTNode(ASTNodeType.BinaryOp);
-                        nestedAdverbNode.Value = new SymbolValue(secondAdverbType);
-                        nestedAdverbNode.Children.Add(verbNode); // The verb (,)
+                        nestedAdverbNode.Value = new SymbolValue(secondAdverbType); // Second adverb (e.g., ADVERB_BACKSLASH_COLON)
+                        nestedAdverbNode.Children.Add(innerAdverbNode); // The composite verb
                         nestedAdverbNode.Children.Add(left); // Left side (1 2 3)
                         nestedAdverbNode.Children.Add(rightSide); // Right side (4 5 6)
                         

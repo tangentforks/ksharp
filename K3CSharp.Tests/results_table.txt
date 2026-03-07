@@ -665,11 +665,10 @@
 ║ math_dot_matrix_each_right.k                       │ (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12) │ (47 64 81;52 71...   │                      ║
 ║ math_dot_vector_each_left.k                        │ (1 2) _dot\: (3 4;5 6) │ (8 10;16 20)         │                      ║
 ║ adverb_complex_vector_each_right.k                 │ 10 11 12 +/: ((1 2 3);(4 5 6);(7 8 9)) │ (11 13 15;14 16...   │                      ║
-║ adverb_complex_matrix_each_right.k                 │ ((1 2 3);(4 5 6);(7 8 9)) +/: 10 11 12 │ ((11 12 13;12 1...   │                      ║
+║ adverb_complex_matrix_each_right.k                 │ ((1 2 3);(4 5 6);(7 8 9)) +/: 10 11 12 │ ((11 12 13;14 1...   │                      ║
 ║ adverb_chaining_join_each_left.k                   │ ((1 2 3);(4 5 6);(7 8 9)),/:\:((9 8 7);(6 5 4);(3 2 1)) │ ((1 2 3 9 8 7;1...   │                      ║
 ║ adverb_complex_string_each_left.k                  │ (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),/:\:"  " │ (("hello";"worl...   │ (("hello";"worl...   ║
-║ adverb_chaining_string_each_left.k                 │ (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),/:\:"  " │ (("hello";"worl...   │ (("hello";"worl...   ║
-║ join_each_left.k                                   │ (1 2 3),\: (4 5 6)   │ ((1 4;1 5;1 6);...   │                      ║
+║ join_each_left.k                                   │ (1 2 3),\: (4 5 6)   │ ((1 4;1 5;1 6);...   │ (1 4 5 6;2 4 5 ...   ║
 ║ test_nested_adverb.k                               │ 1 2 3 ,/:\: 4 5 6    │ ((1 4;1 5;1 6);...   │                      ║
 ║ math_lsq_non_square.k                              │ // Non-square matrix: 2x3 matrix (more columns than rows) │ -1.0 2.0             │                      ║
 ║ math_lsq_high_rank.k                               │ // Rectangular matrix: 2x4 matrix (more columns than rows) │ -8.0 9.0             │                      ║
@@ -686,7 +685,7 @@
 ║ math_xor_basic.k                                   │ 5 _xor 3             │ 6                    │                      ║
 ║ math_xor_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 679/682 tests passed (99.6%)                                                                               ║
+║ SUMMARY: 678/681 tests passed (99.6%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -698,11 +697,11 @@ Actual: 100
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_complex_string_each_left.k
 Input: (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),/:\:"  "
-Expected: (("hello";"world.";" ")("hello";"world.";" "))(("It's";"me";"ksharp.";" ")("It's";"me";"ksharp.";" "))(("Have";"fun";"with";"me!";" ")("Have";"fun";"with";"me!";" ")))
+Expected: (("hello";"world.";" ")("hello";"world.";" "))(("It's";"me";"ksharp.";" ")("It's";"me";"ksharp.";" "))(("Have";"fun";"with";"me!";" ")("Have";"fun";"with";"me!";" "))
 Actual: (("hello";"world.";" ";" ");("It's";"me";"ksharp.";" ";" ");("Have";"fun";"with";"me!";" ";" "))
 ──────────────────────────────────────────────────────────────────────────
-Test: adverb_chaining_string_each_left.k
-Input: (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),/:\:"  "
-Expected: (("hello";"world.";" ");("hello";"world.";" "));(("It's";"me";"ksharp.";" ");("It's";"me";"ksharp.";" "));(("Have";"fun";"with";"me!";" ");("Have";"fun";"with";"me!";" ")))
-Actual: (("hello";"world.";" ";" ");("It's";"me";"ksharp.";" ";" ");("Have";"fun";"with";"me!";" ";" "))
+Test: join_each_left.k
+Input: (1 2 3),\: (4 5 6)
+Expected: (1 4 5 6;2 4 5 6;3 4 5 6)
+Actual: ((1 4;1 5;1 6);(2 4;2 5;2 6);(3 4;3 5;3 6))
 ──────────────────────────────────────────────────────────────────────────

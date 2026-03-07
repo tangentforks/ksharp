@@ -9,7 +9,7 @@ namespace K3CSharp
         private string input;
         private int position;
         private char currentChar => position < input.Length ? input[position] : '\0';
-        private List<Token> tokens;
+        private List<Token>? tokens;
         private int current = 0;
 
         public Lexer(string input)
@@ -17,8 +17,9 @@ namespace K3CSharp
             this.input = input;
             position = 0;
         }
-        public Token PeekNextToken()
+        public Token? PeekNextToken()
         {
+            if (null == tokens) return null;
             int nextIndex = current + 1;
             if (nextIndex >= tokens.Count) return new Token(TokenType.EOF, "", 0);
             return tokens[nextIndex];

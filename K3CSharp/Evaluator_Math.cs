@@ -748,6 +748,8 @@ namespace K3CSharp
         
         private bool IsMatrix(VectorValue vec)
         {
+            // Matrices must always have an outer structure of list
+            if (0 != vec.VectorType) return false; 
             // Check if this is a matrix (vector of vectors with consistent dimensions)
             if (vec.Elements.Count == 0) return false;
             
