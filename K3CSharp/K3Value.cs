@@ -1444,4 +1444,54 @@ namespace K3CSharp
             return ".(" + string.Join(";", entries) + ")";
         }
     }
+
+    public class ProjectedFunctionValue : K3Value
+    {
+        public string OperatorName { get; }
+        public int RequiredArguments { get; }
+
+        public ProjectedFunctionValue(string operatorName, int requiredArguments)
+        {
+            Type = ValueType.Function; // Treat as a function type
+            OperatorName = operatorName;
+            RequiredArguments = requiredArguments;
+        }
+
+        public override string ToString()
+        {
+            return $"[ProjectedFunction: {OperatorName}, needs {RequiredArguments} more arg(s)]";
+        }
+
+        public override K3Value Add(K3Value other)
+        {
+            throw new InvalidOperationException("Cannot add ProjectedFunction values");
+        }
+
+        public override K3Value Subtract(K3Value other)
+        {
+            throw new InvalidOperationException("Cannot subtract ProjectedFunction values");
+        }
+
+        public override K3Value Multiply(K3Value other)
+        {
+            throw new InvalidOperationException("Cannot multiply ProjectedFunction values");
+        }
+
+        public override K3Value Divide(K3Value other)
+        {
+            throw new InvalidOperationException("Cannot divide ProjectedFunction values");
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is ProjectedFunctionValue otherProjected)
+                return OperatorName == otherProjected.OperatorName && RequiredArguments == otherProjected.RequiredArguments;
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(OperatorName, RequiredArguments);
+        }
+    }
 }

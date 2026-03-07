@@ -36,6 +36,7 @@
 ║ lambda_string_literal.k                            │ {"hello"}[]          │ "hello"              │                      ║
 ║ lambda_symbol_literal.k                            │ {`abc}[]             │ `abc                 │                      ║
 ║ lambda_string_assign.k                             │ {a:"hello";a}[]      │ "hello"              │                      ║
+║ test_projected_function.k                          │ %  // This should create a projected function │ [ProjectedFunct...   │                      ║
 ║ atom_scalar.k                                      │ @42                  │ 1                    │                      ║
 ║ atom_vector.k                                      │ @1 2 3               │ 0                    │                      ║
 ║ attribute_handle_symbol.k                          │ ~`a                  │ `a.                  │                      ║
@@ -685,7 +686,7 @@
 ║ math_xor_basic.k                                   │ 5 _xor 3             │ 6                    │                      ║
 ║ math_xor_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 678/681 tests passed (99.6%)                                                                               ║
+║ SUMMARY: 679/682 tests passed (99.6%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:

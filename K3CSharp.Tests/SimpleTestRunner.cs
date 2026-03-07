@@ -145,6 +145,9 @@ namespace K3CSharp.Tests
                 ("lambda_symbol_literal.k", "`abc"),
                 ("lambda_string_assign.k", "\"hello\""),
 
+                // Projected Function tests
+                ("test_projected_function.k", "[ProjectedFunction: %, needs 1 more arg(s)]"),
+
                 // Atom tests
                 ("atom_scalar.k", "1"),
                 ("atom_vector.k", "0"),

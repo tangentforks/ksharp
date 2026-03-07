@@ -129,6 +129,9 @@ namespace K3CSharp
                     // {} form specifier - return a special value that will be handled in binary form operations
                     return new SymbolValue("{}");
 
+                case ASTNodeType.ProjectedFunction:
+                    return EvaluateProjectedFunction(node);
+
                 default:
                     throw new Exception($"Unknown AST node type: {node.Type}");
             }
@@ -2610,6 +2613,34 @@ namespace K3CSharp
                 // Make dictionary from operand
                 return ConvertVectorToDictionary(operand);
             }
+        }
+
+        private K3Value EvaluateProjectedFunction(ASTNode node)
+        {
+            // A projected function represents a partially applied function
+            // The node.Value contains the operator/function name
+            // The first child contains the arity (how many more arguments are needed)
+            
+            if (node.Value is SymbolValue operatorSymbol)
+            {
+                var operatorName = operatorSymbol.Value;
+                
+                // Get the arity (how many more arguments are needed)
+                int arity = 1; // Default for unary operators
+                if (node.Children.Count > 0 && node.Children[0].Value is IntegerValue arityValue)
+                {
+                    arity = arityValue.Value;
+                }
+                
+                // Create a projected function value that can be completed later
+                // This represents a function that, when called with the remaining arguments,
+                // will apply the operator to all arguments together
+                
+                var projectedFunction = new ProjectedFunctionValue(operatorName, arity);
+                return projectedFunction;
+            }
+            
+            throw new Exception($"Invalid projected function node: {node.Value}");
         }
     }
     

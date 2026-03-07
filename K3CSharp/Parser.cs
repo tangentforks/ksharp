@@ -15,7 +15,8 @@ namespace K3CSharp
         Function,
         FunctionCall,
         Block,
-        FormSpecifier
+        FormSpecifier,
+        ProjectedFunction
     }
 
     public class ASTNode
@@ -801,9 +802,17 @@ namespace K3CSharp
                     {
                         // This is unary reciprocal
                         var operand = ParsePrimary();
+                        if (operand == null)
+                        {
+                            // Create a projected function instead of an empty binary op
+                            var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
+                            projectedNode.Value = new SymbolValue("%");
+                            projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(1))); // Needs 1 more argument
+                            return projectedNode;
+                        }
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue("%");
-                        if (operand != null) node.Children.Add(operand);
+                        node.Children.Add(operand);
                         return node;
                     }
                 }
@@ -2787,56 +2796,106 @@ namespace K3CSharp
                         var operand = ParseTerm();
                         if (operand == null)
                         {
-                            // Special handling for adverbs: don't attach if previous token is a verb or adverbator node
-                            throw new Exception($"Expected operand after unary operator {opToken.Type} at position {opToken.Position}");
+                            // Create a projected function (partial application) instead of throwing error
+                            var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
+                            var symbolValue = opToken.Type switch
+                            {
+                                TokenType.PLUS => "+",
+                                TokenType.MINUS => "-",
+                                TokenType.MULTIPLY => "*",
+                                TokenType.DIVIDE => "%",
+                                TokenType.MIN => "&",
+                                TokenType.MAX => "|",
+                                TokenType.LESS => "<",
+                                TokenType.GREATER => ">",
+                                TokenType.EQUAL => "=",
+                                TokenType.IN => "_in",
+                                TokenType.BIN => "_bin",
+                                TokenType.BINL => "_binl",
+                                TokenType.LIN => "_lin",
+                                TokenType.DV => "_dv",
+                                TokenType.DI => "_di",
+                                TokenType.VS => "_vs",
+                                TokenType.SV => "_sv",
+                                TokenType.SS => "_ss",
+                                TokenType.SM => "_sm",
+                                TokenType.CI => "_ci",
+                                TokenType.IC => "_ic",
+                                TokenType.DRAW => "_draw",
+                                TokenType.POWER => "^",
+                                TokenType.MODULUS => "!",
+                                TokenType.JOIN => ",",
+                                TokenType.COLON => ":",
+                                TokenType.HASH => "#",
+                                TokenType.UNDERSCORE => "_",
+                                TokenType.QUESTION => "?",
+                                TokenType.MATCH => "~",
+                                TokenType.NEGATE => "~",
+                                TokenType.DOLLAR => "$",
+                                TokenType.APPLY => "@",
+                                TokenType.DOT_APPLY => ".",
+                                TokenType.TYPE => "TYPE",
+                                TokenType.STRING_REPRESENTATION => "STRING_REPRESENTATION",
+                                TokenType.DO => "do",
+                                TokenType.WHILE => "while",
+                                TokenType.IF_FUNC => "if",
+                                _ => opToken.Type.ToString()
+                            };
+                            projectedNode.Value = new SymbolValue(symbolValue);
+                            // Mark this as a unary projected function (needs 1 more argument)
+                            projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(1))); // Arity: needs 1 more argument
+                            left = projectedNode;
                         }
-                        var unaryNode = new ASTNode(ASTNodeType.BinaryOp);
-                        var symbolValue = opToken.Type switch
+                        else
                         {
-                            TokenType.PLUS => "+",
-                            TokenType.MINUS => "-",
-                            TokenType.MULTIPLY => "*",
-                            TokenType.DIVIDE => "%",
-                            TokenType.MIN => "&",
-                            TokenType.MAX => "|",
-                            TokenType.LESS => "<",
-                            TokenType.GREATER => ">",
-                            TokenType.EQUAL => "=",
-                            TokenType.IN => "_in",
-                            TokenType.BIN => "_bin",
-                            TokenType.BINL => "_binl",
-                            TokenType.LIN => "_lin",
-                            TokenType.DV => "_dv",
-                            TokenType.DI => "_di",
-                            TokenType.VS => "_vs",
-                            TokenType.SV => "_sv",
-                            TokenType.SS => "_ss",
-                            TokenType.SM => "_sm",
-                            TokenType.CI => "_ci",
-                            TokenType.IC => "_ic",
-                            TokenType.DRAW => "_draw",
-                            TokenType.POWER => "^",
-                            TokenType.MODULUS => "!",
-                            TokenType.JOIN => ",",
-                            TokenType.COLON => ":",
-                            TokenType.HASH => "#",
-                            TokenType.UNDERSCORE => "_",
-                            TokenType.QUESTION => "?",
-                            TokenType.MATCH => "~",
-                            TokenType.NEGATE => "~",
-                            TokenType.DOLLAR => "$",
-                            TokenType.APPLY => "@",
-                            TokenType.DOT_APPLY => ".",
-                            TokenType.TYPE => "TYPE",
-                            TokenType.STRING_REPRESENTATION => "STRING_REPRESENTATION",
-                            TokenType.DO => "do",
-                            TokenType.WHILE => "while",
-                            TokenType.IF_FUNC => "if",
-                            _ => opToken.Type.ToString()
-                        };
-                        unaryNode.Value = new SymbolValue(symbolValue);
-                        unaryNode.Children.Add(operand);
-                        left = unaryNode;
+                            var unaryNode = new ASTNode(ASTNodeType.BinaryOp);
+                            var symbolValue = opToken.Type switch
+                            {
+                                TokenType.PLUS => "+",
+                                TokenType.MINUS => "-",
+                                TokenType.MULTIPLY => "*",
+                                TokenType.DIVIDE => "%",
+                                TokenType.MIN => "&",
+                                TokenType.MAX => "|",
+                                TokenType.LESS => "<",
+                                TokenType.GREATER => ">",
+                                TokenType.EQUAL => "=",
+                                TokenType.IN => "_in",
+                                TokenType.BIN => "_bin",
+                                TokenType.BINL => "_binl",
+                                TokenType.LIN => "_lin",
+                                TokenType.DV => "_dv",
+                                TokenType.DI => "_di",
+                                TokenType.VS => "_vs",
+                                TokenType.SV => "_sv",
+                                TokenType.SS => "_ss",
+                                TokenType.SM => "_sm",
+                                TokenType.CI => "_ci",
+                                TokenType.IC => "_ic",
+                                TokenType.DRAW => "_draw",
+                                TokenType.POWER => "^",
+                                TokenType.MODULUS => "!",
+                                TokenType.JOIN => ",",
+                                TokenType.COLON => ":",
+                                TokenType.HASH => "#",
+                                TokenType.UNDERSCORE => "_",
+                                TokenType.QUESTION => "?",
+                                TokenType.MATCH => "~",
+                                TokenType.NEGATE => "~",
+                                TokenType.DOLLAR => "$",
+                                TokenType.APPLY => "@",
+                                TokenType.DOT_APPLY => ".",
+                                TokenType.TYPE => "TYPE",
+                                TokenType.STRING_REPRESENTATION => "STRING_REPRESENTATION",
+                                TokenType.DO => "do",
+                                TokenType.WHILE => "while",
+                                TokenType.IF_FUNC => "if",
+                                _ => opToken.Type.ToString()
+                            };
+                            unaryNode.Value = new SymbolValue(symbolValue);
+                            unaryNode.Children.Add(operand);
+                            left = unaryNode;
+                        }
                     }
                     else
                     {
