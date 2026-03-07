@@ -156,7 +156,7 @@ namespace K3CSharp
         }
     }
 
-    public class Parser
+    public partial class Parser
     {
         private readonly List<Token> tokens;
         private int current = 0;
@@ -2982,10 +2982,15 @@ namespace K3CSharp
                                 term = ASTNode.MakeLiteral(new CharacterValue(token.Lexeme));
                                 Advance(); // Consume the token
                             }
+                            else if (token.Type == TokenType.LEFT_PAREN)
+                            {
+                                // Parse nested list structure using existing logic for delimiters
+                                term = ParseExpressionInsideDelimiters();
+                            }
                             else if (token.Type == TokenType.SYMBOL)
                             {
                                 term = ASTNode.MakeLiteral(new SymbolValue(token.Lexeme));
-                                Advance(); // Consume the token
+                                Advance(); // Consume token
                             }
                             else
                             {
