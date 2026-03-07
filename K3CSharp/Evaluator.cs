@@ -494,8 +494,16 @@ namespace K3CSharp
                     (op.Value.ToString() == "ADVERB_SLASH" || op.Value.ToString() == "ADVERB_BACKSLASH" || op.Value.ToString() == "ADVERB_TICK" ||
                      op.Value.ToString() == "ADVERB_SLASH_COLON" || op.Value.ToString() == "ADVERB_BACKSLASH_COLON" || op.Value.ToString() == "ADVERB_TICK_COLON"))
             {
+                Console.WriteLine($"DEBUG Evaluator: Adverb node: {op.Value} with {node.Children.Count} children");
+                for (int i = 0; i < node.Children.Count; i++)
+                {
+                    Console.WriteLine($"DEBUG Evaluator: Adverb child {i}: {node.Children[i]?.Value} (Type: {node.Children[i]?.Type})");
+                }
+                
                 var verb = Evaluate(node.Children[0]);
+                Console.WriteLine($"DEBUG Evaluator: Evaluated verb: {verb} (Type: {verb.Type})");
                 var left = Evaluate(node.Children[1]);
+                Console.WriteLine($"DEBUG Evaluator: Evaluated left: {left} (Type: {left.Type})");
                 
                 // Check if the right argument is an adverb (for adverb chaining)
                 K3Value right;
@@ -574,10 +582,22 @@ namespace K3CSharp
         
         private K3Value EvaluateVector(ASTNode node)
         {
+            Console.WriteLine($"DEBUG EvaluateVector: Called with {node.Children.Count} children");
+            for (int i = 0; i < node.Children.Count; i++)
+            {
+                Console.WriteLine($"DEBUG EvaluateVector: Child {i}: {node.Children[i]?.Value} (Type: {node.Children[i]?.Type})");
+            }
+            
             var elements = new List<K3Value>();
             foreach (var child in node.Children)
             {
                 elements.Add(Evaluate(child));
+            }
+            
+            Console.WriteLine($"DEBUG EvaluateVector: Evaluated {elements.Count} elements");
+            for (int i = 0; i < elements.Count; i++)
+            {
+                Console.WriteLine($"DEBUG EvaluateVector: Element {i}: {elements[i]} (Type: {elements[i].Type})");
             }
             
             // Check if this should be a List (mixed types) or Vector (homogeneous)

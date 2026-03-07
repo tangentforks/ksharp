@@ -982,6 +982,7 @@ namespace K3CSharp.Tests
                 ("adverb_chaining_string_each_left.k", "((\"hello  \";\"world.  \");(\"It's  \";\"me  \";\"ksharp.  \");(\"Have  \";\"fun  \";\"with  \";\"me!  \"))"),
                 ("debug_vector_each_right.k", "(11 12 13;12 13 14;13 14 15)"),
                 ("debug_join_each_left.k", "(1 4 5 6;2 4 5 6;3 4 5 6)"),
+                ("test_nested_adverb.k", "((1 4;1 5;1 6);(2 4;2 5;2 6);(3 4;3 5;3 6))"),
                 ("debug_simple_chaining.k", "((1 4;1 5;1 6);(2 4;2 5;2 6);(3 4;3 5;3 6))"),
                 ("debug_simple.k", "1 2 3"),
                 ("math_lsq_non_square.k", "-1.0 2.0"),

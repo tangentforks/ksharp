@@ -1,23 +1,23 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-06 05:04:37
+Generated: 2026-03-06 13:04:01
 
 SUMMARY:
 --------
 Total Tests:     683
-✅ Matched:       674
-❌ Differed:      9
+✅ Matched:       675
+❌ Differed:      8
 ⚠️  Skipped:       0
 💥 Errors:        0
-Success Rate:    98.7%
+Success Rate:    98.8%
 
 DETAILED RESULTS:
 -----------------
 Status   Test File                                          K3Sharp Output                 k.exe Output                   Notes                                             
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ✅ PASS   adverb_backslash_colon_basic.k                     (5 6 7;6 7 8;7 8 9)            (5 6 7;6 7 8;7 8 9)            Compact representation                            
-❌ FAIL   adverb_chaining_join_each_left.k                   (1 4;1 5;1 6;2 4;2 5;2 6;...   ((1 2 3 9 8 7;1 2 3 6 5 4...   Compact representation                            
-❌ FAIL   adverb_chaining_string_each_left.k                 (("hello";"world.";" ";" ...   (("hello  ";"world.  ");(...   Compact representation                            
+✅ PASS   adverb_chaining_join_each_left.k                   ((1 2 3 9 8 7;1 2 3 6 5 4...   ((1 2 3 9 8 7;1 2 3 6 5 4...   Compact representation                            
+❌ FAIL   adverb_chaining_string_each_left.k                 (("hello  ";"world.  ");(...   ((("hello";"world.";" ");...   Compact representation                            
 ❌ FAIL   adverb_complex_matrix_each_right.k                 ((11 12 13;12 13 14;13 14...   ((11 12 13;14 15 16;17 18...   Compact representation                            
 ❌ FAIL   adverb_complex_string_each_left.k                  (("hello";"world.");("It'...   (("hello";"world.";" ");(...   Compact representation                            
 ✅ PASS   adverb_complex_vector_each_right.k                 (11 13 15;14 16 18;17 19 21)   (11 13 15;14 16 18;17 19 21)   Compact representation                            
@@ -136,7 +136,7 @@ Status   Test File                                          K3Sharp Output      
 ❌ FAIL   debug_join_each_left.k                             (1 4 5 6;2 4 5 6;3 4 5 6)      (1 4 5 6
  2 4 5 6
  3 4 5 6)                                                      
-❌ FAIL   debug_simple_chaining.k                            (1 4;1 5;1 6;2 4;2 5;2 6;...   ((1 4
+❌ FAIL   debug_simple_chaining.k                            ((1 4;1 5;1 6);(2 4;2 5;2...   ((1 4
   1 5
   1 6)
  (2 4
@@ -710,13 +710,9 @@ Status   Test File                                          K3Sharp Output      
 
 FAILED TESTS DETAILS:
 --------------------
-File: adverb_chaining_join_each_left.k
-K3Sharp: (1 4;1 5;1 6;2 4;2 5;2 6;3 4;3 5;3 6)
-k.exe:   ((1 2 3 9 8 7;1 2 3 6 5 4;1 2 3 3 2 1);(4 5 6 9 8 7;4 5 6 6 5 4;4 5 6 3 2 1);(7 8 9 9 8 7;7 8 9 6 5 4;7 8 9 3 2 1))
-
 File: adverb_chaining_string_each_left.k
-K3Sharp: (("hello";"world.";" ";" ");("It's";"me";"ksharp.";" ";" ");("Have";"fun";"with";"me!";" ";" "))
-k.exe:   (("hello  ";"world.  ");("It's  ";"me  ";"ksharp.  ");("Have  ";"fun  ";"with  ";"me!  "))
+K3Sharp: (("hello  ";"world.  ");("It's  ";"me  ";"ksharp.  ");("Have  ";"fun  ";"with  ";"me!  "))
+k.exe:   ((("hello";"world.";" ");("hello";"world.";" "));(("It's";"me";"ksharp.";" ");("It's";"me";"ksharp.";" "));(("Have";"fun";"with";"me!";" ");("Have";"fun";"with";"me!";" ")))
 
 File: adverb_complex_matrix_each_right.k
 K3Sharp: ((11 12 13;12 13 14;13 14 15);(14 15 16;15 16 17;16 17 18);(17 18 19;18 19 20;19 20 21))
@@ -733,7 +729,7 @@ k.exe:   (1 4 5 6
  3 4 5 6)
 
 File: debug_simple_chaining.k
-K3Sharp: (1 4;1 5;1 6;2 4;2 5;2 6;3 4;3 5;3 6)
+K3Sharp: ((1 4;1 5;1 6);(2 4;2 5;2 6);(3 4;3 5;3 6))
 k.exe:   ((1 4
   1 5
   1 6)

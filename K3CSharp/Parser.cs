@@ -2942,57 +2942,104 @@ namespace K3CSharp
                         // For adverb chaining, parse the right side as a vector (multiple terms)
                         // This prevents LRS from interfering with the chained adverbs
                         Console.WriteLine($"DEBUG Parser: About to parse right side for adverb chaining, current token: {CurrentToken().Type}, lexeme: '{CurrentToken().Lexeme}', position: {current}/{tokens.Count}");
+                        Console.WriteLine($"DEBUG Parser: Left argument for adverb chaining: {left?.Value} (Type: {left?.Type})");
+                        if (left?.Type == ASTNodeType.Vector)
+                        {
+                            Console.WriteLine($"DEBUG Parser: Left vector has {left.Children.Count} children");
+                            for (int i = 0; i < left.Children.Count; i++)
+                            {
+                                Console.WriteLine($"DEBUG Parser: Left child {i}: {left.Children[i]?.Value} (Type: {left.Children[i]?.Type})");
+                            }
+                        }
                         
                         // Parse a vector by collecting multiple terms until we hit a delimiter or end
                         var rightElements = new List<ASTNode>();
                         while (!IsAtEnd() && CurrentToken().Type != TokenType.SEMICOLON && CurrentToken().Type != TokenType.NEWLINE && CurrentToken().Type != TokenType.RIGHT_PAREN && CurrentToken().Type != TokenType.RIGHT_BRACE && CurrentToken().Type != TokenType.RIGHT_BRACKET)
                         {
-                            var term = ParseTerm();
+                            Console.WriteLine($"DEBUG Parser: Parsing literal at position {current}/{tokens.Count}, token: {CurrentToken().Type}, lexeme: '{CurrentToken().Lexeme}'");
+                            
+                            // Parse individual tokens as literals
+                            ASTNode? term = null;
+                            var token = CurrentToken();
+                            
+                            if (token.Type == TokenType.INTEGER)
+                            {
+                                term = ASTNode.MakeLiteral(new IntegerValue(int.Parse(token.Lexeme)));
+                                Advance(); // Consume the token
+                            }
+                            else if (token.Type == TokenType.LONG)
+                            {
+                                term = ASTNode.MakeLiteral(new LongValue(long.Parse(token.Lexeme)));
+                                Advance(); // Consume the token
+                            }
+                            else if (token.Type == TokenType.FLOAT)
+                            {
+                                term = ASTNode.MakeLiteral(new FloatValue(double.Parse(token.Lexeme)));
+                                Advance(); // Consume the token
+                            }
+                            else if (token.Type == TokenType.CHARACTER)
+                            {
+                                term = ASTNode.MakeLiteral(new CharacterValue(token.Lexeme));
+                                Advance(); // Consume the token
+                            }
+                            else if (token.Type == TokenType.SYMBOL)
+                            {
+                                term = ASTNode.MakeLiteral(new SymbolValue(token.Lexeme));
+                                Advance(); // Consume the token
+                            }
+                            else
+                            {
+                                Console.WriteLine($"DEBUG Parser: Unsupported token type {token.Type}, breaking");
+                                break;
+                            }
+                            
+                            Console.WriteLine($"DEBUG Parser: Parsed literal: {term?.Value} (Type: {term?.Type})");
                             if (term != null)
                             {
                                 rightElements.Add(term);
                             }
-                            else
-                            {
-                                break;
-                            }
                         }
+                        
+                        Console.WriteLine($"DEBUG Parser: Parsed {rightElements.Count} elements for right side");
                         
                         ASTNode? rightSide = null;
                         if (rightElements.Count == 1)
                         {
                             rightSide = rightElements[0];
+                            Console.WriteLine($"DEBUG Parser: Created single element right side: {rightSide?.Value}");
                         }
                         else if (rightElements.Count > 1)
                         {
                             rightSide = new ASTNode(ASTNodeType.Vector);
                             rightSide.Children.AddRange(rightElements);
+                            // Set the Value property to show vector content in debug output
+                            rightSide.Value = new SymbolValue($"vector({rightElements.Count})");
+                            Console.WriteLine($"DEBUG Parser: Created vector right side with {rightElements.Count} elements");
+                        }
+                        else
+                        {
+                            // No elements found, create empty vector
+                            rightSide = new ASTNode(ASTNodeType.Vector);
+                            Console.WriteLine($"DEBUG Parser: Created empty vector right side");
                         }
                         
-                        Console.WriteLine($"DEBUG Parser: Parsed right side for adverb chaining: {rightSide?.Value}, after parse position: {current}/{tokens.Count}");
+                        Console.WriteLine($"DEBUG Parser: Final right side: {rightSide?.Value} (Type: {rightSide?.Type}), after parse position: {current}/{tokens.Count}");
                         
                         // Create the correct adverb chaining structure according to K specification
                         // For {x verb y} adverb1 adverb2, the structure should be:
-                        // ADVERB2(verb, x, ADVERB1(verb, y))
+                        // ADVERB2(verb, x, y) where verb represents the nested adverb operation
                         
-                        // First, create the inner adverb that applies to the right side
-                        // For /: (each-right), the structure is ADVERB_SLASH_COLON(verb, rightSide, 0)
-                        var innerAdverbNode = new ASTNode(ASTNodeType.BinaryOp);
-                        innerAdverbNode.Value = new SymbolValue(adverbType);
-                        innerAdverbNode.Children.Add(verbNode); // The verb
-                        innerAdverbNode.Children.Add(rightSide); // Right side becomes the data to apply each-right to
-                        innerAdverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0))); // Initialize with 0
+                        // For nested adverbs like 1 2 3 ,/:\: 4 5 6, create a special structure
+                        // that represents the nested iteration: for each element in left, join with each element in right
+                        var nestedAdverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        nestedAdverbNode.Value = new SymbolValue(secondAdverbType);
+                        nestedAdverbNode.Children.Add(verbNode); // The verb (,)
+                        nestedAdverbNode.Children.Add(left); // Left side (1 2 3)
+                        nestedAdverbNode.Children.Add(rightSide); // Right side (4 5 6)
                         
-                        // Then create the outer adverb that applies to the verb with left side
-                        var outerAdverbNode = new ASTNode(ASTNodeType.BinaryOp);
-                        outerAdverbNode.Value = new SymbolValue(secondAdverbType);
-                        outerAdverbNode.Children.Add(verbNode); // The verb
-                        outerAdverbNode.Children.Add(left); // Left side
-                        outerAdverbNode.Children.Add(innerAdverbNode); // Inner adverb result as right side
+                        Console.WriteLine($"DEBUG Parser: Created nested adverb structure: {secondAdverbType}({verbNode?.Value}, {left?.Value}, {rightSide?.Value})");
                         
-                        Console.WriteLine($"DEBUG Parser: Created adverb chaining structure: {secondAdverbType}({verbNode?.Value}, {left?.Value}, {adverbType}({verbNode?.Value}, {rightSide?.Value}))");
-                        
-                        return outerAdverbNode;
+                        return nestedAdverbNode;
                     }
                     else
                     {

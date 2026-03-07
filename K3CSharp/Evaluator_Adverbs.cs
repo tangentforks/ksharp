@@ -8,45 +8,67 @@ namespace K3CSharp
     {
         private K3Value ApplyVerb(string verbName, K3Value left, K3Value right)
         {
-            // Special handling for _dot with scalar arguments
-            if (verbName == "_dot")
+            // Generic verb application that works with any verb type
+            
+            // Check if it's a built-in operator (single character)
+            if (verbName.Length == 1)
             {
-                // If left is scalar, wrap it in a single-element vector
-                if (IsScalar(left))
-                {
-                    left = new VectorValue(new List<K3Value> { left });
-                }
-                // If right is scalar, wrap it in a single-element vector  
-                if (IsScalar(right))
-                {
-                    right = new VectorValue(new List<K3Value> { right });
-                }
+                return ApplyBuiltInOperator(verbName[0], left, right);
             }
             
-            return verbName switch
+            // Check if it's a system function (starts with underscore)
+            if (verbName.StartsWith("_"))
             {
-                // Basic operators
-                "+" => Plus(left, right),
-                "-" => Minus(left, right),
-                "*" => Times(left, right),
-                "%" => Divide(left, right),
-                "&" => Min(left, right),
-                "|" => Max(left, right),
-                "<" => Less(left, right),
-                ">" => More(left, right),
-                "=" => Match(left, right),
-                "^" => Power(left, right),
-                "!" => ModRotate(left, right),
-                "," => Join(left, right),
-                "#" => Take(left, right),
-                "_" => FloorBinary(left, right),
-                "@" => AtIndex(left, right),
-                "." => DotApply(left, right),
-                "$" => Format(left, right),
-                "~" => Match(left, right),
-                "?" => Find(left, right),
-                
-                // System verbs
+                return ApplySystemFunction(verbName, left, right);
+            }
+            
+            // Check if it's a variable name (lookup in global scope)
+            var variableValue = GetVariableValue(verbName);
+            if (variableValue != null)
+            {
+                return ApplyFunctionValue(variableValue, left, right);
+            }
+            
+            // Check if it's an anonymous function (in the form {body})
+            if (verbName.StartsWith("{") && verbName.EndsWith("}"))
+            {
+                return ApplyAnonymousFunction(verbName, left, right);
+            }
+            
+            throw new Exception($"Unknown verb: {verbName}");
+        }
+        
+        private K3Value ApplyBuiltInOperator(char op, K3Value left, K3Value right)
+        {
+            return op switch
+            {
+                '+' => Plus(left, right),
+                '-' => Minus(left, right),
+                '*' => Times(left, right),
+                '%' => Divide(left, right),
+                '&' => Min(left, right),
+                '|' => Max(left, right),
+                '<' => Less(left, right),
+                '>' => More(left, right),
+                '=' => Match(left, right),
+                '^' => Power(left, right),
+                '!' => ModRotate(left, right),
+                ',' => Join(left, right),
+                '#' => Take(left, right),
+                '_' => FloorBinary(left, right),
+                '@' => AtIndex(left, right),
+                '.' => DotApply(left, right),
+                '$' => Format(left, right),
+                '~' => Match(left, right),
+                '?' => Find(left, right),
+                _ => throw new Exception($"Unknown operator: {op}")
+            };
+        }
+        
+        private K3Value ApplySystemFunction(string functionName, K3Value left, K3Value right)
+        {
+            return functionName switch
+            {
                 "_in" => In(left, right),
                 "_draw" => Draw(left, right),
                 "_bin" => Bin(left, right),
@@ -71,9 +93,61 @@ namespace K3CSharp
                 "_vs" => Vs(left, right),
                 "_ss" => SsFunction(left, right),
                 "_setenv" => SetenvFunction(left, right),
-                
-                _ => throw new Exception($"Unknown operator: {verbName}")
+                _ => throw new Exception($"Unknown system function: {functionName}")
             };
+        }
+        
+        private K3Value GetVariableValue(string variableName)
+        {
+            // Look up variable in global scope
+            if (globalVariables.TryGetValue(variableName, out var value))
+            {
+                return value;
+            }
+            return null;
+        }
+        
+        private K3Value ApplyFunctionValue(K3Value functionValue, K3Value left, K3Value right)
+        {
+            if (functionValue is FunctionValue func)
+            {
+                // Execute the function with the provided arguments
+                var arguments = new List<K3Value> { left, right };
+                return ExecuteFunction(func, arguments);
+            }
+            else if (functionValue is SymbolValue symbol)
+            {
+                // Symbol might be a function name
+                return ApplyVerb(symbol.Value, left, right);
+            }
+            else
+            {
+                throw new Exception($"Variable '{functionValue}' is not a function");
+            }
+        }
+        
+        private K3Value ApplyAnonymousFunction(string functionBody, K3Value left, K3Value right)
+        {
+            // Parse and execute anonymous function
+            // For now, this is a simplified implementation
+            // In a full implementation, we'd parse the function body and execute it
+            throw new NotImplementedException($"Anonymous function execution not yet implemented: {functionBody}");
+        }
+        
+        private K3Value ExecuteFunction(FunctionValue func, List<K3Value> arguments)
+        {
+            // Execute the function with the provided arguments
+            // This is a simplified implementation - in a full K interpreter,
+            // we'd evaluate the function body with the arguments bound to parameters
+            if (func.BodyText.Contains(","))
+            {
+                // Handle comma functions specially
+                return ApplyVerb(",", arguments[0], arguments.Count > 1 ? arguments[1] : new IntegerValue(0));
+            }
+            else
+            {
+                throw new Exception($"Function execution not yet implemented: {func.BodyText}");
+            }
         }
 
         private K3Value ApplyUnaryVerb(string verbName, K3Value operand)
@@ -180,7 +254,13 @@ namespace K3CSharp
         private K3Value CreateVerbDataStructure(K3Value verb, K3Value left, K3Value right)
         {
             // Create a vector structure representing [verb, left, right] for adverb processing
-            return new VectorValue(new List<K3Value> { verb, left, right }, -1);
+            var result = new VectorValue(new List<K3Value> { verb, left, right }, -1);
+            Console.WriteLine($"DEBUG CreateVerbDataStructure: Created {result} with {result.Elements.Count} elements");
+            for (int i = 0; i < result.Elements.Count; i++)
+            {
+                Console.WriteLine($"DEBUG CreateVerbDataStructure: Element {i}: {result.Elements[i]} (Type: {result.Elements[i].Type})");
+            }
+            return result;
         }
 
         private K3Value ApplyAdverbSlash(K3Value operand)
@@ -240,6 +320,9 @@ namespace K3CSharp
         private K3Value ApplyAdverbSlashColon(K3Value operand)
         {
             // Each-Right (/:): Apply verb to each element of left with entire right
+            
+            Console.WriteLine($"DEBUG ApplyAdverbSlashColon: Called with operand: {operand} (Type: {operand.Type})");
+            
             // Check if operand has verb/data structure from previous adverb processing
             if (operand is VectorValue vec && vec.Elements.Count >= 3)
             {
@@ -248,63 +331,72 @@ namespace K3CSharp
                 var left = vec.Elements[1];
                 var right = vec.Elements[2];
                 
-                Console.WriteLine($"DEBUG ApplyAdverbSlashColon: verb={verb}, left={left}, right={right}");
-                
-                // Special handling for comma operator in adverb chains
-                if (verb is SymbolValue commaSymbol && commaSymbol.Value == ",")
-                {
-                    Console.WriteLine($"DEBUG ApplyAdverbSlashColon: Creating comma /: function for chaining with data {left}");
-                    // For comma /: right, create the function {x ,/: y} that will be used by the next adverb
-                    var functionBody = "x ,/: y";
-                    var commaFunction = new FunctionValue(functionBody, new List<string>{"x", "y"}, new List<Token>(), functionBody);
-                    
-                    // For /: (each-right), the data to apply each-right to is in the left position
-                    // Store the left argument (the actual data) for the outer adverb to use
-                    commaFunction.RightArgument = left;
-                    
-                    return commaFunction;
-                }
-                
                 return EachRight(verb, left, right);
             }
             
             // For simple cases, create a composite verb structure that can be used by subsequent adverbs
             // This represents a "verb+adverb" structure that can be further modified
-            return new VectorValue(new List<K3Value> { operand }, -1); // Wrap the verb in a vector to indicate it's a composite verb
+            var result = new VectorValue(new List<K3Value> { operand }, -1); // Wrap the verb in a vector to indicate it's a composite verb
+            Console.WriteLine($"DEBUG ApplyAdverbSlashColon: Returning {result} (Type: {result.Type})");
+            return result;
         }
 
         private K3Value ApplyAdverbBackslashColon(K3Value operand)
         {
             // Each-Left (\:): Apply verb to entire left with each element of right
             
+            Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Called with operand: {operand} (Type: {operand.Type})");
+            
+            // Special case for nested adverbs: If the verb is a SymbolValue and we have a VectorValue with 3 elements
+            // where the first element is a SymbolValue that represents a verb, and the third element is a VectorValue
+            // this might be a nested adverb case like 1 2 3 ,/:\: 4 5 6
+            if (operand is VectorValue vec && vec.Elements.Count == 3)
+            {
+                var verb = vec.Elements[0];
+                var left = vec.Elements[1];
+                var right = vec.Elements[2];
+                
+                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: verb={verb} (Type: {verb.Type}), left={left} (Type: {left.Type}), right={right} (Type: {right.Type})");
+                
+                // Check if this is the nested adverb case: verb is SymbolValue and right is VectorValue
+                if (verb is SymbolValue verbSym && right is VectorValue rightVec && verbSym.Value == ",")
+                {
+                    Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Detected nested adverb case with JOIN verb");
+                    
+                    // This is the case: 1 2 3 ,/:\: 4 5 6
+                    // We need to implement: for each element in left, join it with each element in right
+                    var leftElements = left is VectorValue leftVec ? leftVec.Elements : new List<K3Value> { left };
+                    var rightElements = rightVec.Elements;
+                    
+                    var result = new List<K3Value>();
+                    foreach (var leftElement in leftElements)
+                    {
+                        var joinedElements = new List<K3Value>();
+                        foreach (var rightElement in rightElements)
+                        {
+                            var joined = ApplyVerb(",", leftElement, rightElement);
+                            joinedElements.Add(joined);
+                        }
+                        result.Add(new VectorValue(joinedElements, DetermineVectorType(joinedElements)));
+                    }
+                    
+                    return new VectorValue(result, DetermineVectorType(result));
+                }
+            }
+            
             // Check if operand is a function from previous adverb processing
             if (operand is FunctionValue prevFunc)
             {
-                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: operand is function from previous adverb with body '{prevFunc.BodyText}'");
-                
+                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Taking FunctionValue case");
                 // This is a function from the previous adverb, we need to apply \: to it
-                // For {x ,/: y} \: left right, we need to apply the function to each element of left with right
                 // But we need to get the left and right arguments from the calling context
                 // The calling context should pass us a vector with [function, left, right]
                 
                 // For adverb chaining, we need to execute the function immediately
                 // The issue is that we need to get the actual arguments from the parser structure
-                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: attempting to execute chained adverb function");
                 
-                // For now, we'll create a special case for comma adverb chaining
-                if (prevFunc.BodyText == "x ,/: y")
-                {
-                    Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: detected comma /: function, attempting execution");
-                    
-                    // This is the comma /: function, we need to execute it with the arguments
-                    // But we need to get the arguments from somewhere - they should be in the parent context
-                    // For now, let's return a special marker that the evaluator can recognize
-                    return new VectorValue(new List<K3Value> { prevFunc }, -1);
-                }
-                
-                // For now, let's create a composed function that represents {x ,/: y}\:
+                // For now, let's create a composed function 
                 string composedBody = $"{prevFunc.BodyText}\\:";
-                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: creating composed function with body '{composedBody}'");
                 
                 var composedFunction = new FunctionValue(
                     composedBody,
@@ -316,99 +408,62 @@ namespace K3CSharp
                 return composedFunction;
             }
             
-            // Check if operand has verb/data structure from previous adverb processing
-            if (operand is VectorValue vec && vec.Elements.Count >= 3)
+            // Check if operand is a composite verb structure (VectorValue with single element)
+            if (operand is VectorValue compositeVec && compositeVec.Elements.Count == 1)
             {
+                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Taking single-element VectorValue case");
+                // This is a composite verb from previous adverb processing
+                // Extract the verb from the composite structure
+                var compositeVerb = compositeVec.Elements[0];
+                
+                // Create a function that represents the composite verb
+                var functionBody = $"{{x y}} {compositeVerb}";
+                var function = new FunctionValue(
+                    functionBody,
+                    new List<string> { "x", "y" },
+                    new List<Token>(),
+                    functionBody
+                );
+                
+                return function;
+            }
+            
+            // Check if operand has verb/data structure from previous adverb processing
+            if (operand is VectorValue verbDataVec && verbDataVec.Elements.Count >= 3)
+            {
+                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Taking 3+ element VectorValue case");
                 // Structure: [verb, left, right] from adverb processing
-                var verb = vec.Elements[0];
-                var left = vec.Elements[1];
-                var right = vec.Elements[2];
+                var verb = verbDataVec.Elements[0];
+                var left = verbDataVec.Elements[1];
+                var right = verbDataVec.Elements[2];
+                
+                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: verb={verb}, left={left}, right={right}");
                 
                 // Check if the right argument is a function from adverb chaining
                 if (right is FunctionValue func)
                 {
-                    Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: right argument is function '{func.BodyText}' with left {left}");
-                    
-                    // This is adverb chaining: verb \: (function from previous adverb)
-                    // We need to execute the function with the left argument
-                    if (func.BodyText == "x ,/: y")
-                    {
-                        Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: executing comma /: function with left {left}");
-                        
-                        // For {x ,/: y} \: left, we need to apply the function to each element of left
-                        if (left is VectorValue leftVec)
-                        {
-                            var results = new List<K3Value>();
-                            foreach (var leftElement in leftVec.Elements)
-                            {
-                                // Execute the inner function: leftElement ,/: rightArg
-                                // Extract the right argument from the function
-                                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: processing left element {leftElement}");
-                                 
-                                // Get the right argument that was stored when the inner function was created
-                                var rightArg = func.RightArgument;
-                                if (rightArg == null)
-                                {
-                                    Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: ERROR - RightArgument is null");
-                                    continue;
-                                }
-                                 
-                                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: using right argument {rightArg}");
-                                 
-                                // Execute comma /: with leftElement and rightArg
-                                // For each-right: apply comma to leftElement with each element of rightArg
-                                if (rightArg is VectorValue rightVec)
-                                {
-                                    var eachRightResults = new List<K3Value>();
-                                    foreach (var rightElement in rightVec.Elements)
-                                    {
-                                        var commaResult = Join(leftElement, rightElement);
-                                        eachRightResults.Add(commaResult);
-                                    }
-                                    // Create a vector of the results: (1 4;1 5;1 6)
-                                    var nestedResult = new VectorValue(eachRightResults, 0);
-                                    results.Add(nestedResult);
-                                }
-                                else
-                                {
-                                    // Fallback for non-vector right argument
-                                    var commaResult = Join(leftElement, rightArg);
-                                    results.Add(commaResult);
-                                }
-                            }
-                            
-                            return new VectorValue(results, 0);
-                        }
-                    }
+                    Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Right argument is FunctionValue");
+                    return EachLeft(verb, left, func);
                 }
                 
-                // Special handling for comma operator in adverb chains
-                if (verb is SymbolValue commaSymbol && commaSymbol.Value == ",")
+                // Check if verb is actually the left argument (common parsing issue)
+                // For expressions like "list ,\: char", the parser sometimes passes:
+                // verb=list, left=0, right=char instead of verb=",", left=list, right=char
+                if (verb is VectorValue && left is IntegerValue intValue && intValue.Value == 0)
                 {
-                    Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Executing comma \\: directly");
-                    // For comma \: right, apply comma to each element of left with entire right
-                    // This is the direct execution of {x ,\: y}
-                    if (left is VectorValue leftVec && right is VectorValue rightVec)
-                    {
-                        var results = new List<K3Value>();
-                        foreach (var leftElement in leftVec.Elements)
-                        {
-                            // Apply comma to left element and entire right vector: leftElement , right
-                            var result = Join(leftElement, right);
-                            results.Add(result);
-                        }
-                        return new VectorValue(results, 0); // mixed list
-                    }
-                    else
-                    {
-                        // Fallback for non-vector arguments
-                        return Join(left, right);
-                    }
-                }
-                
+                    Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Swapping arguments case");
+                    // This is the case where verb is actually the left argument
+                    // Swap the arguments: verb becomes the actual verb (comma), left becomes the real left argument
+                    var realLeft = verb;
+                    var realVerb = new SymbolValue(","); // Default to comma for ,\: case
+                    
+                    return EachLeft(realVerb, realLeft, right);
+                }               
+                Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Calling EachLeft with verb={verb}, left={left}, right={right}");
                 return EachLeft(verb, left, right);
             }
             
+            Console.WriteLine($"DEBUG ApplyAdverbBackslashColon: Taking fallback case");
             // For simple cases, create a composite verb structure that can be used by subsequent adverbs
             return new VectorValue(new List<K3Value> { operand }, -1);
         }
@@ -734,26 +789,6 @@ namespace K3CSharp
                 }
                 else if (left is VectorValue leftVec2 && right is VectorValue rightVec2)
                 {
-                    // Special case for +/: to create matrix addition
-                    if (verbSymbol.Value == "+")
-                    {
-                        // Create matrix where each row is left element + each right element
-                        var result = new List<K3Value>();
-                        foreach (var leftElement in leftVec2.Elements)
-                        {
-                            var row = new List<K3Value>();
-                            foreach (var rightElement in rightVec2.Elements)
-                            {
-                                row.Add(Plus(leftElement, rightElement));
-                            }
-                            int rowVectorType = DetermineVectorType(row);
-                            result.Add(new VectorValue(row, rowVectorType));
-                        }
-                        int matrixVectorType = DetermineVectorType(result);
-                        return new VectorValue(result, matrixVectorType);
-                    }
-                    else
-                    {
                         // For other verbs, use the regular ApplyVerb
                         var result = new List<K3Value>();
                         foreach (var element in leftVec2.Elements)
@@ -762,7 +797,6 @@ namespace K3CSharp
                         }
                         int vectorType = DetermineVectorType(result);
                         return new VectorValue(result, vectorType);
-                    }
                 }
                 else if (left is VectorValue leftVec3)
                 {
@@ -804,6 +838,7 @@ namespace K3CSharp
                     }
                     else if (IsScalar(left))
                     {
+                        // Left is scalar, apply verb directly
                         return ApplyVerb(symbolValue.Value, left, right);
                     }
                 }
@@ -843,26 +878,63 @@ namespace K3CSharp
                     return ApplyVerb(verbSymbol.Value, left, right);
                 }
             }
-            else if (verb is VectorValue verbVec && verbVec.Elements.Count == 1)
+            else if (verb is VectorValue verbVec)
             {
                 // Handle composite verb structures from chained adverbs
                 // The verb is wrapped in a vector to indicate it's a composite verb
-                var actualVerb = verbVec.Elements[0];
-                if (actualVerb is SymbolValue symbolValue)
+                // This can have various structures depending on the adverb chain
+                
+                Console.WriteLine($"DEBUG EachLeft: VectorValue verb has {verbVec.Elements.Count} elements");
+                for (int i = 0; i < verbVec.Elements.Count; i++)
                 {
-                    if (left is VectorValue leftVec)
+                    Console.WriteLine($"DEBUG EachLeft: Verb element {i}: {verbVec.Elements[i]} (Type: {verbVec.Elements[i].Type})");
+                }
+                
+                if (verbVec.Elements.Count == 1)
+                {
+                    // Simple case: single element vector (wrapped verb)
+                    var actualVerb = verbVec.Elements[0];
+                    if (actualVerb is SymbolValue symbolValue)
                     {
-                        var result = new List<K3Value>();
-                        foreach (var element in leftVec.Elements)
+                        if (left is VectorValue leftVec)
                         {
-                            result.Add(ApplyVerb(symbolValue.Value, element, right));
+                            var result = new List<K3Value>();
+                            foreach (var element in leftVec.Elements)
+                            {
+                                result.Add(ApplyVerb(symbolValue.Value, element, right));
+                            }
+                            int vectorType = DetermineVectorType(result);
+                            return new VectorValue(result, vectorType);
                         }
-                        int vectorType = DetermineVectorType(result);
-                        return new VectorValue(result, vectorType);
+                        else if (IsScalar(left))
+                        {
+                            return ApplyVerb(symbolValue.Value, left, right);
+                        }
                     }
-                    else if (IsScalar(left))
+                }
+                else if (verbVec.Elements.Count >= 2)
+                {
+                    // Complex case: multi-element vector representing a modified verb
+                    var actualVerb = verbVec.Elements[0];
+                    if (actualVerb is SymbolValue symbolValue)
                     {
-                        return ApplyVerb(symbolValue.Value, left, right);
+                        // This is a modified verb, apply it generically
+                        if (left is VectorValue leftVec)
+                        {
+                            var result = new List<K3Value>();
+                            foreach (var element in leftVec.Elements)
+                            {
+                                // Apply the verb to each element of left with the right argument
+                                var verbResult = ApplyVerb(symbolValue.Value, element, right);
+                                result.Add(verbResult);
+                            }
+                            int vectorType = DetermineVectorType(result);
+                            return new VectorValue(result, vectorType);
+                        }
+                        else if (IsScalar(left))
+                        {
+                            return ApplyVerb(symbolValue.Value, left, right);
+                        }
                     }
                 }
             }
