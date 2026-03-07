@@ -156,6 +156,7 @@ namespace K3CSharp.Tests
                 // Character tests
                 ("character_single.k", "\"f\""),
                 ("character_vector.k", "\"hello\""),
+                ("test_simple_string_join.k", "\"hello \""),
                 
                 // Complex Function tests
                 ("complex_function.k", "205"),
@@ -979,9 +980,9 @@ namespace K3CSharp.Tests
                 ("adverb_complex_matrix_each_right.k", "((11 12 13;12 13 14;13 14 15);(14 15 16;15 16 17;16 17 18);(17 18 19;18 19 20;19 20 21))"),
                 ("adverb_chaining_join_each_left.k", "((1 2 3 9 8 7;1 2 3 6 5 4;1 2 3 3 2 1);(4 5 6 9 8 7;4 5 6 6 5 4;4 5 6 3 2 1);(7 8 9 9 8 7;7 8 9 6 5 4;7 8 9 3 2 1))"),
                 ("adverb_complex_string_each_left.k", "((\"hello\";\"world.\";\" \");(\"It's\";\"me\";\"ksharp.\";\" \");(\"Have\";\"fun\";\"with\";\"me!\";\" \"))"),
-                ("adverb_chaining_string_each_left.k", "((\"hello  \";\"world.  \");(\"It's  \";\"me  \";\"ksharp.  \");(\"Have  \";\"fun  \";\"with  \";\"me!  \"))"),
+                ("adverb_chaining_string_each_left.k", "((\"hello\";\"world.\";\" \");(\"hello\";\"world.\";\" \"));((\"It's\";\"me\";\"ksharp.\";\" \");(\"It's\";\"me\";\"ksharp.\";\" \"));((\"Have\";\"fun\";\"with\";\"me!\";\" \");(\"Have\";\"fun\";\"with\";\"me!\";\" \")))"),
                 ("debug_vector_each_right.k", "(11 12 13;12 13 14;13 14 15)"),
-                ("debug_join_each_left.k", "(1 4 5 6;2 4 5 6;3 4 5 6)"),
+                ("join_each_left.k", "(1 4 5 6;2 4 5 6;3 4 5 6)"),
                 ("test_nested_adverb.k", "((1 4;1 5;1 6);(2 4;2 5;2 6);(3 4;3 5;3 6))"),
                 ("debug_simple_chaining.k", "((1 4;1 5;1 6);(2 4;2 5;2 6);(3 4;3 5;3 6))"),
                 ("debug_simple.k", "1 2 3"),

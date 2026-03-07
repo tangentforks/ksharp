@@ -448,12 +448,36 @@ namespace K3CSharp
             var leftElements = left is VectorValue leftVec ? leftVec.Elements : new List<K3Value> { left };
             var rightElements = rightVec.Elements;
             
-            return PerformEachLeftOperation(verb, leftElements, rightElements);
+            // Check if this is a nested adverb case (vectors of vectors) vs simple each-left
+            // Nested case: both sides are vectors, and at least one side contains vectors (not just scalars)
+            bool leftHasVectors = leftElements.Any(e => e is VectorValue);
+            bool rightHasVectors = rightElements.Any(e => e is VectorValue);
+            bool leftHasVectorOfVectors = leftElements.Any(e => e is VectorValue vec && vec.Elements.Any(el => el is VectorValue));
+            bool rightHasVectorOfVectors = rightElements.Any(e => e is VectorValue vec && vec.Elements.Any(el => el is VectorValue));
+            
+            // For complex nested cases like ((1 2 3;4 5 6);(7 8 9;0 1 2)), the vectors themselves contain vectors
+            // So we need to check if the elements are vectors (not scalars)
+            bool leftIsVectorOfVectors = leftElements.All(e => e is VectorValue);
+            bool rightIsVectorOfVectors = rightElements.All(e => e is VectorValue);
+            
+            bool isNestedCase = (leftIsVectorOfVectors && rightIsVectorOfVectors) || 
+                                (leftHasVectorOfVectors && rightHasVectors) || 
+                                (leftHasVectors && rightHasVectorOfVectors);
+            
+            if (isNestedCase)
+            {
+                return PerformNestedAdverbEachLeft(verb, leftElements, rightElements);
+            }
+            else
+            {
+                return PerformSimpleEachLeftOperation(verb, leftElements, rightElements);
+            }
         }
         
-        private K3Value PerformEachLeftOperation(K3Value verb, List<K3Value> leftElements, List<K3Value> rightElements)
+        private K3Value PerformNestedAdverbEachLeft(K3Value verb, List<K3Value> leftElements, List<K3Value> rightElements)
         {
             var result = new List<K3Value>();
+            
             foreach (var leftElement in leftElements)
             {
                 var operationResults = new List<K3Value>();
@@ -463,6 +487,21 @@ namespace K3CSharp
                     operationResults.Add(operationResult);
                 }
                 result.Add(new VectorValue(operationResults, DetermineVectorType(operationResults)));
+            }
+            
+            return new VectorValue(result, DetermineVectorType(result));
+        }
+        
+        private K3Value PerformSimpleEachLeftOperation(K3Value verb, List<K3Value> leftElements, List<K3Value> rightElements)
+        {
+            var result = new List<K3Value>();
+            var rightVector = new VectorValue(rightElements, DetermineVectorType(rightElements));
+            
+            foreach (var leftElement in leftElements)
+            {
+                // Each-left: apply verb with left element and the ENTIRE right vector
+                var operationResult = ApplyVerb(verb, leftElement, rightVector);
+                result.Add(operationResult);
             }
             
             return new VectorValue(result, DetermineVectorType(result));

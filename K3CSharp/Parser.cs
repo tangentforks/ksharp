@@ -400,7 +400,7 @@ namespace K3CSharp
             
             ASTNode? result;
             
-            // Check if current token is an adverb - if so, we're in a chaining context
+            // Check if current token is an adverb - if so, we're in a nesting context
             // and need to handle it specially since ParsePrimary will throw an exception
             if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
                               CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
@@ -409,7 +409,7 @@ namespace K3CSharp
                               CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON ||
                               CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
             {
-                // Create a placeholder node that will be replaced by the adverb chaining logic
+                // Create a placeholder node that will be replaced by the adverb nesting logic
                 result = new ASTNode(ASTNodeType.Literal);
                 result.Value = new IntegerValue(0); // Placeholder value
             }
@@ -680,14 +680,22 @@ namespace K3CSharp
             {
                 var value = PreviousToken().Lexeme;
                 
-                // Always create a VectorValue containing individual CharacterValue objects
-                // In K, "text" is always a character vector, not a single character
-                var charVector = new List<K3Value>();
-                foreach (char c in value)
+                // K type rules: length 1 = Character (type 3), length 0 or >1 = Character Vector (type -3)
+                if (value.Length == 1)
                 {
-                    charVector.Add(new CharacterValue(c.ToString()));
+                    // Single character - create CharacterValue (type 3)
+                    result = ASTNode.MakeLiteral(new CharacterValue(value));
                 }
-                result = ASTNode.MakeLiteral(new VectorValue(charVector, -3)); // -3 = character vector type
+                else
+                {
+                    // Character vector - create VectorValue containing individual CharacterValue objects (type -3)
+                    var charVector = new List<K3Value>();
+                    foreach (char c in value)
+                    {
+                        charVector.Add(new CharacterValue(c.ToString()));
+                    }
+                    result = ASTNode.MakeLiteral(new VectorValue(charVector, -3)); // -3 = character vector type
+                }
             }
             else if (Match(TokenType.SYMBOL))
             {
@@ -2550,7 +2558,7 @@ namespace K3CSharp
         {
             var adverbs = new List<string> { firstAdverb };
             
-            // Collect additional adverbs for chaining
+            // Collect additional adverbs for nesting
             while (IsAdverbToken(CurrentToken().Type))
             {
                 var adverbToken = CurrentToken();
@@ -2561,7 +2569,7 @@ namespace K3CSharp
             // Parse the operand (the verb or data the adverbs apply to)
             var operand = ParsePrimary();
             
-            // Create a chained adverb node
+            // Create a nested adverb node
             var node = new ASTNode(ASTNodeType.BinaryOp);
             node.Value = new SymbolValue("ADVERB_CHAIN");
             if (operand != null) node.Children.Add(operand);
@@ -2887,11 +2895,11 @@ namespace K3CSharp
                     Advance(); // Consume the adverb token
                     var adverbType = adverbToken.Type.ToString().Replace("TokenType.", "");
                     
-                    // Check if this adverb is followed by another adverb (adverb chaining)
+                    // Check if this adverb is followed by another adverb (adverb nesting)
                     if (IsAdverbToken(CurrentToken().Type))
                     {
-                        // This is adverb chaining (e.g., ,/:\:)
-                        // Create a composite function representing the chained adverbs
+                        // This is adverb nesting (e.g., ,/:\:)
+                        // Create a composite function representing the nested adverbs
                         var secondAdverbToken = CurrentToken();
                         Advance(); // Consume the second adverb token
                         var secondAdverbType = secondAdverbToken.Type.ToString().Replace("TokenType.", "");
@@ -2939,10 +2947,10 @@ namespace K3CSharp
                         };
                         var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
                         
-                        // For adverb chaining, parse the right side as a vector (multiple terms)
-                        // This prevents LRS from interfering with the chained adverbs
-                        Console.WriteLine($"DEBUG Parser: About to parse right side for adverb chaining, current token: {CurrentToken().Type}, lexeme: '{CurrentToken().Lexeme}', position: {current}/{tokens.Count}");
-                        Console.WriteLine($"DEBUG Parser: Left argument for adverb chaining: {left?.Value} (Type: {left?.Type})");
+                        // For adverb nesting, parse the right side as a vector (multiple terms)
+                        // This prevents LRS from interfering with the nested adverbs
+                        Console.WriteLine($"DEBUG Parser: About to parse right side for adverb nesting, current token: {CurrentToken().Type}, lexeme: '{CurrentToken().Lexeme}', position: {current}/{tokens.Count}");
+                        Console.WriteLine($"DEBUG Parser: Left argument for adverb nesting: {left?.Value} (Type: {left?.Type})");
                         if (left?.Type == ASTNodeType.Vector)
                         {
                             Console.WriteLine($"DEBUG Parser: Left vector has {left.Children.Count} children");
@@ -2980,7 +2988,28 @@ namespace K3CSharp
                             else if (token.Type == TokenType.CHARACTER)
                             {
                                 term = ASTNode.MakeLiteral(new CharacterValue(token.Lexeme));
-                                Advance(); // Consume the token
+                                Advance(); // Consume token
+                            }
+                            else if (token.Type == TokenType.CHARACTER_VECTOR)
+                            {
+                                // Handle string literals - convert to proper K types
+                                // K type rules: length 1 = Character (type 3), length 0 or >1 = Character Vector (type -3)
+                                if (token.Lexeme.Length == 1)
+                                {
+                                    // Single character - create CharacterValue (type 3)
+                                    term = ASTNode.MakeLiteral(new CharacterValue(token.Lexeme));
+                                }
+                                else
+                                {
+                                    // Character vector - create VectorValue containing individual CharacterValue objects (type -3)
+                                    var charVector = new List<K3Value>();
+                                    foreach (char c in token.Lexeme)
+                                    {
+                                        charVector.Add(new CharacterValue(c.ToString()));
+                                    }
+                                    term = ASTNode.MakeLiteral(new VectorValue(charVector, -3)); // -3 = character vector type
+                                }
+                                Advance(); // Consume token
                             }
                             else if (token.Type == TokenType.LEFT_PAREN)
                             {
@@ -3030,7 +3059,7 @@ namespace K3CSharp
                         
                         Console.WriteLine($"DEBUG Parser: Final right side: {rightSide?.Value} (Type: {rightSide?.Type}), after parse position: {current}/{tokens.Count}");
                         
-                        // Create the correct adverb chaining structure according to K specification
+                        // Create the correct adverb nesting structure according to K specification
                         // For {x verb y} adverb1 adverb2, the structure should be:
                         // ADVERB2(verb, x, y) where verb represents the nested adverb operation
                         

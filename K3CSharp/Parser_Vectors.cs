@@ -70,7 +70,13 @@ namespace K3CSharp
             {
                 // Simple expression
                 Console.WriteLine("DEBUG ParseComplexVectorElement: Parsing simple expression");
-                return ParseExpression();
+                var result = ParseExpression();
+                if (result == null)
+                {
+                    // Handle null result - create placeholder
+                    return ASTNode.MakeLiteral(new NullValue());
+                }
+                return result;
             }
         }
         
