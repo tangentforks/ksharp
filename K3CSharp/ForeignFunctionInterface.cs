@@ -29,6 +29,81 @@ namespace K3CSharp
         }
 
         /// <summary>
+        /// Create a constructor function for a .NET type
+        /// </summary>
+        /// <param name="type">The type to create constructor for</param>
+        /// <returns>Function that creates instances of the type</returns>
+        public static FunctionValue CreateConstructorFunction(Type type)
+        {
+            var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+            
+            // Create parameter list for first constructor (simplified)
+            var firstConstructor = constructors.FirstOrDefault();
+            var parameters = firstConstructor?.GetParameters().Select(p => p.Name ?? "").ToList() ?? new List<string>();
+            
+            return new FunctionValue(
+                $"constructor:{type.Name}",
+                parameters,
+                null!,
+                "",
+                new SymbolValue("constructor"));
+        }
+
+        /// <summary>
+        /// Create an instance of a .NET type with given arguments
+        /// </summary>
+        /// <param name="type">The type to instantiate</param>
+        /// <param name="args">Constructor arguments</param>
+        /// <returns>Object dictionary for the created instance</returns>
+        public static DictionaryValue CreateInstance(Type type, List<K3Value> args)
+        {
+            var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+            
+            // Find best constructor match
+            var bestConstructor = FindBestConstructorMatch(constructors, args);
+            
+            try
+            {
+                // Convert arguments to .NET types
+                var parameters = bestConstructor.GetParameters();
+                var netArgs = new object?[parameters.Length];
+                
+                for (int i = 0; i < Math.Min(args.Count, parameters.Length); i++)
+                {
+                    netArgs[i] = TypeMarshalling.K3ToNet(args[i], parameters[i].ParameterType);
+                }
+                
+                // Create instance
+                var instance = bestConstructor.Invoke(netArgs!);
+                
+                // Register instance and return object dictionary
+                var result = TypeMarshalling.NetToK3(instance, new SymbolValue("object"));
+                return result as DictionaryValue ?? throw new Exception("Failed to create object dictionary");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Instance creation failed: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Find the best constructor match for given arguments
+        /// </summary>
+        /// <param name="constructors">Available constructors</param>
+        /// <param name="args">Arguments to match</param>
+        /// <returns>Best matching constructor</returns>
+        private static ConstructorInfo FindBestConstructorMatch(ConstructorInfo[] constructors, List<K3Value> args)
+        {
+            // Simple matching: find constructor with closest parameter count
+            var exactMatch = constructors.FirstOrDefault(c => c.GetParameters().Length == args.Count);
+            if (exactMatch != null)
+                return exactMatch;
+            
+            // Find constructor with closest parameter count
+            return constructors.OrderBy(c => Math.Abs(c.GetParameters().Length - args.Count)).First();
+        }
+
+        /// <summary>
         /// Get the global _dotnet tree
         /// </summary>
         /// <returns>The _dotnet dictionary containing all loaded .NET assemblies</returns>

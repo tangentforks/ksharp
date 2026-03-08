@@ -349,7 +349,7 @@ namespace K3CSharp
         private bool IsBinaryOperator(TokenType type)
         {
             return type == TokenType.PLUS || type == TokenType.MINUS || type == TokenType.MULTIPLY ||
-                   type == TokenType.DIVIDE || type == TokenType.DIV || type == TokenType.DOT || type == TokenType.MUL || type == TokenType.AND || type == TokenType.OR || type == TokenType.XOR || type == TokenType.ROT || type == TokenType.SHIFT || type == TokenType.MIN || type == TokenType.MAX || type == TokenType.LESS || type == TokenType.GREATER ||
+                   type == TokenType.DIVIDE || type == TokenType.DIV || type == TokenType.DOT || type == TokenType.DOT_APPLY || type == TokenType.MUL || type == TokenType.AND || type == TokenType.OR || type == TokenType.XOR || type == TokenType.ROT || type == TokenType.SHIFT || type == TokenType.MIN || type == TokenType.MAX || type == TokenType.LESS || type == TokenType.GREATER ||
                    type == TokenType.EQUAL || type == TokenType.MATCH || type == TokenType.IN || type == TokenType.BIN || type == TokenType.BINL || type == TokenType.LIN ||
                    type == TokenType.DV || type == TokenType.DI || type == TokenType.VS || type == TokenType.SV || type == TokenType.SS || type == TokenType.SM || type == TokenType.CI || type == TokenType.IC ||
                    type == TokenType.GETENV || type == TokenType.SETENV || type == TokenType.SIZE ||
@@ -711,6 +711,11 @@ namespace K3CSharp
             {
                 // Handle _hint token as a symbol literal
                 result = ASTNode.MakeLiteral(new SymbolValue("_hint"));
+            }
+            else if (Match(TokenType.DISPOSE))
+            {
+                // Handle _dispose token as a symbol literal
+                result = ASTNode.MakeLiteral(new SymbolValue("_dispose"));
             }
             else if (Match(TokenType.PLUS))
             {
@@ -2292,7 +2297,7 @@ namespace K3CSharp
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
                    Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) || Match(TokenType.EQUAL) || Match(TokenType.IN) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
                    Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || Match(TokenType.DOLLAR) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
-                   Match(TokenType.LSQ) || Match(TokenType.AND) || Match(TokenType.OR) || Match(TokenType.XOR) || Match(TokenType.ROT) || Match(TokenType.SHIFT) || Match(TokenType.APPLY))
+                   Match(TokenType.LSQ) || Match(TokenType.AND) || Match(TokenType.OR) || Match(TokenType.XOR) || Match(TokenType.ROT) || Match(TokenType.SHIFT) || Match(TokenType.APPLY) || Match(TokenType.DOT_APPLY))
             {
                 var op = PreviousToken().Type;
                 
@@ -2940,7 +2945,7 @@ namespace K3CSharp
             // Handle binary operators with Long Right Scope (LRS)
             // In K, there's no precedence among operators - they're all right-associative
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
-                   Match(TokenType.DIVIDE) || Match(TokenType.DIV) || Match(TokenType.DOT) || Match(TokenType.MUL) || Match(TokenType.AND) || Match(TokenType.OR) || Match(TokenType.XOR) || Match(TokenType.ROT) || Match(TokenType.SHIFT) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
+                   Match(TokenType.DIVIDE) || Match(TokenType.DIV) || Match(TokenType.DOT) || Match(TokenType.DOT_APPLY) || Match(TokenType.MUL) || Match(TokenType.AND) || Match(TokenType.OR) || Match(TokenType.XOR) || Match(TokenType.ROT) || Match(TokenType.SHIFT) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
                    Match(TokenType.EQUAL) || Match(TokenType.MATCH) || Match(TokenType.IN) || Match(TokenType.BIN) || Match(TokenType.BINL) || Match(TokenType.LIN) ||
                    Match(TokenType.DV) || Match(TokenType.DI) || Match(TokenType.VS) || Match(TokenType.SV) || Match(TokenType.SS) || Match(TokenType.SM) || Match(TokenType.CI) || Match(TokenType.IC) ||
                    Match(TokenType.GETENV) || Match(TokenType.SETENV) || Match(TokenType.SIZE) ||
@@ -3305,10 +3310,9 @@ namespace K3CSharp
                 while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
                        Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) || 
                        Match(TokenType.EQUAL) || Match(TokenType.IN) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
-                       Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || 
-                       Match(TokenType.DOLLAR) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
-                       Match(TokenType.AND) || Match(TokenType.OR) || Match(TokenType.XOR) || Match(TokenType.ROT) || Match(TokenType.SHIFT) ||
-                       Match(TokenType.APPLY))
+                       Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || Match(TokenType.DOLLAR) || Match(TokenType.APPLY) || Match(TokenType.DOT_APPLY) ||
+                       Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
+                       Match(TokenType.AND) || Match(TokenType.OR) || Match(TokenType.XOR) || Match(TokenType.ROT) || Match(TokenType.SHIFT))
                 {
                     var op = PreviousToken().Type;
                     

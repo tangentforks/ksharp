@@ -1004,6 +1004,9 @@ namespace K3CSharp.Tests
                 ("ffi_simple_assembly.k", "name|namespace|assembly|isclass|isinterface|isenum|isabstract|ispublic|isstatic|constructors|staticmethods|methods|properties|fields"),
                 ("ffi_assembly_load.k", "name|namespace|assembly|isclass|isinterface|isenum|isabstract|ispublic|isstatic|constructors|staticmethods|methods|properties|fields"),
                 ("ffi_type_marshalling.k", "1 2 3 4 5"),
+                ("ffi_object_management.k", "HELLO"),
+                ("ffi_constructor.k", "name|namespace|assembly|isclass|isinterface|isenum|isabstract|ispublic|isstatic|constructors|methods|properties|fields"),
+                ("ffi_dispose.k", "Disposed"),
             };
 
             // Filter tests if a pattern was provided

@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-07 20:15:04
+Generated: 2026-03-07 23:39:40
 
 SUMMARY:
 --------
-Total Tests:     681
+Total Tests:     688
 ✅ Matched:       679
 ❌ Differed:      2
 ⚠️  Skipped:       0
-💥 Errors:        0
-Success Rate:    99.7%
+💥 Errors:        7
+Success Rate:    98.7%
 
 DETAILED RESULTS:
 -----------------
@@ -181,6 +181,13 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   enumerate_operator.k                               0 1 2 3 4                      0 1 2 3 4                                                                        
 ✅ PASS   enumerate.k                                        0 1                            0 1                                                                              
 ✅ PASS   equal_operator.k                                   0                              0                                                                                
+💥 ERROR ffi_assembly_load.k                                .((`name;"String";);(`ful...                                  k.exe error only                                  
+💥 ERROR ffi_constructor.k                                  .((`name;"String";);(`ful...                                  k.exe error only                                  
+💥 ERROR ffi_dispose.k                                                                                                    k.exe error only                                  
+💥 ERROR ffi_hint_system.k                                  `_hint                                                        k.exe error only                                  
+💥 ERROR ffi_object_management.k                                                                                          k.exe error only                                  
+💥 ERROR ffi_simple_assembly.k                              .((`name;"String";);(`ful...                                  k.exe error only                                  
+💥 ERROR ffi_type_marshalling.k                             1 2 3 4 5                                                     k.exe error only                                  
 ✅ PASS   find_basic.k                                       2                              2                                                                                
 ✅ PASS   find_notfound.k                                    7                              7                                                                                
 ✅ PASS   first_operator.k                                   1                              1                                                                                
@@ -712,8 +719,65 @@ k.exe:   30
 
 ERROR TESTS DETAILS:
 -------------------
-No error tests found!
+File: ffi_assembly_load.k
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+File: ffi_constructor.k
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+File: ffi_dispose.k
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+File: ffi_hint_system.k
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+File: ffi_object_management.k
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+File: ffi_simple_assembly.k
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+File: ffi_type_marshalling.k
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
 
 K.EXE FAILING TESTS:
 --------------------
-No tests failing in k.exe found!
+Test: ffi_assembly_load.k
+Input: // Test basic FFI functionality
+// Load System.Private.CoreLib assembly and access String type
+"System.Private.CoreLib" 2: `System.String
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+Test: ffi_constructor.k
+Input: stringType: "System.Private.CoreLib" 2: `System.String ; stringType
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+Test: ffi_dispose.k
+Input: str: "hello" _hint `object ; _dispose ; str._this
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+Test: ffi_hint_system.k
+Input: // Test hint system functionality
+// Set and get hints on values
+42 _hint `int
+_hint 42
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+Test: ffi_object_management.k
+Input: str: "hello" _hint `object; str . ToUpper
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+Test: ffi_simple_assembly.k
+Input: // Test basic assembly loading with a known type
+"System.Private.CoreLib" 2: `System.String
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+Test: ffi_type_marshalling.k
+Input: // Test type marshalling
+// Convert between K and .NET types
+3.14159 _hint `float
+"hello" _hint `string
+1 2 3 4 5 _hint `list
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+

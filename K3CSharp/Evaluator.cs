@@ -1250,6 +1250,8 @@ namespace K3CSharp
                     return SizeFunction(arguments.Count > 0 ? arguments[0] : new NullValue());
                 case "_hint":
                     return HintFunction(arguments);
+                case "_dispose":
+                    return DisposeFunction(arguments);
                 case "_exit":
                     return ExitFunction(arguments.Count > 0 ? arguments[0] : new NullValue());
                 case ":":
@@ -1908,8 +1910,17 @@ namespace K3CSharp
                 }
                 else if (right is SymbolValue symbol)
                 {
-                    // Single symbol lookup - same as dictionary indexing
-                    return VectorIndex(dict, symbol);
+                    // Check if this is an FFI object with method calls
+                    if (dict.Entries.ContainsKey(new SymbolValue("_this")))
+                    {
+                        // FFI object method call: obj.Method
+                        return MethodInvocation.CallObjectMethod(dict, symbol);
+                    }
+                    else
+                    {
+                        // Regular dictionary lookup
+                        return VectorIndex(dict, symbol);
+                    }
                 }
                 else if (right is VectorValue rightVec && rightVec.Elements.Count == 1 && rightVec.Elements[0] is VectorValue symbolVec)
                 {
@@ -2362,6 +2373,47 @@ namespace K3CSharp
             else
             {
                 throw new Exception("_hint: requires 1 or 2 arguments");
+            }
+        }
+
+        private K3Value DisposeFunction(List<K3Value> arguments)
+        {
+            // Monadic _dispose x: dispose object x
+            if (arguments.Count == 1)
+            {
+                var obj = arguments[0];
+                
+                // Check if object has _this entry (object dictionary)
+                if (obj is DictionaryValue dict && dict.Entries.TryGetValue(new SymbolValue("_this"), out var thisEntry))
+                {
+                    var handle = thisEntry.Value.ToString();
+                    var netObj = ObjectRegistry.GetObject(handle);
+                    
+                    if (netObj != null)
+                    {
+                        // Call Dispose() if object implements IDisposable
+                        if (netObj is IDisposable disposable)
+                        {
+                            disposable.Dispose();
+                        }
+                        
+                        // Unregister from object registry
+                        ObjectRegistry.UnregisterObject(handle);
+                        
+                        // Set _this to Disposed handle value
+                        dict.Entries[new SymbolValue("_this")] = (new CharacterValue("Disposed", new SymbolValue("disposed")), null);
+                    }
+                    
+                    return new IntegerValue(1); // Success
+                }
+                else
+                {
+                    throw new Exception("_dispose: argument must be an object dictionary with _this entry");
+                }
+            }
+            else
+            {
+                throw new Exception("_dispose: requires exactly 1 argument");
             }
         }
         
