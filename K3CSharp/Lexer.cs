@@ -259,8 +259,18 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // Check for _n null value first (only if not followed by letters)
-                        if (position + 1 < input.Length && input[position + 1] == 'n')
+                        // Check for _hint first (greedy precedence over _h)
+                        if (position + 4 < input.Length && input.Substring(position, 5) == "_hint")
+                        {
+                            tokens.Add(new Token(TokenType.HINT, "_hint", position));
+                            Advance(); // Skip _
+                            Advance(); // Skip h
+                            Advance(); // Skip i
+                            Advance(); // Skip n
+                            Advance(); // Skip t
+                        }
+                        // Check for _n null value (only if not followed by letters)
+                        else if (position + 1 < input.Length && input[position + 1] == 'n')
                         {
                             // Check if this is just _n (not followed by more letters)
                             bool isJustN = (position + 2 >= input.Length) || !char.IsLetter(input[position + 2]);

@@ -998,6 +998,12 @@ namespace K3CSharp.Tests
                 ("math_shift_vector.k", "32 64 128 256"),
                 ("math_xor_basic.k", "6"),
                 ("math_xor_vector.k", "1 2 3"),
+                
+                // FFI (Foreign Function Interface) tests
+                ("ffi_hint_system.k", "`_hint"),
+                ("ffi_simple_assembly.k", "name|namespace|assembly|isclass|isinterface|isenum|isabstract|ispublic|isstatic|constructors|staticmethods|methods|properties|fields"),
+                ("ffi_assembly_load.k", "name|namespace|assembly|isclass|isinterface|isenum|isabstract|ispublic|isstatic|constructors|staticmethods|methods|properties|fields"),
+                ("ffi_type_marshalling.k", "1 2 3 4 5"),
             };
 
             // Filter tests if a pattern was provided

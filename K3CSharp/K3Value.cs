@@ -22,6 +22,7 @@ namespace K3CSharp
     public abstract class K3Value
     {
         public ValueType Type { get; protected set; }
+        public SymbolValue? Hint { get; set; }
 
         public abstract K3Value Add(K3Value other);
         public abstract K3Value Subtract(K3Value other);
@@ -36,10 +37,11 @@ namespace K3CSharp
         public bool IsSpecial { get; }
         public string SpecialName { get; }
 
-        public IntegerValue(int value)
+        public IntegerValue(int value, SymbolValue? hint = null)
         {
             Value = value;
             Type = ValueType.Integer;
+            Hint = hint;
             
             // Check if this value matches any special integer patterns
             if (value == int.MaxValue)
@@ -152,10 +154,11 @@ namespace K3CSharp
     {
         public long Value { get; }
 
-        public LongValue(long value)
+        public LongValue(long value, SymbolValue? hint = null)
         {
             Value = value;
             Type = ValueType.Long;
+            Hint = hint;
         }
 
         public override K3Value Add(K3Value other)
@@ -263,10 +266,11 @@ namespace K3CSharp
         public string? SpecialName { get; }
         public bool HasZeroFractionalPart { get; }
 
-        public FloatValue(double value)
+        public FloatValue(double value, SymbolValue? hint = null)
         {
             Value = value;
             Type = ValueType.Float;
+            Hint = hint;
             IsSpecial = false;
             HasZeroFractionalPart = (Math.Abs(value % 1) < 1e-10); // Use more reasonable epsilon
             
@@ -513,7 +517,7 @@ namespace K3CSharp
     {
         public string Value { get; }
 
-        public CharacterValue(string value)
+        public CharacterValue(string value, SymbolValue? hint = null)
         {
             // Validate that CharacterValue can only be created with single characters
             if (value == null)
@@ -531,6 +535,7 @@ namespace K3CSharp
             
             Value = unescapedValue;
             Type = ValueType.Character;
+            Hint = hint;
         }
         
         private static string UnescapeCharacterString(string input)
@@ -690,10 +695,11 @@ namespace K3CSharp
     {
         public string Value { get; }
 
-        public SymbolValue(string value)
+        public SymbolValue(string value, SymbolValue? hint = null)
         {
             Value = value;
             Type = ValueType.Symbol;
+            Hint = hint;
         }
 
         public override K3Value Add(K3Value other)
@@ -786,17 +792,19 @@ namespace K3CSharp
         public List<K3Value> Elements { get; }
         public int? VectorType { get; private set; } // Track type for empty vectors
 
-        public VectorValue(List<K3Value> elements)
+        public VectorValue(List<K3Value> elements, SymbolValue? hint = null)
         {
             Elements = elements;
             Type = ValueType.Vector;
+            Hint = hint;
             VectorType = DetermineVectorTypeFromElements(elements);
         }
 
-        public VectorValue(List<K3Value> elements, int vectorType)
+        public VectorValue(List<K3Value> elements, int vectorType, SymbolValue? hint = null)
         {
             Elements = elements;
             Type = ValueType.Vector;
+            Hint = hint;
             VectorType = vectorType;
         }
 
@@ -1247,12 +1255,13 @@ namespace K3CSharp
         // For adverb chaining: store the right argument when this function is created by an adverb
         public K3Value? RightArgument { get; set; }
         
-        public FunctionValue(string bodyText, List<string> parameters, List<Token> preParsedTokens = null!, string originalSourceText = "")
+        public FunctionValue(string bodyText, List<string> parameters, List<Token> preParsedTokens = null!, string originalSourceText = "", SymbolValue? hint = null)
         {
             BodyText = bodyText;
             OriginalSourceText = originalSourceText;
             Parameters = parameters;
             Type = ValueType.Function;
+            Hint = hint;
             Valence = parameters.Count;
             PreParsedTokens = preParsedTokens;
             AssociatedKTree = new KTree(); // Create associated K tree for anonymous functions

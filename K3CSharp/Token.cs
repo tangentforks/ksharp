@@ -128,6 +128,7 @@ namespace K3CSharp
         WHILE,          // _while control flow
         IF_FUNC,        // _if control flow
         EXIT,           // _exit control flow
+        HINT,           // _hint hint system
         EOF,
         UNKNOWN
     }

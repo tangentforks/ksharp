@@ -541,7 +541,74 @@ public partial class Evaluator
     
     private K3Value WriteMemoryMappedKData(K3Value left, K3Value right)
     {
-        throw new NotImplementedException("1: WRITE MEMORY MAPPED K DATA not yet implemented");
+        // Implement dyadic 2: for .NET assembly loading
+        // Syntax: "assembly.dll" 2: `System.TypeName`
+        
+        if (left is CharacterValue charValue && right is SymbolValue symValue)
+        {
+            return LoadDotNetAssembly(charValue.Value, symValue.Value);
+        }
+        else if (left is VectorValue vector && vector.VectorType == -3 && right is SymbolValue symbolType) // -3 = character vector
+        {
+            // Extract string from character vector
+            var chars = vector.Elements.Select(e => e.ToString().Trim('"')).ToArray();
+            var charVectorPath = string.Join("", chars);
+            return LoadDotNetAssembly(charVectorPath, symbolType.Value);
+        }
+        else if (left is SymbolValue assemblyName && right is SymbolValue typeNameSymbol)
+        {
+            // Try to load by assembly name (e.g., "System.Core" 2: `System.Math)
+            return LoadDotNetAssembly(assemblyName.Value, typeNameSymbol.Value);
+        }
+        else
+        {
+            throw new Exception("2: assembly loading requires character vector (assembly path/name) and symbol (type name)");
+        }
+    }
+    
+    private K3Value LoadDotNetAssembly(string assemblyPath, string typeName)
+    {
+        try
+        {
+            // Load the assembly
+            System.Reflection.Assembly assembly;
+            
+            if (assemblyPath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || 
+                assemblyPath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            {
+                // Load from file path
+                string fullPath = System.IO.Path.GetFullPath(assemblyPath);
+                if (!System.IO.File.Exists(fullPath))
+                {
+                    throw new Exception($"Assembly file not found: {fullPath}");
+                }
+                assembly = System.Reflection.Assembly.LoadFrom(fullPath);
+            }
+            else
+            {
+                // Load by assembly name
+                assembly = System.Reflection.Assembly.Load(assemblyPath);
+            }
+            
+            // Find the specified type
+            var type = assembly.GetTypes()
+                .FirstOrDefault(t => t.FullName == typeName || t.Name == typeName);
+                
+            if (type == null)
+            {
+                throw new Exception($"Type '{typeName}' not found in assembly '{assemblyPath}'");
+            }
+            
+            // Store the assembly in the _dotnet tree
+            ForeignFunctionInterface.StoreAssemblyInDotNetTree(assembly);
+            
+            // Create and return the type dictionary
+            return ForeignFunctionInterface.CreateNetTypeDictionary(type);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"Failed to load .NET assembly '{assemblyPath}' type '{typeName}': {ex.Message}", ex);
+        }
     }
     
     private K3Value WriteData(K3Value left, K3Value right)

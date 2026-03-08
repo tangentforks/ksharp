@@ -1122,7 +1122,7 @@ namespace K3CSharp
             var token = tokens[current];
             
             // Handle literals
-            if (token.Type == TokenType.INTEGER || token.Type == TokenType.FLOAT || token.Type == TokenType.SYMBOL)
+            if (token.Type == TokenType.INTEGER || token.Type == TokenType.FLOAT || token.Type == TokenType.SYMBOL || token.Type == TokenType.HINT)
             {
                 current++;
                 return ASTNode.MakeLiteral(CreateK3Value(token));
@@ -1180,7 +1180,7 @@ namespace K3CSharp
         private bool IsArgumentToken(Token token)
         {
             return token.Type == TokenType.INTEGER || token.Type == TokenType.FLOAT || 
-                   token.Type == TokenType.SYMBOL;
+                   token.Type == TokenType.SYMBOL || token.Type == TokenType.HINT;
         }
         
         private K3Value CreateK3Value(Token token)
@@ -1193,6 +1193,8 @@ namespace K3CSharp
                     return new FloatValue(double.Parse(token.Lexeme));
                 case TokenType.SYMBOL:
                     return new SymbolValue(token.Lexeme);
+                case TokenType.HINT:
+                    return new SymbolValue("_hint");
                 default:
                     return new NullValue();
             }
@@ -1246,6 +1248,8 @@ namespace K3CSharp
                     return GetenvFunction(arguments.Count > 0 ? arguments[0] : new NullValue());
                 case "_size":
                     return SizeFunction(arguments.Count > 0 ? arguments[0] : new NullValue());
+                case "_hint":
+                    return HintFunction(arguments);
                 case "_exit":
                     return ExitFunction(arguments.Count > 0 ? arguments[0] : new NullValue());
                 case ":":
@@ -2332,6 +2336,32 @@ namespace K3CSharp
             catch (Exception ex)
             {
                 throw new Exception($"_db (data from bytes) operation failed: {ex.Message}", ex);
+            }
+        }
+        
+        private K3Value HintFunction(List<K3Value> arguments)
+        {
+            // Monadic _hint x: return current hint of x
+            if (arguments.Count == 1)
+            {
+                return arguments[0].Hint ?? (K3Value)new NullValue();
+            }
+            // Dyadic x _hint y: set hint of x to symbol y
+            else if (arguments.Count == 2)
+            {
+                if (arguments[1] is SymbolValue hintSymbol)
+                {
+                    arguments[0].Hint = hintSymbol;
+                    return arguments[0];
+                }
+                else
+                {
+                    throw new Exception("_hint: second argument must be a symbol");
+                }
+            }
+            else
+            {
+                throw new Exception("_hint: requires 1 or 2 arguments");
             }
         }
         

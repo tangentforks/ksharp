@@ -707,6 +707,11 @@ namespace K3CSharp
                 // The lexer already validates symbol names, so no additional validation needed here
                 result = ASTNode.MakeLiteral(new SymbolValue(symbol));
             }
+            else if (Match(TokenType.HINT))
+            {
+                // Handle _hint token as a symbol literal
+                result = ASTNode.MakeLiteral(new SymbolValue("_hint"));
+            }
             else if (Match(TokenType.PLUS))
             {
                 // Check if this is unary transpose (at start of expression)
