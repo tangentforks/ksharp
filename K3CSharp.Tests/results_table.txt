@@ -36,7 +36,7 @@
 ║ lambda_string_literal.k                            │ {"hello"}[]          │ "hello"              │                      ║
 ║ lambda_symbol_literal.k                            │ {`abc}[]             │ `abc                 │                      ║
 ║ lambda_string_assign.k                             │ {a:"hello";a}[]      │ "hello"              │                      ║
-║ test_projected_function.k                          │ %  // This should create a projected function │ [ProjectedFunct...   │                      ║
+║ test_projected_function.k                          │ %  // This should create a projected function │ %                    │                      ║
 ║ atom_scalar.k                                      │ @42                  │ 1                    │                      ║
 ║ atom_vector.k                                      │ @1 2 3               │ 0                    │                      ║
 ║ attribute_handle_symbol.k                          │ ~`a                  │ `a.                  │                      ║
@@ -668,8 +668,8 @@
 ║ adverb_complex_vector_each_right.k                 │ 10 11 12 +/: ((1 2 3);(4 5 6);(7 8 9)) │ (11 13 15;14 16...   │                      ║
 ║ adverb_complex_matrix_each_right.k                 │ ((1 2 3);(4 5 6);(7 8 9)) +/: 10 11 12 │ ((11 12 13;14 1...   │                      ║
 ║ adverb_chaining_join_each_left.k                   │ ((1 2 3);(4 5 6);(7 8 9)),/:\:((9 8 7);(6 5 4);(3 2 1)) │ ((1 2 3 9 8 7;1...   │                      ║
-║ adverb_complex_string_each_left.k                  │ (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),/:\:"  " │ (("hello";"worl...   │ (("hello";"worl...   ║
-║ join_each_left.k                                   │ (1 2 3),\: (4 5 6)   │ ((1 4;1 5;1 6);...   │ (1 4 5 6;2 4 5 ...   ║
+║ adverb_complex_string_each_left.k                  │ (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),/:\:"  " │ ((("hello";"wor...   │                      ║
+║ join_each_left.k                                   │ (1 2 3),\: (4 5 6)   │ (1 4 5 6;2 4 5 ...   │                      ║
 ║ test_nested_adverb.k                               │ 1 2 3 ,/:\: 4 5 6    │ ((1 4;1 5;1 6);...   │                      ║
 ║ math_lsq_non_square.k                              │ // Non-square matrix: 2x3 matrix (more columns than rows) │ -1.0 2.0             │                      ║
 ║ math_lsq_high_rank.k                               │ // Rectangular matrix: 2x4 matrix (more columns than rows) │ -8.0 9.0             │                      ║
@@ -686,7 +686,7 @@
 ║ math_xor_basic.k                                   │ 5 _xor 3             │ 6                    │                      ║
 ║ math_xor_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 679/682 tests passed (99.6%)                                                                               ║
+║ SUMMARY: 681/682 tests passed (99.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -695,14 +695,4 @@ Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: 100
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_complex_string_each_left.k
-Input: (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),/:\:"  "
-Expected: (("hello";"world.";" ")("hello";"world.";" "))(("It's";"me";"ksharp.";" ")("It's";"me";"ksharp.";" "))(("Have";"fun";"with";"me!";" ")("Have";"fun";"with";"me!";" "))
-Actual: (("hello";"world.";" ";" ");("It's";"me";"ksharp.";" ";" ");("Have";"fun";"with";"me!";" ";" "))
-──────────────────────────────────────────────────────────────────────────
-Test: join_each_left.k
-Input: (1 2 3),\: (4 5 6)
-Expected: (1 4 5 6;2 4 5 6;3 4 5 6)
-Actual: ((1 4;1 5;1 6);(2 4;2 5;2 6);(3 4;3 5;3 6))
 ──────────────────────────────────────────────────────────────────────────

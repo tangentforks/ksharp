@@ -1459,7 +1459,7 @@ namespace K3CSharp
 
         public override string ToString()
         {
-            return $"[ProjectedFunction: {OperatorName}, needs {RequiredArguments} more arg(s)]";
+            return OperatorName;
         }
 
         public override K3Value Add(K3Value other)

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -384,12 +383,12 @@ namespace K3CSharp
                     "_size" => SizeFunction(operand),
                     "MIN" => operand, // Identity operation for unary min
                     "MAX" => operand, // Identity operation for unary max
-                    "ADVERB_SLASH" => operand, // Return operand as-is for now
-                    "ADVERB_BACKSLASH" => operand, // Return operand as-is for now
-                    "ADVERB_TICK" => operand, // Return operand as-is for now
-                    "ADVERB_SLASH_COLON" => operand, // Return operand as-is for now
-                    "ADVERB_BACKSLASH_COLON" => operand, // Return operand as-is for now
-                    "ADVERB_TICK_COLON" => operand, // Return operand as-is for now
+                    "ADVERB_SLASH" => ApplyAdverbSlash(operand, new IntegerValue(0), new IntegerValue(0)),
+                    "ADVERB_BACKSLASH" => ApplyAdverbBackslash(operand, new IntegerValue(0), new IntegerValue(0)),
+                    "ADVERB_TICK" => ApplyAdverbTick(operand, new IntegerValue(0), new IntegerValue(0)),
+                    "ADVERB_SLASH_COLON" => ApplyAdverbSlashColon(operand, new IntegerValue(0), new IntegerValue(0)),
+                    "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(operand, new IntegerValue(0), new IntegerValue(0)),
+                    "ADVERB_TICK_COLON" => ApplyAdverbTickColon(operand, new IntegerValue(0), new IntegerValue(0)),
                     _ => throw new Exception($"Unknown unary operator: {op.Value}")
                 };
             }
@@ -497,13 +496,13 @@ namespace K3CSharp
                     (op.Value.ToString() == "ADVERB_SLASH" || op.Value.ToString() == "ADVERB_BACKSLASH" || op.Value.ToString() == "ADVERB_TICK" ||
                      op.Value.ToString() == "ADVERB_SLASH_COLON" || op.Value.ToString() == "ADVERB_BACKSLASH_COLON" || op.Value.ToString() == "ADVERB_TICK_COLON"))
             {
-                // Check if the verb is itself an adverb node (nested adverb structure)
+                // For natural nested adverb evaluation, check if verb is a nested adverb
                 K3Value verb;
                 if (node.Children[0].Type == ASTNodeType.BinaryOp && 
                     node.Children[0].Value is SymbolValue verbSym &&
-                    (verbSym.Value.ToString().StartsWith("ADVERB_")))
+                    verbSym.Value.ToString().StartsWith("ADVERB_"))
                 {
-                    // Evaluate the inner adverb first to create a composite verb
+                    // This is a nested adverb structure - evaluate it to get the inner function
                     verb = Evaluate(node.Children[0]);
                 }
                 else
@@ -511,30 +510,18 @@ namespace K3CSharp
                     verb = Evaluate(node.Children[0]);
                 }
                 
+                // For natural nested adverb evaluation, just evaluate all arguments normally
                 var left = Evaluate(node.Children[1]);
-                
-                // Check if the right argument is an adverb (for adverb chaining)
-                K3Value right;
-                if (node.Children[2].Type == ASTNodeType.BinaryOp && 
-                    node.Children[2].Value is SymbolValue rightSym &&
-                    (rightSym.Value.ToString().StartsWith("ADVERB_")))
-                {
-                    // Evaluate the inner adverb first
-                    right = Evaluate(node.Children[2]);
-                }
-                else
-                {
-                    right = Evaluate(node.Children[2]);
-                }
+                var right = Evaluate(node.Children[2]);
 
                 return op.Value.ToString() switch
                 {
-                    "ADVERB_SLASH" => ApplyAdverbSlash(CreateVerbDataStructure(verb, left, right)),
-                    "ADVERB_BACKSLASH" => ApplyAdverbBackslash(CreateVerbDataStructure(verb, left, right)),
-                    "ADVERB_TICK" => ApplyAdverbTick(CreateVerbDataStructure(verb, left, right)),
-                    "ADVERB_SLASH_COLON" => ApplyAdverbSlashColon(CreateVerbDataStructure(verb, left, right)),
-                    "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(CreateVerbDataStructure(verb, left, right)),
-                    "ADVERB_TICK_COLON" => ApplyAdverbTickColon(CreateVerbDataStructure(verb, left, right)),
+                    "ADVERB_SLASH" => ApplyAdverbSlash(verb, left, right),
+                    "ADVERB_BACKSLASH" => ApplyAdverbBackslash(verb, left, right),
+                    "ADVERB_TICK" => ApplyAdverbTick(verb, left, right),
+                    "ADVERB_SLASH_COLON" => ApplyAdverbSlashColon(verb, left, right),
+                    "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(verb, left, right),
+                    "ADVERB_TICK_COLON" => ApplyAdverbTickColon(verb, left, right),
                     _ => throw new Exception($"Unknown adverb: {op.Value}")
                 };
             }

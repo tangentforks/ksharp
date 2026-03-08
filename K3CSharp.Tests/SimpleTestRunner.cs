@@ -146,7 +146,7 @@ namespace K3CSharp.Tests
                 ("lambda_string_assign.k", "\"hello\""),
 
                 // Projected Function tests
-                ("test_projected_function.k", "[ProjectedFunction: %, needs 1 more arg(s)]"),
+                ("test_projected_function.k", "%"),
 
                 // Atom tests
                 ("atom_scalar.k", "1"),
@@ -981,7 +981,7 @@ namespace K3CSharp.Tests
                 ("adverb_complex_vector_each_right.k", "(11 13 15;14 16 18;17 19 21)"),
                 ("adverb_complex_matrix_each_right.k", "((11 12 13;14 15 16;17 18 19);(12 13 14;15 16 17;18 19 20);(13 14 15;16 17 18;19 20 21))"),
                 ("adverb_chaining_join_each_left.k", "((1 2 3 9 8 7;1 2 3 6 5 4;1 2 3 3 2 1);(4 5 6 9 8 7;4 5 6 6 5 4;4 5 6 3 2 1);(7 8 9 9 8 7;7 8 9 6 5 4;7 8 9 3 2 1))"),
-                ("adverb_complex_string_each_left.k", "((\"hello\";\"world.\";\" \")(\"hello\";\"world.\";\" \"))((\"It's\";\"me\";\"ksharp.\";\" \")(\"It's\";\"me\";\"ksharp.\";\" \"))((\"Have\";\"fun\";\"with\";\"me!\";\" \")(\"Have\";\"fun\";\"with\";\"me!\";\" \"))"),
+                ("adverb_complex_string_each_left.k", "(((\"hello\";\"world.\";\" \");(\"hello\";\"world.\";\" \"));((\"It's\";\"me\";\"ksharp.\";\" \");(\"It's\";\"me\";\"ksharp.\";\" \"));((\"Have\";\"fun\";\"with\";\"me!\";\" \");(\"Have\";\"fun\";\"with\";\"me!\";\" \")))"),
                 ("join_each_left.k", "(1 4 5 6;2 4 5 6;3 4 5 6)"),
                 ("test_nested_adverb.k", "((1 4;1 5;1 6);(2 4;2 5;2 6);(3 4;3 5;3 6))"),
                 ("math_lsq_non_square.k", "-1.0 2.0"),
