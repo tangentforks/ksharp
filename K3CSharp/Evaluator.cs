@@ -1635,6 +1635,26 @@ namespace K3CSharp
                 // Handle dictionary indexing: dictionary @ key
                 else if (index is SymbolValue key)
                 {
+                    // Check if key is just a period (or multiple periods) for all attributes
+                    bool getAllAttributes = key.Value == "." || key.Value.Contains(".");
+                    
+                    if (getAllAttributes)
+                    {
+                        // Return all attributes as a dictionary - include entries whose values contain attribute dictionaries
+                        var attributesDict = new DictionaryValue();
+                        foreach (var dictEntry in dict.Entries)
+                        {
+                            // Check if the entry's value is a DictionaryValue (contains attributes)
+                            if (dictEntry.Value.Value is DictionaryValue)
+                            {
+                                // Add the entry by copying the tuple structure
+                                // The entry is a tuple (Value, Attribute), so we add it as-is
+                                attributesDict.Entries[dictEntry.Key] = dictEntry.Value;
+                            }
+                        }
+                        return attributesDict;
+                    }
+                    
                     // Check if key ends with period for attribute retrieval
                     bool getAttribute = key.Value.EndsWith(".");
                     string lookupKey = getAttribute ? key.Value.Substring(0, key.Value.Length - 1) : key.Value;

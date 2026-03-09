@@ -2254,6 +2254,13 @@ namespace K3CSharp
                 if (left.Type == ASTNodeType.Variable)
                 {
                     var variableName = left.Value is SymbolValue sym ? sym.Value : left.Value?.ToString() ?? "";
+                    
+                    // Validate variable name - cannot start with underscore
+                    if (variableName.StartsWith("_"))
+                    {
+                        throw new Exception("parse error");
+                    }
+                    
                     if (assignToken.Lexeme.Length > 1)
                     {
                         // Modified assignment (e.g., +:, -:, *:)
@@ -2933,6 +2940,13 @@ namespace K3CSharp
                 if (left.Type == ASTNodeType.Variable)
                 {
                     var variableName = left.Value is SymbolValue symbol ? symbol.Value : left.Value?.ToString() ?? "";
+                    
+                    // Validate variable name - cannot start with underscore
+                    if (variableName.StartsWith("_"))
+                    {
+                        throw new Exception("parse error");
+                    }
+                    
                     return ASTNode.MakeGlobalAssignment(variableName, right);
                 }
                 else

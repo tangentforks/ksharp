@@ -186,3 +186,16 @@ Compactrepresentation :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 test_nested_adverb :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 join_each_left :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 debug_join_spaces :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+dictionary_period_index_all_attributes :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+test_simple_attributes :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_01_516_multiply_columns :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_01_624_zero_array :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_01_388_drop_rows :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_01_70_remove_duplicates :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_01_143_indices_distinct :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_01_88_name_variable :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_01_449_limit_between :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_01_591_reshape_2column :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_01_241_sum_subsets :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_01_447_conditional_drop :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_01_448_conditional_drop_last :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
