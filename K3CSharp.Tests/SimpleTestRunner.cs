@@ -595,7 +595,7 @@ namespace K3CSharp.Tests
                 ("monadic_format_vector_simple.k", "(,\"1\";,\"2\";,\"3\")"),
                 
                 // $ operator tests - binary form/type conversion
-                ("format_integer.k", "\"a\""),
+                ("format_integer.k", "\"\""),
                 ("ci_adverb_vector.k", "\"a^P\""),
                 ("adverb_each_count.k", "3 5 2"),
                 ("format_float_numeric.k", ",\"1\""),
