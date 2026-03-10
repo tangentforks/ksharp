@@ -1014,8 +1014,8 @@ namespace K3CSharp.Tests
                 
                 // FFI (Foreign Function Interface) tests
                 ("ffi_hint_system.k", "`_hint"),
-                ("ffi_simple_assembly.k", "name|namespace|assembly|isclass|isinterface|isenum|isabstract|ispublic|isstatic|constructors|staticmethods|methods|properties|fields"),
-                ("ffi_assembly_load.k", "name|namespace|assembly|isclass|isinterface|isenum|isabstract|ispublic|isstatic|constructors|staticmethods|methods|properties|fields"),
+                ("ffi_simple_assembly.k", "`.dotnet.String"),
+                ("ffi_assembly_load.k", "`.dotnet.String"),
                 ("ffi_type_marshalling.k", "1 2 3 4 5"),
                 ("ffi_object_management.k", "HELLO"),
                 ("ffi_constructor.k", "name|namespace|assembly|isclass|isinterface|isenum|isabstract|ispublic|isstatic|constructors|methods|properties|fields"),
@@ -1076,6 +1076,20 @@ namespace K3CSharp.Tests
                 ("idioms_01_447_conditional_drop.k", "(0 1 2;3 4 5;6 7 8;9 10 11)"),
                 ("idioms_01_448_conditional_drop_last.k", "(0 1 2;3 4 5;6 7 8)"),
                 ("idioms_01_549_alphabetic_comparison.k", "1"),
+                
+                // KTree (K Tree namespace) tests
+                ("ktree_enumerate_relative_name.k", "`keyA`keyB"),
+                ("ktree_enumerate_relative_path.k", "`keyA`keyB"),
+                ("ktree_enumerate_absolute_path.k", "`keyA`keyB"),
+                ("ktree_enumerate_root.k", "`k`t"),
+                ("ktree_indexing_relative_name.k", "1 3 5"),
+                ("ktree_indexing_absolute_name.k", "1 2 3"),
+                ("ktree_indexing_relative_path.k", "1 2 3"),
+                ("ktree_indexing_absolute_path.k", "1 3 5"),
+                ("ktree_dot_apply_relative_name.k", "1 2 3"),
+                ("ktree_dot_apply_absolute_name.k", "1 3 5"),
+                ("ktree_dot_apply_relative_path.k", "1 2 3"),
+                ("ktree_dot_apply_absolute_path.k", "1 3 5"),
             };
 
             // Filter tests if a pattern was provided

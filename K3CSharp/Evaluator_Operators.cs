@@ -1129,6 +1129,21 @@ namespace K3CSharp
                 }
                 return new VectorValue(elements, -64); // Long vector
             }
+            else if (a is SymbolValue sym)
+            {
+                // Handle symbol as a path to a dictionary
+                var dictValue = GetVariableValue(sym.Value);
+                if (dictValue is DictionaryValue dict)
+                {
+                    var keys = new List<K3Value>();
+                    foreach (var key in dict.Entries.Keys)
+                    {
+                        keys.Add(key);
+                    }
+                    return new VectorValue(keys, -4); // Symbol vector
+                }
+                throw new Exception($"Cannot enumerate {sym.Value}: not a dictionary");
+            }
             else if (a is DictionaryValue dict)
             {
                 // Enumerate operator on dictionary returns list of keys

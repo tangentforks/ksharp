@@ -14,11 +14,22 @@ namespace K3CSharp
         /// <summary>
         /// Apply operation (@) for calling methods on objects
         /// </summary>
-        /// <param name="left">Object dictionary or function</param>
+        /// <param name="left">Object dictionary or function, or symbol path</param>
         /// <param name="right">Arguments or method name</param>
+        /// <param name="evaluator">Evaluator instance for path resolution</param>
         /// <returns>Method invocation result</returns>
-        public static K3Value Apply(K3Value left, K3Value right)
+        public static K3Value Apply(K3Value left, K3Value right, Evaluator evaluator)
         {
+            // Handle symbol as path to a dictionary
+            if (left is SymbolValue sym && evaluator != null)
+            {
+                var resolvedValue = evaluator.GetVariableValuePublic(sym.Value);
+                if (resolvedValue != null)
+                {
+                    left = resolvedValue;
+                }
+            }
+            
             // Handle function application
             if (left is FunctionValue func)
             {
@@ -37,11 +48,22 @@ namespace K3CSharp
         /// <summary>
         /// Dot operation (.) for property/method access
         /// </summary>
-        /// <param name="left">Object dictionary</param>
+        /// <param name="left">Object dictionary, or symbol path</param>
         /// <param name="right">Property/method name</param>
+        /// <param name="evaluator">Evaluator instance for path resolution</param>
         /// <returns>Property value or method function</returns>
-        public static K3Value Dot(K3Value left, K3Value right)
+        public static K3Value Dot(K3Value left, K3Value right, Evaluator evaluator)
         {
+            // Handle symbol as path to a dictionary
+            if (left is SymbolValue sym && evaluator != null)
+            {
+                var resolvedValue = evaluator.GetVariableValuePublic(sym.Value);
+                if (resolvedValue != null)
+                {
+                    left = resolvedValue;
+                }
+            }
+            
             if (left is DictionaryValue dict && right is SymbolValue symbol)
             {
                 return GetMember(dict, symbol.Value);
@@ -53,11 +75,22 @@ namespace K3CSharp
         /// <summary>
         /// Index operation ([]) for indexed access
         /// </summary>
-        /// <param name="left">Object dictionary or array</param>
+        /// <param name="left">Object dictionary or array, or symbol path</param>
         /// <param name="right">Index</param>
+        /// <param name="evaluator">Evaluator instance for path resolution</param>
         /// <returns>Indexed value</returns>
-        public static K3Value Index(K3Value left, K3Value right)
+        public static K3Value Index(K3Value left, K3Value right, Evaluator evaluator)
         {
+            // Handle symbol as path to a dictionary
+            if (left is SymbolValue sym && evaluator != null)
+            {
+                var resolvedValue = evaluator.GetVariableValuePublic(sym.Value);
+                if (resolvedValue != null)
+                {
+                    left = resolvedValue;
+                }
+            }
+            
             // Handle array indexing
             if (left is VectorValue vector)
             {

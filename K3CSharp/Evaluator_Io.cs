@@ -602,8 +602,18 @@ public partial class Evaluator
             // Store the assembly in the _dotnet tree
             ForeignFunctionInterface.StoreAssemblyInDotNetTree(assembly);
             
-            // Create and return the type dictionary
-            return ForeignFunctionInterface.CreateNetTypeDictionary(type);
+            // Create the type dictionary
+            var typeDict = ForeignFunctionInterface.CreateNetTypeDictionary(type);
+            
+            // Extract the simple type name (without namespace) for dotnet branch
+            var simpleTypeName = type.Name;
+            var dotnetPath = $"_dotnet.{simpleTypeName}";
+            
+            // Store the type dictionary directly in the KTree (bypassing underscore restriction)
+            kTree.SetValue(dotnetPath, typeDict);
+            
+            // Return the symbol path to the constructor
+            return new SymbolValue($".{dotnetPath}");
         }
         catch (Exception ex)
         {

@@ -152,6 +152,77 @@ namespace K3CSharp
             return value is SymbolValue symbol && symbol.Value == ":";
         }
         
+        private K3Value? GetVariableValue(string variableName)
+        {
+            // Check local variables first
+            if (localVariables.TryGetValue(variableName, out var localValue))
+            {
+                return localValue;
+            }
+
+            // Check if this is a K tree dotted notation variable (absolute path)
+            if (variableName.Contains('.'))
+            {
+                var kTreeValue = kTree.GetValue(variableName);
+                if (kTreeValue != null)
+                {
+                    return kTreeValue;
+                }
+            }
+            
+            // Check if this is a relative path in the current K tree branch
+            if (!variableName.Contains('.'))
+            {
+                var currentBranch = kTree.CurrentBranch?.Value ?? "";
+                if (!string.IsNullOrEmpty(currentBranch))
+                {
+                    // Try relative path from current branch
+                    var relativePath = currentBranch + "." + variableName;
+                    var kTreeValue = kTree.GetValue(relativePath);
+                    if (kTreeValue != null)
+                    {
+                        return kTreeValue;
+                    }
+                }
+                else
+                {
+                    // This means we should fall back to regular variable lookup
+                }
+                
+                // Also check function's associated K tree for relative paths
+                if (string.IsNullOrEmpty(currentBranch) && currentFunctionValue != null && currentFunctionValue.AssociatedKTree != null)
+                {
+                    var functionKTreeValue = currentFunctionValue.AssociatedKTree.GetValue(variableName);
+                    if (functionKTreeValue != null)
+                    {
+                        return functionKTreeValue;
+                    }
+                }
+            }
+            
+            // Check global variables
+            if (globalVariables.TryGetValue(variableName, out var globalValue))
+            {
+                return globalValue;
+            }
+            
+            // Check if this is a built-in operator that can be used as a function
+            if (IsBuiltInOperator(variableName))
+            {
+                return new SymbolValue(variableName);
+            }
+            
+            return null; // Variable not found
+        }
+
+        /// <summary>
+        /// Public method for getting variable values (used by MethodInvocation)
+        /// </summary>
+        public K3Value? GetVariableValuePublic(string variableName)
+        {
+            return GetVariableValue(variableName);
+        }
+
         private K3Value GetVariable(string variableName)
         {
             // Check local variables first (function parameters and local assignments)
@@ -1779,6 +1850,16 @@ namespace K3CSharp
 
         private K3Value AtIndexOperation(K3Value data, K3Value index)
         {
+            // Handle symbol as path to a dictionary
+            if (data is SymbolValue sym)
+            {
+                var resolvedValue = GetVariableValuePublic(sym.Value);
+                if (resolvedValue != null)
+                {
+                    data = resolvedValue;
+                }
+            }
+            
             // Handle dictionary indexing
             if (data is DictionaryValue dict)
             {
@@ -1833,59 +1914,56 @@ namespace K3CSharp
                 }
                 else if (index is VectorValue indexVec)
                 {
-                    // Dictionary @ vector of symbols - get multiple values
-                    var result = new List<K3Value>();
+                    // Vector indexing - get multiple keys
+                    var results = new List<K3Value>();
                     foreach (var idx in indexVec.Elements)
                     {
-                        if (idx is SymbolValue sym)
+                        if (idx is SymbolValue idxSym)
                         {
-                            bool found = false;
-                            foreach (var entry in dict.Entries)
+                            // Handle attribute access
+                            if (idxSym.Value.EndsWith("."))
                             {
-                                if (entry.Key.Equals(sym))
+                                var keyName = idxSym.Value.Substring(0, idxSym.Value.Length - 1);
+                                var keySymbol = new SymbolValue(keyName);
+                                 
+                                foreach (var entry in dict.Entries)
                                 {
-                                    result.Add(entry.Value.Value); // Extract Value from tuple
-                                    found = true;
-                                    break;
+                                    if (entry.Key.Equals(keySymbol))
+                                    {
+                                        results.Add((K3Value?)entry.Value.Attribute ?? new NullValue());
+                                        break;
+                                    }
                                 }
                             }
-                            if (!found)
+                            else
                             {
-                                throw new Exception($"Key '{sym.Value}' not found in dictionary");
+                                // Regular key lookup
+                                foreach (var entry in dict.Entries)
+                                {
+                                    if (entry.Key.Equals(idxSym))
+                                    {
+                                        results.Add(entry.Value.Value);
+                                        break;
+                                    }
+                                }
                             }
                         }
                         else
                         {
-                            throw new Exception($"Dictionary indices must be symbols, got {idx.Type}");
+                            throw new Exception("Dictionary indexing requires symbol keys");
                         }
                     }
-                    return new VectorValue(result);
-                }
-                else if (index is NullValue)
-                {
-                    // Handle null indexing (_n) - "all" operation for dictionaries
-                    var values = new List<K3Value>();
-                    foreach (var entry in dict.Entries)
-                    {
-                        values.Add(entry.Value.Value);
-                    }
-                    return new VectorValue(values);
-                }
-                else
-                {
-                    throw new Exception($"Dictionary index must be symbol, vector of symbols, or null, got {index.Type}");
+                    return new VectorValue(results);
                 }
             }
             
             // Handle vector indexing
-            if (data is VectorValue vec)
+            if (data is VectorValue vector)
             {
-                return VectorIndex(vec, index);
+                return VectorIndex(vector, index);
             }
-            else
-            {
-                throw new Exception("Index must be integer, symbol, or vector of integers/symbols");
-            }
+            
+            throw new Exception("Index operation requires dictionary or vector");
         }
 
         private K3Value ReturnOperator(K3Value operand)
@@ -1936,6 +2014,16 @@ namespace K3CSharp
 
         private K3Value DotApply(K3Value left, K3Value right)
         {
+            // Handle symbol as path to a dictionary
+            if (left is SymbolValue pathSym)
+            {
+                var resolvedValue = GetVariableValuePublic(pathSym.Value);
+                if (resolvedValue != null)
+                {
+                    left = resolvedValue;
+                }
+            }
+            
             // Check if this is Amend operation: .[d; i; f; y] or .[d; i; f]
             // This happens when left is null (from bracket notation) or when left is the dot symbol
             if (left is NullValue || (left is SymbolValue sym && sym.Value == "."))

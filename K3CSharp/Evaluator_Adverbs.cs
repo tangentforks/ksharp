@@ -164,16 +164,6 @@ namespace K3CSharp
             };
         }
         
-        private K3Value? GetVariableValue(string variableName)
-        {
-            // Look up variable in global scope
-            if (globalVariables.TryGetValue(variableName, out var value))
-            {
-                return value;
-            }
-            return null;
-        }
-        
         private K3Value ApplyFunctionValue(K3Value functionValue, K3Value left, K3Value right)
         {
             if (functionValue is FunctionValue func)
