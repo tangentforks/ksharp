@@ -1863,7 +1863,17 @@ namespace K3CSharp
             // Handle dictionary indexing
             if (data is DictionaryValue dict)
             {
-                if (index is SymbolValue symbol)
+                // Handle _n (null) index - return all values
+                if (index is NullValue)
+                {
+                    var allValues = new List<K3Value>();
+                    foreach (var entry in dict.Entries)
+                    {
+                        allValues.Add(entry.Value.Value);
+                    }
+                    return new VectorValue(allValues);
+                }
+                else if (index is SymbolValue symbol)
                 {
                     
                     // Check if this is all attributes access (symbol is exactly ".")

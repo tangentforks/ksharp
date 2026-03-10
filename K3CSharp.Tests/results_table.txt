@@ -462,7 +462,7 @@
 ║ conditional_false.k                                │ :[0; "true"; "false"]  // Conditional evaluation - condition false │ "false"              │                      ║
 ║ conditional_simple_test.k                          │ :[1; "true"; "false"] │ "true"               │                      ║
 ║ conditional_true.k                                 │ :[1; "true"; "false"]  // Conditional evaluation - condition true │ "true"               │                      ║
-║ dictionary_null_index.k                            │ d: .((`a;1);(`b;2))  │ Error: Index op...   │ 1 2                  ║
+║ dictionary_null_index.k                            │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
 ║ dictionary_unmake.k                                │ d: .((`a;1);(`b;2)); result:. d; result │ ((`a;1;);(`b;2;))    │                      ║
 ║ do_bracket_test.k                                  │ do[3; 42]  // Do function with bracket notation │                      │                      ║
 ║ do_loop.k                                          │ i: 0; do[3; i+: 1]  // Do loop - increment i 3 times │                      │                      ║
@@ -772,7 +772,7 @@
 ║ ktree_dot_apply_relative_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)) │ 1 2 3                │                      ║
 ║ ktree_dot_apply_absolute_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)) │ 1 3 5                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 735/768 tests passed (95.7%)                                                                               ║
+║ SUMMARY: 736/768 tests passed (95.8%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -786,11 +786,6 @@ Test: format_integer.k
 Input: 0$1
 Expected: "a"
 Actual: ""
-──────────────────────────────────────────────────────────────────────────
-Test: dictionary_null_index.k
-Input: d: .((`a;1);(`b;2))
-Expected: 1 2
-Actual: Error: Index operation requires dictionary or vector
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_simple_assembly.k
 Input: "System.Private.CoreLib" 2: `System.String
