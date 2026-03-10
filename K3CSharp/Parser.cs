@@ -488,8 +488,8 @@ namespace K3CSharp
                 }
             }
 
-            // If we found bracket notation, return the dot-apply result
-            if (result != null && CurrentToken().Type == TokenType.LEFT_BRACKET)
+            // If we processed bracket notation, return the result (don't continue with vector parsing)
+            if (result != null && result.Type == ASTNodeType.BinaryOp && result.Value is SymbolValue symbolValue && symbolValue.Value == ".")
             {
                 return result;
             }
@@ -1011,7 +1011,7 @@ namespace K3CSharp
                     else
                     {
                         // This is unary shape
-                        var operand = ParsePrimary();
+                        var operand = ParseTerm();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue("^");
                         if (operand != null) node.Children.Add(operand);
@@ -1043,7 +1043,7 @@ namespace K3CSharp
                     else
                     {
                         // This is unary enlist
-                        var operand = ParsePrimary();
+                        var operand = ParseTerm();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue(",");
                         if (operand != null) node.Children.Add(operand);
@@ -1313,7 +1313,7 @@ namespace K3CSharp
                     else
                     {
                         // This is unary count
-                        var operand = ParsePrimary();
+                        var operand = ParseTerm();
                         var node = new ASTNode(ASTNodeType.BinaryOp);
                         node.Value = new SymbolValue("#");
                         if (operand != null) node.Children.Add(operand);

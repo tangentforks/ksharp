@@ -181,7 +181,16 @@ namespace K3CSharp.Tests
                 ("dictionary_single.k", ".,(`a;`b;)"),
                 ("dictionary_type.k", "5"),
                 ("dictionary_with_null_value.k", ".((`a;1;);(`b;;);(`c;3;))"),
-                ("dictionary_period_index_all_attributes.k", "((`format,`n);(`name,`ID));((`format,`c);(`name,`Color));((`format,`c);(`name,`Retailer))"),
+                ("dictionary_period_index_all_attributes.k", "(.((`format;,`n;);(`name;`ID;));.((`format;,`c;);(`name;`Color;));.((`format;,`c;);(`name;`Retailer;)))"),
+                ("test_minimal_dict.k", ",.,(`x;2;)"),
+                ("test_simple_period.k", ",.((`x;2;);(`y;3;))"),
+                ("test_attr_access.k", ".((`x;2;);(`y;3;))"),
+                ("test_dict_create.k", ".((`a;1;);(`b;2;.((`x;2;);(`y;3;))))"),
+                ("test_dict_with_attr.k", ".((`a;1;);(`b;2;.((`x;2;);(`y;3;))))"),
+                ("test_show_dict.k", ".((`col01;11 12 13 14 15;.((`format;,`n;);(`name;`ID;)));(`col02;`yellow`white`blue`red`black;.((`format;,`c;);(`name;`Color;)));(`col03;(\"Home Depot\";\"Lowes\";\"Ace\";\"Neighborhood Paints\";\"Supply Co.\");.((`format;,`c;);(`name;`Retailer;))))"),
+                ("test_simple_dict_create.k", ".,(`a;1;)"),
+                ("test_specific_attr.k", ".((`format;,`n;);(`name;`ID;))"),
+                ("test_specific_attr_fixed.k", ".((`format;,`n;);(`name;`ID;))"),
                 
                 // Empty value tests
                 ("empty_char_vector.k", "\"\""),

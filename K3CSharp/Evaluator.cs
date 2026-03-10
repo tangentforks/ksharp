@@ -1409,6 +1409,11 @@ namespace K3CSharp
                 // This is vector indexing using square bracket syntax: vector[index]
                 return VectorIndex(vectorValue, arguments[0]);
             }
+            else if (functionValue is DictionaryValue dictValue && arguments.Count == 1)
+            {
+                // This might be dictionary indexing using square bracket syntax
+                return AtIndexOperation(dictValue, arguments[0]);
+            }
             throw new Exception($"Variable '{functionName}' is not a function");
         }
 
@@ -1746,11 +1751,11 @@ namespace K3CSharp
             // If data is null, return the index (spec: _n@x returns x)
             if (left is NullValue)
             {
-                return right;
+                return right ?? throw new ArgumentNullException(nameof(right));
             }
             
             // Regular indexing operation
-            return AtIndexOperation(left, right);
+            return AtIndexOperation(left ?? throw new ArgumentNullException(nameof(left)), right ?? throw new ArgumentNullException(nameof(right)));
         }
 
         private K3Value AtIndexOperation(K3Value data, K3Value index)
@@ -1760,8 +1765,26 @@ namespace K3CSharp
             {
                 if (index is SymbolValue symbol)
                 {
+                    
+                    // Check if this is all attributes access (symbol is exactly ".")
+                    if (symbol.Value == ".")
+                    {
+                        // Return all attributes as a vector of dictionaries
+                        // This should be equivalent to d[~!d]
+                        var attributes = new List<K3Value>();
+                        foreach (var entry in dict.Entries)
+                        {
+                            // Check if the entry has attributes (stored in the Attribute field of the tuple)
+                            if (entry.Value.Attribute is DictionaryValue attrDict)
+                            {
+                                // Add the attribute dictionary
+                                attributes.Add(attrDict);
+                            }
+                        }
+                        return new VectorValue(attributes);
+                    }
                     // Check if this is attribute access (symbol ends with .)
-                    if (symbol.Value.EndsWith("."))
+                    else if (symbol.Value.EndsWith("."))
                     {
                         // Remove the trailing . to get the key name
                         var keyName = symbol.Value.Substring(0, symbol.Value.Length - 1);
@@ -1894,7 +1917,6 @@ namespace K3CSharp
 
         private K3Value DotApply(K3Value left, K3Value right)
         {
-                        
             // Check if this is Amend operation: .[d; i; f; y] or .[d; i; f]
             // This happens when left is null (from bracket notation) or when left is the dot symbol
             if (left is NullValue || (left is SymbolValue sym && sym.Value == "."))
@@ -1916,7 +1938,7 @@ namespace K3CSharp
             // If left is null, return the right (spec: _n . x returns x)
             if (left is NullValue)
             {
-                return right;
+                return right ?? throw new ArgumentNullException(nameof(right));
             }
             
             // Handle dictionary dot-apply with symbol vectors (spec: d@`v is equivalent to d .,`v)
@@ -1928,20 +1950,32 @@ namespace K3CSharp
                     var values = dict.Entries.Values.Select(e => e.Value).ToList();
                     return new VectorValue(values);
                 }
-                else if (right is SymbolValue symbol)
-                {
-                    // Check if this is an FFI object with method calls
-                    if (dict.Entries.ContainsKey(new SymbolValue("_this")))
+                else if (right is SymbolValue symbolValue)
                     {
-                        // FFI object method call: obj.Method
-                        return MethodInvocation.CallObjectMethod(dict, symbol);
+                        // Check if this is the special case of "." for all attributes access
+                        if (symbolValue.Value == ".")
+                        {
+                            return AtIndexOperation(dict, symbolValue);
+                        }
+                        
+                        // Check if this is attribute access (symbol ends with .)
+                        if (symbolValue.Value.EndsWith("."))
+                        {
+                            return AtIndexOperation(dict, symbolValue);
+                        }
+                        
+                        // Check if this is an FFI object with method calls
+                        if (dict.Entries.ContainsKey(new SymbolValue("_this")))
+                        {
+                            // FFI object method call: obj.Method
+                            return MethodInvocation.CallObjectMethod(dict, symbolValue);
+                        }
+                        else
+                        {
+                            // Regular dictionary lookup
+                            return VectorIndex(dict, symbolValue);
+                        }
                     }
-                    else
-                    {
-                        // Regular dictionary lookup
-                        return VectorIndex(dict, symbol);
-                    }
-                }
                 else if (right is VectorValue rightVec && rightVec.Elements.Count == 1 && rightVec.Elements[0] is VectorValue symbolVec)
                 {
                     // Single-item list containing a vector of symbols
@@ -1961,16 +1995,16 @@ namespace K3CSharp
                 tempFunctionNode.Value = function;
                 
                 // Create arguments list
-                var arguments = new List<K3Value> { right };
+                var arguments = new List<K3Value> { right ?? throw new ArgumentNullException(nameof(right)) };
                 
                 return CallDirectFunction(tempFunctionNode, arguments);
             }
             else if (left is VectorValue vector)
             {
                 // Vector indexing: vector . indices
-                return VectorIndex(vector, right);
+                return VectorIndex(vector, right ?? throw new ArgumentNullException(nameof(right)));
             }
-            else if (left.Type == ValueType.Symbol)
+            else if (left != null && left.Type == ValueType.Symbol)
             {
                 var functionName = (left as SymbolValue)?.Value ?? throw new Exception("Invalid function name for dot-apply");
                 
@@ -1982,7 +2016,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    arguments = new List<K3Value> { right };
+                    arguments = new List<K3Value> { right ?? throw new ArgumentNullException(nameof(right)) };
                 }
                 return CallVariableFunction(functionName, arguments);
             }

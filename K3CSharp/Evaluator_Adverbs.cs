@@ -999,7 +999,6 @@ namespace K3CSharp
 
         private K3Value EvaluateAdverbNode(string adverbType, K3Value left, K3Value right)
         {
-            Console.WriteLine($"DEBUG EvaluateAdverbNode: adverbType={adverbType}, left={left}, right={right}");
             return adverbType switch
             {
                 "ADVERB_SLASH" => ApplyAdverbSlash(new SymbolValue("+"), left, right),

@@ -199,3 +199,12 @@ idioms_01_591_reshape_2column :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact represen
 idioms_01_241_sum_subsets :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 idioms_01_447_conditional_drop :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 idioms_01_448_conditional_drop_last :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+test_minimal_dict :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+test_simple_period :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+test_attr_access :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+test_dict_create :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+test_dict_with_attr :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+test_show_dict :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+test_simple_dict_create :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+test_specific_attr :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+test_specific_attr_fixed :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation

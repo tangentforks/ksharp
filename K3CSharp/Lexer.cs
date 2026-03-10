@@ -625,7 +625,7 @@ namespace K3CSharp
             }
             
             string value = "";
-            while (currentChar != '\0' && (char.IsLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '.'))
+            while (currentChar != '\0' && (char.IsLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '.') && currentChar != '`')
             {
                 value += currentChar;
                 Advance();
