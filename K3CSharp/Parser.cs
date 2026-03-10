@@ -402,7 +402,7 @@ namespace K3CSharp
             ASTNode? result;
             
             // Check if current token is an adverb - if so, we're in a nesting context
-            // and need to handle it specially since ParsePrimary will throw an exception
+            // Don't create placeholder for adverb operations - let ParseTerm handle them
             if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
                               CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
                               CurrentToken().Type == TokenType.ADVERB_TICK ||
@@ -410,9 +410,8 @@ namespace K3CSharp
                               CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON ||
                               CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
             {
-                // Create a placeholder node that will be replaced by the adverb nesting logic
-                result = new ASTNode(ASTNodeType.Literal);
-                result.Value = new IntegerValue(0); // Placeholder value
+                // Parse the primary expression normally - adverb will be handled in ParseTerm
+                result = ParsePrimary();
             }
             else
             {
@@ -1310,6 +1309,13 @@ namespace K3CSharp
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("#"));
                     }
+                    // Check if this is monadic disambiguation (#:)
+                    else if (!IsAtEnd() && CurrentToken().Type == TokenType.COLON)
+                    {
+                        // This is monadic disambiguation - consume the colon and treat as monadic #
+                        Advance(); // Consume the COLON
+                        result = ASTNode.MakeLiteral(new SymbolValue("#"));
+                    }
                     else
                     {
                         // This is unary count
@@ -1421,8 +1427,9 @@ namespace K3CSharp
             }
             else if (Match(TokenType.ADVERB_TICK))
             {
-                // Standalone adverb tick - this should not happen in valid K3
-                throw new Exception("Adverb tick must be preceded by a verb");
+                // Adverb tick - this should be handled by ParseTerm
+                // Don't throw an exception - let ParseTerm handle it
+                result = ASTNode.MakeLiteral(new SymbolValue("'"));
             }
             else if (Match(TokenType.LOG))
             {
@@ -1726,21 +1733,53 @@ namespace K3CSharp
             }
             else if (Match(TokenType.CI))
             {
-                // Database function
-                var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("_ci");
-                if (operand != null) node.Children.Add(operand);
-                return node;
+                // Database function - check if followed by an adverb
+                if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                  CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                  CurrentToken().Type == TokenType.ADVERB_TICK ||
+                                  CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
+                                  CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON ||
+                                  CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                {
+                    // This is a monadic verb followed by an adverb - create a verb node
+                    var node = new ASTNode(ASTNodeType.Literal);
+                    node.Value = new SymbolValue("_ci");
+                    return node;
+                }
+                else
+                {
+                    // Regular monadic verb with operand
+                    var operand = ParseExpression();
+                    var node = new ASTNode(ASTNodeType.BinaryOp);
+                    node.Value = new SymbolValue("_ci");
+                    if (operand != null) node.Children.Add(operand);
+                    return node;
+                }
             }
             else if (Match(TokenType.IC))
             {
-                // Database function
-                var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
-                node.Value = new SymbolValue("_ic");
-                if (operand != null) node.Children.Add(operand);
-                return node;
+                // Database function - check if followed by an adverb
+                if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
+                                  CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
+                                  CurrentToken().Type == TokenType.ADVERB_TICK ||
+                                  CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
+                                  CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON ||
+                                  CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                {
+                    // This is a monadic verb followed by an adverb - create a verb node
+                    var node = new ASTNode(ASTNodeType.Literal);
+                    node.Value = new SymbolValue("_ic");
+                    return node;
+                }
+                else
+                {
+                    // Regular monadic verb with operand
+                    var operand = ParseExpression();
+                    var node = new ASTNode(ASTNodeType.BinaryOp);
+                    node.Value = new SymbolValue("_ic");
+                    if (operand != null) node.Children.Add(operand);
+                    return node;
+                }
             }
             else if (Match(TokenType.EXIT))
             {

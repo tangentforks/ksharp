@@ -346,7 +346,8 @@
 ║ monadic_format_float.k                             │ $3.14                │ "3.14"               │                      ║
 ║ monadic_format_vector_simple.k                     │ $1 2 3               │ (,"1";,"2";,"3")     │                      ║
 ║ format_integer.k                                   │ 0$1                  │ ""                   │ "a"                  ║
-║ ci_adverb_vector.k                                 │ _ci' 97 94 80        │ Error: Each not...   │ "a^P"                ║
+║ ci_adverb_vector.k                                 │ _ci' 97 94 80        │ "a^P"                │                      ║
+║ adverb_each_count.k                                │ #:' (1 2 3;1 2 3 4 5; 1 2) │ 3 5 2                │                      ║
 ║ format_float_numeric.k                             │ 0.0$1                │ ,"1"                 │                      ║
 ║ form_long.k                                        │ 0j$"42"              │ 42j                  │                      ║
 ║ format_numeric.k                                   │ 5$1                  │ "    1"              │                      ║
@@ -759,7 +760,7 @@
 ║ idioms_01_448_conditional_drop_last.k              │ x:4 3#!12            │ (0 1 2;3 4 5;6 ...   │ (0 1 2;3 4 5;6 ...   ║
 ║ idioms_01_549_alphabetic_comparison.k              │ "a"<"b"              │ Error: Cannot c...   │ 1                    ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 722/755 tests passed (95.6%)                                                                               ║
+║ SUMMARY: 724/756 tests passed (95.8%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -773,11 +774,6 @@ Test: format_integer.k
 Input: 0$1
 Expected: "a"
 Actual: ""
-──────────────────────────────────────────────────────────────────────────
-Test: ci_adverb_vector.k
-Input: _ci' 97 94 80
-Expected: "a^P"
-Actual: Error: Each not implemented for types: Integer, Integer, Vector
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_simple_assembly.k
 Input: // Test basic assembly loading with a known type

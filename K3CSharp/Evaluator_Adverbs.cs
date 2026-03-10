@@ -237,6 +237,8 @@ namespace K3CSharp
                 "~" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue)) 
                     ? AttributeHandle(operand) 
                     : LogicalNegate(operand),
+                "_ci" => CiFunction(operand),
+                "_ic" => IcFunction(operand),
                 _ => throw new Exception($"Unknown unary verb: {verbName}")
             };
         }
@@ -272,8 +274,11 @@ namespace K3CSharp
                 throw new Exception("Adverb chain requires at least an operand and one adverb");
             }
             
-            var operand = Evaluate(node.Children[0]);
+            var operandNode = node.Children[0];
             var adverbs = new List<string>();
+            
+            // Debug: Print the AST structure
+            Console.WriteLine($"EvaluateAdverbChain: operandNode.Value={operandNode.Value?.GetType()}({operandNode.Value}), children={node.Children.Count}");
             
             // Extract adverbs from the remaining children
             for (int i = 1; i < node.Children.Count; i++)
@@ -284,6 +289,31 @@ namespace K3CSharp
                     adverbs.Add(adverbSymbol.Value);
                 }
             }
+            
+            // Check if this is a monadic verb with each adverb
+            if (adverbs.Count == 1 && adverbs[0] == "ADVERB_TICK" && 
+                operandNode.Value is SymbolValue verbSymbol)
+            {
+                string verbStr = verbSymbol.Value;
+                Console.WriteLine($"Found monadic verb with each: {verbStr}");
+                
+                // Check if this is a known monadic verb
+                if (verbStr == "#" || verbStr == "_ci" || verbStr == "_ic" || verbStr == "_sv" || 
+                    verbStr == "_vs" || verbStr == "_ss" || verbStr == "_sm" || verbStr == "_dv" || verbStr == "_di")
+                {
+                    // This is a monadic verb with each - we need to find the data
+                    // The issue is that the data is not in the current AST structure
+                    // For now, we need to handle this case differently
+                    
+                    // The data should be parsed after the adverb chain, but it's not in the AST
+                    // This is a limitation of the current AST structure
+                    
+                    // For now, let's throw a more descriptive error
+                    throw new Exception($"Monadic each not properly implemented for verb: {verbStr}. AST structure missing data.");
+                }
+            }
+            
+            var operand = Evaluate(operandNode);
             
             // Apply adverbs in reverse order (right-to-left evaluation)
             K3Value result = operand;
@@ -337,10 +367,33 @@ namespace K3CSharp
             return Scan(verb, left ?? new IntegerValue(0), right ?? new IntegerValue(0));
         }
 
+        public K3Value HandleAdverbTick(K3Value verb, K3Value left, K3Value right)
+        {
+            // Check if this is a monadic verb with each (left is dummy value)
+            if (left is IntegerValue leftInt && leftInt.Value == 0 && right is VectorValue dataVec)
+            {
+                // This is a monadic verb with each - call 2-argument Each
+                return Each(verb, dataVec);
+            }
+            
+            // Default to 3-argument Each for dyadic verbs
+            return Each(verb, left, right);
+        }
+
         private K3Value ApplyAdverbTick(K3Value verb, K3Value left, K3Value right)
         {
-            // Natural nested evaluation: call Each with the verb and arguments
-            return Each(verb, left ?? new IntegerValue(0), right ?? new IntegerValue(0));
+            // Check if this is a monadic verb with each (left and right are dummy values)
+            if ((left is IntegerValue leftInt && leftInt.Value == 0) && 
+                (right is IntegerValue rightInt && rightInt.Value == 0) && 
+                verb is SymbolValue)
+            {
+                // This is a monadic verb with each - call 2-argument Each
+                // The data will be provided by the caller
+                return Each(verb, new IntegerValue(0)); // Dummy data for now
+            }
+            
+            // For dyadic verbs, call 3-argument Each
+            return Each(verb, left, right);
         }
 
         private K3Value ApplyAdverbSlashColon(K3Value verb, K3Value left, K3Value right)
@@ -722,6 +775,19 @@ namespace K3CSharp
             // New structure: Each(verbSymbol, leftVector, rightVector)
             if (verb is SymbolValue verbSymbol)
             {
+                // Check if this is a monadic verb with each (left is dummy value)
+                if (left is IntegerValue leftInt && leftInt.Value == 0 && right is VectorValue dataVec)
+                {
+                    // This is a monadic verb with each - apply verb to each element of dataVec
+                    var result = new List<K3Value>();
+                    foreach (var element in dataVec.Elements)
+                    {
+                        result.Add(ApplyUnaryVerb(verbSymbol.Value, element));
+                    }
+                    int vectorType = DetermineVectorType(result);
+                    return new VectorValue(result, vectorType);
+                }
+                
                 // Handle vector + vector case (same length) - should behave like default operator
                 if (left is VectorValue leftVec && right is VectorValue rightVec)
                 {
@@ -921,6 +987,35 @@ namespace K3CSharp
 
         private K3Value Each(K3Value verb, K3Value data)
         {
+            // Handle monadic verb with vector data (e.g., #:' 1 2 3)
+            if (IsScalar(verb) && data is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    if (verb is SymbolValue verbSymbol)
+                    {
+                        // For each operations, apply verb as a unary operation to each element
+                        result.Add(ApplyUnaryVerb(verbSymbol.Value, element));
+                    }
+                    else
+                    {
+                        // Check if verb is a glyph stored as non-vector type
+                        string verbStr = verb.ToString();
+                        if (verbStr.Length == 1 && "+-*/%^!&|<>=^,_?#~".Contains(verbStr))
+                        {
+                            result.Add(ApplyUnaryVerb(verbStr, element));
+                        }
+                        else
+                        {
+                            result.Add(ApplySymbolVerbWithOperator(verb, element, new NullValue()));
+                        }
+                    }
+                }
+                int vectorType = DetermineVectorType(result);
+                return new VectorValue(result, vectorType);
+            }
+            
             // Legacy 2-argument call for backward compatibility
             if (verb is VectorValue verbVec && data is VectorValue dataVec)
             {
@@ -953,10 +1048,10 @@ namespace K3CSharp
             }
             
             // Handle scalar + vector case (legacy)
-            if (IsScalar(verb) && data is VectorValue vec)
+            if (IsScalar(verb) && data is VectorValue dataVector)
             {
                 var result = new List<K3Value>();
-                foreach (var element in vec.Elements)
+                foreach (var element in dataVector.Elements)
                 {
                     if (verb is SymbolValue verbSymbol)
                     {

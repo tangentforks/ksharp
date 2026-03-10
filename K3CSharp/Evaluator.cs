@@ -453,7 +453,7 @@ namespace K3CSharp
                         "::" => GlobalAssignment(left, right),
                         "ADVERB_SLASH" => Over(new SymbolValue("+"), left, right),
                         "ADVERB_BACKSLASH" => Scan(new SymbolValue("+"), left, right),
-                        "ADVERB_TICK" => Each(left, right),
+                        "ADVERB_TICK" => HandleAdverbTick(left, new IntegerValue(0), right),
                         "_in" => In(left, right),
                         "_draw" => Draw(left, right),
                         "_bin" => Bin(left, right),
@@ -496,17 +496,36 @@ namespace K3CSharp
                     (op.Value.ToString() == "ADVERB_SLASH" || op.Value.ToString() == "ADVERB_BACKSLASH" || op.Value.ToString() == "ADVERB_TICK" ||
                      op.Value.ToString() == "ADVERB_SLASH_COLON" || op.Value.ToString() == "ADVERB_BACKSLASH_COLON" || op.Value.ToString() == "ADVERB_TICK_COLON"))
             {
-                // For natural nested adverb evaluation, check if verb is a nested adverb
+                // For ADVERB_TICK, don't evaluate the verb if it's a monadic verb symbol
                 K3Value verb;
-                if (node.Children[0].Type == ASTNodeType.BinaryOp && 
-                    node.Children[0].Value is SymbolValue verbSym &&
-                    verbSym.Value.ToString().StartsWith("ADVERB_"))
+                if (op.Value.ToString() == "ADVERB_TICK")
                 {
-                    // This is a nested adverb structure - evaluate it to get the inner function
-                    verb = Evaluate(node.Children[0]);
+                    // Check if the verb is a monadic verb symbol
+                    var verbNode = node.Children[0];
+                    if (verbNode.Type == ASTNodeType.Literal && verbNode.Value is SymbolValue)
+                    {
+                        var verbSymbol = (verbNode.Value as SymbolValue)?.Value;
+                        if (verbSymbol == "#" || verbSymbol == "_ci" || verbSymbol == "_ic" || verbSymbol == "_sv" || 
+                            verbSymbol == "_vs" || verbSymbol == "_ss" || verbSymbol == "_sm" || verbSymbol == "_dv" || verbSymbol == "_di")
+                        {
+                            // This is a monadic verb - don't evaluate it, pass as symbol
+                            verb = new SymbolValue(verbSymbol);
+                        }
+                        else
+                        {
+                            // Not a monadic verb - evaluate it
+                            verb = Evaluate(verbNode);
+                        }
+                    }
+                    else
+                    {
+                        // Not a symbol - evaluate it
+                        verb = Evaluate(verbNode);
+                    }
                 }
                 else
                 {
+                    // For other adverbs, evaluate the verb normally
                     verb = Evaluate(node.Children[0]);
                 }
                 
@@ -518,7 +537,7 @@ namespace K3CSharp
                 {
                     "ADVERB_SLASH" => ApplyAdverbSlash(verb, left, right),
                     "ADVERB_BACKSLASH" => ApplyAdverbBackslash(verb, left, right),
-                    "ADVERB_TICK" => ApplyAdverbTick(verb, left, right),
+                    "ADVERB_TICK" => HandleAdverbTick(verb, left, right),
                     "ADVERB_SLASH_COLON" => ApplyAdverbSlashColon(verb, left, right),
                     "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(verb, left, right),
                     "ADVERB_TICK_COLON" => ApplyAdverbTickColon(verb, left, right),

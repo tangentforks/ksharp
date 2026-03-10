@@ -597,6 +597,7 @@ namespace K3CSharp.Tests
                 // $ operator tests - binary form/type conversion
                 ("format_integer.k", "\"a\""),
                 ("ci_adverb_vector.k", "\"a^P\""),
+                ("adverb_each_count.k", "3 5 2"),
                 ("format_float_numeric.k", ",\"1\""),
                 ("form_long.k", "42j"),
                 ("format_numeric.k", "\"    1\""),
