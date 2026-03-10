@@ -46,7 +46,7 @@ namespace K3CSharp
                 parameters,
                 null!,
                 "",
-                new SymbolValue("constructor"));
+                new SymbolValue("method"));
         }
 
         /// <summary>
@@ -191,78 +191,68 @@ namespace K3CSharp
             var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
             if (constructors.Length > 0)
             {
-                var constructorList = new List<K3Value>();
                 foreach (var constructor in constructors)
                 {
                     var constructorDict = CreateConstructorDictionary(constructor);
-                    constructorList.Add(constructorDict);
+                    entries[new SymbolValue(constructor.Name)] = (constructorDict, null);
                 }
-                entries[new SymbolValue("constructors")] = (new VectorValue(constructorList), null);
+                // Add main constructor entry
+                entries[new SymbolValue("constructor")] = (CreateConstructorFunction(type), null);
             }
             
             // Add static methods
             var staticMethods = type.GetMethods(BindingFlags.Static | BindingFlags.Public);
             if (staticMethods.Length > 0)
             {
-                var methodList = new List<K3Value>();
                 foreach (var method in staticMethods)
                 {
                     var methodDict = CreateMethodDictionary(method);
-                    methodList.Add(methodDict);
+                    entries[new SymbolValue(method.Name)] = (methodDict, null);
                 }
-                entries[new SymbolValue("staticmethods")] = (new VectorValue(methodList), null);
             }
             
             // Add instance methods
             var instanceMethods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public);
             if (instanceMethods.Length > 0)
             {
-                var methodList = new List<K3Value>();
                 foreach (var method in instanceMethods)
                 {
                     var methodDict = CreateMethodDictionary(method);
-                    methodList.Add(methodDict);
+                    entries[new SymbolValue(method.Name)] = (methodDict, null);
                 }
-                entries[new SymbolValue("methods")] = (new VectorValue(methodList), null);
             }
             
             // Add properties
             var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
             if (properties.Length > 0)
             {
-                var propertyList = new List<K3Value>();
                 foreach (var property in properties)
                 {
                     var propertyDict = CreatePropertyDictionary(property);
-                    propertyList.Add(propertyDict);
+                    entries[new SymbolValue(property.Name)] = (propertyDict, null);
                 }
-                entries[new SymbolValue("properties")] = (new VectorValue(propertyList), null);
             }
             
             // Add fields
             var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
             if (fields.Length > 0)
             {
-                var fieldList = new List<K3Value>();
                 foreach (var field in fields)
                 {
                     var fieldDict = CreateFieldDictionary(field);
-                    fieldList.Add(fieldDict);
+                    entries[new SymbolValue(field.Name)] = (fieldDict, null);
                 }
-                entries[new SymbolValue("fields")] = (new VectorValue(fieldList), null);
             }
             
             // Add events
             var events = type.GetEvents(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
             if (events.Length > 0)
             {
-                var eventList = new List<K3Value>();
                 foreach (var eventInfo in events)
                 {
                     var eventDict = CreateEventDictionary(eventInfo);
-                    eventList.Add(eventDict);
+                    entries[new SymbolValue(eventInfo.Name)] = (eventDict, null);
                 }
-                entries[new SymbolValue("events")] = (new VectorValue(eventList), null);
             }
             
             return new DictionaryValue(entries);

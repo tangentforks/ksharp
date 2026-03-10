@@ -250,7 +250,7 @@ namespace K3CSharp
                     // Check if underscore is part of a name (identifier or symbol)
                     // Look ahead to see if this could be part of a name
                     if (position > 0 && 
-                        (char.IsLetterOrDigit(input[position - 1]) || input[position - 1] == '_') &&
+                        (char.IsLetterOrDigit(input[position - 1]) || input[position - 1] == '_' || input[position - 1] == '.') &&
                         position + 1 < input.Length && 
                         (char.IsLetterOrDigit(input[position + 1]) || input[position + 1] == '_'))
                     {
@@ -628,21 +628,30 @@ namespace K3CSharp
                         Advance();
                     }
                 }
+                
                 if (currentChar == '"')
                 {
                     Advance(); // Skip closing quote
                 }
+                
                 return new Token(TokenType.SYMBOL, quotedValue, start);
             }
-            
-            string value = "";
-            while (currentChar != '\0' && (char.IsLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '.') && currentChar != '`')
+            else
             {
-                value += currentChar;
-                Advance();
+                // Regular symbol
+                string value = "";
+                if (currentChar == '.')
+                {
+                    value += currentChar;
+                    Advance();
+                }
+                while (currentChar != '\0' && (char.IsLetterOrDigit(currentChar) || currentChar == '_' || currentChar == '.') && currentChar != '`')
+                {
+                    value += currentChar;
+                    Advance();
+                }
+                return new Token(TokenType.SYMBOL, value, start);
             }
-            
-            return new Token(TokenType.SYMBOL, value, start);
         }
         
         private Token ReadIdentifier()

@@ -163,10 +163,36 @@ namespace K3CSharp
             // Check if this is a K tree dotted notation variable (absolute path)
             if (variableName.Contains('.'))
             {
-                var kTreeValue = kTree.GetValue(variableName);
-                if (kTreeValue != null)
+                // Check if this is an absolute path (starts with dot)
+                if (variableName.StartsWith("."))
                 {
-                    return kTreeValue;
+                    // Absolute path - look up directly from root
+                    var kTreeValue = kTree.GetValue(variableName);
+                    if (kTreeValue != null)
+                    {
+                        return kTreeValue;
+                    }
+                }
+                else
+                {
+                    // Relative path - try from current branch first
+                    var currentBranch = kTree.CurrentBranch?.Value ?? "";
+                    if (!string.IsNullOrEmpty(currentBranch))
+                    {
+                        var relativePath = currentBranch + "." + variableName;
+                        var kTreeValue = kTree.GetValue(relativePath);
+                        if (kTreeValue != null)
+                        {
+                            return kTreeValue;
+                        }
+                    }
+                    
+                    // Try as direct path (might be fully qualified)
+                    var kTreeValue2 = kTree.GetValue(variableName);
+                    if (kTreeValue2 != null)
+                    {
+                        return kTreeValue2;
+                    }
                 }
             }
             
@@ -1971,6 +1997,24 @@ namespace K3CSharp
             if (data is VectorValue vector)
             {
                 return VectorIndex(vector, index);
+            }
+            
+            // Handle function calls via bracket notation
+            if (data is FunctionValue function)
+            {
+                // Convert index to function arguments
+                List<K3Value> args;
+                if (index is VectorValue indexVec)
+                {
+                    args = indexVec.Elements;
+                }
+                else
+                {
+                    args = new List<K3Value> { index };
+                }
+                
+                // Call the function
+                return CallFunction(function, args);
             }
             
             throw new Exception("Index operation requires dictionary or vector");

@@ -267,9 +267,6 @@ namespace K3CSharp
             var operandNode = node.Children[0];
             var adverbs = new List<string>();
             
-            // Debug: Print the AST structure
-            Console.WriteLine($"EvaluateAdverbChain: operandNode.Value={operandNode.Value?.GetType()}({operandNode.Value}), children={node.Children.Count}");
-            
             // Extract adverbs from the remaining children
             for (int i = 1; i < node.Children.Count; i++)
             {

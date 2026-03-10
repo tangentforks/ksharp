@@ -606,8 +606,7 @@ public partial class Evaluator
             var typeDict = ForeignFunctionInterface.CreateNetTypeDictionary(type);
             
             // Extract the simple type name (without namespace) for dotnet branch
-            var simpleTypeName = type.Name;
-            var dotnetPath = $"_dotnet.{simpleTypeName}";
+            var dotnetPath = $"_dotnet.{type.Namespace}.{type.Name}";
             
             // Store the type dictionary directly in the KTree (bypassing underscore restriction)
             kTree.SetValue(dotnetPath, typeDict);

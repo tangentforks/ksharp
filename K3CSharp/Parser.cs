@@ -476,14 +476,14 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // Convert to dot-apply for regular indexing: expression . index
-                        result = argsExpression != null && result != null ? ASTNode.MakeBinaryOp(TokenType.DOT_APPLY, result, argsExpression) : result;
+                        // Convert to apply operation: expression @ index
+                        result = argsExpression != null && result != null ? ASTNode.MakeBinaryOp(TokenType.APPLY, result, argsExpression) : result;
                     }
                 }
                 else
                 {
-                    // Convert to dot-apply for regular indexing: expression . index
-                    result = argsExpression != null && result != null ? ASTNode.MakeBinaryOp(TokenType.DOT_APPLY, result, argsExpression) : result;
+                    // Convert to apply operation: expression @ index
+                    result = argsExpression != null && result != null ? ASTNode.MakeBinaryOp(TokenType.APPLY, result, argsExpression) : result;
                 }
             }
 
@@ -708,8 +708,8 @@ namespace K3CSharp
             }
             else if (Match(TokenType.HINT))
             {
-                // Handle _hint token as a symbol literal
-                result = ASTNode.MakeLiteral(new SymbolValue("_hint"));
+                // Handle _hint as a variable reference to the built-in function
+                result = ASTNode.MakeVariable("_hint");
             }
             else if (Match(TokenType.DISPOSE))
             {
@@ -2889,8 +2889,6 @@ namespace K3CSharp
                                 TokenType.NEGATE => "~",
                                 TokenType.DOLLAR => "$",
                                 TokenType.APPLY => "@",
-                                TokenType.DOT_APPLY => ".",
-                                TokenType.TYPE => "TYPE",
                                 TokenType.STRING_REPRESENTATION => "STRING_REPRESENTATION",
                                 TokenType.DO => "do",
                                 TokenType.WHILE => "while",

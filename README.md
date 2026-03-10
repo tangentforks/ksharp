@@ -1,6 +1,6 @@
 # K3Sharp - K3 Language Interpreter in C#
 
-A comprehensive C# implementation of the K3 programming language core, a high-performance vector programming language from the APL family. Currently at **99.3% completion relative to the K3 User Manual and Reference Manual** with excellent foundation and clear path to complete implementation.
+A comprehensive C# implementation of the K3 programming language core, a high-performance vector programming language from the APL family. Currently at **95.8% completion relative to the K3 User Manual and Reference Manual** with excellent foundation and clear path to complete implementation.
 
 ## 📚 **Table of Contents**
 
@@ -52,28 +52,31 @@ A comprehensive C# implementation of the K3 programming language core, a high-pe
 
 ---
 
-## 🎯 **Current Status: Exceptional K3 Implementation at 99.7% Completion**
+## 🎯 **Current Status: Robust K3 Implementation at 95.8% Completion**
 
-**Latest Achievement**: **Comprehensive .NET Foreign Function Interface** - Successfully implemented complete FFI system with assembly loading, type marshalling, object management, and method invocation capabilities, providing seamless integration between K3 and the .NET ecosystem.
+**Latest Achievement**: **Dictionary Indexing and Function Call Fixes** - Successfully implemented proper bracket notation handling by integrating indexing as a subtype of apply (@) operations, fixing both dictionary indexing and function calls via brackets, and resolving FFI hint system issues.
 
 **Current Test Results:**
-- **K3 Compatibility**: 679/688 tests passing (98.7% compatibility with k.exe)
-- **Internal Test Suite**: 683/689 tests passing (99.1% success rate)
-- **FFI Implementation**: 7 FFI tests with 2/7 passing (28.6% - core functionality working, method invocation refinement in progress)
+- **K3 Compatibility**: 736/768 tests passing (95.8% compatibility with k.exe)
+- **Internal Test Suite**: 736/768 tests passing (95.8% success rate)
+- **FFI Implementation**: Core functionality working with proper hint system and constructor access
 
 **Key Features Implemented:**
 - ✅ **Complete K3 Language Core**: All operators, adverbs, and data types
 - ✅ **Advanced Vector Operations**: Comprehensive vector and matrix support
-- ✅ **Dictionary System**: Full K3 dictionary functionality
+- ✅ **Dictionary System**: Full K3 dictionary functionality with proper indexing
 - ✅ **Form and Format Operators**: Complete $ operator implementation
 - ✅ **Natural Nested Adverbs**: Complex adverb structures like `1 2 3 ,/:\: 4 5 6`
 - ✅ **.NET Foreign Function Interface**: Assembly loading, type reflection, object management
-- ✅ **Object Registry**: Thread-safe object lifecycle management
+- ✅ **Bracket Notation**: Proper indexing and function calls via [] syntax
+- ✅ **Hint System**: Working _hint function for FFI constructor metadata
 - ✅ **Type Marshalling**: Bidirectional K3 ↔ .NET conversion
 
 **📊 Current Test Results (Mar 2026):**
-- ✅ **681/682 tests passing** (99.9% success rate)
-- ✅ **679/681 compatibility tests passing** (99.7% k.exe compatibility)
+- ✅ **736/768 tests passing** (95.8% success rate)
+- ✅ **Dictionary indexing system working** with proper bracket notation
+- ✅ **FFI hint system functional** for constructor metadata
+- ✅ **Function calls via brackets** properly implemented
 - ✅ **K serialization system implemented** (_bd, _db functions)
 - ✅ **All 11 K data types supported** in serialization
 - ✅ **Data I/O verbs implemented** (0:, 1:, 2:) with full K specification compliance

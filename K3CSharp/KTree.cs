@@ -53,7 +53,17 @@ namespace K3CSharp
                 
             // Determine if this is an absolute or relative path
             bool isAbsolute = path.StartsWith(".");
-            string[] parts = path.Split('.', StringSplitOptions.RemoveEmptyEntries);
+            string[] parts;
+            
+            if (isAbsolute)
+            {
+                // For absolute paths, keep the leading underscore in the first part
+                parts = path.Substring(1).Split('.', StringSplitOptions.RemoveEmptyEntries);
+            }
+            else
+            {
+                parts = path.Split('.', StringSplitOptions.RemoveEmptyEntries);
+            }
             
             DictionaryValue? currentDict;
             int startIndex = 0;
@@ -87,7 +97,7 @@ namespace K3CSharp
                     }
                     else if (entry.Value is NullValue)
                     {
-                        // Branch is null — promote to a dictionary on first use
+                        // Path component exists but is null - create new dictionary
                         var newDict = new DictionaryValue();
                         currentDict.Entries[key] = (newDict, null!);
                         currentDict = newDict;
@@ -100,12 +110,13 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Path component doesn't exist
-                    return (null, null);
+                    // Path component doesn't exist - create it
+                    var newDict = new DictionaryValue();
+                    currentDict.Entries[key] = (newDict, null!);
+                    currentDict = newDict;
                 }
             }
             
-            // Return the final dictionary and key
             if (parts.Length > startIndex)
             {
                 var finalKey = new SymbolValue(parts[parts.Length - 1]);
