@@ -538,7 +538,7 @@ namespace K3CSharp
                         "!" => ModRotate(left, right),
                         "&" => Min(left, right),
                         "|" => Max(left, right),
-                        "<" => LessThan(left, right),
+                        "<" => Less(left, right),
                         ">" => More(left, right),
                         "=" => Equal(left, right),
                         "~" => Match(left, right),

@@ -191,6 +191,36 @@
 ║ shape_operator.k                                   │ ^ (1 2 3)            │ ,3                   │                      ║
 ║ shape_operator_empty_vector.k                      │ ^ ()                 │ ,0                   │                      ║
 ║ shape_operator_jagged.k                            │ ^ ((1 2 3); (4 5); (6 7 8 9))  // Test shape operator on non-rectangular matrix (jagged array) - Current implementation returns number of rows │ ,3                   │                      ║
+║ dyadic_plus_vector_vector.k                        │ 1 2 3 + 4 5 6        │ 5 7 9                │                      ║
+║ dyadic_plus_atom_vector.k                          │ 5 + 1 2 3            │ 6 7 8                │                      ║
+║ dyadic_plus_vector_atom.k                          │ 1 2 3 + 5            │ 6 7 8                │                      ║
+║ dyadic_minus_vector_vector.k                       │ 5 6 7 - 1 2 3        │ 4 4 4                │                      ║
+║ dyadic_minus_atom_vector.k                         │ 10 - 1 2 3           │ 9 8 7                │                      ║
+║ dyadic_minus_vector_atom.k                         │ 5 6 7 - 2            │ 3 4 5                │                      ║
+║ dyadic_times_vector_vector.k                       │ 2 3 4 * 3 4 5        │ 6 12 20              │                      ║
+║ dyadic_times_atom_vector.k                         │ 3 * 1 2 3            │ 3 6 9                │                      ║
+║ dyadic_times_vector_atom.k                         │ 1 2 3 * 4            │ 4 8 12               │                      ║
+║ dyadic_divide_vector_vector.k                      │ 6 8 10 % 2 4 5       │ 3 2 2                │                      ║
+║ dyadic_divide_atom_vector.k                        │ 12 % 2 3 4           │ 6 4 3                │                      ║
+║ dyadic_divide_vector_atom.k                        │ 4 6 8 % 2            │ 2 3 4                │                      ║
+║ dyadic_min_vector_vector.k                         │ 5 8 3 & 2 9 4        │ 2 8 3                │                      ║
+║ dyadic_min_atom_vector.k                           │ 3 & 5 2 8            │ 3 2 3                │                      ║
+║ dyadic_min_vector_atom.k                           │ 5 2 8 & 4            │ 4 2 4                │                      ║
+║ dyadic_max_vector_vector.k                         │ 5 8 3 | 2 9 4        │ 5 9 4                │                      ║
+║ dyadic_max_atom_vector.k                           │ 6 | 3 8 2            │ 6 8 6                │                      ║
+║ dyadic_max_vector_atom.k                           │ 3 8 2 | 5            │ 5 8 5                │                      ║
+║ dyadic_less_vector_vector.k                        │ 3 5 2 < 4 2 6        │ 1 0 1                │                      ║
+║ dyadic_less_atom_vector.k                          │ 3 < 4 2 5            │ 1 0 1                │                      ║
+║ dyadic_less_vector_atom.k                          │ 3 5 2 < 4            │ 1 0 1                │                      ║
+║ dyadic_more_vector_vector.k                        │ 3 5 2 > 2 4 1        │ 1 1 1                │                      ║
+║ dyadic_more_atom_vector.k                          │ 4 > 2 5 3            │ 1 0 1                │                      ║
+║ dyadic_more_vector_atom.k                          │ 3 5 2 > 2            │ 1 1 0                │                      ║
+║ dyadic_equal_vector_vector.k                       │ 3 5 2 = 3 4 2        │ 1 0 1                │                      ║
+║ dyadic_equal_atom_vector.k                         │ 3 = 3 4 5            │ 1 0 0                │                      ║
+║ dyadic_equal_vector_atom.k                         │ 3 4 5 = 3            │ 1 0 0                │                      ║
+║ dyadic_power_vector_vector.k                       │ 2 3 4 ^ 3 2 1        │ 8 9 4                │                      ║
+║ dyadic_power_atom_vector.k                         │ 2 ^ 1 2 3            │ 2 4 8                │                      ║
+║ dyadic_power_vector_atom.k                         │ 2 3 4 ^ 2            │ 4 9 16               │                      ║
 ║ shape_operator_jagged_3d.k                         │ ^ (((1 2); (3 4 5)); ((6 7); (8 9 10))) │ 2 2                  │                      ║
 ║ shape_operator_jagged_matrix.k                     │ ^ ((1 2 3); (4 5); (6 7 8 9)) │ ,3                   │                      ║
 ║ shape_operator_matrix.k                            │ ^ ((1 2 3); (4 5 6); (7 8 9))  // Test shape operator on rectangular matrix (3x3) - Current implementation returns number of rows │ 3 3                  │                      ║
@@ -699,19 +729,20 @@
 ║ math_xor_basic.k                                   │ 5 _xor 3             │ 6                    │                      ║
 ║ math_xor_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
 ║ ffi_hint_system.k                                  │ // Test hint system functionality │                      │ `_hint               ║
-║ ffi_simple_assembly.k                              │ "System.Private.CoreLib" 2: `System.String │ `._dotnet.Syste...   │ `.dotnet.String      ║
-║ ffi_assembly_load.k                                │ // Test basic FFI functionality │ `._dotnet.Syste...   │ `.dotnet.String      ║
+║ ffi_simple_assembly.k                              │ str:"System.Private.CoreLib" 2: `System.String; str │ `._dotnet.Syste...   │                      ║
+║ ffi_assembly_load.k                                │ // Test basic FFI functionality │ `._dotnet.Syste...   │                      ║
 ║ ffi_type_marshalling.k                             │ // Test type marshalling │ 1 2 3 4 5            │                      ║
 ║ ffi_object_management.k                            │ str: "hello" _hint `object; str . ToUpper │                      │ HELLO                ║
-║ ffi_constructor.k                                  │ stringType: "System.Private.CoreLib" 2: `System.String ; stringType │ `._dotnet.Syste...   │ name|namespace|...   ║
+║ ffi_constructor.k                                  │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.19\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex │ .((`real;2.0;);...   │                      ║
 ║ ffi_dispose.k                                      │ str: "hello" _hint `object ; _dispose ; str._this │                      │ Disposed             ║
+║ ffi_complete_workflow.k                            │ // Complete FFI Workflow Test │ .((`real;2.0;);...   │                      ║
 ║ idioms_01_575_kronecker_delta.k                    │ x:0 0 1 1            │ 1 0 0 1              │                      ║
-║ idioms_01_571_xbutnoty.k                           │ x:0 1 0 1            │ Error: Cannot c...   │ 0 1 0 0              ║
-║ idioms_01_570_implies.k                            │ x:0 1 0 1            │ Error: Cannot c...   │ 1 0 1 1              ║
+║ idioms_01_571_xbutnoty.k                           │ x:0 1 0 1            │ 0 1 0 0              │                      ║
+║ idioms_01_570_implies.k                            │ x:0 1 0 1            │ Error: Cannot l...   │ 1 0 1 1              ║
 ║ idioms_01_573_exclusive_or.k                       │ x:0 0 1 1            │ Error: Cannot l...   │ 0 1 1 0              ║
 ║ idioms_01_41_indices_ones.k                        │ x:0 0 1 0 1 0 0 0 1 0 │ 2 4 8                │                      ║
 ║ idioms_01_516_multiply_columns.k                   │ x:(1 2 3 4 5 6       │ Error: Expected...   │ (10 20 30 40 50...   ║
-║ idioms_01_566_zero_boolean.k                       │ x:0 1 0 1 1 0 0 1 1 1 0 │ Error: Cannot f...   │ 0 0 0 0 0 0 0 0...   ║
+║ idioms_01_566_zero_boolean.k                       │ x:0 1 0 1 1 0 0 1 1 1 0 │ 0 0 0 0 0 0 0 0...   │                      ║
 ║ idioms_01_624_zero_array.k                         │ x:2 3#99             │ (0 0 0;0 0 0)        │                      ║
 ║ idioms_01_622_retain_marked.k                      │ x:3 7 15 1 292       │ 3 0 15 1 0           │                      ║
 ║ idioms_01_331_identity_max.k                       │ -1e100|-0i           │ -1e+100              │                      ║
@@ -734,7 +765,7 @@
 ║ idioms_01_434_replace_first.k                      │ x:"abbccdefcdab"     │ Error: Assignme...   │ "tbbccdefcdab"       ║
 ║ idioms_01_433_replace_last.k                       │ x:"abbccdefcdab"     │ Error: Assignme...   │ "abbccdefcdat"       ║
 ║ idioms_01_406_add_last.k                           │ x:1 2 3 4 5          │ 1 2 3 4 105          │                      ║
-║ idioms_01_449_limit_between.k                      │ x:5 6 _draw 100      │ Error: Cannot f...   │ (58 30 37 70 39...   ║
+║ idioms_01_449_limit_between.k                      │ x:5 6 _draw 100      │ (34 30 51 70 69...   │ (58 30 37 70 39...   ║
 ║ idioms_01_495_indices_occurrences.k                │ x:"abcdefgab"        │ ()                   │ 0 2 5 7              ║
 ║ idioms_01_504_replace_satisfying.k                 │ x:1 0 0 0 1 0 1 1 0 1 │ Error: Assignme...   │ " bcd f i "          ║
 ║ idioms_01_569_change_to_one.k                      │ y:10 5 7 12 20.0     │ Error: Cannot l...   │ 10 1 7 1 1.0         ║
@@ -772,7 +803,7 @@
 ║ ktree_dot_apply_relative_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)) │ 1 2 3                │                      ║
 ║ ktree_dot_apply_absolute_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)) │ 1 3 5                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 736/768 tests passed (95.8%)                                                                               ║
+║ SUMMARY: 772/799 tests passed (96.6%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -787,40 +818,20 @@ Input: // Test hint system functionality
 Expected: `_hint
 Actual: 
 ──────────────────────────────────────────────────────────────────────────
-Test: ffi_simple_assembly.k
-Input: "System.Private.CoreLib" 2: `System.String
-Expected: `.dotnet.String
-Actual: `._dotnet.System.String
-──────────────────────────────────────────────────────────────────────────
-Test: ffi_assembly_load.k
-Input: // Test basic FFI functionality
-Expected: `.dotnet.String
-Actual: `._dotnet.System.String
-──────────────────────────────────────────────────────────────────────────
 Test: ffi_object_management.k
 Input: str: "hello" _hint `object; str . ToUpper
 Expected: HELLO
 Actual: 
-──────────────────────────────────────────────────────────────────────────
-Test: ffi_constructor.k
-Input: stringType: "System.Private.CoreLib" 2: `System.String ; stringType
-Expected: name|namespace|assembly|isclass|isinterface|isenum|isabstract|ispublic|isstatic|constructors|methods|properties|fields
-Actual: `._dotnet.System.String
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_dispose.k
 Input: str: "hello" _hint `object ; _dispose ; str._this
 Expected: Disposed
 Actual: 
 ──────────────────────────────────────────────────────────────────────────
-Test: idioms_01_571_xbutnoty.k
-Input: x:0 1 0 1
-Expected: 0 1 0 0
-Actual: Error: Cannot compare Vector and Vector with >
-──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_570_implies.k
 Input: x:0 1 0 1
 Expected: 1 0 1 1
-Actual: Error: Cannot compare Vector and Vector with >
+Actual: Error: Cannot logically negate Vector
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_573_exclusive_or.k
 Input: x:0 0 1 1
@@ -831,11 +842,6 @@ Test: idioms_01_516_multiply_columns.k
 Input: x:(1 2 3 4 5 6
 Expected: (10 20 30 40 50 60;700 800 900 1000 1100 1200)
 Actual: Error: Expected ')' after expression
-──────────────────────────────────────────────────────────────────────────
-Test: idioms_01_566_zero_boolean.k
-Input: x:0 1 0 1 1 0 0 1 1 1 0
-Expected: 0 0 0 0 0 0 0 0 0 0 0
-Actual: Error: Cannot find minimum of Integer and Vector
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_357_match.k
 Input: x:("abc";`sy;1 3 -7)
@@ -875,7 +881,7 @@ Actual: Error: Assignment requires a variable name on the left side
 Test: idioms_01_449_limit_between.k
 Input: x:5 6 _draw 100
 Expected: (58 30 37 70 39 70;60 30 45 70 70 35;49 70 70 70 30 30;46 61 30 51 30 34;31 51 30 35 30 70)
-Actual: Error: Cannot find minimum of Integer and Vector
+Actual: (34 30 51 70 69 70;52 70 30 53 70 30;30 30 30 30 50 70;30 41 30 70 39 51;30 70 30 70 30 65)
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_495_indices_occurrences.k
 Input: x:"abcdefgab"

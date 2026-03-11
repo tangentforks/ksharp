@@ -292,6 +292,18 @@ namespace K3CSharp
                     return vecA.Minimum(b);
             }
             
+            // Handle scalar + vector operations
+            if (b is VectorValue vectorB)
+            {
+                // For scalar + vector, apply min to each element
+                var result = new List<K3Value>();
+                foreach (var element in vectorB.Elements)
+                {
+                    result.Add(Min(a, element));
+                }
+                return new VectorValue(result);
+            }
+            
             throw new Exception($"Cannot find minimum of {a.Type} and {b.Type}");
         }
 
@@ -313,6 +325,18 @@ namespace K3CSharp
                     return vecA.Maximum(b);
             }
             
+            // Handle scalar + vector operations
+            if (b is VectorValue vectorB)
+            {
+                // For scalar + vector, apply max to each element
+                var result = new List<K3Value>();
+                foreach (var element in vectorB.Elements)
+                {
+                    result.Add(Max(a, element));
+                }
+                return new VectorValue(result);
+            }
+            
             throw new Exception($"Cannot find maximum of {a.Type} and {b.Type}");
         }
 
@@ -325,6 +349,44 @@ namespace K3CSharp
             if (a is FloatValue floatA && b is FloatValue floatB)
                 return new IntegerValue(floatA.Value < floatB.Value ? 1 : 0);
             
+            // Handle vector operations
+            if (a is VectorValue vecA)
+            {
+                if (b is VectorValue vecB)
+                {
+                    if (vecA.Elements.Count != vecB.Elements.Count)
+                        throw new Exception($"length error: {vecA.Elements.Count} != {vecB.Elements.Count}");
+                    
+                    var results = new List<K3Value>();
+                    for (int i = 0; i < vecA.Elements.Count; i++)
+                    {
+                        results.Add(Less(vecA.Elements[i], vecB.Elements[i]));
+                    }
+                    return new VectorValue(results);
+                }
+                else
+                {
+                    var results = new List<K3Value>();
+                    foreach (var element in vecA.Elements)
+                    {
+                        results.Add(Less(element, b));
+                    }
+                    return new VectorValue(results);
+                }
+            }
+            
+            // Handle scalar + vector operations
+            if (b is VectorValue vectorB)
+            {
+                // For scalar + vector, apply less to each element
+                var result = new List<K3Value>();
+                foreach (var element in vectorB.Elements)
+                {
+                    result.Add(Less(a, element));
+                }
+                return new VectorValue(result);
+            }
+            
             throw new Exception($"Cannot compare {a.Type} and {b.Type} with <");
         }
 
@@ -336,6 +398,44 @@ namespace K3CSharp
                 return new IntegerValue(longA.Value > longB.Value ? 1 : 0);
             if (a is FloatValue floatA && b is FloatValue floatB)
                 return new IntegerValue(floatA.Value > floatB.Value ? 1 : 0);
+            
+            // Handle vector operations
+            if (a is VectorValue vecA)
+            {
+                if (b is VectorValue vecB)
+                {
+                    if (vecA.Elements.Count != vecB.Elements.Count)
+                        throw new Exception($"length error: {vecA.Elements.Count} != {vecB.Elements.Count}");
+                    
+                    var results = new List<K3Value>();
+                    for (int i = 0; i < vecA.Elements.Count; i++)
+                    {
+                        results.Add(More(vecA.Elements[i], vecB.Elements[i]));
+                    }
+                    return new VectorValue(results);
+                }
+                else
+                {
+                    var results = new List<K3Value>();
+                    foreach (var element in vecA.Elements)
+                    {
+                        results.Add(More(element, b));
+                    }
+                    return new VectorValue(results);
+                }
+            }
+            
+            // Handle scalar + vector operations
+            if (b is VectorValue vectorB)
+            {
+                // For scalar + vector, apply more to each element
+                var result = new List<K3Value>();
+                foreach (var element in vectorB.Elements)
+                {
+                    result.Add(More(a, element));
+                }
+                return new VectorValue(result);
+            }
             
             throw new Exception($"Cannot compare {a.Type} and {b.Type} with >");
         }
@@ -354,14 +454,14 @@ namespace K3CSharp
                 return new IntegerValue(Math.Abs(floatA.Value - floatB.Value) < threshold ? 1 : 0);
             }
             
-            if (a is VectorValue vecA && b is VectorValue vecB)
+            if (a is VectorValue vecAMatch && b is VectorValue vecBMatch)
             {
-                if (vecA.Elements.Count != vecB.Elements.Count)
+                if (vecAMatch.Elements.Count != vecBMatch.Elements.Count)
                     return new IntegerValue(0);
                 
-                for (int i = 0; i < vecA.Elements.Count; i++)
+                for (int i = 0; i < vecAMatch.Elements.Count; i++)
                 {
-                    var result = Match(vecA.Elements[i], vecB.Elements[i]);
+                    var result = Match(vecAMatch.Elements[i], vecBMatch.Elements[i]);
                     if (result is IntegerValue intResult && intResult.Value == 0)
                         return new IntegerValue(0);
                 }
@@ -394,6 +494,28 @@ namespace K3CSharp
                 return new VectorValue(results);
             }
             
+            // Handle vector + scalar operations
+            if (a is VectorValue vecAEqual)
+            {
+                var results = new List<K3Value>();
+                foreach (var element in vecAEqual.Elements)
+                {
+                    results.Add(Equal(element, b));
+                }
+                return new VectorValue(results);
+            }
+            
+            // Handle scalar + vector operations
+            if (b is VectorValue vecBEqual)
+            {
+                var results = new List<K3Value>();
+                foreach (var element in vecBEqual.Elements)
+                {
+                    results.Add(Equal(a, element));
+                }
+                return new VectorValue(results);
+            }
+            
             // For scalar comparison, delegate to Match
             return Match(a, b);
         }
@@ -406,6 +528,44 @@ namespace K3CSharp
                 return new LongValue((long)Math.Pow(longA.Value, longB.Value));
             if (a is FloatValue floatA && b is FloatValue floatB)
                 return new FloatValue(Math.Pow(floatA.Value, floatB.Value));
+            
+            // Handle vector operations
+            if (a is VectorValue vecA)
+            {
+                if (b is VectorValue vecB)
+                {
+                    if (vecA.Elements.Count != vecB.Elements.Count)
+                        throw new Exception($"length error: {vecA.Elements.Count} != {vecB.Elements.Count}");
+                    
+                    var results = new List<K3Value>();
+                    for (int i = 0; i < vecA.Elements.Count; i++)
+                    {
+                        results.Add(Power(vecA.Elements[i], vecB.Elements[i]));
+                    }
+                    return new VectorValue(results);
+                }
+                else
+                {
+                    var results = new List<K3Value>();
+                    foreach (var element in vecA.Elements)
+                    {
+                        results.Add(Power(element, b));
+                    }
+                    return new VectorValue(results);
+                }
+            }
+            
+            // Handle scalar + vector operations
+            if (b is VectorValue vectorB)
+            {
+                // For scalar + vector, apply power to each element
+                var result = new List<K3Value>();
+                foreach (var element in vectorB.Elements)
+                {
+                    result.Add(Power(a, element));
+                }
+                return new VectorValue(result);
+            }
             
             throw new Exception($"Cannot raise {a.Type} to power of {b.Type}");
         }
