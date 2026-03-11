@@ -1017,11 +1017,18 @@ namespace K3CSharp
                 return new IntegerValue(0); // Empty function result
             }
             
+            // Check if this is an FFI function with method hint
+            if (functionEvaluator.currentFunctionValue?.Hint is SymbolValue hint && 
+                HintSystem.IsMemberHint(hint.Value))
+            {
+                return ExecuteFFIFunction(functionEvaluator.currentFunctionValue, functionEvaluator);
+            }
+            
             try
             {
                 ASTNode? ast;
                 
-                // Try to get cached AST from the function value if available
+                // Try to get cached AST from function value if available
                 if (functionEvaluator.currentFunctionValue != null)
                 {
                     ast = functionEvaluator.currentFunctionValue.GetCachedAst();
@@ -1047,7 +1054,7 @@ namespace K3CSharp
                 
                 if (ast != null)
                 {
-                    // Cache the parsed AST for future use
+                    // Cache parsed AST for future use
                     functionEvaluator.currentFunctionValue?.CacheAst(ast);
                     var result = functionEvaluator.Evaluate(ast) ?? new NullValue();
                                         return result;
@@ -1063,6 +1070,54 @@ namespace K3CSharp
             }
         }
         
+        private K3Value ExecuteFFIFunction(FunctionValue functionValue, Evaluator functionEvaluator)
+        {
+            try
+            {
+                // For FFI functions, the body text contains information about the .NET member to invoke
+                // Extract the type and member information from the function body
+                var bodyText = functionValue.BodyText;
+                
+                // Parse constructor function body: "constructor:TypeName"
+                if (bodyText.StartsWith("constructor:"))
+                {
+                    var typeName = bodyText.Substring("constructor:".Length);
+                    
+                    // Try to find the type in already loaded assemblies
+                    Type? foundType = null;
+                    foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                    {
+                        var types = assembly.GetTypes();
+                        foundType = types.FirstOrDefault(t => t.FullName == typeName || t.Name == typeName);
+                        if (foundType != null) break;
+                    }
+                    
+                    if (foundType != null)
+                    {
+                        // Get arguments from the function evaluator's local variables
+                        var args = new List<K3Value>();
+                        foreach (var param in functionValue.Parameters)
+                        {
+                            var argValue = functionEvaluator.GetVariable(param);
+                            if (argValue != null)
+                            {
+                                args.Add(argValue);
+                            }
+                        }
+                        
+                        // Create instance using FFI
+                        return ForeignFunctionInterface.CreateInstance(foundType, args);
+                    }
+                }
+                
+                throw new Exception("FFI function execution failed: cannot parse function body");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"FFI function execution error: {ex.Message}");
+            }
+        }
+
         private ASTNode? ParseFunctionBodyStatements(Parser parser, string bodyText)
         {
             // For function bodies, we need to handle multiple statements separated by semicolons or newlines

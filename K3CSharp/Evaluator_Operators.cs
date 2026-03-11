@@ -1154,6 +1154,33 @@ namespace K3CSharp
                 }
                 return new VectorValue(keys, -4); // Symbol vector
             }
+            else if (a is FunctionValue func)
+            {
+                // For FFI functions, return function information
+                var info = new List<K3Value>();
+                
+                // Add function name
+                info.Add(new SymbolValue(func.BodyText));
+                
+                // Add parameters
+                if (func.Parameters.Count > 0)
+                {
+                    var paramList = new List<K3Value>();
+                    foreach (var param in func.Parameters)
+                    {
+                        paramList.Add(new SymbolValue(param));
+                    }
+                    info.Add(new VectorValue(paramList, -4)); // Symbol vector of parameters
+                }
+                
+                // Add hint if available
+                if (func.Hint != null)
+                {
+                    info.Add(func.Hint);
+                }
+                
+                return new VectorValue(info, 0); // Mixed list
+            }
             
             throw new Exception($"Cannot enumerate {a.Type}");
         }

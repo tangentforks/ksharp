@@ -403,7 +403,7 @@ namespace K3CSharp
             
             // Add special _this entry for object reference
             var handle = ObjectRegistry.RegisterObject(netValue);
-            entries[new SymbolValue("_this")] = (new CharacterValue(handle, new SymbolValue("object")), null);
+            entries[new SymbolValue("_this")] = (new SymbolValue(handle), null);
             
             // Add methods as callable entries
             foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance))
