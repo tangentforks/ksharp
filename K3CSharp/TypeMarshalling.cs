@@ -449,8 +449,15 @@ namespace K3CSharp
         private static FunctionValue CreateMethodFunction(object target, MethodInfo method)
         {
             var parameters = method.GetParameters().Select(p => p.Name ?? "").ToList();
+            
+            // Register the target object and get its handle
+            var handle = ObjectRegistry.RegisterObject(target);
+            
+            // Include the object handle in the function body
+            var bodyText = $"method:{method.Name}|{handle}";
+            
             return new FunctionValue(
-                $"method:{method.Name}",
+                bodyText,
                 parameters,
                 null!,
                 "",

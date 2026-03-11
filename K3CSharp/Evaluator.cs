@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 namespace K3CSharp
 {
@@ -1109,6 +1110,54 @@ namespace K3CSharp
                         return ForeignFunctionInterface.CreateInstance(foundType, args);
                     }
                 }
+                // Parse instance method function body: "method:MethodName|ObjectHandle"
+                else if (bodyText.StartsWith("method:"))
+                {
+                    var parts = bodyText.Substring("method:".Length).Split('|');
+                    var methodName = parts[0];
+                    var objectHandle = parts.Length > 1 ? parts[1] : null;
+                    
+                    // Get the target object using the handle
+                    object? targetObject = null;
+                    if (!string.IsNullOrEmpty(objectHandle))
+                    {
+                        targetObject = ObjectRegistry.GetObject(objectHandle);
+                    }
+                    
+                    if (targetObject != null)
+                    {
+                        // Get the method from the object's type
+                        var objectType = targetObject.GetType();
+                        var method = objectType.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance);
+                        
+                        if (method != null)
+                        {
+                            // Get method arguments
+                            var methodArgs = new List<object?>();
+                            var methodParams = method.GetParameters();
+                            
+                            // Map function parameters to method parameters
+                            for (int i = 0; i < methodParams.Length && i < functionValue.Parameters.Count; i++)
+                            {
+                                var paramName = functionValue.Parameters[i];
+                                var argValue = functionEvaluator.GetVariable(paramName);
+                                if (argValue != null)
+                                {
+                                    methodArgs.Add(TypeMarshalling.K3ToNet(argValue, methodParams[i].ParameterType));
+                                }
+                            }
+                            
+                            // Invoke the method
+                            var result = method.Invoke(targetObject, methodArgs.ToArray());
+                            
+                            // Convert result back to K3 value
+                            return TypeMarshalling.NetToK3(result);
+                        }
+                    }
+                    
+                    // If we can't find the object, throw an informative error
+                    throw new Exception($"Cannot invoke instance method '{methodName}' - target object not found or handle '{objectHandle}' is invalid.");
+                }
                 
                 throw new Exception("FFI function execution failed: cannot parse function body");
             }
@@ -2063,8 +2112,14 @@ namespace K3CSharp
                 {
                     args = indexVec.Elements;
                 }
+                else if (index is SymbolValue)
+                {
+                    // Single symbol argument - treat as single argument
+                    args = new List<K3Value> { index };
+                }
                 else
                 {
+                    // Single non-vector argument
                     args = new List<K3Value> { index };
                 }
                 

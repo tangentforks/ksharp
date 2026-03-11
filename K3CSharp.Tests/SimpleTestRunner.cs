@@ -1020,6 +1020,7 @@ namespace K3CSharp.Tests
                 ("ffi_object_management.k", "HELLO"),
                 ("ffi_constructor.k", "name|namespace|assembly|isclass|isinterface|isenum|isabstract|ispublic|isstatic|constructors|methods|properties|fields"),
                 ("ffi_dispose.k", "Disposed"),
+                ("test_ffi_complete_workflow",".((`real;2.0;);(`imag;3.0;);(`magnitude;3.605551;);(`instance;`Imaginary`Real`get_Imaginary`get_Real`_this`Abs`Equals`GetHashCode`ToString`GetType;);(`type;`name`fullname`namespace`assembly`isclass`isinterface`isenum`isabstract`ispublic`isstatic`.ctor`constructor`FromPolarCoordinates`Negate`Add`Subtract`Multiply`Divide`op_UnaryNegation`op_Addition`op_Subtraction`op_Multiply`op_Division`Abs`Conjugate`Reciprocal`op_Equality`op_Inequality`Sin`Sinh`Asin`Cos`Cosh`Acos`Tan`Tanh`Atan`IsFinite`IsInfinity`IsNaN`Log`Log10`Exp`Sqrt`Pow`op_Explicit`op_Implicit`op_Decrement`op_Increment`CreateChecked`CreateSaturating`CreateTruncating`IsComplexNumber`IsEvenInteger`IsImaginaryNumber`IsInteger`IsNegative`IsNegativeInfinity`IsNormal`IsOddInteger`IsPositive`IsPositiveInfinity`IsRealNumber`IsSubnormal`MaxMagnitude`MinMagnitude`Parse`TryParse`op_UnaryPlus`get_Real`get_Imaginary`get_Magnitude`get_Phase`Equals`GetHashCode`ToString`TryFormat`GetType`Real`Imaginary`Magnitude`Phase`Zero`One`ImaginaryOne`NaN`Infinity;))"),
                 
                 // Idioms Chapter 01: Direct Application of Verbs
                 ("idioms_01_575_kronecker_delta.k", "1 0 0 1"),
