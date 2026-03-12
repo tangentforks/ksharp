@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-10 17:29:54
+Generated: 2026-03-12 02:16:40
 
 SUMMARY:
 --------
-Total Tests:     767
-✅ Matched:       728
-❌ Differed:      32
+Total Tests:     802
+✅ Matched:       768
+❌ Differed:      26
 ⚠️  Skipped:       0
-💥 Errors:        7
-Success Rate:    94.9%
+💥 Errors:        8
+Success Rate:    95.8%
 
 DETAILED RESULTS:
 -----------------
@@ -168,10 +168,44 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   dot_execute.k                                      4                              4                                                                                
 ✅ PASS   drop_negative.k                                    0 1 2 3                        0 1 2 3                                                                          
 ✅ PASS   drop_positive.k                                    4 5 6 7                        4 5 6 7                                                                          
+✅ PASS   dyadic_divide_atom_vector.k                        6 4 3                          6 4 3                          smart division                                    
 ✅ PASS   dyadic_divide_bracket.k                            5                              5                              Smart division                                    
+✅ PASS   dyadic_divide_dot_apply.k                          5                              5                              Smart division                                    
+✅ PASS   dyadic_divide_vector_atom.k                        2 3 4                          2 3 4                          smart division                                    
+✅ PASS   dyadic_divide_vector_vector.k                      3 2 2                          3 2 2                          smart division                                    
+✅ PASS   dyadic_equal_atom_vector.k                         1 0 0                          1 0 0                                                                            
+✅ PASS   dyadic_equal_vector_atom.k                         1 0 0                          1 0 0                                                                            
+✅ PASS   dyadic_equal_vector_vector.k                       1 0 1                          1 0 1                                                                            
+✅ PASS   dyadic_less_atom_vector.k                          1 0 1                          1 0 1                                                                            
+✅ PASS   dyadic_less_vector_atom.k                          1 0 1                          1 0 1                                                                            
+✅ PASS   dyadic_less_vector_vector.k                        1 0 1                          1 0 1                                                                            
+✅ PASS   dyadic_max_atom_vector.k                           6 8 6                          6 8 6                                                                            
+✅ PASS   dyadic_max_vector_atom.k                           5 8 5                          5 8 5                                                                            
+✅ PASS   dyadic_max_vector_vector.k                         5 9 4                          5 9 4                                                                            
+✅ PASS   dyadic_min_atom_vector.k                           3 2 3                          3 2 3                                                                            
+✅ PASS   dyadic_min_vector_atom.k                           4 2 4                          4 2 4                                                                            
+✅ PASS   dyadic_min_vector_vector.k                         2 8 3                          2 8 3                                                                            
+✅ PASS   dyadic_minus_atom_vector.k                         9 8 7                          9 8 7                                                                            
 ✅ PASS   dyadic_minus_bracket.k                             7                              7                                                                                
+✅ PASS   dyadic_minus_dot_apply.k                           7                              7                                                                                
+✅ PASS   dyadic_minus_vector_atom.k                         3 4 5                          3 4 5                                                                            
+✅ PASS   dyadic_minus_vector_vector.k                       4 4 4                          4 4 4                                                                            
+✅ PASS   dyadic_more_atom_vector.k                          1 0 1                          1 0 1                                                                            
+✅ PASS   dyadic_more_vector_atom.k                          1 1 0                          1 1 0                                                                            
+✅ PASS   dyadic_more_vector_vector.k                        1 1 1                          1 1 1                                                                            
 ✅ PASS   dyadic_multiply_bracket.k                          24                             24                                                                               
+✅ PASS   dyadic_multiply_dot_apply.k                        24                             24                                                                               
+✅ PASS   dyadic_plus_atom_vector.k                          6 7 8                          6 7 8                                                                            
 ✅ PASS   dyadic_plus_bracket.k                              8                              8                                                                                
+✅ PASS   dyadic_plus_dot_apply.k                            8                              8                                                                                
+✅ PASS   dyadic_plus_vector_atom.k                          6 7 8                          6 7 8                                                                            
+✅ PASS   dyadic_plus_vector_vector.k                        5 7 9                          5 7 9                                                                            
+✅ PASS   dyadic_power_atom_vector.k                         2 4 8                          2 4 8                          smart exponentiation                              
+✅ PASS   dyadic_power_vector_atom.k                         4 9 16                         4 9 16                         smart exponentiation                              
+✅ PASS   dyadic_power_vector_vector.k                       8 9 4                          8 9 4                          smart exponentiation                              
+✅ PASS   dyadic_times_atom_vector.k                         3 6 9                          3 6 9                                                                            
+✅ PASS   dyadic_times_vector_atom.k                         4 8 12                         4 8 12                                                                           
+✅ PASS   dyadic_times_vector_vector.k                       6 12 20                        6 12 20                                                                          
 ✅ PASS   empty_brackets_dictionary.k                        1 2                            1 2                                                                              
 ✅ PASS   empty_brackets_vector.k                            1 2 3 4                        1 2 3 4                                                                          
 ✅ PASS   empty_char_vector.k                                ""                             ""                                                                               
@@ -186,7 +220,8 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   enumerate.k                                        0 1                            0 1                                                                              
 ✅ PASS   equal_operator.k                                   0                              0                                                                                
 💥 ERROR ffi_assembly_load.k                                `._dotnet.System.String                                       k.exe error only                                  
-💥 ERROR ffi_constructor.k                                  `._dotnet.System.String                                       k.exe error only                                  
+💥 ERROR ffi_complete_workflow.k                            .((`real;2.0;);(`imag;3.0...                                  k.exe error only                                  
+💥 ERROR ffi_constructor.k                                  .((`real;2.0;);(`imag;3.0...                                  k.exe error only                                  
 💥 ERROR ffi_dispose.k                                                                                                    k.exe error only                                  
 💥 ERROR ffi_hint_system.k                                                                                                k.exe error only                                  
 💥 ERROR ffi_object_management.k                                                                                          k.exe error only                                  
@@ -274,7 +309,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   idioms_01_177_string_search.k                      11 20 32                       11 20 32                                                                         
 ❌ FAIL   idioms_01_178_first_occurrence.k                   !0                             12                                                                               
 ✅ PASS   idioms_01_228_is_row.k                             1                              1                                                                                
-❌ FAIL   idioms_01_232_is_row_in.k                                                         1                                                                                
+✅ PASS   idioms_01_232_is_row_in.k                          1                              1                                                                                
 ✅ PASS   idioms_01_241_sum_subsets.k                        (4 6 4;12 14 12;20 22 20)      (4 6 4;12 14 12;20 22 20)      Compact representation                            
 ✅ PASS   idioms_01_328_number_items.k                       4                              4                                                                                
 ✅ PASS   idioms_01_331_identity_max.k                       -1e+100                        -1e+100                                                                          
@@ -291,7 +326,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   idioms_01_445_number_columns.k                     3                              3                                                                                
 ✅ PASS   idioms_01_447_conditional_drop.k                   (0 1 2;3 4 5;6 7 8;9 10 11)    (0 1 2;3 4 5;6 7 8;9 10 11)    Compact representation                            
 ✅ PASS   idioms_01_448_conditional_drop_last.k              (0 1 2;3 4 5;6 7 8;9 10 11)    (0 1 2;3 4 5;6 7 8;9 10 11)    Compact representation                            
-❌ FAIL   idioms_01_449_limit_between.k                                                     (58 30 37 70 39 70;60 30 ...   Compact representation                            
+✅ PASS   idioms_01_449_limit_between.k                      (58 30 37 70 39 70;60 30 ...   (58 30 37 70 39 70;60 30 ...   Compact representation                            
 ✅ PASS   idioms_01_45_binary_representation.k               1 0 0 0 0                      1 0 0 0 0                                                                        
 ✅ PASS   idioms_01_493_choose_boolean.k                     "xyz"                          "xyz"                                                                            
 ❌ FAIL   idioms_01_495_indices_occurrences.k                ()                             0 2 5 7                                                                          
@@ -299,16 +334,16 @@ Status   Test File                                          K3Sharp Output      
 ❌ FAIL   idioms_01_504_replace_satisfying.k                                                " bcd f  i "                                                                     
 ✅ PASS   idioms_01_509_remove_y.k                           "bcdebc"                       "bcdebc"                                                                         
 ✅ PASS   idioms_01_510_remove_blanks.k                      "bcdebc"                       "bcdebc"                                                                         
-❌ FAIL   idioms_01_516_multiply_columns.k                                                  (10 20 30 40 50 60;700 80...   Compact representation                            
+✅ PASS   idioms_01_516_multiply_columns.k                   (10 20 30 40 50 60;700 80...   (10 20 30 40 50 60;700 80...   Compact representation                            
 ❌ FAIL   idioms_01_535_avoid_parentheses.k                  1 5                            5 1                                                                              
 ❌ FAIL   idioms_01_549_alphabetic_comparison.k                                             1                                                                                
 ❌ FAIL   idioms_01_556_all_indices.k                                                       0 1 2 3                                                                          
 ✅ PASS   idioms_01_559_first_marker.k                       2                              2                                                                                
 ❌ FAIL   idioms_01_561_numeric_code.k                                                      32 97 65 48                                                                      
-❌ FAIL   idioms_01_566_zero_boolean.k                                                      0 0 0 0 0 0 0 0 0 0 0                                                            
+✅ PASS   idioms_01_566_zero_boolean.k                       0 0 0 0 0 0 0 0 0 0 0          0 0 0 0 0 0 0 0 0 0 0                                                            
 ❌ FAIL   idioms_01_569_change_to_one.k                                                     10 1 7 1 1.0                                                                     
 ❌ FAIL   idioms_01_570_implies.k                                                           1 0 1 1                                                                          
-❌ FAIL   idioms_01_571_xbutnoty.k                                                          0 1 0 0                                                                          
+✅ PASS   idioms_01_571_xbutnoty.k                           0 1 0 0                        0 1 0 0                                                                          
 ❌ FAIL   idioms_01_573_exclusive_or.k                                                      0 1 1 0                                                                          
 ✅ PASS   idioms_01_575_kronecker_delta.k                    1 0 0 1                        1 0 0 1                                                                          
 ❌ FAIL   idioms_01_591_reshape_2column.k                    ()                             ("ab";"cd";"ef";"gh")          Compact representation                            
@@ -317,7 +352,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   idioms_01_616_scalar_from_vector.k                 8                              8                                                                                
 ✅ PASS   idioms_01_622_retain_marked.k                      3 0 15 1 0                     3 0 15 1 0                                                                       
 ✅ PASS   idioms_01_624_zero_array.k                         (0 0 0;0 0 0)                  (0 0 0;0 0 0)                  Compact representation                            
-❌ FAIL   idioms_01_70_remove_duplicates.k                                                  ("to";"be";"or";"not")         Compact representation                            
+✅ PASS   idioms_01_70_remove_duplicates.k                   ("to";"be";"or";"not")         ("to";"be";"or";"not")         Compact representation                            
 ✅ PASS   idioms_01_78_eval_number.k                         1998 51                        1998 51                                                                          
 ✅ PASS   idioms_01_84_scalar_boolean.k                      157                            157                                                                              
 ❌ FAIL   idioms_01_88_name_variable.k                                                      (0 1 2;3 4 5)                  Compact representation                            
@@ -794,10 +829,6 @@ File: idioms_01_178_first_occurrence.k
 K3Sharp: !0
 k.exe:   12
 
-File: idioms_01_232_is_row_in.k
-K3Sharp: 
-k.exe:   1
-
 File: idioms_01_357_match.k
 K3Sharp: 
 k.exe:   1
@@ -810,10 +841,6 @@ File: idioms_01_434_replace_first.k
 K3Sharp: 
 k.exe:   "tbbccdefcdab"
 
-File: idioms_01_449_limit_between.k
-K3Sharp: 
-k.exe:   (58 30 37 70 39 70;60 30 45 70 70 35;49 70 70 70 30 30;46 61 30 51 30 34;31 51 30 35 30 70)
-
 File: idioms_01_495_indices_occurrences.k
 K3Sharp: ()
 k.exe:   0 2 5 7
@@ -825,10 +852,6 @@ k.exe:   "oh no stop it you will"
 File: idioms_01_504_replace_satisfying.k
 K3Sharp: 
 k.exe:   " bcd f  i "
-
-File: idioms_01_516_multiply_columns.k
-K3Sharp: 
-k.exe:   (10 20 30 40 50 60;700 800 900 1000 1100 1200)
 
 File: idioms_01_535_avoid_parentheses.k
 K3Sharp: 1 5
@@ -846,10 +869,6 @@ File: idioms_01_561_numeric_code.k
 K3Sharp: 
 k.exe:   32 97 65 48
 
-File: idioms_01_566_zero_boolean.k
-K3Sharp: 
-k.exe:   0 0 0 0 0 0 0 0 0 0 0
-
 File: idioms_01_569_change_to_one.k
 K3Sharp: 
 k.exe:   10 1 7 1 1.0
@@ -858,19 +877,38 @@ File: idioms_01_570_implies.k
 K3Sharp: 
 k.exe:   1 0 1 1
 
-File: idioms_01_571_xbutnoty.k
-K3Sharp: 
-k.exe:   0 1 0 0
-
 File: idioms_01_573_exclusive_or.k
 K3Sharp: 
 k.exe:   0 1 1 0
 
-... and 12 more failed tests
+File: idioms_01_591_reshape_2column.k
+K3Sharp: ()
+k.exe:   ("ab";"cd";"ef";"gh")
+
+File: idioms_01_88_name_variable.k
+K3Sharp: 
+k.exe:   (0 1 2;3 4 5)
+
+File: idioms_01_96_conditional_execution.k
+K3Sharp: 
+k.exe:   0 15
+
+File: ktree_enumerate_absolute_path.k
+K3Sharp: `keyA`keyB
+k.exe:   `keyA `keyB
+
+File: ktree_enumerate_relative_name.k
+K3Sharp: `keyA`keyB
+k.exe:   `keyA `keyB
+
+... and 6 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------
 File: ffi_assembly_load.k
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+File: ffi_complete_workflow.k
 Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
 
 File: ffi_constructor.k
@@ -900,8 +938,39 @@ Input: // Test basic FFI functionality
 "System.Private.CoreLib" 2: `System.String
 Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
 
+Test: ffi_complete_workflow.k
+Input: // Complete FFI Workflow Test
+// This test covers the full FFI functionality from assembly loading to method invocation
+
+// Step 1: Load .NET assembly with Complex type
+complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.19\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
+
+// Step 2: Create constructor function
+complex_new:complex[`constructor]
+
+// Step 3: Create object instance using constructor
+c1:complex_new[2;3]
+
+// Step 4: Call instance method (Abs - magnitude)
+magnitude: c1[`Abs][]
+
+// Step 5: Call property getter methods (not working)
+// real: c1[`get_Real][]
+// imag: c1[`get_Imaginary][]
+
+// Step 6: Call static method (Conjugate) (not working)
+conj_func: ._dotnet.System.Numerics.Complex.Conjugate
+//conj_result: conj_func[c1]
+
+// Step 7: Display object information
+.((`real;c1[`Real]);(`imag;c1[`Imaginary]);(`magnitude;magnitude);(`instance;!c1);(`type;!complex))
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
 Test: ffi_constructor.k
-Input: stringType: "System.Private.CoreLib" 2: `System.String ; stringType
+Input: complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.19\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
+complex_new:complex[`constructor]
+c1:complex_new[2;3]
+.((`real;c1[`Real]);(`imag;c1[`Imaginary]);(`instance;!c1);(`type;!complex))
 Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
 
 Test: ffi_dispose.k
@@ -920,7 +989,7 @@ Input: str: "hello" _hint `object; str . ToUpper
 Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
 
 Test: ffi_simple_assembly.k
-Input: "System.Private.CoreLib" 2: `System.String
+Input: str:"System.Private.CoreLib" 2: `System.String; str
 Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
 
 Test: ffi_type_marshalling.k

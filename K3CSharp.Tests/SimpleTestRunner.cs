@@ -790,6 +790,12 @@ namespace K3CSharp.Tests
                 ("dyadic_multiply_bracket.k", "24"),
                 ("dyadic_plus_bracket.k", "8"),
                 
+                // Dyadic dot-apply tests
+                ("dyadic_divide_dot_apply.k", "5"),
+                ("dyadic_minus_dot_apply.k", "7"),
+                ("dyadic_multiply_dot_apply.k", "24"),
+                ("dyadic_plus_dot_apply.k", "8"),
+                
                 // Empty brackets tests
                 ("empty_brackets_dictionary.k", "1 2"),
                 ("empty_brackets_vector.k", "1 2 3 4"),

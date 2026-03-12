@@ -16,7 +16,9 @@ namespace K3CSharp
         FunctionCall,
         Block,
         FormSpecifier,
-        ProjectedFunction
+        ProjectedFunction,
+        ApplyAndAssign,
+        ConditionalStatement
     }
 
     public class ASTNode
@@ -127,6 +129,15 @@ namespace K3CSharp
             return node;
         }
 
+        public static ASTNode MakeApplyAndAssign(string variableName, TokenType op, ASTNode rightArgument)
+        {
+            var node = new ASTNode(ASTNodeType.ApplyAndAssign);
+            node.Value = new SymbolValue(variableName);
+            node.Children.Add(ASTNode.MakeLiteral(new SymbolValue(op.ToString())));
+            node.Children.Add(rightArgument);
+            return node;
+        }
+
         public static ASTNode MakeGlobalAssignment(string variableName, ASTNode value)
         {
             var node = new ASTNode(ASTNodeType.GlobalAssignment);
@@ -166,7 +177,7 @@ namespace K3CSharp
         private bool parsingDotApplyArguments = false; // Track context for dot-apply arguments
 #pragma warning restore CS0414
 
-        public Parser(List<Token> tokens, string sourceText = "")
+        public Parser(List<Token> tokens, string sourceText)
         {
             this.tokens = tokens;
             this.current = 0;
@@ -348,17 +359,8 @@ namespace K3CSharp
 
         private bool IsBinaryOperator(TokenType type)
         {
-            return type == TokenType.PLUS || type == TokenType.MINUS || type == TokenType.MULTIPLY ||
-                   type == TokenType.DIVIDE || type == TokenType.DIV || type == TokenType.DOT || type == TokenType.DOT_APPLY || type == TokenType.MUL || type == TokenType.AND || type == TokenType.OR || type == TokenType.XOR || type == TokenType.ROT || type == TokenType.SHIFT || type == TokenType.MIN || type == TokenType.MAX || type == TokenType.LESS || type == TokenType.GREATER ||
-                   type == TokenType.EQUAL || type == TokenType.MATCH || type == TokenType.IN || type == TokenType.BIN || type == TokenType.BINL || type == TokenType.LIN ||
-                   type == TokenType.DV || type == TokenType.DI || type == TokenType.VS || type == TokenType.SV || type == TokenType.SS || type == TokenType.SM || type == TokenType.CI || type == TokenType.IC ||
-                   type == TokenType.GETENV || type == TokenType.SETENV || type == TokenType.SIZE ||
-                   type == TokenType.POWER || type == TokenType.MODULUS || type == TokenType.JOIN ||
-                   type == TokenType.COLON || type == TokenType.HASH || type == TokenType.UNDERSCORE || type == TokenType.QUESTION ||
-                   type == TokenType.DOLLAR || type == TokenType.DRAW || type == TokenType.TYPE || type == TokenType.STRING_REPRESENTATION ||
-                   type == TokenType.IO_VERB_0 || type == TokenType.IO_VERB_1 || type == TokenType.IO_VERB_2 || type == TokenType.IO_VERB_3 ||
-                   type == TokenType.IO_VERB_6 || type == TokenType.IO_VERB_7 || type == TokenType.IO_VERB_8 || type == TokenType.IO_VERB_9 ||
-                   type == TokenType.LSQ || type == TokenType.APPLY || type == TokenType.DOT_APPLY;
+            var verb = VerbRegistry.GetVerb(type);
+            return verb != null && verb.Type == VerbType.Operator;
         }
 
         private bool IsAdverbToken(TokenType type)
@@ -457,6 +459,21 @@ namespace K3CSharp
                 // Parse bracket arguments with proper semicolon separation
                 // ParseBracketContentsAsCommaEnlisted handles ']' consumption internally
                 var argsExpression = ParseBracketContentsAsCommaEnlisted();
+
+                // Special case: if the result is a unary operator (like _sqrt), treat brackets as grouping
+                // So _sqrt[3] becomes _sqrt 3, not _sqrt @ [3]
+                if (result != null && result.Type == ASTNodeType.BinaryOp && result.Value is SymbolValue opSymbol && 
+                    opSymbol.Value.ToString().StartsWith("_") && result.Children.Count == 1)
+                {
+                    // This is a unary operator with brackets - treat as grouping
+                    // Replace the unary operator's child with the bracket contents
+                    if (argsExpression != null)
+                    {
+                        result.Children[0] = argsExpression;
+                    }
+                    // Don't consume more brackets - break the loop
+                    break;
+                }
 
                 // Check if this is a control flow verb function call
                 if (result != null && result.Type == ASTNodeType.Variable)
@@ -732,6 +749,12 @@ namespace K3CSharp
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("+"));
                     }
+                    else if (!IsAtEnd() && CurrentToken().Type == TokenType.DOT_APPLY)
+                    {
+                        // This is a dyadic operator with dot-apply (e.g., + . (3; 5))
+                        // Treat it as a dyadic operator symbol
+                        result = ASTNode.MakeLiteral(new SymbolValue("+"));
+                    }
                     else
                     {
                         // Check if this is a standalone plus operator at the end of an expression
@@ -775,6 +798,12 @@ namespace K3CSharp
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("-"));
                     }
+                    else if (!IsAtEnd() && CurrentToken().Type == TokenType.DOT_APPLY)
+                    {
+                        // This is a dyadic operator with dot-apply (e.g., - . (10; 3))
+                        // Treat it as a dyadic operator symbol
+                        result = ASTNode.MakeLiteral(new SymbolValue("-"));
+                    }
                     else
                     {
                         // This is unary minus
@@ -805,6 +834,12 @@ namespace K3CSharp
                                       CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
                     {
                         // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("%"));
+                    }
+                    else if (!IsAtEnd() && CurrentToken().Type == TokenType.DOT_APPLY)
+                    {
+                        // This is a dyadic operator with dot-apply (e.g., % . (20; 4))
+                        // Treat it as a dyadic operator symbol
                         result = ASTNode.MakeLiteral(new SymbolValue("%"));
                     }
                     else
@@ -845,6 +880,12 @@ namespace K3CSharp
                                       CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
                     {
                         // This is a verb symbol for an adverb operation
+                        result = ASTNode.MakeLiteral(new SymbolValue("*"));
+                    }
+                    else if (!IsAtEnd() && CurrentToken().Type == TokenType.DOT_APPLY)
+                    {
+                        // This is a dyadic operator with dot-apply (e.g., * . (4; 6))
+                        // Treat it as a dyadic operator symbol
                         result = ASTNode.MakeLiteral(new SymbolValue("*"));
                     }
                     else
@@ -1070,18 +1111,6 @@ namespace K3CSharp
                     // Regular identifier
                     result = ASTNode.MakeVariable(identifier);
                 }
-            }
-            else if (Match(TokenType.DO))
-            {
-                result = ASTNode.MakeVariable("do");
-            }
-            else if (Match(TokenType.WHILE))
-            {
-                result = ASTNode.MakeVariable("while");
-            }
-            else if (Match(TokenType.IF_FUNC))
-            {
-                result = ASTNode.MakeVariable("if");
             }
             else if (Match(TokenType.COLON))
             {
@@ -2183,6 +2212,13 @@ namespace K3CSharp
                 // End of input - return null result
                 return null;
             }
+            else if (Match(TokenType.LEFT_BRACKET))
+            {
+                // Handle standalone brackets - this shouldn't normally happen in valid K code
+                // but we'll parse it to avoid crashing
+                var bracketContents = ParseBracketContentsAsCommaEnlisted();
+                return bracketContents;
+            }
             else
             {
                 var currentToken = CurrentToken();
@@ -2337,6 +2373,43 @@ namespace K3CSharp
                     return ASTNode.MakeGlobalAssignment(variableName, right);
                 }
                 return ASTNode.MakeBinaryOp(TokenType.GLOBAL_ASSIGNMENT, left, right);
+            }
+
+            // Check for "apply and assign" pattern: variable+: value
+            // This happens when we have: variable operator: value
+            // This must be checked BEFORE binary operator parsing to avoid consuming the operator token
+            if (!IsAtEnd() && left.Type == ASTNodeType.Variable)
+            {
+                // Check if we have the pattern: variable+: value
+                // Look ahead to see if there's an operator followed by colon
+                var nextToken = PeekNext();
+                
+                if (nextToken != null && IsBinaryOperator(nextToken.Type))
+                {
+                    // Check if the token after the operator is a colon
+                    var tokenAfterOperator = PeekToken(2); // Look two tokens ahead
+                    
+                    if (tokenAfterOperator != null && tokenAfterOperator.Type == TokenType.COLON)
+                    {
+                        // This is the "apply and assign" pattern
+                        var variableName = left.Value is SymbolValue varSym ? varSym.Value : left.Value?.ToString() ?? "";
+                        var operatorToken = nextToken.Type;
+                        
+                        // Skip the operator and colon
+                        Advance(); // Skip the operator token
+                        Advance(); // Skip the colon token
+                        
+                        // Parse the right argument after the colon
+                        var rightArgument = ParseBracketArgument();
+                        if (rightArgument == null)
+                        {
+                            throw new Exception("Expected expression after operator in apply and assign");
+                        }
+                        
+                        // Create the apply and assign node
+                        return ASTNode.MakeApplyAndAssign(variableName, operatorToken, rightArgument);
+                    }
+                }
             }
 
             // Handle binary operators but stop at semicolon or right bracket
@@ -2667,6 +2740,13 @@ namespace K3CSharp
             return tokens[nextIndex];
         }
 
+        private Token PeekToken(int offset)
+        {
+            var targetIndex = current + offset;
+            if (targetIndex >= tokens.Count) return new Token(TokenType.EOF, "", 0);
+            return tokens[targetIndex];
+        }
+
         private bool IsScalar(ASTNode node)
         {
             return node.Type == ASTNodeType.Literal && 
@@ -2764,6 +2844,16 @@ namespace K3CSharp
         
         private ASTNode? ParseExpressionWithoutSemicolons()
         {
+            // Check for conditional statements at the start of an expression
+            if (!IsAtEnd())
+            {
+                var currentToken = CurrentToken();
+                if (currentToken.Type == TokenType.DO || currentToken.Type == TokenType.IF_FUNC || currentToken.Type == TokenType.WHILE)
+                {
+                    return ParseConditionalStatement(currentToken.Type);
+                }
+            }
+            
             // Check if we're at the start of an expression (no previous token or previous was a delimiter)
             var prevToken = current > 0 ? tokens[current - 1] : null;
             bool isAtExpressionStart = (prevToken == null || 
@@ -2811,7 +2901,7 @@ namespace K3CSharp
                         "APPLY" => "@",
                         _ => opToken.Lexeme
                     };
-                    left = ASTNode.MakeVariable(opSymbol);
+                    left = ASTNode.MakeLiteral(new SymbolValue(opSymbol));
                     Match(opToken.Type); // Consume the operator token
                     
                     if (left != null)
@@ -3005,7 +3095,8 @@ namespace K3CSharp
                    Match(TokenType.DOLLAR) || Match(TokenType.DRAW) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
                    Match(TokenType.IO_VERB_0) || Match(TokenType.IO_VERB_1) || Match(TokenType.IO_VERB_2) || Match(TokenType.IO_VERB_3) ||
                    Match(TokenType.IO_VERB_6) || Match(TokenType.IO_VERB_7) || Match(TokenType.IO_VERB_8) || Match(TokenType.IO_VERB_9) ||
-                   Match(TokenType.LSQ) || Match(TokenType.APPLY) || Match(TokenType.DOT_APPLY))
+                   Match(TokenType.LSQ) || Match(TokenType.APPLY) || Match(TokenType.DOT_APPLY) ||
+                   Match(TokenType.DO) || Match(TokenType.WHILE) || Match(TokenType.IF_FUNC))
             {
                 var op = PreviousToken().Type;
                 
@@ -3264,76 +3355,13 @@ namespace K3CSharp
             if (left == null && !IsAtEnd() && CurrentToken().Type == TokenType.SEMICOLON)
             {
                 // Empty first element becomes null in K semicolon-separated lists
-                left = ASTNode.MakeLiteral(new NullValue());
-            }
-            
-            if (left == null) return null;
-            
-            // Handle binary operators with Long Right Scope (LRS)
-            if (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
-                   Match(TokenType.DIVIDE) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) || 
-                   Match(TokenType.EQUAL) || Match(TokenType.IN) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
-                   Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || 
-                   Match(TokenType.DOLLAR) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
-                   Match(TokenType.AND) || Match(TokenType.OR) || Match(TokenType.XOR) || Match(TokenType.ROT) || Match(TokenType.SHIFT) ||
-                   Match(TokenType.APPLY))
-            {
-                var op = PreviousToken().Type;
-                
-                // Check if this is followed by an adverb (infix adverb)
-                if (IsAdverbToken(CurrentToken().Type))
-                {
-                    var adverbToken = CurrentToken();
-                    Advance(); // Consume the adverb token
-                    var adverbType = adverbToken.Type.ToString().Replace("TokenType.", "");
-                    
-                    // Convert the binary operator to a verb symbol
-                    var verbName = op.ToString() switch
-                    {
-                        "PLUS" => "+",
-                        "MINUS" => "-",
-                        "MULTIPLY" => "*",
-                        "DIVIDE" => "%",
-                        "MIN" => "&",
-                        "MAX" => "|",
-                        "POWER" => "^",
-                        "MODULUS" => "!",
-                        "JOIN" => ",",
-                        "HASH" => "#",
-                        "UNDERSCORE" => "_",
-                        "BIN" => "_bin",
-                        "BINL" => "_binl",
-                        "LIN" => "_lin",
-                        "TYPE" => "TYPE",
-                        "APPLY" => "@",
-                        _ => op.ToString()
-                    };
-                    var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
-                    
-                    // Parse the right side of the adverb with LRS
-                    var rightSide = ParseExpressionInsideDelimiters();
-                    
-                    // Create the correct adverb structure: ADVERB(verb, left, right)
-                    var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
-                    adverbNode.Value = new SymbolValue(adverbType);
-                    adverbNode.Children.Add(verbNode);
-                    adverbNode.Children.Add(left);
-                    if (rightSide != null) adverbNode.Children.Add(rightSide);
-                    
-                    return adverbNode;
-                }
-                else
-                {
-                    // Regular binary operation with Long Right Scope
-                    var right = ParseExpressionInsideDelimiters();
-                    if (right != null) return ASTNode.MakeBinaryOp(op, left, right); return left;
-                }
+                // Just continue to semicolon handling
             }
             
             // Handle semicolon-separated expressions - inside delimiters, create mixed lists
             if (Match(TokenType.SEMICOLON))
             {
-                return ParseSemicolonList(left, true); // Inside delimiters = true
+                return ParseSemicolonList(left ?? ASTNode.MakeLiteral(new NullValue()), true); // Inside delimiters = true
             }
             
             return left;
@@ -3363,7 +3391,8 @@ namespace K3CSharp
                        Match(TokenType.EQUAL) || Match(TokenType.IN) || Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
                        Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) || Match(TokenType.DOLLAR) || Match(TokenType.APPLY) || Match(TokenType.DOT_APPLY) ||
                        Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
-                       Match(TokenType.AND) || Match(TokenType.OR) || Match(TokenType.XOR) || Match(TokenType.ROT) || Match(TokenType.SHIFT))
+                       Match(TokenType.AND) || Match(TokenType.OR) || Match(TokenType.XOR) || Match(TokenType.ROT) || Match(TokenType.SHIFT) ||
+                       Match(TokenType.DO) || Match(TokenType.WHILE) || Match(TokenType.IF_FUNC))
                 {
                     var op = PreviousToken().Type;
                     
@@ -3500,9 +3529,6 @@ namespace K3CSharp
         private bool IsIdentifierToken(TokenType type)
         {
             return type == TokenType.IDENTIFIER || 
-                   type == TokenType.DO || 
-                   type == TokenType.WHILE || 
-                   type == TokenType.IF_FUNC ||
                    type == TokenType.DRAW ||
                    type == TokenType.GETENV ||
                    type == TokenType.SETENV ||
@@ -3527,17 +3553,9 @@ namespace K3CSharp
 
         private bool IsUnaryOperator(TokenType type)
         {
-            // Only operators that are commonly used as unary in K
-            return type == TokenType.MINUS || 
-                   type == TokenType.NEGATE ||
-                   type == TokenType.DOLLAR ||
-                   type == TokenType.DIVIDE ||  // % for reciprocal
-                   type == TokenType.MULTIPLY || // * for first
-                   type == TokenType.TYPE ||
-                   type == TokenType.STRING_REPRESENTATION ||
-                   type == TokenType.HASH ||
-                   type == TokenType.UNDERSCORE ||
-                   type == TokenType.QUESTION;
+            var verb = VerbRegistry.GetVerb(type);
+            return verb != null && verb.Type == VerbType.Operator && 
+                   verb.SupportedArities.Contains(1);
         }
 
         private bool IsAtEnd()
@@ -3639,6 +3657,56 @@ namespace K3CSharp
             }
             
             return parameters;
+        }
+        
+        private ASTNode ParseConditionalStatement(TokenType statementType)
+        {
+            // Parse conditional statements: do[count; expressions], if[condition; expressions], while[condition; expressions]
+            // These are "true statements" with variable argument counts
+            
+            // Consume the statement keyword token
+            var keywordToken = CurrentToken();
+            Advance();
+            
+            // Expect LEFT_BRACKET after the keyword
+            if (!Match(TokenType.LEFT_BRACKET))
+            {
+                throw new Exception($"Expected '[' after {keywordToken.Lexeme}");
+            }
+            
+            // Parse the arguments inside the brackets
+            var arguments = new List<ASTNode>();
+            
+            // Parse first argument using ParseBracketArgument (doesn't stop at semicolons)
+            var firstArg = ParseBracketArgument();
+            if (firstArg == null)
+            {
+                throw new Exception($"Expected first argument after {keywordToken.Lexeme}[");
+            }
+            arguments.Add(firstArg);
+            
+            // Handle semicolon-separated arguments
+            while (Match(TokenType.SEMICOLON))
+            {
+                var nextArg = ParseBracketArgument();
+                if (nextArg != null)
+                {
+                    arguments.Add(nextArg);
+                }
+            }
+            
+            // Expect RIGHT_BRACKET to close the statement
+            if (!Match(TokenType.RIGHT_BRACKET))
+            {
+                throw new Exception($"Expected ']' to close {keywordToken.Lexeme} statement");
+            }
+            
+            // Create the conditional statement AST node
+            var node = new ASTNode(ASTNodeType.ConditionalStatement);
+            node.Value = new SymbolValue(keywordToken.Lexeme.ToLower());
+            node.Children.AddRange(arguments);
+            
+            return node;
         }
     }
 }

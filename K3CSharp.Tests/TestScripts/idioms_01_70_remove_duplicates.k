@@ -1,7 +1,2 @@
-x:("to"
-"be"
-"or"
-"not"
-"to"
-"be")
+x:("to";"be";"or";"not";"to";"be")
 ?x

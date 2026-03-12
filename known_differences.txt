@@ -153,6 +153,7 @@ serialization_bd_list_with_symbol_vectors :: regex:colA\\\\000\\\\000\\\\000\\\\
 float_exponential_large :: regex:15:015 :: Allow k/e difference in mantissa width
 float_exponential_small :: regex:20:020 :: Allow k/e difference in mantissa width
 dyadic_divide_bracket :: regex:5.0:5 :: Smart division
+dyadic_divide_dot_apply :: regex:5.0:5 :: Smart division
 k_tree_dictionary_assignment :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 format_long_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 format_int_vector :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
@@ -208,3 +209,10 @@ test_show_dict :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 test_simple_dict_create :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 test_specific_attr :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 test_specific_attr_fixed :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+dyadic_divide_atom_vector :: regex:3.0:3 :: smart division
+dyadic_divide_vector_atom :: regex:4.0:4 :: smart division
+dyadic_divide_vector_vector :: regex:2.0:2 :: smart division
+dyadic_power_atom_vector :: regex:8.0:8 :: smart exponentiation
+dyadic_power_vector_atom :: regex:16.0:16 :: smart exponentiation
+dyadic_power_vector_vector :: regex:4.0:4 :: smart exponentiation
+apply_assign_divide :: regex:4.0:4 :: smart division
