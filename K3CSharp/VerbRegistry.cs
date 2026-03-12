@@ -22,9 +22,21 @@ namespace K3CSharp
         public string? Description { get; set; }
     }
 
+    /// <summary>
+    /// Centralized registry for all verb metadata and implementations
+    /// </summary>
     public static class VerbRegistry
     {
         private static readonly Dictionary<string, VerbInfo> verbs = new Dictionary<string, VerbInfo>();
+        
+        // Performance optimization: caching for frequently accessed operations
+        private static readonly Dictionary<string, VerbType> verbTypeCache = new Dictionary<string, VerbType>();
+        private static readonly Dictionary<string, bool> systemVariableCache = new Dictionary<string, bool>();
+        private static readonly Dictionary<string, int[]> supportedAritiesCache = new Dictionary<string, int[]>();
+        
+        // Performance monitoring
+        private static int lookupCount = 0;
+        private static int cacheHits = 0;
 
         static VerbRegistry()
         {
@@ -47,7 +59,88 @@ namespace K3CSharp
 
         public static VerbInfo? GetVerb(string name)
         {
+            lookupCount++;
             return verbs.TryGetValue(name, out var verbInfo) ? verbInfo : null;
+        }
+
+        /// <summary>
+        /// Get verb type with caching optimization
+        /// </summary>
+        public static VerbType GetVerbType(string verbName)
+        {
+            if (verbTypeCache.TryGetValue(verbName, out var cachedType))
+            {
+                cacheHits++;
+                return cachedType;
+            }
+            
+            var verb = GetVerb(verbName);
+            var type = verb?.Type ?? VerbType.Function;
+            verbTypeCache[verbName] = type;
+            return type;
+        }
+
+        /// <summary>
+        /// Check if verb is system variable with caching optimization
+        /// </summary>
+        public static bool IsSystemVariable(string verbName)
+        {
+            if (systemVariableCache.TryGetValue(verbName, out var cachedResult))
+            {
+                cacheHits++;
+                return cachedResult;
+            }
+            
+            var verb = GetVerb(verbName);
+            var isSystemVar = verb?.Type == VerbType.SystemVariable;
+            systemVariableCache[verbName] = isSystemVar;
+            return isSystemVar;
+        }
+
+        /// <summary>
+        /// Get supported arities with caching optimization
+        /// </summary>
+        public static int[] GetSupportedArities(string verbName)
+        {
+            if (supportedAritiesCache.TryGetValue(verbName, out var cachedArities))
+            {
+                cacheHits++;
+                return cachedArities;
+            }
+            
+            var verb = GetVerb(verbName);
+            var arities = verb?.SupportedArities ?? new int[0];
+            supportedAritiesCache[verbName] = arities;
+            return arities;
+        }
+
+        /// <summary>
+        /// Clear all caches (useful for testing or memory management)
+        /// </summary>
+        public static void ClearCaches()
+        {
+            verbTypeCache.Clear();
+            systemVariableCache.Clear();
+            supportedAritiesCache.Clear();
+            lookupCount = 0;
+            cacheHits = 0;
+        }
+
+        /// <summary>
+        /// Get cache performance statistics
+        /// </summary>
+        public static Dictionary<string, object> GetCacheStats()
+        {
+            var hitRate = lookupCount > 0 ? (double)cacheHits / lookupCount * 100 : 0;
+            return new Dictionary<string, object>
+            {
+                ["LookupCount"] = lookupCount,
+                ["CacheHits"] = cacheHits,
+                ["HitRate"] = $"{hitRate:F2}%",
+                ["VerbTypeCacheSize"] = verbTypeCache.Count,
+                ["SystemVariableCacheSize"] = systemVariableCache.Count,
+                ["SupportedAritiesCacheSize"] = supportedAritiesCache.Count
+            };
         }
 
         public static IEnumerable<VerbInfo> GetAllVerbs()
@@ -489,12 +582,21 @@ namespace K3CSharp
         }
 
         /// <summary>
-        /// Get all supported arities for an operator
+        /// Validate verb arity and provide helpful error message
         /// </summary>
-        public static int[] GetSupportedArities(string verbName)
+        public static string ValidateVerbArity(string verbName, int arity)
         {
             var verb = GetVerb(verbName);
-            return verb?.SupportedArities ?? new int[0];
+            if (verb == null)
+                return $"Unknown verb: {verbName}";
+            
+            if (!verb.SupportedArities.Contains(arity))
+            {
+                var aritiesStr = string.Join(", ", verb.SupportedArities);
+                return $"Verb '{verbName}' does not support {arity} argument{(arity == 1 ? "" : "s")}. Supported arities: [{aritiesStr}]";
+            }
+            
+            return string.Empty; // No error
         }
 
         /// <summary>
@@ -503,24 +605,6 @@ namespace K3CSharp
         public static bool HasVerb(string verbName)
         {
             return verbs.ContainsKey(verbName);
-        }
-
-        /// <summary>
-        /// Get verb type with performance optimization
-        /// </summary>
-        public static VerbType GetVerbType(string verbName)
-        {
-            var verb = GetVerb(verbName);
-            return verb?.Type ?? VerbType.Function;
-        }
-
-        /// <summary>
-        /// Check if verb is a system variable
-        /// </summary>
-        public static bool IsSystemVariable(string verbName)
-        {
-            var verb = GetVerb(verbName);
-            return verb?.Type == VerbType.SystemVariable;
         }
 
         /// <summary>
@@ -541,21 +625,160 @@ namespace K3CSharp
         }
 
         /// <summary>
-        /// Validate verb arity and provide helpful error message
+        /// Check if a verb is a projected function (adverb-modified)
         /// </summary>
-        public static string ValidateVerbArity(string verbName, int arity)
+        public static bool IsProjectedFunction(string verbName)
         {
             var verb = GetVerb(verbName);
-            if (verb == null)
-                return $"Unknown verb: {verbName}";
-            
-            if (!verb.SupportedArities.Contains(arity))
+            return verb?.Type == VerbType.ProjectedFunction;
+        }
+
+        /// <summary>
+        /// Get the remaining required arguments for a projected function
+        /// </summary>
+        public static int GetRemainingArity(string verbName)
+        {
+            var verb = GetVerb(verbName);
+            if (verb?.Type == VerbType.ProjectedFunction)
             {
-                var aritiesStr = string.Join(", ", verb.SupportedArities);
-                return $"Verb '{verbName}' does not support {arity} argument{(arity == 1 ? "" : "s")}. Supported arities: [{aritiesStr}]";
+                // For projected functions, return the remaining arity
+                // This is a simplified implementation - in a full version, we'd track projection state
+                return verb.SupportedArities.Length > 0 ? verb.SupportedArities.Max() - 1 : 0;
+            }
+            return verb?.SupportedArities.Length > 0 ? verb.SupportedArities.Max() : 0;
+        }
+
+        /// <summary>
+        /// Register a new projected function dynamically
+        /// </summary>
+        public static void RegisterProjectedFunction(string name, int[] supportedArities, string description)
+        {
+            var projectedVerb = new VerbInfo
+            {
+                Name = name,
+                SupportedArities = supportedArities,
+                Type = VerbType.ProjectedFunction,
+                Description = description
+            };
+            
+            verbs[name] = projectedVerb;
+        }
+
+        /// <summary>
+        /// Get verbs that support higher-order operations (adverbs)
+        /// </summary>
+        public static IEnumerable<string> GetHigherOrderVerbs()
+        {
+            return verbs.Where(kvp => 
+                kvp.Value.Type == VerbType.Operator && 
+                kvp.Value.SupportedArities.Contains(1))
+                .Select(kvp => kvp.Key);
+        }
+
+        /// <summary>
+        /// Check if a verb can be used with adverbs
+        /// </summary>
+        public static bool SupportsAdverbs(string verbName)
+        {
+            var verb = GetVerb(verbName);
+            return verb != null && 
+                   (verb.Type == VerbType.Operator || verb.Type == VerbType.Function) &&
+                   verb.SupportedArities.Contains(1);
+        }
+
+        /// <summary>
+        /// Get performance statistics for the VerbRegistry
+        /// </summary>
+        public static Dictionary<string, object> GetPerformanceStats()
+        {
+            var cacheStats = GetCacheStats();
+            return new Dictionary<string, object>
+            {
+                ["TotalVerbs"] = verbs.Count,
+                ["Operators"] = verbs.Count(kvp => kvp.Value.Type == VerbType.Operator),
+                ["SystemVariables"] = verbs.Count(kvp => kvp.Value.Type == VerbType.SystemVariable),
+                ["Functions"] = verbs.Count(kvp => kvp.Value.Type == VerbType.Function),
+                ["ProjectedFunctions"] = verbs.Count(kvp => kvp.Value.Type == VerbType.ProjectedFunction),
+                ["VerbsWithImplementations"] = verbs.Count(kvp => kvp.Value.Implementations != null),
+                ["MultiArities"] = verbs.Count(kvp => kvp.Value.SupportedArities.Length > 1)
+            }.Union(cacheStats).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        }
+
+        /// <summary>
+        /// Export verb registry information for debugging/documentation
+        /// </summary>
+        public static string ExportVerbInfo()
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("=== Verb Registry Information ===");
+            sb.AppendLine($"Total verbs: {verbs.Count}");
+            sb.AppendLine();
+            
+            foreach (var type in Enum.GetValues<VerbType>())
+            {
+                var verbsByType = verbs.Where(kvp => kvp.Value.Type == type).OrderBy(kvp => kvp.Key);
+                sb.AppendLine($"{type} ({verbsByType.Count()}):");
+                
+                foreach (var kvp in verbsByType)
+                {
+                    var verb = kvp.Value;
+                    var arities = string.Join(",", verb.SupportedArities);
+                    var hasImpl = verb.Implementations != null ? "✓" : "✗";
+                    sb.AppendLine($"  {verb.Name} [{arities}] {hasImpl} - {verb.Description}");
+                }
+                sb.AppendLine();
             }
             
-            return string.Empty; // No error
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Validate the integrity of the VerbRegistry
+        /// </summary>
+        public static List<string> ValidateRegistry()
+        {
+            var issues = new List<string>();
+            
+            foreach (var kvp in verbs)
+            {
+                var verb = kvp.Value;
+                
+                // Check for empty name
+                if (string.IsNullOrEmpty(verb.Name))
+                {
+                    issues.Add("Verb with empty name found");
+                }
+                
+                // Check for empty supported arities
+                if (verb.SupportedArities.Length == 0)
+                {
+                    issues.Add($"Verb '{verb.Name}' has no supported arities");
+                }
+                
+                // Check for invalid arities (negative or zero)
+                if (verb.SupportedArities.Any(a => a <= 0))
+                {
+                    issues.Add($"Verb '{verb.Name}' has invalid arities: [{string.Join(",", verb.SupportedArities)}]");
+                }
+                
+                // Check for duplicate arities
+                var uniqueArities = verb.SupportedArities.Distinct().ToArray();
+                if (uniqueArities.Length != verb.SupportedArities.Length)
+                {
+                    issues.Add($"Verb '{verb.Name}' has duplicate arities");
+                }
+                
+                // Check if implementations array matches supported arities
+                if (verb.Implementations != null)
+                {
+                    if (verb.Implementations.Length < verb.SupportedArities.Max())
+                    {
+                        issues.Add($"Verb '{verb.Name}' implementations array is too small for max arity");
+                    }
+                }
+            }
+            
+            return issues;
         }
     }
 }

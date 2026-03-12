@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-12 03:22:53
+Generated: 2026-03-12 04:05:59
 
 SUMMARY:
 --------
 Total Tests:     802
-✅ Matched:       772
-❌ Differed:      22
+✅ Matched:       771
+❌ Differed:      23
 ⚠️  Skipped:       0
 💥 Errors:        8
-Success Rate:    96.3%
+Success Rate:    96.1%
 
 DETAILED RESULTS:
 -----------------
@@ -390,7 +390,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   join_each_left.k                                   (1 4 5 6;2 4 5 6;3 4 5 6)      (1 4 5 6;2 4 5 6;3 4 5 6)      Compact representation                            
 ✅ PASS   join_operator.k                                    3 5                            3 5                                                                              
 ✅ PASS   k_tree_assignment_absolute_foo.k                                                                                 Compact representation                            
-✅ PASS   k_tree_current_branch.k                            `.k                            `.k                            Compact representation                            
+❌ FAIL   k_tree_current_branch.k                            12                             `.k                            Compact representation                            
 ✅ PASS   k_tree_dictionary_assignment.k                     .((`a;1;);(`b;2;);(`c;3;))     .((`a;1;);(`b;2;);(`c;3;))     Compact representation                            
 ✅ PASS   k_tree_dictionary_indexing.k                       42                             42                             Compact representation                            
 ✅ PASS   k_tree_enumerate.k                                 `k`t                           `k`t                           Always create `t including when running scrip...  
@@ -877,6 +877,10 @@ File: idioms_01_96_conditional_execution.k
 K3Sharp: 
 k.exe:   0 15
 
+File: k_tree_current_branch.k
+K3Sharp: 12
+k.exe:   `.k
+
 File: ktree_enumerate_absolute_path.k
 K3Sharp: `keyA`keyB
 k.exe:   `keyA `keyB
@@ -897,11 +901,7 @@ File: monadic_format_dictionary.k
 K3Sharp: ".((`a;1;);(`b;2;);(`c;3;))"
 k.exe:   ".(..)"
 
-File: test_show_dict.k
-K3Sharp: .((`col01;11 12 13 14 15;.((`format;,`n;);(`name;`ID;)));(`col02;`yellow`white`blue`red`black;.((`format;,`c;);(`name;`Color;)));(`col03;("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`c;);(`name;`Retailer;))))
-k.exe:   .((`col01;11 12 13 14 15;.((`format;,`n;);(`name;`ID;)));(`col02;`yellow `white `blue `red `black;.((`format;,`c;);(`name;`Color;)));(`col03;("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`c;);(`name;`Retailer;))))
-
-... and 2 more failed tests
+... and 3 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------

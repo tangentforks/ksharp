@@ -3377,6 +3377,76 @@ namespace K3CSharp
             
             throw new Exception($"Not a system variable: {variableName}");
         }
+
+        /// <summary>
+        /// Enhanced evaluation for projected functions
+        /// </summary>
+        public K3Value EvaluateProjectedFunction(string functionName, K3Value[] arguments)
+        {
+            var verb = VerbRegistry.GetVerb(functionName);
+            if (verb == null || verb.Type != VerbType.ProjectedFunction)
+            {
+                throw new Exception($"Not a projected function: {functionName}");
+            }
+
+            // Get the remaining arity for the projected function
+            var remainingArity = VerbRegistry.GetRemainingArity(functionName);
+            
+            if (arguments.Length != remainingArity)
+            {
+                var validationError = VerbRegistry.ValidateVerbArity(functionName, arguments.Length);
+                throw new Exception($"Projected function error: {validationError}");
+            }
+
+            // Use the regular evaluation path for projected functions
+            return EvaluateVerb(functionName, arguments);
+        }
+
+        /// <summary>
+        /// Check if a function can be projected with adverbs
+        /// </summary>
+        public bool CanProjectFunction(string functionName)
+        {
+            return VerbRegistry.SupportsAdverbs(functionName);
+        }
+
+        /// <summary>
+        /// Create a projected function from a base verb and adverb
+        /// </summary>
+        public K3Value CreateProjectedFunction(string baseVerb, string adverb, K3Value[] projectedArgs)
+        {
+            var projectedName = $"{baseVerb}_{adverb}";
+            
+            // Register the projected function dynamically
+            var baseVerbInfo = VerbRegistry.GetVerb(baseVerb);
+            if (baseVerbInfo == null)
+            {
+                throw new Exception($"Cannot project unknown verb: {baseVerb}");
+            }
+
+            // Calculate remaining arity
+            var remainingArity = baseVerbInfo.SupportedArities.Max() - projectedArgs.Length;
+            var supportedArities = remainingArity > 0 ? new[] { remainingArity } : new[] { 0 };
+            
+            VerbRegistry.RegisterProjectedFunction(
+                projectedName, 
+                supportedArities, 
+                $"Projected function: {baseVerb} {adverb}"
+            );
+
+            // Create a function value that represents the projection
+            // Store projection info in the RightArgument property for now
+            var projectionInfo = new SymbolValue($"{baseVerb}:{adverb}:{string.Join(",", projectedArgs.Select(a => a.ToString()))}");
+            
+            return new FunctionValue(
+                bodyText: projectedName,
+                parameters: new List<string>(), // Will be filled during evaluation
+                originalSourceText: $"Projected function: {baseVerb} {adverb}"
+            )
+            {
+                RightArgument = projectionInfo
+            };
+        }
     }
     
     // Custom comparer for K3Value to use in HashSet operations
