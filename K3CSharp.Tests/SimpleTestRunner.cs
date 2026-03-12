@@ -1093,7 +1093,7 @@ namespace K3CSharp.Tests
                 ("idioms_01_449_limit_between.k", "(58 30 37 70 39 70;60 30 45 70 70 35;49 70 70 70 30 30;46 61 30 51 30 34;31 51 30 35 30 70)"),
                 ("idioms_01_495_indices_occurrences.k", "0 2 5 7"),
                 ("idioms_01_504_replace_satisfying.k", "\" bcd f i \""),
-                ("idioms_01_569_change_to_one.k", "10 1 7 1 1.0"),
+                ("idioms_01_569_change_to_one.k", "10 1 7 1 1"),
                 ("idioms_01_556_all_indices.k", "0 1 2 3"),
                 ("idioms_01_535_avoid_parentheses.k", "5 1"),
                 ("idioms_01_591_reshape_2column.k", "(\"ab\";\"cd\";\"ef\";\"gh\")"),

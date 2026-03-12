@@ -137,7 +137,7 @@
 ║ math_trig_basic.k                                  │ _sin 0               │ 0.0                  │                      ║
 ║ math_trig_pi.k                                     │ _cos 3.141592653589793 │ -1.0                 │                      ║
 ║ maximum_operator.k                                 │ 3 | 5                │ 5                    │                      ║
-║ minimum_operator.k                                 │ 3 & 5                │ 3                    │                      ║
+║ minimum_operator.k                                 │ 3 & 5                │ Error: Index op...   │ 3                    ║
 ║ mixed_list_with_null.k                             │ (1;_n;`test;42.5)    │ (1;;`test;42.5)      │                      ║
 ║ mixed_vector_empty_position.k                      │ (1;;2)               │ (1;;2)               │                      ║
 ║ mixed_vector_multiple_empty.k                      │ (1;;;3)              │ (1;;;3)              │                      ║
@@ -203,9 +203,9 @@
 ║ dyadic_divide_vector_vector.k                      │ 6 8 10 % 2 4 5       │ 3 2 2                │                      ║
 ║ dyadic_divide_atom_vector.k                        │ 12 % 2 3 4           │ 6 4 3                │                      ║
 ║ dyadic_divide_vector_atom.k                        │ 4 6 8 % 2            │ 2 3 4                │                      ║
-║ dyadic_min_vector_vector.k                         │ 5 8 3 & 2 9 4        │ 2 8 3                │                      ║
-║ dyadic_min_atom_vector.k                           │ 3 & 5 2 8            │ 3 2 3                │                      ║
-║ dyadic_min_vector_atom.k                           │ 5 2 8 & 4            │ 4 2 4                │                      ║
+║ dyadic_min_vector_vector.k                         │ 5 8 3 & 2 9 4        │ 5 5 8 8 8 8 8 8...   │ 2 8 3                ║
+║ dyadic_min_atom_vector.k                           │ 3 & 5 2 8            │ Error: Index op...   │ 3 2 3                ║
+║ dyadic_min_vector_atom.k                           │ 5 2 8 & 4            │ 5 5 5 5              │ 4 2 4                ║
 ║ dyadic_max_vector_vector.k                         │ 5 8 3 | 2 9 4        │ 5 9 4                │                      ║
 ║ dyadic_max_atom_vector.k                           │ 6 | 3 8 2            │ 6 8 6                │                      ║
 ║ dyadic_max_vector_atom.k                           │ 3 8 2 | 5            │ 5 8 5                │                      ║
@@ -746,11 +746,11 @@
 ║ idioms_01_573_exclusive_or.k                       │ x:0 0 1 1            │ 0 1 1 0              │                      ║
 ║ idioms_01_41_indices_ones.k                        │ x:0 0 1 0 1 0 0 0 1 0 │ 2 4 8                │                      ║
 ║ idioms_01_516_multiply_columns.k                   │ x:(1 2 3 4 5 6;7 8 9 10 11 12) │ (10 20 30 40 50...   │                      ║
-║ idioms_01_566_zero_boolean.k                       │ x:0 1 0 1 1 0 0 1 1 1 0 │ 0 0 0 0 0 0 0 0...   │                      ║
+║ idioms_01_566_zero_boolean.k                       │ x:0 1 0 1 1 0 0 1 1 1 0 │ Error: Index op...   │ 0 0 0 0 0 0 0 0...   ║
 ║ idioms_01_624_zero_array.k                         │ x:2 3#99             │ (0 0 0;0 0 0)        │                      ║
 ║ idioms_01_622_retain_marked.k                      │ x:3 7 15 1 292       │ 3 0 15 1 0           │                      ║
 ║ idioms_01_331_identity_max.k                       │ -1e100|-0i           │ -1e+100              │                      ║
-║ idioms_01_337_identity_min.k                       │ 1e100&0i             │ 1e+100               │                      ║
+║ idioms_01_337_identity_min.k                       │ 1e100&0i             │ Error: Cannot a...   │ 1e+100               ║
 ║ idioms_01_357_match.k                              │ x:("abc";`sy;1 3 -7) │ 1                    │                      ║
 ║ idioms_01_328_number_items.k                       │ #"abcd"              │ 4                    │                      ║
 ║ idioms_01_411_number_rows.k                        │ x:2 7#" "            │ 2                    │                      ║
@@ -769,10 +769,10 @@
 ║ idioms_01_434_replace_first.k                      │ x:"abbccdefcdab"     │ (1;"Assignment ...   │ "tbbccdefcdab"       ║
 ║ idioms_01_433_replace_last.k                       │ x:"abbccdefcdab"     │ (1;"Assignment ...   │ "abbccdefcdat"       ║
 ║ idioms_01_406_add_last.k                           │ x:1 2 3 4 5          │ 1 2 3 4 105          │                      ║
-║ idioms_01_449_limit_between.k                      │ x:(58 9 37 84 39 99;60 30 45 97 77 35;49 87 82 79 8 30;46 61 20 51 12 34;31 51 29 35 17 89) // 5 6 _draw 100 │ (58 30 37 70 39...   │                      ║
-║ idioms_01_495_indices_occurrences.k                │ x:"abcdefgab"        │ ()                   │ 0 2 5 7              ║
+║ idioms_01_449_limit_between.k                      │ x:(58 9 37 84 39 99;60 30 45 97 77 35;49 87 82 79 8 30;46 61 20 51 12 34;31 51 29 35 17 89) // 5 6 _draw 100 │ Error: Index op...   │ (58 30 37 70 39...   ║
+║ idioms_01_495_indices_occurrences.k                │ x:"abcdefgab"        │ 0 2 5 7              │                      ║
 ║ idioms_01_504_replace_satisfying.k                 │ x:1 0 0 0 1 0 1 1 0 1 │ (1;"Assignment ...   │ " bcd f i "          ║
-║ idioms_01_569_change_to_one.k                      │ y:10 5 7 12 20.0     │ (10;1;7;1;1.0)       │ 10 1 7 1 1.0         ║
+║ idioms_01_569_change_to_one.k                      │ y:10 5 7 12 20       │ 10 1 7 1 1           │                      ║
 ║ idioms_01_556_all_indices.k                        │ x:2 2 2 2            │ Error: Take cou...   │ 0 1 2 3              ║
 ║ idioms_01_535_avoid_parentheses.k                  │ x:1 2 3 4 5          │ 1 5                  │ 5 1                  ║
 ║ idioms_01_591_reshape_2column.k                    │ x:"abcdefgh"         │ ()                   │ ("ab";"cd";"ef"...   ║
@@ -807,11 +807,31 @@
 ║ ktree_dot_apply_relative_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `d . `keyA │ 1 2 3                │                      ║
 ║ ktree_dot_apply_absolute_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `.k.d . `keyB │ 1 3 5                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 786/803 tests passed (97.9%)                                                                               ║
+║ SUMMARY: 781/803 tests passed (97.3%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
+Test: minimum_operator.k
+Input: 3 & 5
+Expected: 3
+Actual: Error: Index operation requires dictionary or vector
+──────────────────────────────────────────────────────────────────────────
+Test: dyadic_min_vector_vector.k
+Input: 5 8 3 & 2 9 4
+Expected: 2 8 3
+Actual: 5 5 8 8 8 8 8 8 8 8 8 3 3 3 3
+──────────────────────────────────────────────────────────────────────────
+Test: dyadic_min_atom_vector.k
+Input: 3 & 5 2 8
+Expected: 3 2 3
+Actual: Error: Index operation requires dictionary or vector
+──────────────────────────────────────────────────────────────────────────
+Test: dyadic_min_vector_atom.k
+Input: 5 2 8 & 4
+Expected: 4 2 4
+Actual: 5 5 5 5
+──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
@@ -826,6 +846,16 @@ Test: ffi_dispose.k
 Input: complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.19\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
 Expected: Disposed
 Actual: `obj1
+──────────────────────────────────────────────────────────────────────────
+Test: idioms_01_566_zero_boolean.k
+Input: x:0 1 0 1 1 0 0 1 1 1 0
+Expected: 0 0 0 0 0 0 0 0 0 0 0
+Actual: Error: Index operation requires dictionary or vector
+──────────────────────────────────────────────────────────────────────────
+Test: idioms_01_337_identity_min.k
+Input: 1e100&0i
+Expected: 1e+100
+Actual: Error: Cannot apply where to Float
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_88_name_variable.k
 Input: x:"test"
@@ -842,20 +872,15 @@ Input: x:"abbccdefcdab"
 Expected: "abbccdefcdat"
 Actual: (1;"Assignment requires a variable name on the left side")
 ──────────────────────────────────────────────────────────────────────────
-Test: idioms_01_495_indices_occurrences.k
-Input: x:"abcdefgab"
-Expected: 0 2 5 7
-Actual: ()
+Test: idioms_01_449_limit_between.k
+Input: x:(58 9 37 84 39 99;60 30 45 97 77 35;49 87 82 79 8 30;46 61 20 51 12 34;31 51 29 35 17 89) // 5 6 _draw 100
+Expected: (58 30 37 70 39 70;60 30 45 70 70 35;49 70 70 70 30 30;46 61 30 51 30 34;31 51 30 35 30 70)
+Actual: Error: Index operation requires dictionary or vector
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_504_replace_satisfying.k
 Input: x:1 0 0 0 1 0 1 1 0 1
 Expected: " bcd f i "
 Actual: (1;"Assignment requires a variable name on the left side")
-──────────────────────────────────────────────────────────────────────────
-Test: idioms_01_569_change_to_one.k
-Input: y:10 5 7 12 20.0
-Expected: 10 1 7 1 1.0
-Actual: (10;1;7;1;1.0)
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_556_all_indices.k
 Input: x:2 2 2 2
