@@ -2437,6 +2437,30 @@ namespace K3CSharp
             {
                 var op = PreviousToken().Type;
                 
+                // Use context-aware arity detection to determine if this should be unary or binary
+                bool hasLeftOperand = left != null;
+                if (ShouldTreatAsUnary(op, hasLeftOperand))
+                {
+                    // Treat as unary operator - create a binary node with one child
+                    var unaryNode = new ASTNode(ASTNodeType.BinaryOp);
+                    unaryNode.Value = new SymbolValue(GetTokenSymbol(op));
+                    if (left != null)
+                    {
+                        unaryNode.Children.Add(left);
+                    }
+                    else
+                    {
+                        // Parse the operand for unary operator
+                        var operand = ParseTerm();
+                        if (operand != null)
+                        {
+                            unaryNode.Children.Add(operand);
+                        }
+                    }
+                    left = unaryNode;
+                    continue;
+                }
+                
                 // Check if this is followed by an adverb
                 if (IsAdverbToken(CurrentToken().Type))
                 {
@@ -2502,7 +2526,7 @@ namespace K3CSharp
                     {
                         throw new Exception($"Expected right operand after {op}");
                     }
-                    return ASTNode.MakeBinaryOp(op, left, right);
+                    return left != null ? ASTNode.MakeBinaryOp(op, left, right) : ASTNode.MakeBinaryOp(op, new ASTNode(ASTNodeType.Literal, new NullValue()), right);
                 }
             }
 
@@ -3573,6 +3597,78 @@ namespace K3CSharp
             var verb = VerbRegistry.GetVerb(type);
             return verb != null && verb.Type == VerbType.Operator && 
                    verb.SupportedArities.Contains(1);
+        }
+
+        /// <summary>
+        /// Get the preferred arity for an operator based on context
+        /// </summary>
+        private int GetPreferredArity(TokenType type, bool hasLeftOperand)
+        {
+            var verb = VerbRegistry.GetVerb(type);
+            if (verb == null) return 0;
+            
+            // If we have a left operand, prefer dyadic (binary) operation
+            if (hasLeftOperand && verb.SupportedArities.Contains(2))
+                return 2;
+            
+            // If no left operand, prefer monadic (unary) operation
+            if (!hasLeftOperand && verb.SupportedArities.Contains(1))
+                return 1;
+            
+            // Return the highest supported arity as fallback
+            return verb.SupportedArities.Length > 0 ? verb.SupportedArities.Max() : 0;
+        }
+
+        /// <summary>
+        /// Check if an operator should be treated as unary in the current context
+        /// </summary>
+        private bool ShouldTreatAsUnary(TokenType type, bool hasLeftOperand)
+        {
+            var preferredArity = GetPreferredArity(type, hasLeftOperand);
+            return preferredArity == 1;
+        }
+
+        /// <summary>
+        /// Convert TokenType to its symbol representation
+        /// </summary>
+        private string GetTokenSymbol(TokenType type)
+        {
+            return type switch
+            {
+                TokenType.PLUS => "+",
+                TokenType.MINUS => "-",
+                TokenType.MULTIPLY => "*",
+                TokenType.DIVIDE => "%",
+                TokenType.MIN => "&",
+                TokenType.MAX => "|",
+                TokenType.LESS => "<",
+                TokenType.GREATER => ">",
+                TokenType.EQUAL => "=",
+                TokenType.IN => "_in",
+                TokenType.POWER => "^",
+                TokenType.MODULUS => "!",
+                TokenType.JOIN => ",",
+                TokenType.COLON => ":",
+                TokenType.HASH => "#",
+                TokenType.UNDERSCORE => "_",
+                TokenType.QUESTION => "?",
+                TokenType.DOLLAR => "$",
+                TokenType.MATCH => "~",
+                TokenType.APPLY => "@",
+                TokenType.DOT => ".",
+                TokenType.NEGATE => "!",
+                TokenType.TYPE => "_type",
+                TokenType.STRING_REPRESENTATION => "_string",
+                TokenType.LSQ => "_lsq",
+                TokenType.AND => "_and",
+                TokenType.OR => "_or",
+                TokenType.XOR => "_xor",
+                TokenType.ROT => "_rot",
+                TokenType.SHIFT => "_shift",
+                TokenType.CEIL => "_ceil",
+                TokenType.NOT => "_not",
+                _ => type.ToString()
+            };
         }
 
         private bool IsAtEnd()

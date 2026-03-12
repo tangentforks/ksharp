@@ -1474,8 +1474,33 @@ namespace K3CSharp
             }
         }
 
-        private K3Value CallVariableFunction(string functionName, List<K3Value> arguments)
+        public K3Value CallVariableFunction(string functionName, List<K3Value> arguments)
         {
+            // First try to use the unified VerbRegistry-based evaluation, but only for verbs that have implementations
+            var verb = VerbRegistry.GetVerb(functionName);
+            if (verb != null && verb.Implementations != null && verb.Implementations.Length > arguments.Count && verb.Implementations[arguments.Count] != null)
+            {
+                try
+                {
+                    return EvaluateVerb(functionName, arguments.ToArray());
+                }
+                catch (Exception)
+                {
+                    // Fallback to the original switch-based evaluation if VerbRegistry fails
+                }
+            }
+            
+            // Use the original switch-based evaluation for backwards compatibility
+            // Check if it's a system variable first
+            try
+            {
+                return GetSystemVariable(functionName);
+            }
+            catch (Exception)
+            {
+                // Not a system variable, continue with regular function evaluation
+            }
+            
             // Check if it's a built-in function first
             switch (functionName)
             {
@@ -1713,6 +1738,12 @@ namespace K3CSharp
                 case "_ci":
                     if (arguments.Count == 1) return CiFunction(arguments[0]);
                     throw new Exception("_ci requires 1 argument");
+                case "_val":
+                    if (arguments.Count == 1) return ValFunction(arguments[0]);
+                    throw new Exception("_val requires 1 argument");
+                default:
+                    // If not in the switch, it's not a built-in function
+                    break;
             }
             
             // Check if it's a user-defined function stored in a variable
@@ -3236,6 +3267,113 @@ namespace K3CSharp
             }
             
             throw new Exception($"Invalid projected function node: {node.Value}");
+        }
+
+        private K3Value ValFunction(K3Value operand)
+        {
+            // _val returns the valence (arity) of a verb or function
+            if (operand is SymbolValue sym)
+            {
+                var verbName = sym.Value;
+                var verb = VerbRegistry.GetVerb(verbName);
+                
+                if (verb != null)
+                {
+                    // Return the highest supported arity for the verb
+                    if (verb.SupportedArities.Length > 0)
+                    {
+                        return new IntegerValue(verb.SupportedArities.Max());
+                    }
+                }
+                
+                // Check if it's a user-defined function
+                var functionValue = GetVariable(verbName);
+                if (functionValue is FunctionValue func)
+                {
+                    // For user functions, return the number of required parameters
+                    // This is a simplified implementation - in a full version, we'd need to track parameter counts
+                    return new IntegerValue(1); // Default to monadic for user functions
+                }
+            }
+            else if (operand is FunctionValue func)
+            {
+                // Handle projected functions - return remaining required arguments
+                if (func.BodyText?.Contains("EACH_RIGHT:") == true || 
+                    func.BodyText?.Contains("EACH_LEFT:") == true ||
+                    func.BodyText?.Contains("EACH:") == true)
+                {
+                    return new IntegerValue(2); // Projected adverb functions are dyadic
+                }
+                
+                return new IntegerValue(1); // Default to monadic
+            }
+            
+            // For non-function operands, return 0 (no valence)
+            return new IntegerValue(0);
+        }
+
+        /// <summary>
+        /// Unified evaluation method using VerbRegistry - the core of the verb system restructuring
+        /// </summary>
+        public K3Value EvaluateVerb(string verbName, K3Value[] arguments)
+        {
+            var verb = VerbRegistry.GetVerb(verbName);
+            if (verb == null)
+            {
+                throw new Exception($"Unknown verb: {verbName}");
+            }
+
+            // Check if the verb supports the requested arity
+            var arity = arguments.Length;
+            if (!verb.SupportedArities.Contains(arity))
+            {
+                throw new Exception($"Verb '{verbName}' does not support {arity} arguments. Supported arities: [{string.Join(", ", verb.SupportedArities)}]");
+            }
+
+            // Get the implementation for this arity
+            if (verb.Implementations != null && verb.Implementations.Length > arity && verb.Implementations[arity] != null)
+            {
+                return verb.Implementations[arity]!(arguments);
+            }
+
+            // Fallback to CallVariableFunction for backwards compatibility
+            return CallVariableFunction(verbName, arguments.ToList());
+        }
+
+        /// <summary>
+        /// Get system variable value - handles system variables as true variables
+        /// </summary>
+        public K3Value GetSystemVariable(string variableName)
+        {
+            var verb = VerbRegistry.GetVerb(variableName);
+            if (verb != null && verb.Type == VerbType.SystemVariable)
+            {
+                // Handle system variables based on their names
+                return variableName switch
+                {
+                    "_d" => new IntegerValue(DateTime.Now.Day),
+                    "_v" => new IntegerValue(1), // K3 version placeholder
+                    "_i" => new IntegerValue(1), // Session ID placeholder
+                    "_f" => new IntegerValue(0), // File handle placeholder
+                    "_n" => new IntegerValue(0), // Null placeholder
+                    "_s" => new IntegerValue(0), // Seconds placeholder
+                    "_h" => new IntegerValue(DateTime.Now.Hour),
+                    "_p" => new IntegerValue(0), // Process ID placeholder
+                    "_P" => new IntegerValue(0), // Parent process ID placeholder
+                    "_w" => new IntegerValue(DateTime.Now.DayOfWeek - DayOfWeek.Sunday),
+                    "_u" => new IntegerValue(0), // User ID placeholder
+                    "_a" => new IntegerValue(0), // Account placeholder
+                    "_k" => new IntegerValue(0), // K-tree placeholder
+                    "_o" => new IntegerValue(0), // OS placeholder
+                    "_c" => new IntegerValue(0), // CPU placeholder
+                    "_r" => new IntegerValue(0), // RAM placeholder
+                    "_m" => new IntegerValue(0), // Memory placeholder
+                    "_y" => new IntegerValue(DateTime.Now.Year),
+                    _ => throw new Exception($"Unknown system variable: {variableName}")
+                };
+            }
+            
+            throw new Exception($"Not a system variable: {variableName}");
         }
     }
     

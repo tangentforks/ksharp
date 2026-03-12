@@ -29,6 +29,7 @@ namespace K3CSharp
         static VerbRegistry()
         {
             InitializeBasicOperators();
+            PopulateImplementationDelegates();
         }
 
         public static void RegisterVerb(string name, VerbType type, int[] arities, Func<K3Value[], K3Value>?[]? implementations, bool isSystemVariable = false, string? description = null)
@@ -257,6 +258,105 @@ namespace K3CSharp
             
             // Also register NULL for TokenType.NULL
             RegisterVerb("NULL", VerbType.SystemVariable, new[] { 0 }, null);
+        }
+
+        private static void PopulateImplementationDelegates()
+        {
+            // Create an evaluator instance to get method references
+            var evaluator = new Evaluator();
+            
+            // Basic mathematical operators - use CallVariableFunction as unified entry point
+            UpdateVerbImplementations("+", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("+", args.ToList()),
+                args => evaluator.CallVariableFunction("+", args.ToList())
+            });
+            
+            UpdateVerbImplementations("-", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("-", args.ToList()),
+                args => evaluator.CallVariableFunction("-", args.ToList())
+            });
+            
+            UpdateVerbImplementations("*", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("*", args.ToList()),
+                args => evaluator.CallVariableFunction("*", args.ToList())
+            });
+            
+            UpdateVerbImplementations("%", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("%", args.ToList()),
+                args => evaluator.CallVariableFunction("%", args.ToList())
+            });
+            
+            // Mathematical functions (monadic only)
+            UpdateVerbImplementations("_abs", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_abs", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_sin", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_sin", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_cos", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_cos", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_tan", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_tan", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_atan", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_atan", args.ToList())
+            });
+            
+            // Comparison operators
+            UpdateVerbImplementations("<", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("<", args.ToList())
+            });
+            
+            UpdateVerbImplementations(">", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction(">", args.ToList())
+            });
+            
+            UpdateVerbImplementations("=", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("=", args.ToList())
+            });
+            
+            UpdateVerbImplementations("~", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("~", args.ToList())
+            });
+            
+            // Additional mathematical operators
+            UpdateVerbImplementations("^", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("^", args.ToList())
+            });
+            
+            UpdateVerbImplementations(",", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction(",", args.ToList())
+            });
+            
+            UpdateVerbImplementations("#", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("#", args.ToList())
+            });
+            
+            // System functions
+            UpdateVerbImplementations("_ic", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_ic", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_ci", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_ci", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_val", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_val", args.ToList())
+            });
+        }
+
+        private static void UpdateVerbImplementations(string name, Func<K3Value[], K3Value>?[]? implementations)
+        {
+            if (verbs.TryGetValue(name, out var verb))
+            {
+                verb.Implementations = implementations;
+            }
         }
     }
 }

@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-12 02:16:40
+Generated: 2026-03-12 03:22:53
 
 SUMMARY:
 --------
 Total Tests:     802
-✅ Matched:       768
-❌ Differed:      26
+✅ Matched:       772
+❌ Differed:      22
 ⚠️  Skipped:       0
 💥 Errors:        8
-Success Rate:    95.8%
+Success Rate:    96.3%
 
 DETAILED RESULTS:
 -----------------
@@ -303,7 +303,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   grade_up_operator.k                                0 4 2 3 1                      0 4 2 3 1                                                                        
 ✅ PASS   greater_than_operator.k                            0                              0                                                                                
 ✅ PASS   group_operator.k                                   (0 1 6;2 7 16;3 5 12 15 1...   (0 1 6;2 7 16;3 5 12 15 1...   Compact representation                            
-❌ FAIL   idioms_01_129_arctangent.k                                                        0.5235988                                                                        
+✅ PASS   idioms_01_129_arctangent.k                         0.5235988                      0.5235988                                                                        
 ✅ PASS   idioms_01_143_indices_distinct.k                   (0 3 7;1 4 6;2 5)              (0 3 7;1 4 6;2 5)              Compact representation                            
 ✅ PASS   idioms_01_154_range.k                              "wirls"                        "wirls"                                                                          
 ✅ PASS   idioms_01_177_string_search.k                      11 20 32                       11 20 32                                                                         
@@ -314,7 +314,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   idioms_01_328_number_items.k                       4                              4                                                                                
 ✅ PASS   idioms_01_331_identity_max.k                       -1e+100                        -1e+100                                                                          
 ✅ PASS   idioms_01_337_identity_min.k                       1e+100                         1e+100                                                                           
-❌ FAIL   idioms_01_357_match.k                                                             1                                                                                
+✅ PASS   idioms_01_357_match.k                              1                              1                                                                                
 ✅ PASS   idioms_01_384_drop_1st_postpend.k                  4 5 6 0                        4 5 6 0                                                                          
 ✅ PASS   idioms_01_385_drop_last_prepend.k                  0 3 4 5                        0 3 4 5                                                                          
 ✅ PASS   idioms_01_388_drop_rows.k                          (6 7 8;9 10 11;12 13 14;1...   (6 7 8;9 10 11;12 13 14;1...   Compact representation                            
@@ -341,10 +341,10 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   idioms_01_559_first_marker.k                       2                              2                                                                                
 ❌ FAIL   idioms_01_561_numeric_code.k                                                      32 97 65 48                                                                      
 ✅ PASS   idioms_01_566_zero_boolean.k                       0 0 0 0 0 0 0 0 0 0 0          0 0 0 0 0 0 0 0 0 0 0                                                            
-❌ FAIL   idioms_01_569_change_to_one.k                                                     10 1 7 1 1.0                                                                     
-❌ FAIL   idioms_01_570_implies.k                                                           1 0 1 1                                                                          
+❌ FAIL   idioms_01_569_change_to_one.k                      (10;1;7;1;1.0)                 10 1 7 1 1.0                                                                     
+✅ PASS   idioms_01_570_implies.k                            1 0 1 1                        1 0 1 1                                                                          
 ✅ PASS   idioms_01_571_xbutnoty.k                           0 1 0 0                        0 1 0 0                                                                          
-❌ FAIL   idioms_01_573_exclusive_or.k                                                      0 1 1 0                                                                          
+✅ PASS   idioms_01_573_exclusive_or.k                       0 1 1 0                        0 1 1 0                                                                          
 ✅ PASS   idioms_01_575_kronecker_delta.k                    1 0 0 1                        1 0 0 1                                                                          
 ❌ FAIL   idioms_01_591_reshape_2column.k                    ()                             ("ab";"cd";"ef";"gh")          Compact representation                            
 ✅ PASS   idioms_01_595_one_row_matrix.k                     ,2 3 5 7 11                    ,2 3 5 7 11                                                                      
@@ -821,17 +821,9 @@ Status   Test File                                          K3Sharp Output      
 
 FAILED TESTS DETAILS:
 --------------------
-File: idioms_01_129_arctangent.k
-K3Sharp: 
-k.exe:   0.5235988
-
 File: idioms_01_178_first_occurrence.k
 K3Sharp: !0
 k.exe:   12
-
-File: idioms_01_357_match.k
-K3Sharp: 
-k.exe:   1
 
 File: idioms_01_433_replace_last.k
 K3Sharp: 
@@ -870,16 +862,8 @@ K3Sharp:
 k.exe:   32 97 65 48
 
 File: idioms_01_569_change_to_one.k
-K3Sharp: 
+K3Sharp: (10;1;7;1;1.0)
 k.exe:   10 1 7 1 1.0
-
-File: idioms_01_570_implies.k
-K3Sharp: 
-k.exe:   1 0 1 1
-
-File: idioms_01_573_exclusive_or.k
-K3Sharp: 
-k.exe:   0 1 1 0
 
 File: idioms_01_591_reshape_2column.k
 K3Sharp: ()
@@ -901,7 +885,23 @@ File: ktree_enumerate_relative_name.k
 K3Sharp: `keyA`keyB
 k.exe:   `keyA `keyB
 
-... and 6 more failed tests
+File: ktree_enumerate_relative_path.k
+K3Sharp: `keyA`keyB
+k.exe:   `keyA `keyB
+
+File: ktree_enumerate_root.k
+K3Sharp: `k`t
+k.exe:   ,`k
+
+File: monadic_format_dictionary.k
+K3Sharp: ".((`a;1;);(`b;2;);(`c;3;))"
+k.exe:   ".(..)"
+
+File: test_show_dict.k
+K3Sharp: .((`col01;11 12 13 14 15;.((`format;,`n;);(`name;`ID;)));(`col02;`yellow`white`blue`red`black;.((`format;,`c;);(`name;`Color;)));(`col03;("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`c;);(`name;`Retailer;))))
+k.exe:   .((`col01;11 12 13 14 15;.((`format;,`n;);(`name;`ID;)));(`col02;`yellow `white `blue `red `black;.((`format;,`c;);(`name;`Color;)));(`col03;("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`c;);(`name;`Retailer;))))
+
+... and 2 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------
