@@ -3317,21 +3317,23 @@ namespace K3CSharp
         /// </summary>
         public K3Value EvaluateVerb(string verbName, K3Value[] arguments)
         {
-            var verb = VerbRegistry.GetVerb(verbName);
-            if (verb == null)
+            // Fast check for verb existence
+            if (!VerbRegistry.HasVerb(verbName))
             {
                 throw new Exception($"Unknown verb: {verbName}");
             }
 
-            // Check if the verb supports the requested arity
+            // Validate arity with enhanced error messages
             var arity = arguments.Length;
-            if (!verb.SupportedArities.Contains(arity))
+            var validationError = VerbRegistry.ValidateVerbArity(verbName, arity);
+            if (!string.IsNullOrEmpty(validationError))
             {
-                throw new Exception($"Verb '{verbName}' does not support {arity} arguments. Supported arities: [{string.Join(", ", verb.SupportedArities)}]");
+                throw new Exception(validationError);
             }
 
             // Get the implementation for this arity
-            if (verb.Implementations != null && verb.Implementations.Length > arity && verb.Implementations[arity] != null)
+            var verb = VerbRegistry.GetVerb(verbName);
+            if (verb?.Implementations != null && verb.Implementations.Length > arity && verb.Implementations[arity] != null)
             {
                 return verb.Implementations[arity]!(arguments);
             }

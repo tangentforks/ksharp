@@ -3604,19 +3604,8 @@ namespace K3CSharp
         /// </summary>
         private int GetPreferredArity(TokenType type, bool hasLeftOperand)
         {
-            var verb = VerbRegistry.GetVerb(type);
-            if (verb == null) return 0;
-            
-            // If we have a left operand, prefer dyadic (binary) operation
-            if (hasLeftOperand && verb.SupportedArities.Contains(2))
-                return 2;
-            
-            // If no left operand, prefer monadic (unary) operation
-            if (!hasLeftOperand && verb.SupportedArities.Contains(1))
-                return 1;
-            
-            // Return the highest supported arity as fallback
-            return verb.SupportedArities.Length > 0 ? verb.SupportedArities.Max() : 0;
+            var verbName = GetTokenSymbol(type);
+            return VerbRegistry.GetPreferredArity(verbName, hasLeftOperand);
         }
 
         /// <summary>

@@ -349,6 +349,78 @@ namespace K3CSharp
             UpdateVerbImplementations("_val", new Func<K3Value[], K3Value>?[] { 
                 args => evaluator.CallVariableFunction("_val", args.ToList())
             });
+            
+            // Additional mathematical functions
+            UpdateVerbImplementations("_log", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_log", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_exp", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_exp", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_sqrt", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_sqrt", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_ceil", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_ceil", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_floor", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_floor", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_neg", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_neg", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_not", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_not", args.ToList())
+            });
+            
+            // Vector operations
+            UpdateVerbImplementations("_sv", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_sv", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_vs", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_vs", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_dv", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_dv", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_di", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_di", args.ToList())
+            });
+            
+            // String operations
+            UpdateVerbImplementations("_string", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_string", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_type", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_type", args.ToList())
+            });
+            
+            // Conditional operations
+            UpdateVerbImplementations("$", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("$", args.ToList())
+            });
+            
+            UpdateVerbImplementations("if", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("if", args.ToList())
+            });
+            
+            UpdateVerbImplementations("while", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("while", args.ToList())
+            });
+            
+            UpdateVerbImplementations("do", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("do", args.ToList())
+            });
         }
 
         private static void UpdateVerbImplementations(string name, Func<K3Value[], K3Value>?[]? implementations)
@@ -357,6 +429,133 @@ namespace K3CSharp
             {
                 verb.Implementations = implementations;
             }
+        }
+
+        /// <summary>
+        /// Get the preferred arity for an operator based on context and position
+        /// </summary>
+        public static int GetPreferredArity(string verbName, bool hasLeftOperand, bool hasRightOperand = false)
+        {
+            var verb = GetVerb(verbName);
+            if (verb == null) return 0;
+            
+            // For multi-arity operators, determine preferred arity based on context
+            if (verb.SupportedArities.Length > 1)
+            {
+                // Hash (#) is context-sensitive: monadic for count, dyadic for take
+                if (verbName == "#")
+                {
+                    return hasLeftOperand && hasRightOperand ? 2 : 1;
+                }
+                
+                // Underscore (_) is context-sensitive: monadic for floor, dyadic for conditional
+                if (verbName == "_")
+                {
+                    return hasLeftOperand && hasRightOperand ? 2 : 1;
+                }
+                
+                // Dollar ($) is context-sensitive: monadic for count, dyadic for each
+                if (verbName == "$")
+                {
+                    return hasLeftOperand && hasRightOperand ? 2 : 1;
+                }
+                
+                // At (@) is context-sensitive: monadic for type, dyadic for apply
+                if (verbName == "@")
+                {
+                    return hasLeftOperand && hasRightOperand ? 2 : 1;
+                }
+                
+                // For other multi-arity operators, prefer dyadic if we have both operands
+                if (hasLeftOperand && hasRightOperand && verb.SupportedArities.Contains(2))
+                    return 2;
+                
+                // Prefer monadic if we only have one operand or no left operand
+                if (!hasLeftOperand && verb.SupportedArities.Contains(1))
+                    return 1;
+            }
+            
+            // Return the highest supported arity as fallback
+            return verb.SupportedArities.Length > 0 ? verb.SupportedArities.Max() : 0;
+        }
+
+        /// <summary>
+        /// Check if an operator supports a specific arity
+        /// </summary>
+        public static bool SupportsArity(string verbName, int arity)
+        {
+            var verb = GetVerb(verbName);
+            return verb != null && verb.SupportedArities.Contains(arity);
+        }
+
+        /// <summary>
+        /// Get all supported arities for an operator
+        /// </summary>
+        public static int[] GetSupportedArities(string verbName)
+        {
+            var verb = GetVerb(verbName);
+            return verb?.SupportedArities ?? new int[0];
+        }
+
+        /// <summary>
+        /// Fast check if verb exists - optimized for performance
+        /// </summary>
+        public static bool HasVerb(string verbName)
+        {
+            return verbs.ContainsKey(verbName);
+        }
+
+        /// <summary>
+        /// Get verb type with performance optimization
+        /// </summary>
+        public static VerbType GetVerbType(string verbName)
+        {
+            var verb = GetVerb(verbName);
+            return verb?.Type ?? VerbType.Function;
+        }
+
+        /// <summary>
+        /// Check if verb is a system variable
+        /// </summary>
+        public static bool IsSystemVariable(string verbName)
+        {
+            var verb = GetVerb(verbName);
+            return verb?.Type == VerbType.SystemVariable;
+        }
+
+        /// <summary>
+        /// Get all verbs of a specific type
+        /// </summary>
+        public static IEnumerable<string> GetVerbsByType(VerbType type)
+        {
+            return verbs.Where(kvp => kvp.Value.Type == type).Select(kvp => kvp.Key);
+        }
+
+        /// <summary>
+        /// Get verb description for debugging/help
+        /// </summary>
+        public static string GetVerbDescription(string verbName)
+        {
+            var verb = GetVerb(verbName);
+            return verb?.Description ?? $"Unknown verb: {verbName}";
+        }
+
+        /// <summary>
+        /// Validate verb arity and provide helpful error message
+        /// </summary>
+        public static string ValidateVerbArity(string verbName, int arity)
+        {
+            var verb = GetVerb(verbName);
+            if (verb == null)
+                return $"Unknown verb: {verbName}";
+            
+            if (!verb.SupportedArities.Contains(arity))
+            {
+                var aritiesStr = string.Join(", ", verb.SupportedArities);
+                return $"Verb '{verbName}' does not support {arity} argument{(arity == 1 ? "" : "s")}. Supported arities: [{aritiesStr}]";
+            }
+            
+            return string.Empty; // No error
         }
     }
 }
