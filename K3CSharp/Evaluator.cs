@@ -1666,6 +1666,53 @@ namespace K3CSharp
                 case ",":
                     if (arguments.Count >= 2) return Join(arguments[0], arguments[1]);
                     throw new Exception(", operator requires 2 arguments");
+                // Mathematical functions
+                case "_abs":
+                    if (arguments.Count == 1) return MathAbs(arguments[0]);
+                    throw new Exception("_abs requires 1 argument");
+                case "_sqr":
+                    if (arguments.Count == 1) return MathSqr(arguments[0]);
+                    throw new Exception("_sqr requires 1 argument");
+                case "_sqrt":
+                    if (arguments.Count == 1) return MathSqrt(arguments[0]);
+                    throw new Exception("_sqrt requires 1 argument");
+                case "_floor":
+                    if (arguments.Count == 1) return MathFloor(arguments[0]);
+                    throw new Exception("_floor requires 1 argument");
+                case "_sin":
+                    if (arguments.Count == 1) return MathSin(arguments[0]);
+                    throw new Exception("_sin requires 1 argument");
+                case "_cos":
+                    if (arguments.Count == 1) return MathCos(arguments[0]);
+                    throw new Exception("_cos requires 1 argument");
+                case "_tan":
+                    if (arguments.Count == 1) return MathTan(arguments[0]);
+                    throw new Exception("_tan requires 1 argument");
+                case "_asin":
+                    if (arguments.Count == 1) return MathAsin(arguments[0]);
+                    throw new Exception("_asin requires 1 argument");
+                case "_acos":
+                    if (arguments.Count == 1) return MathAcos(arguments[0]);
+                    throw new Exception("_acos requires 1 argument");
+                case "_atan":
+                    if (arguments.Count == 1) return MathAtan(arguments[0]);
+                    throw new Exception("_atan requires 1 argument");
+                case "_sinh":
+                    if (arguments.Count == 1) return MathSinh(arguments[0]);
+                    throw new Exception("_sinh requires 1 argument");
+                case "_cosh":
+                    if (arguments.Count == 1) return MathCosh(arguments[0]);
+                    throw new Exception("_cosh requires 1 argument");
+                case "_tanh":
+                    if (arguments.Count == 1) return MathTanh(arguments[0]);
+                    throw new Exception("_tanh requires 1 argument");
+                // Database functions
+                case "_ic":
+                    if (arguments.Count == 1) return IcFunction(arguments[0]);
+                    throw new Exception("_ic requires 1 argument");
+                case "_ci":
+                    if (arguments.Count == 1) return CiFunction(arguments[0]);
+                    throw new Exception("_ci requires 1 argument");
             }
             
             // Check if it's a user-defined function stored in a variable

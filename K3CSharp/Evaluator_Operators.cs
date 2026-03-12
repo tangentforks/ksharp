@@ -474,6 +474,8 @@ namespace K3CSharp
                 return new IntegerValue(longA.Value == longB.Value ? 1 : 0);
             if (a is CharacterValue charA && b is CharacterValue charB)
                 return new IntegerValue(charA.Value == charB.Value ? 1 : 0);
+            if (a is SymbolValue symA && b is SymbolValue symB)
+                return new IntegerValue(symA.Value == symB.Value ? 1 : 0);
             
             throw new Exception($"Cannot compare {a.Type} and {b.Type} with =");
         }
@@ -528,6 +530,20 @@ namespace K3CSharp
                 return new LongValue((long)Math.Pow(longA.Value, longB.Value));
             if (a is FloatValue floatA && b is FloatValue floatB)
                 return new FloatValue(Math.Pow(floatA.Value, floatB.Value));
+            
+            // Handle mixed types - convert to float
+            if (a is IntegerValue intA2 && b is FloatValue floatB2)
+                return new FloatValue(Math.Pow(intA2.Value, floatB2.Value));
+            if (a is FloatValue floatA2 && b is IntegerValue intB2)
+                return new FloatValue(Math.Pow(floatA2.Value, intB2.Value));
+            if (a is LongValue longA2 && b is FloatValue floatB3)
+                return new FloatValue(Math.Pow(longA2.Value, floatB3.Value));
+            if (a is FloatValue floatA3 && b is LongValue longB2)
+                return new FloatValue(Math.Pow(floatA3.Value, longB2.Value));
+            if (a is IntegerValue intA3 && b is LongValue longB3)
+                return new LongValue((long)Math.Pow(intA3.Value, longB3.Value));
+            if (a is LongValue longA3 && b is IntegerValue intB3)
+                return new LongValue((long)Math.Pow(longA3.Value, intB3.Value));
             
             // Handle vector operations
             if (a is VectorValue vecA)
@@ -912,6 +928,17 @@ namespace K3CSharp
                 return new IntegerValue(longA.Value < longB.Value ? 1 : 0);
             if (a is FloatValue floatA && b is FloatValue floatB)
                 return new IntegerValue(floatA.Value < floatB.Value ? 1 : 0);
+            if (a is CharacterValue charA && b is CharacterValue charB)
+                return new IntegerValue(charA.Value[0] < charB.Value[0] ? 1 : 0);
+            
+            // Handle string comparison (character vectors)
+            if (a is VectorValue vecA && b is VectorValue vecB && 
+                vecA.Elements.All(e => e is CharacterValue) && vecB.Elements.All(e => e is CharacterValue))
+            {
+                var strA = string.Join("", vecA.Elements.Select(e => ((CharacterValue)e).Value));
+                var strB = string.Join("", vecB.Elements.Select(e => ((CharacterValue)e).Value));
+                return new IntegerValue(string.Compare(strA, strB) < 0 ? 1 : 0);
+            }
             
             throw new Exception($"Cannot compare {a.Type} and {b.Type} with <");
         }
@@ -924,6 +951,17 @@ namespace K3CSharp
                 return new IntegerValue(longA.Value > longB.Value ? 1 : 0);
             if (a is FloatValue floatA && b is FloatValue floatB)
                 return new IntegerValue(floatA.Value > floatB.Value ? 1 : 0);
+            if (a is CharacterValue charA && b is CharacterValue charB)
+                return new IntegerValue(charA.Value[0] > charB.Value[0] ? 1 : 0);
+            
+            // Handle string comparison (character vectors)
+            if (a is VectorValue vecA && b is VectorValue vecB && 
+                vecA.Elements.All(e => e is CharacterValue) && vecB.Elements.All(e => e is CharacterValue))
+            {
+                var strA = string.Join("", vecA.Elements.Select(e => ((CharacterValue)e).Value));
+                var strB = string.Join("", vecB.Elements.Select(e => ((CharacterValue)e).Value));
+                return new IntegerValue(string.Compare(strA, strB) > 0 ? 1 : 0);
+            }
             
             throw new Exception($"Cannot compare {a.Type} and {b.Type} with >");
         }
@@ -948,6 +986,16 @@ namespace K3CSharp
                 return new IntegerValue(longA.Value == 0 ? 1 : 0);
             if (a is FloatValue floatA)
                 return new IntegerValue(floatA.Value == 0 ? 1 : 0);
+            
+            if (a is VectorValue vec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(LogicalNegate(element));
+                }
+                return new VectorValue(result);
+            }
             
             throw new Exception($"Cannot logically negate {a.Type}");
         }

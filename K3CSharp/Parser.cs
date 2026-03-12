@@ -475,6 +475,23 @@ namespace K3CSharp
                     break;
                 }
 
+                // Special case: if the result is a literal underscore function (like _ic), treat brackets as grouping
+                // So _ic[x] becomes _ic x, not _ic @ [x]
+                if (result != null && result.Type == ASTNodeType.Literal && result.Value is SymbolValue literalSymbol && 
+                    literalSymbol.Value.ToString().StartsWith("_"))
+                {
+                    // This is a literal underscore function with brackets - convert to unary operator
+                    var unaryNode = new ASTNode(ASTNodeType.BinaryOp);
+                    unaryNode.Value = literalSymbol;
+                    if (argsExpression != null)
+                    {
+                        unaryNode.Children.Add(argsExpression);
+                    }
+                    result = unaryNode;
+                    // Don't consume more brackets - break the loop
+                    break;
+                }
+
                 // Check if this is a control flow verb function call
                 if (result != null && result.Type == ASTNodeType.Variable)
                 {

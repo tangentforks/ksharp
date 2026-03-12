@@ -144,9 +144,13 @@ namespace K3CSharp
             RegisterVerb("VS", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("SV", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("SS", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("_ss", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("SM", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("_sm", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("CI", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("_ci", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("IC", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("_ic", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("GETENV", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("SETENV", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("SIZE", VerbType.Operator, new[] { 1, 2 }, null);
@@ -176,21 +180,32 @@ namespace K3CSharp
             RegisterVerb("CEIL", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("TIME", VerbType.Operator, new[] { 0 }, null);
 
-            // Mathematical functions
-            RegisterVerb("LOG", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("EXP", VerbType.Operator, new[] { 1 }, null);
+            // Mathematical functions - register both symbol and token type names
+            RegisterVerb("_abs", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("ABS", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_sqr", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("SQR", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_sqrt", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("SQRT", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_floor", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("FLOOR_MATH", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_sin", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("SIN", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_cos", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("COS", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_tan", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("TAN", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_asin", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("ASIN", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_acos", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("ACOS", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_atan", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("ATAN", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_sinh", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("SINH", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_cosh", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("COSH", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_tanh", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("TANH", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("NOT", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("NEGATE", VerbType.Operator, new[] { 1 }, null);
