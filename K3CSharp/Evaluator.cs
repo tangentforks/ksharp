@@ -1547,8 +1547,10 @@ namespace K3CSharp
                     return GetenvFunction(arguments.Count > 0 ? arguments[0] : new NullValue());
                 case "_size":
                     return SizeFunction(arguments.Count > 0 ? arguments[0] : new NullValue());
-                case "_hint":
-                    return HintFunction(arguments);
+                case "_gethint":
+                    return GetHintFunction(arguments);
+                case "_sethint":
+                    return SetHintFunction(arguments);
                 case "_dispose":
                     return DisposeFunction(arguments);
                 case "_exit":
@@ -2033,7 +2035,7 @@ namespace K3CSharp
                     }
                     else
                     {
-                        throw new Exception($"Key '{lookupKey}' not found in dictionary");
+                        throw new Exception($"Key '{lookupSymbol.Value}' not found in dictionary");
                     }
                 }
                 else if (index is VectorValue keyVec)
@@ -2174,14 +2176,44 @@ namespace K3CSharp
                     else
                     {
                         // Dictionary @ symbol - get value by key
-                        foreach (var entry in dict.Entries)
+                        // Check if this is an FFI object with method calls
+                        if (dict.Entries.ContainsKey(new SymbolValue("_this")))
                         {
-                            if (entry.Key.Equals(symbol))
+                            var thisEntry = dict.Entries[new SymbolValue("_this")];
+                            var thisValue = thisEntry.Value.ToString() ?? "";
+                            
+                            // Only treat as FFI object if _this is a valid object handle and not Disposed
+                            if (ObjectRegistry.ContainsObject(thisValue) && thisValue != "Disposed")
                             {
-                                return entry.Value.Value; // Extract Value from tuple
+                                // FFI object method call: obj.Method
+                                return MethodInvocation.CallObjectMethod(dict, symbol);
+                            }
+                            else
+                            {
+                                // Not a valid FFI object anymore (e.g., after _dispose) or disposed
+                                // Use regular dictionary lookup
+                                foreach (var entry in dict.Entries)
+                                {
+                                    if (entry.Key.Equals(symbol))
+                                    {
+                                        return entry.Value.Value; // Extract Value from tuple
+                                    }
+                                }
+                                throw new Exception($"Key '{symbol.Value}' not found in dictionary");
                             }
                         }
-                        throw new Exception($"Key '{symbol.Value}' not found in dictionary");
+                        else
+                        {
+                            // Regular dictionary lookup
+                            foreach (var entry in dict.Entries)
+                            {
+                                if (entry.Key.Equals(symbol))
+                                {
+                                    return entry.Value.Value; // Extract Value from tuple
+                                }
+                            }
+                            throw new Exception($"Key '{symbol.Value}' not found in dictionary");
+                        }
                     }
                 }
                 else if (index is VectorValue indexVec)
@@ -2354,31 +2386,22 @@ namespace K3CSharp
                     return new VectorValue(values);
                 }
                 else if (right is SymbolValue symbolValue)
+                {
+                    // Check if this is the special case of "." for all attributes access
+                    if (symbolValue.Value == ".")
                     {
-                        // Check if this is the special case of "." for all attributes access
-                        if (symbolValue.Value == ".")
-                        {
-                            return AtIndexOperation(dict, symbolValue);
-                        }
-                        
-                        // Check if this is attribute access (symbol ends with .)
-                        if (symbolValue.Value.EndsWith("."))
-                        {
-                            return AtIndexOperation(dict, symbolValue);
-                        }
-                        
-                        // Check if this is an FFI object with method calls
-                        if (dict.Entries.ContainsKey(new SymbolValue("_this")))
-                        {
-                            // FFI object method call: obj.Method
-                            return MethodInvocation.CallObjectMethod(dict, symbolValue);
-                        }
-                        else
-                        {
-                            // Regular dictionary lookup
-                            return VectorIndex(dict, symbolValue);
-                        }
+                        return AtIndexOperation(dict, symbolValue);
                     }
+                    
+                    // Check if this is attribute access (symbol ends with .)
+                    if (symbolValue.Value.EndsWith("."))
+                    {
+                        return AtIndexOperation(dict, symbolValue);
+                    }
+                    
+                    // Regular dictionary key access - no special FFI handling
+                    return AtIndexOperation(dict, symbolValue);
+                }
                 else if (right is VectorValue rightVec && rightVec.Elements.Count == 1 && rightVec.Elements[0] is VectorValue symbolVec)
                 {
                     // Single-item list containing a vector of symbols
@@ -2907,30 +2930,71 @@ namespace K3CSharp
             }
         }
         
-        private K3Value HintFunction(List<K3Value> arguments)
+        private K3Value GetHintFunction(List<K3Value> arguments)
         {
-            // Monadic _hint x: return current hint of x
-            if (arguments.Count == 1)
+            // Monadic _gethint x: return current hint of x
+            if (arguments.Count != 1)
             {
-                return arguments[0].Hint ?? (K3Value)new NullValue();
+                throw new Exception("_gethint requires exactly 1 argument");
             }
-            // Dyadic x _hint y: set hint of x to symbol y
-            else if (arguments.Count == 2)
+            
+            var value = arguments[0];
+            return value.Hint ?? (K3Value)new NullValue();
+        }
+        
+        private K3Value SetHintFunction(List<K3Value> arguments)
+        {
+            // Dyadic x _sethint y: set hint of x to symbol y
+            if (arguments.Count != 2)
             {
-                if (arguments[1] is SymbolValue hintSymbol)
-                {
-                    arguments[0].Hint = hintSymbol;
-                    return arguments[0];
-                }
-                else
-                {
-                    throw new Exception("_hint: second argument must be a symbol");
-                }
+                throw new Exception("_sethint requires exactly 2 arguments");
             }
-            else
+            
+            var value = arguments[0];
+            var hintSymbol = arguments[1];
+            
+            if (!(hintSymbol is SymbolValue hint))
             {
-                throw new Exception("_hint: requires 1 or 2 arguments");
+                throw new Exception("_sethint: second argument must be a symbol");
             }
+            
+            // Create a new value with the hint set
+            K3Value hintedValue;
+            switch (value.Type)
+            {
+                case ValueType.Integer:
+                    hintedValue = new IntegerValue(((IntegerValue)value).Value, hint);
+                    break;
+                case ValueType.Float:
+                    hintedValue = new FloatValue(((FloatValue)value).Value, hint);
+                    break;
+                case ValueType.Long:
+                    hintedValue = new LongValue(((LongValue)value).Value, hint);
+                    break;
+                case ValueType.Character:
+                    hintedValue = new CharacterValue(((CharacterValue)value).Value, hint);
+                    break;
+                case ValueType.Symbol:
+                    hintedValue = new SymbolValue(((SymbolValue)value).Value, hint);
+                    break;
+                case ValueType.Vector:
+                    hintedValue = new VectorValue(((VectorValue)value).Elements, hint);
+                    break;
+                case ValueType.Dictionary:
+                    hintedValue = new DictionaryValue(((DictionaryValue)value).Entries);
+                    hintedValue.Hint = hint;
+                    break;
+                case ValueType.Function:
+                    hintedValue = new FunctionValue(((FunctionValue)value).BodyText, ((FunctionValue)value).Parameters, ((FunctionValue)value).PreParsedTokens, ((FunctionValue)value).OriginalSourceText, hint);
+                    break;
+                case ValueType.Null:
+                    hintedValue = new NullValue();
+                    break;
+                default:
+                    throw new Exception($"_sethint: unsupported value type {value.Type}");
+            }
+            
+            return hintedValue;
         }
 
         private K3Value DisposeFunction(List<K3Value> arguments)
@@ -2941,27 +3005,46 @@ namespace K3CSharp
                 var obj = arguments[0];
                 
                 // Check if object has _this entry (object dictionary)
-                if (obj is DictionaryValue dict && dict.Entries.TryGetValue(new SymbolValue("_this"), out var thisEntry))
+                if (obj is DictionaryValue dict)
                 {
-                    var handle = thisEntry.Value.ToString();
-                    var netObj = ObjectRegistry.GetObject(handle);
-                    
-                    if (netObj != null)
+                    // Find the _this entry
+                    SymbolValue thisKey = new SymbolValue("_this");
+                    if (dict.Entries.TryGetValue(thisKey, out var thisEntry))
                     {
-                        // Call Dispose() if object implements IDisposable
-                        if (netObj is IDisposable disposable)
+                        var handle = thisEntry.Value.ToString();
+                        var netObj = ObjectRegistry.GetObject(handle);
+                        
+                        if (netObj != null)
                         {
-                            disposable.Dispose();
+                            // Call Dispose() if object implements IDisposable
+                            if (netObj is IDisposable disposable)
+                            {
+                                disposable.Dispose();
+                            }
+                            
+                            // Unregister from object registry
+                            ObjectRegistry.UnregisterObject(handle);
+                            
+                            // Create new dictionary with all entries except _this
+                            var newEntries = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)>();
+                            foreach (var entry in dict.Entries)
+                            {
+                                if (!entry.Key.Equals(thisKey))
+                                {
+                                    newEntries[entry.Key] = entry.Value;
+                                }
+                            }
+                            
+                            // Set _this to Disposed
+                            newEntries[thisKey] = (new SymbolValue("Disposed"), null);
+                            
+                            var newDict = new DictionaryValue(newEntries);
+                            return newDict;
                         }
-                        
-                        // Unregister from object registry
-                        ObjectRegistry.UnregisterObject(handle);
-                        
-                        // Set _this to Disposed handle value
-                        dict.Entries[new SymbolValue("_this")] = (new CharacterValue("Disposed", new SymbolValue("disposed")), null);
                     }
                     
-                    return new IntegerValue(1); // Success
+                    // Return original dictionary if no _this found or object not in registry
+                    return dict;
                 }
                 else
                 {
@@ -3353,7 +3436,7 @@ namespace K3CSharp
                 // Handle system variables based on their names
                 return variableName switch
                 {
-                    "_d" => new IntegerValue(DateTime.Now.Day),
+                    "_d" => kTree.CurrentBranch ?? new SymbolValue(""), // Current K-Tree branch
                     "_v" => new IntegerValue(1), // K3 version placeholder
                     "_i" => new IntegerValue(1), // Session ID placeholder
                     "_f" => new IntegerValue(0), // File handle placeholder

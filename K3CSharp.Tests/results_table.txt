@@ -540,7 +540,7 @@
 ║ k_tree_retrieve_absolute_foo.k                     │ .k.foo: 42           │ 42                   │                      ║
 ║ k_tree_retrieval_relative.k                        │ .k.foo: 42           │ 42                   │                      ║
 ║ k_tree_enumerate.k                                 │ !`                   │ `k`t                 │                      ║
-║ k_tree_current_branch.k                            │ _d                   │ 12                   │ `.k                  ║
+║ k_tree_current_branch.k                            │ _d                   │ `.k                  │                      ║
 ║ k_tree_dictionary_indexing.k                       │ .k.foo: 42           │ 42                   │                      ║
 ║ k_tree_nested_indexing.k                           │ .k.dd: .((`a;1);(`b;2);(`c;3)) │ 2                    │                      ║
 ║ k_tree_verify_root.k                               │ .k                   │                      │                      ║
@@ -732,13 +732,13 @@
 ║ math_shift_vector.k                                │ (8 16 32 64) _shift 2 │ 32 64 128 256        │                      ║
 ║ math_xor_basic.k                                   │ 5 _xor 3             │ 6                    │                      ║
 ║ math_xor_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
-║ ffi_hint_system.k                                  │ // Test hint system functionality │                      │ `_hint               ║
+║ ffi_hint_system.k                                  │ 42 _sethint `uint    │ 42                   │                      ║
 ║ ffi_simple_assembly.k                              │ str:"System.Private.CoreLib" 2: `System.String; str │ `._dotnet.Syste...   │                      ║
 ║ ffi_assembly_load.k                                │ // Test basic FFI functionality │ `._dotnet.Syste...   │                      ║
 ║ ffi_type_marshalling.k                             │ // Test type marshalling │ 1 2 3 4 5            │                      ║
 ║ ffi_object_management.k                            │ str: "hello" _hint `object; str . ToUpper │                      │ HELLO                ║
 ║ ffi_constructor.k                                  │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.19\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex │ .((`real;2.0;);...   │                      ║
-║ ffi_dispose.k                                      │ str: "hello" _hint `object ; _dispose ; str._this │                      │ Disposed             ║
+║ ffi_dispose.k                                      │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.19\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex │ `obj1                │ Disposed             ║
 ║ ffi_complete_workflow.k                            │ // Complete FFI Workflow Test │ .((`real;2.0;);...   │                      ║
 ║ idioms_01_575_kronecker_delta.k                    │ x:0 0 1 1            │ 1 0 0 1              │                      ║
 ║ idioms_01_571_xbutnoty.k                           │ x:0 1 0 1            │ 0 1 0 0              │                      ║
@@ -764,14 +764,14 @@
 ║ idioms_01_559_first_marker.k                       │ x:0 0 1 0 1 0 0 1 1 0 │ 2                    │                      ║
 ║ idioms_01_78_eval_number.k                         │ x:"1998 51"          │ 1998 51              │                      ║
 ║ idioms_01_88_name_variable.k                       │ x:"test"             │ Error: Undefine...   │ (0 1 2;3 4 5)        ║
-║ idioms_01_96_conditional_execution.k               │ @[+/;!6;:]           │ Error: For atom...   │ 0 15                 ║
+║ idioms_01_96_conditional_execution.k               │ @[+/;!6;:]           │ (1;"Function mu...   │ 0 15                 ║
 ║ idioms_01_493_choose_boolean.k                     │ x:"abcdef"           │ "xyz"                │                      ║
-║ idioms_01_434_replace_first.k                      │ x:"abbccdefcdab"     │ Error: Assignme...   │ "tbbccdefcdab"       ║
-║ idioms_01_433_replace_last.k                       │ x:"abbccdefcdab"     │ Error: Assignme...   │ "abbccdefcdat"       ║
+║ idioms_01_434_replace_first.k                      │ x:"abbccdefcdab"     │ (1;"Assignment ...   │ "tbbccdefcdab"       ║
+║ idioms_01_433_replace_last.k                       │ x:"abbccdefcdab"     │ (1;"Assignment ...   │ "abbccdefcdat"       ║
 ║ idioms_01_406_add_last.k                           │ x:1 2 3 4 5          │ 1 2 3 4 105          │                      ║
 ║ idioms_01_449_limit_between.k                      │ x:(58 9 37 84 39 99;60 30 45 97 77 35;49 87 82 79 8 30;46 61 20 51 12 34;31 51 29 35 17 89) // 5 6 _draw 100 │ (58 30 37 70 39...   │                      ║
 ║ idioms_01_495_indices_occurrences.k                │ x:"abcdefgab"        │ ()                   │ 0 2 5 7              ║
-║ idioms_01_504_replace_satisfying.k                 │ x:1 0 0 0 1 0 1 1 0 1 │ Error: Assignme...   │ " bcd f i "          ║
+║ idioms_01_504_replace_satisfying.k                 │ x:1 0 0 0 1 0 1 1 0 1 │ (1;"Assignment ...   │ " bcd f i "          ║
 ║ idioms_01_569_change_to_one.k                      │ y:10 5 7 12 20.0     │ (10;1;7;1;1.0)       │ 10 1 7 1 1.0         ║
 ║ idioms_01_556_all_indices.k                        │ x:2 2 2 2            │ Error: Take cou...   │ 0 1 2 3              ║
 ║ idioms_01_535_avoid_parentheses.k                  │ x:1 2 3 4 5          │ 1 5                  │ 5 1                  ║
@@ -802,12 +802,12 @@
 ║ ktree_indexing_absolute_name.k                     │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)) │ 1 2 3                │                      ║
 ║ ktree_indexing_relative_path.k                     │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)) │ 1 2 3                │                      ║
 ║ ktree_indexing_absolute_path.k                     │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)) │ 1 3 5                │                      ║
-║ ktree_dot_apply_relative_name.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)) │ 1 2 3                │                      ║
+║ ktree_dot_apply_relative_name.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); d . `keyA │ 1 2 3                │                      ║
 ║ ktree_dot_apply_absolute_name.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)) │ 1 3 5                │                      ║
-║ ktree_dot_apply_relative_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)) │ 1 2 3                │                      ║
-║ ktree_dot_apply_absolute_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)) │ 1 3 5                │                      ║
+║ ktree_dot_apply_relative_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `d . `keyA │ 1 2 3                │                      ║
+║ ktree_dot_apply_absolute_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `.k.d . `keyB │ 1 3 5                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 783/803 tests passed (97.5%)                                                                               ║
+║ SUMMARY: 785/803 tests passed (97.8%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -817,25 +817,15 @@ Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: 100
 ──────────────────────────────────────────────────────────────────────────
-Test: k_tree_current_branch.k
-Input: _d
-Expected: `.k
-Actual: 12
-──────────────────────────────────────────────────────────────────────────
-Test: ffi_hint_system.k
-Input: // Test hint system functionality
-Expected: `_hint
-Actual: 
-──────────────────────────────────────────────────────────────────────────
 Test: ffi_object_management.k
 Input: str: "hello" _hint `object; str . ToUpper
 Expected: HELLO
 Actual: 
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_dispose.k
-Input: str: "hello" _hint `object ; _dispose ; str._this
+Input: complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.19\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
 Expected: Disposed
-Actual: 
+Actual: `obj1
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_88_name_variable.k
 Input: x:"test"
@@ -845,17 +835,17 @@ Actual: Error: Undefined variable: var
 Test: idioms_01_96_conditional_execution.k
 Input: @[+/;!6;:]
 Expected: 0 15
-Actual: Error: For atomic data, indices must be empty list
+Actual: (1;"Function must be a FunctionValue, SymbolValue, or ProjectedFunctionValue")
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_434_replace_first.k
 Input: x:"abbccdefcdab"
 Expected: "tbbccdefcdab"
-Actual: Error: Assignment requires a variable name on the left side
+Actual: (1;"Assignment requires a variable name on the left side")
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_433_replace_last.k
 Input: x:"abbccdefcdab"
 Expected: "abbccdefcdat"
-Actual: Error: Assignment requires a variable name on the left side
+Actual: (1;"Assignment requires a variable name on the left side")
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_495_indices_occurrences.k
 Input: x:"abcdefgab"
@@ -865,7 +855,7 @@ Actual: ()
 Test: idioms_01_504_replace_satisfying.k
 Input: x:1 0 0 0 1 0 1 1 0 1
 Expected: " bcd f i "
-Actual: Error: Assignment requires a variable name on the left side
+Actual: (1;"Assignment requires a variable name on the left side")
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_569_change_to_one.k
 Input: y:10 5 7 12 20.0

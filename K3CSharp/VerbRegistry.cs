@@ -255,7 +255,7 @@ namespace K3CSharp
             RegisterVerb("WHILE", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("IF", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("EXIT", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("DISPOSE", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("_dispose", VerbType.Function, new[] { 1 }, null);
             RegisterVerb("HINT", VerbType.Operator, new[] { 1, 2 }, null);
             
             // Also register lowercase versions for identifier recognition
@@ -351,6 +351,12 @@ namespace K3CSharp
             
             // Also register NULL for TokenType.NULL
             RegisterVerb("NULL", VerbType.SystemVariable, new[] { 0 }, null);
+            
+            // Hint system functions
+            RegisterVerb("_gethint", VerbType.Function, new[] { 1 }, null);
+            RegisterVerb("GETHINT", VerbType.Function, new[] { 1 }, null);
+            RegisterVerb("_sethint", VerbType.Operator, new[] { 2 }, null);
+            RegisterVerb("SETHINT", VerbType.Operator, new[] { 2 }, null);
         }
 
         private static void PopulateImplementationDelegates()
@@ -509,6 +515,20 @@ namespace K3CSharp
             
             UpdateVerbImplementations("while", new Func<K3Value[], K3Value>?[] { 
                 args => evaluator.CallVariableFunction("while", args.ToList())
+            });
+            
+            // Hint system functions
+            UpdateVerbImplementations("_gethint", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_gethint", args.ToList())
+            });
+            
+            UpdateVerbImplementations("_sethint", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_sethint", args.ToList())
+            });
+            
+            // FFI functions
+            UpdateVerbImplementations("_dispose", new Func<K3Value[], K3Value>?[] { 
+                args => evaluator.CallVariableFunction("_dispose", args.ToList())
             });
             
             UpdateVerbImplementations("do", new Func<K3Value[], K3Value>?[] { 

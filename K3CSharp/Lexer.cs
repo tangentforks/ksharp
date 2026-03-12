@@ -259,8 +259,22 @@ namespace K3CSharp
                     }
                     else
                     {
+                        // Check for _gethint first (greedy precedence)
+                        if (position + 7 < input.Length && input.Substring(position, 8) == "_gethint")
+                        {
+                            tokens.Add(new Token(TokenType.GETHINT, "_gethint", position));
+                            Advance(); // Skip _
+                            for (int i = 0; i < 7; i++) Advance(); // Skip "gethint"
+                        }
+                        // Check for _sethint next (greedy precedence)
+                        else if (position + 7 < input.Length && input.Substring(position, 8) == "_sethint")
+                        {
+                            tokens.Add(new Token(TokenType.SETHINT, "_sethint", position));
+                            Advance(); // Skip _
+                            for (int i = 0; i < 7; i++) Advance(); // Skip "sethint"
+                        }
                         // Check for _hint first (greedy precedence over _h)
-                        if (position + 4 < input.Length && input.Substring(position, 5) == "_hint")
+                        else if (position + 4 < input.Length && input.Substring(position, 5) == "_hint")
                         {
                             tokens.Add(new Token(TokenType.HINT, "_hint", position));
                             Advance(); // Skip _

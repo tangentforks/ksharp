@@ -109,5 +109,18 @@ namespace K3CSharp
         /// Get count of registered objects
         /// </summary>
         public static int Count => _objects.Count;
+
+        /// <summary>
+        /// Check if an object with given handle is registered
+        /// </summary>
+        /// <param name="handle">Object handle to check</param>
+        /// <returns>True if object is registered</returns>
+        public static bool ContainsObject(string? handle)
+        {
+            if (handle == "null" || handle == null)
+                return false;
+            
+            return _objects.ContainsKey(handle);
+        }
     }
 }

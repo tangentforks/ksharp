@@ -1,2 +1,1 @@
-d:.((`keyA;1 2 3;);(`keyB;1 3 5))
-`d . `keyA
+d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `d . `keyA

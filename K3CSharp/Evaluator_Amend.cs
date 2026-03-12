@@ -61,6 +61,46 @@ namespace K3CSharp
             var function = arguments[2];
             var value = arguments.Count > 3 ? arguments[3] : null;
 
+            // Check for error trapping (third argument is colon)
+            if (function is SymbolValue colonSym && colonSym.Value == ":")
+            {
+                if (arguments.Count == 3)
+                {
+                    // Triadic: @[f; args; :] - trapped apply
+                    try
+                    {
+                        // This is trapped apply, not amend operation
+                        // Apply the first argument (function) to the second argument (indices)
+                        var result = ApplyTrappedFunction(data, indices);
+                        // Return success tuple: (0; result)
+                        return new VectorValue(new List<K3Value> { new IntegerValue(0), result });
+                    }
+                    catch (Exception ex)
+                    {
+                        // Return error tuple: (1; error_message)
+                        var errorMsg = new VectorValue(ex.Message.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList());
+                        return new VectorValue(new List<K3Value> { new IntegerValue(1), errorMsg });
+                    }
+                }
+                else if (arguments.Count == 4)
+                {
+                    // Tetradic: @[d; i; :; y] - amend operation with trapped apply
+                    try
+                    {
+                        // Apply amend operation with trapped apply
+                        var result = AmendAtom(data, new SymbolValue(":"), value);
+                        // Return success tuple: (0; result)
+                        return new VectorValue(new List<K3Value> { new IntegerValue(0), result });
+                    }
+                    catch (Exception ex)
+                    {
+                        // Return error tuple: (1; error_message)
+                        var errorMsg = new VectorValue(ex.Message.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList());
+                        return new VectorValue(new List<K3Value> { new IntegerValue(1), errorMsg });
+                    }
+                }
+            }
+
             // For @, indices are used directly (each index = a separate position to amend)
             // Handle different data types
             if (data is VectorValue list)
@@ -312,10 +352,33 @@ namespace K3CSharp
             {
                 return CallVariableFunction(symbol.Value, arguments);
             }
+            else if (function is ProjectedFunctionValue projected)
+            {
+                return CallProjectedFunction(projected, arguments);
+            }
             else
             {
-                throw new Exception("Function must be a FunctionValue or SymbolValue");
+                throw new Exception("Function must be a FunctionValue, SymbolValue, or ProjectedFunctionValue");
             }
+        }
+        
+        private K3Value ApplyTrappedFunction(K3Value function, K3Value arguments)
+        {
+            // Apply function to arguments for trapped apply
+            if (arguments is VectorValue argVec)
+            {
+                return CallFunction(function, argVec.Elements.ToList());
+            }
+            else
+            {
+                return CallFunction(function, new List<K3Value> { arguments });
+            }
+        }
+        
+        private K3Value CallProjectedFunction(ProjectedFunctionValue projected, List<K3Value> arguments)
+        {
+            // Call a projected function like +/, over, etc.
+            return CallVariableFunction(projected.OperatorName, arguments);
         }
     }
 }

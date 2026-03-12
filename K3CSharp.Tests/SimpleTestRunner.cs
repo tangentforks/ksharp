@@ -1051,7 +1051,7 @@ namespace K3CSharp.Tests
                 ("math_xor_vector.k", "1 2 3"),
                 
                 // FFI (Foreign Function Interface) tests
-                ("ffi_hint_system.k", "`_hint"),
+                ("ffi_hint_system.k", "42"),
                 ("ffi_simple_assembly.k", "`._dotnet.System.String"),
                 ("ffi_assembly_load.k", "`._dotnet.System.String"),
                 ("ffi_type_marshalling.k", "1 2 3 4 5"),

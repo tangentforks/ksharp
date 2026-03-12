@@ -745,6 +745,32 @@ namespace K3CSharp
                 // Handle _hint as a variable reference to the built-in function
                 result = ASTNode.MakeVariable("_hint");
             }
+            else if (Match(TokenType.GETHINT))
+            {
+                // Handle _gethint as a variable reference to the built-in function
+                result = ASTNode.MakeVariable("_gethint");
+            }
+            else if (Match(TokenType.SETHINT))
+            {
+                // Handle _sethint as a variable reference to the built-in function
+                result = ASTNode.MakeVariable("_sethint");
+            }
+            else if (Match(TokenType.IDENTIFIER))
+            {
+                var identifier = PreviousToken().Lexeme;
+                
+                // Check for special hint functions
+                if (identifier == "_gethint" || identifier == "_sethint")
+                {
+                    // Handle as variable references to built-in functions
+                    result = ASTNode.MakeVariable(identifier);
+                }
+                else
+                {
+                    // Handle as regular identifier (variable reference)
+                    result = ASTNode.MakeVariable(identifier);
+                }
+            }
             else if (Match(TokenType.DISPOSE))
             {
                 // Handle _dispose token as a symbol literal
