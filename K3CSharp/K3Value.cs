@@ -1503,4 +1503,56 @@ namespace K3CSharp
             return HashCode.Combine(OperatorName, RequiredArguments);
         }
     }
+
+    public class AdverbProjectedFunctionValue : K3Value
+    {
+        public string AdverbName { get; }
+        public string Verb { get; }
+        public int RequiredArguments { get; }
+
+        public AdverbProjectedFunctionValue(string adverbName, string verb, int requiredArguments)
+        {
+            Type = ValueType.Function; // Treat as a function type
+            AdverbName = adverbName;
+            Verb = verb;
+            RequiredArguments = requiredArguments;
+        }
+
+        public override string ToString()
+        {
+            return $"{AdverbName}({Verb})";
+        }
+
+        public override K3Value Add(K3Value other)
+        {
+            throw new InvalidOperationException("Cannot add AdverbProjectedFunction values");
+        }
+
+        public override K3Value Subtract(K3Value other)
+        {
+            throw new InvalidOperationException("Cannot subtract AdverbProjectedFunction values");
+        }
+
+        public override K3Value Multiply(K3Value other)
+        {
+            throw new InvalidOperationException("Cannot multiply AdverbProjectedFunction values");
+        }
+
+        public override K3Value Divide(K3Value other)
+        {
+            throw new InvalidOperationException("Cannot divide AdverbProjectedFunction values");
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is AdverbProjectedFunctionValue other)
+                return AdverbName == other.AdverbName && Verb == other.Verb && RequiredArguments == other.RequiredArguments;
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(AdverbName, Verb, RequiredArguments);
+        }
+    }
 }

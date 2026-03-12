@@ -3334,18 +3334,33 @@ namespace K3CSharp
             {
                 var operatorName = operatorSymbol.Value;
                 
-                // Get the arity (how many more arguments are needed)
-                int arity = 1; // Default for unary operators
-                if (node.Children.Count > 0 && node.Children[0].Value is IntegerValue arityValue)
+                // Check if this is an adverb projected function (verb + adverb)
+                if (node.Children.Count >= 2 && node.Children[0].Value is SymbolValue verbSymbol)
                 {
-                    arity = arityValue.Value;
+                    // This is an adverb projected function: verb stored as first child, arity as second
+                    var adverbVerb = verbSymbol.Value;
+                    int adverbArity = 1; // Default
+                    if (node.Children[1].Value is IntegerValue adverbArityValue)
+                    {
+                        adverbArity = adverbArityValue.Value;
+                    }
+                    
+                    // Create a special projected function for adverbs
+                    return new AdverbProjectedFunctionValue(operatorName, adverbVerb, adverbArity);
+                }
+                
+                // Get the arity (how many more arguments are needed)
+                int regularArity = 1; // Default for unary operators
+                if (node.Children.Count > 0 && node.Children[0].Value is IntegerValue regularArityValue)
+                {
+                    regularArity = regularArityValue.Value;
                 }
                 
                 // Create a projected function value that can be completed later
                 // This represents a function that, when called with the remaining arguments,
                 // will apply the operator to all arguments together
                 
-                var projectedFunction = new ProjectedFunctionValue(operatorName, arity);
+                var projectedFunction = new ProjectedFunctionValue(operatorName, regularArity);
                 return projectedFunction;
             }
             

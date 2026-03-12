@@ -2317,10 +2317,12 @@ namespace K3CSharp
             // This is similar to ParseExpression but doesn't stop at semicolons
 
             // Check for standalone operator as function reference (e.g., + in @[x; i; +; y])
+            // or operator followed by adverb (e.g., +/ in @[+/; args; :])
             if (!IsAtEnd() && IsBinaryOperator(CurrentToken().Type))
             {
                 var nextIdx = current + 1;
                 var nextType = nextIdx < tokens.Count ? tokens[nextIdx].Type : TokenType.EOF;
+                
                 if (nextType == TokenType.SEMICOLON || nextType == TokenType.RIGHT_BRACKET || nextType == TokenType.RIGHT_PAREN || nextType == TokenType.EOF)
                 {
                     // Standalone operator - treat as symbol
@@ -2349,6 +2351,58 @@ namespace K3CSharp
                     };
                     Match(opToken.Type);
                     return ASTNode.MakeLiteral(new SymbolValue(opSymbol));
+                }
+                else if (IsAdverbToken(nextType))
+                {
+                    // Operator followed by adverb - create projected function
+                    var opToken = CurrentToken();
+                    var adverbToken = tokens[nextIdx];
+                    
+                    var opSymbol = opToken.Type.ToString() switch
+                    {
+                        "PLUS" => "+",
+                        "MINUS" => "-",
+                        "MULTIPLY" => "*",
+                        "DIVIDE" => "%",
+                        "POWER" => "^",
+                        "MODULUS" => "!",
+                        "MIN" => "&",
+                        "MAX" => "|",
+                        "LESS" => "<",
+                        "GREATER" => ">",
+                        "EQUAL" => "=",
+                        "JOIN" => ",",
+                        "COLON" => ":",
+                        "HASH" => "#",
+                        "UNDERSCORE" => "_",
+                        "QUESTION" => "?",
+                        "DOLLAR" => "$",
+                        "APPLY" => "@",
+                        _ => opToken.Lexeme
+                    };
+                    
+                    var adverbType = adverbToken.Type switch
+                    {
+                        TokenType.ADVERB_SLASH => "over",
+                        TokenType.ADVERB_BACKSLASH => "scan",
+                        TokenType.ADVERB_TICK => "each",
+                        TokenType.ADVERB_SLASH_COLON => "over-each",
+                        TokenType.ADVERB_BACKSLASH_COLON => "scan-each",
+                        TokenType.ADVERB_TICK_COLON => "each-each",
+                        _ => adverbToken.Type.ToString()
+                    };
+                    
+                    // Create projected function
+                    var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
+                    projectedNode.Value = new SymbolValue(adverbType);
+                    projectedNode.Children.Add(ASTNode.MakeLiteral(new SymbolValue(opSymbol))); // Store the verb
+                    projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(1))); // Needs 1 more argument
+                    
+                    // Consume both tokens
+                    Match(opToken.Type);
+                    Match(adverbToken.Type);
+                    
+                    return projectedNode;
                 }
             }
 
@@ -2463,35 +2517,11 @@ namespace K3CSharp
             {
                 var op = PreviousToken().Type;
                 
-                // Use context-aware arity detection to determine if this should be unary or binary
-                bool hasLeftOperand = left != null;
-                if (ShouldTreatAsUnary(op, hasLeftOperand))
-                {
-                    // Treat as unary operator - create a binary node with one child
-                    var unaryNode = new ASTNode(ASTNodeType.BinaryOp);
-                    unaryNode.Value = new SymbolValue(GetTokenSymbol(op));
-                    if (left != null)
-                    {
-                        unaryNode.Children.Add(left);
-                    }
-                    else
-                    {
-                        // Parse the operand for unary operator
-                        var operand = ParseTerm();
-                        if (operand != null)
-                        {
-                            unaryNode.Children.Add(operand);
-                        }
-                    }
-                    left = unaryNode;
-                    continue;
-                }
-                
                 // Check if this is followed by an adverb
                 if (IsAdverbToken(CurrentToken().Type))
                 {
                     var adverbToken = CurrentToken();
-                    Advance(); // Consume the adverb token
+                    Advance(); // Consume adverb token
                     var firstAdverbType = adverbToken.Type.ToString().Replace("TokenType.", "");
                     
                     // Convert the binary operator to a verb symbol
@@ -2535,14 +2565,35 @@ namespace K3CSharp
                     // Parse the right side of the adverb
                     var rightSide = ParseBracketArgument();
                     
-                    // Create the correct adverb structure: ADVERB(verb, left, right)
-                    var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
-                    adverbNode.Value = new SymbolValue(firstAdverbType);
-                    if (verbNode != null) adverbNode.Children.Add(verbNode);
-                    if (left != null) adverbNode.Children.Add(left);
-                    if (rightSide != null) adverbNode.Children.Add(rightSide);
-                    
-                    left = adverbNode;
+                    // Check if this is an incomplete expression (should create a projected function)
+                    if (rightSide == null)
+                    {
+                        // Create a projected function for the adverb operation
+                        var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
+                        projectedNode.Value = new SymbolValue(firstAdverbType);
+                        
+                        // Add the verb as the first child
+                        if (verbNode != null) projectedNode.Children.Add(verbNode);
+                        
+                        // Add the left operand if it exists
+                        if (left != null) projectedNode.Children.Add(left);
+                        
+                        // Mark as needing 1 more argument (for the right side)
+                        projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(1)));
+                        
+                        left = projectedNode;
+                    }
+                    else
+                    {
+                        // Create the correct adverb structure: ADVERB(verb, left, right)
+                        var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        adverbNode.Value = new SymbolValue(firstAdverbType);
+                        if (verbNode != null) adverbNode.Children.Add(verbNode);
+                        if (left != null) adverbNode.Children.Add(left);
+                        if (rightSide != null) adverbNode.Children.Add(rightSide);
+                        
+                        left = adverbNode;
+                    }
                 }
                 else
                 {

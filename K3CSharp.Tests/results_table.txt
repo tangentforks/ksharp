@@ -764,7 +764,7 @@
 ║ idioms_01_559_first_marker.k                       │ x:0 0 1 0 1 0 0 1 1 0 │ 2                    │                      ║
 ║ idioms_01_78_eval_number.k                         │ x:"1998 51"          │ 1998 51              │                      ║
 ║ idioms_01_88_name_variable.k                       │ x:"test"             │ Error: Undefine...   │ (0 1 2;3 4 5)        ║
-║ idioms_01_96_conditional_execution.k               │ @[+/;!6;:]           │ (1;"Function mu...   │ 0 15                 ║
+║ idioms_01_96_conditional_execution.k               │ @[+/;!6;:]           │ 0 15                 │                      ║
 ║ idioms_01_493_choose_boolean.k                     │ x:"abcdef"           │ "xyz"                │                      ║
 ║ idioms_01_434_replace_first.k                      │ x:"abbccdefcdab"     │ (1;"Assignment ...   │ "tbbccdefcdab"       ║
 ║ idioms_01_433_replace_last.k                       │ x:"abbccdefcdab"     │ (1;"Assignment ...   │ "abbccdefcdat"       ║
@@ -807,7 +807,7 @@
 ║ ktree_dot_apply_relative_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `d . `keyA │ 1 2 3                │                      ║
 ║ ktree_dot_apply_absolute_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `.k.d . `keyB │ 1 3 5                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 785/803 tests passed (97.8%)                                                                               ║
+║ SUMMARY: 786/803 tests passed (97.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -831,11 +831,6 @@ Test: idioms_01_88_name_variable.k
 Input: x:"test"
 Expected: (0 1 2;3 4 5)
 Actual: Error: Undefined variable: var
-──────────────────────────────────────────────────────────────────────────
-Test: idioms_01_96_conditional_execution.k
-Input: @[+/;!6;:]
-Expected: 0 15
-Actual: (1;"Function must be a FunctionValue, SymbolValue, or ProjectedFunctionValue")
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_434_replace_first.k
 Input: x:"abbccdefcdab"

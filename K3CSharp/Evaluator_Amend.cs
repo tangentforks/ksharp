@@ -356,9 +356,13 @@ namespace K3CSharp
             {
                 return CallProjectedFunction(projected, arguments);
             }
+            else if (function is AdverbProjectedFunctionValue adverbProjected)
+            {
+                return CallAdverbProjectedFunction(adverbProjected, arguments);
+            }
             else
             {
-                throw new Exception("Function must be a FunctionValue, SymbolValue, or ProjectedFunctionValue");
+                throw new Exception("Function must be a FunctionValue, SymbolValue, ProjectedFunctionValue, or AdverbProjectedFunctionValue");
             }
         }
         
@@ -379,6 +383,34 @@ namespace K3CSharp
         {
             // Call a projected function like +/, over, etc.
             return CallVariableFunction(projected.OperatorName, arguments);
+        }
+        
+        private K3Value CallAdverbProjectedFunction(AdverbProjectedFunctionValue adverbProjected, List<K3Value> arguments)
+        {
+            // Call an adverb projected function like +/ (over with verb +)
+            var verb = new SymbolValue(adverbProjected.Verb);
+            
+            // Handle arguments: if we have a single vector argument, pass it as is
+            // Otherwise, pass individual arguments
+            K3Value dataArg;
+            if (arguments.Count == 1 && arguments[0] is VectorValue argVec)
+            {
+                dataArg = argVec; // Pass the vector as-is
+            }
+            else
+            {
+                // Create a vector from arguments for Over function
+                dataArg = new VectorValue(arguments);
+            }
+            
+            // Call the appropriate adverb function based on the adverb name
+            return adverbProjected.AdverbName switch
+            {
+                "over" => Over(verb, new IntegerValue(0), dataArg),
+                "scan" => Scan(verb, new IntegerValue(0), dataArg),
+                "each" => Each(verb, new IntegerValue(0), dataArg),
+                _ => throw new Exception($"Unknown adverb projected function: {adverbProjected.AdverbName}")
+            };
         }
     }
 }
