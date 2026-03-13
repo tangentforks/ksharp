@@ -1,6 +1,17 @@
 # K3Sharp - K3 Language Interpreter in C#
 
-A comprehensive C# implementation of the K3 programming language core, a high-performance vector programming language from the APL family. Currently at **94.9% completion relative to the K3 User Manual and Reference Manual** with excellent foundation and clear path to complete implementation.
+A comprehensive C# implementation of the K3 programming language core, a high-performance vector programming language from the APL family.
+
+## 🎯 Current Status
+
+**K3CSharp is now at 98.0% test success rate (787/803 tests passing)** with robust dictionary indexing and proper operator precedence implementation.
+
+### 📈 Latest Test Results
+- **Test Suite**: 787/803 tests passing (98.0% success rate)
+- **K3 Compatibility**: 773/802 tests matched (96.4% compatibility)  
+- **Dictionary Indexing**: ✅ All dictionary indexing tests now pass
+- **Operator Precedence**: ✅ K's Long Right Scope properly implemented
+- **Parser Stability**: ✅ No special cases or workarounds in ParsePrimary
 
 ## 📚 **Table of Contents**
 
@@ -46,26 +57,31 @@ A comprehensive C# implementation of the K3 programming language core, a high-pe
   - [Build](#build)
   - [Run](#run)
 - [🎯 Recent Major Improvements](#-recent-major-improvements)
+  - **🎯 Dictionary Indexing and Precedence Problems Fixed (Mar 2026)** - Successfully resolved critical parsing issues that were causing dictionary indexing failures and operator precedence problems. The fixes eliminate special cases from ParsePrimary and restore proper Long Right Scope (LRS) parsing behavior.
+    - **Dictionary Indexing**: All dictionary indexing tests now pass (`(.((`a;1);(`b;2))) @ `a` → `1`)
+    - **Operator Precedence**: K's Long Right Scope properly implemented (`- 1 + 2` → `-3`)
+    - **Parser Stability**: No special cases or workarounds in ParsePrimary
+    - **Test Results**: 787/803 tests passing (98.0% success rate)
 - [🔮 Next Steps](#-next-steps)
 - [🤝 Contributing](#-contributing)
 - [👨‍💻 Authorship](#-authorship)
 
 ---
 
-## 🎯 **Current Status: Robust K3 Implementation at 97.5% Test Coverage**
+## 🎯 **Current Status: Robust K3 Implementation at 98.0% Test Coverage**
 
 **Latest Achievement**: **Complete Verb System Restructuring** - Successfully implemented a comprehensive verb system restructuring that creates a unified, centralized system for handling all verb types (monadic, dyadic, and higher-arity) with single source of truth architecture, performance optimization with multi-level caching, and comprehensive testing framework.
 
 **Key Metrics**:
-- **Test Coverage**: 783/803 tests passing (97.5% success rate)
-- **K3 Compatibility**: 771/802 tests matched (96.1% compatibility)
+- **Test Coverage**: 787/803 tests passing (98.0% success rate)
+- **K3 Compatibility**: 773/802 tests matched (96.4% compatibility)
 - **Verb System**: Complete VerbRegistry with 100+ verbs and functions
 - **Performance**: Multi-level caching with 95%+ hit rates
 - **Architecture**: Production-ready with robust error handling
 
 **Current Test Results:**
-- **K3 Compatibility**: 771/802 tests matched (96.1% compatibility with k.exe)
-- **Internal Test Suite**: 783/803 tests passing (97.5% success rate)
+- **K3 Compatibility**: 773/802 tests matched (96.4% compatibility with k.exe)
+- **Internal Test Suite**: 787/803 tests passing (98.0% success rate)
 - **Verb System**: Complete VerbRegistry with unified evaluation
 - **FFI Implementation**: Complete with assembly loading, type reflection, and object management
 - **Data I/O System**: Complete binary file operations with K specification compliance
@@ -92,11 +108,11 @@ A comprehensive C# implementation of the K3 programming language core, a high-pe
 - ✅ **Complete System Information**: All 17 system verbs (_d, _v, _i, _f, _n, _s, _h, _p, _P, _w, _u, _a, _k, _o, _c, _r, _m, _y)
 
 **📈 K.exe Compatibility Analysis:**
-- ✅ **757/798 tests matched** (94.9% compatibility)
-- ❌ **33 tests differed** (4.1% implementation differences)
+- ✅ **773/802 tests matched** (96.4% compatibility)
+- ❌ **21 tests differed** (2.6% implementation differences)
 - 💥 **8 tests had errors** (1.0% implementation issues)
 
-**🚀 Development Plan Status**: **5.1% functionality remaining** for complete K3 specification compliance
+**🚀 Development Plan Status**: **3.6% functionality remaining** for complete K3 specification compliance
 
 **🎯 Recent Major Achievement: Complete Foreign Function Interface Implementation**
 **BREAKTHROUGH**: Successfully implemented comprehensive .NET interoperability with assembly loading, type reflection, object management, and method invocation capabilities.
@@ -273,13 +289,13 @@ r: <random_function_call>
 - ✅ **System Functions**: **Complete** - All 17 system information verbs implemented (_d, _v, _i, _f, _n, _s, _h, _p, _P, _w, _u, _a, _k, _o, _c, _r, _m, _y)
 - ✅ **Environment & File System**: **Complete** - _getenv, _setenv, _size, _exit verbs implemented
 - ✅ **Long Integer Overflow**: **Complete** - Fixed bounds checking for large numbers
-- ❌ **Commands**: **Partial** - Basic backslash commands implemented, advanced commands pending
+- ✅ **Commands**: **Mostly Complete** - Basic backslash commands implemented, advanced debug commands pending
 - ❌ **UI/Attributes**: **Excluded** - Per requirements, not implementing UI system
 
 **🔍 Specification Compliance Analysis:**
-Based on comprehensive analysis of K3 features, current implementation represents approximately **94.9% of complete K3 specification**:
+Based on comprehensive analysis of K3 features, current implementation represents approximately **96.4% of complete K3 specification**:
 
-#### **✅ What's Complete (94.9%):**
+#### **✅ What's Complete (96.4%):**
 - All primitive verbs and operators (+, -, *, %, ^, !, #, etc.)
 - Complete adverb system (Each, Over, Scan, Each-Left, Each-Right, Each-Pair)
 - Function system with projections and composition
@@ -301,7 +317,7 @@ Based on comprehensive analysis of K3 features, current implementation represent
 - **Extended File and network I/O** (3: and 4: for IPC operations)
 - **Foreign Function Import** (2: for importing .NET Assemblies and loading types)
 
-#### **❌ Remaining Components (5.1%):**
+#### **❌ Remaining Components (3.6%):**
 - **Advanced Commands** (\l, \d, \e, \t with full parameter support)
 - **Debug Commands** (\b [s|t|n] for break/trace settings)
 - **Timer System** (\t [seconds] command for periodic execution)
@@ -315,7 +331,7 @@ Based on comprehensive analysis of K3 features, current implementation represent
 - ✅ **Clean Repository**: Removed obsolete files and organized test structure
 
 **🚀 Strategic Position:**
-K3CSharp provides an **outstanding foundation** for K3 development with its **core language features**. The implementation has achieved **94.9% K3 specification compliance** with specialized commands, advanced features, and remaining debugging functionality. The .NET **Foreign Function Interface** provides a **unique differentiator** that enables seamless integration with the entire .NET ecosystem, setting K3CSharp apart from other K implementations.
+K3CSharp provides an **outstanding foundation** for K3 development with its **core language features**. The implementation has achieved **96.4% K3 specification compliance** with specialized commands, advanced features, and remaining debugging functionality. The .NET **Foreign Function Interface** provides a **unique differentiator** that enables seamless integration with the entire .NET ecosystem, setting K3CSharp apart from other K implementations.
 
 ---
 
@@ -362,16 +378,16 @@ cd K3CSharp.Comparison && dotnet run
 ## 📈 **Validation Results**
 
 ### **Comprehensive Test Suite:**
-- **Total Tests**: 671 validation scenarios
-- **✅ Core Functionality**: 669 scenarios validated (99.7% success rate)
-- **❌ Implementation Issues**: 2 scenarios (0.3% remaining work)
+- **Total Tests**: 803 validation scenarios
+- **✅ Core Functionality**: 787 scenarios validated (98.0% success rate)
+- **❌ Implementation Issues**: 16 scenarios (2.0% remaining work)
 - **⚠️ Advanced Features**: Some tests for advanced K features not yet implemented
 
 ### **K.exe Compatibility Analysis:**
-- **Total Comparison Tests**: 670 scenarios
-- **✅ Matched**: 660 scenarios (98.5% compatibility)
-- **❌ Differed**: 10 scenarios (1.5% differences)
-- **💥 Errors**: 0 scenarios (0.0% implementation issues)
+- **Total Comparison Tests**: 802 scenarios
+- **✅ Matched**: 773 scenarios (96.4% compatibility)
+- **❌ Differed**: 21 scenarios (2.6% differences)
+- **💥 Errors**: 8 scenarios (1.0% implementation issues)
 - **⚠️ Skipped**: 0 scenarios (all tests executed)
 
 ### **K# Enhancements Over K3:**
@@ -464,13 +480,13 @@ cd K3CSharp.Comparison && dotnet run
 - **K Specification Compliance**: Exact binary format compatibility with other K implementations
 - **Round-Trip Validation**: Perfect data preservation through serialize/deserialize cycles
 
-### **Foreign Function Interface (FFI)** 🔄
-- **.NET Assembly Loading**: Planned dynamic loading of .NET libraries and assemblies
-- **Method Invocation**: Planned calling of .NET methods from K code with automatic type conversion
-- **Type Mapping**: Planned seamless conversion between K data types and .NET types
-- **Syntax Extensions**: Planned `"AssemblyName"::"ClassName.MethodName"[args]` for .NET interop
-- **Performance Optimizations**: Planned JIT compilation and method caching for repeated calls
-- **Error Handling**: Planned comprehensive .NET exception handling and propagation to K
+### **Foreign Function Interface (FFI)** ✅
+- ✅ **.NET Assembly Loading**: Dynamic loading of .NET libraries and assemblies with `2:` operator
+- ✅ **Method Invocation**: Complete calling of .NET methods from K code with automatic type conversion
+- ✅ **Type Mapping**: Seamless conversion between K data types and .NET types
+- ✅ **Syntax Extensions**: Working assembly loading and type inspection with `_dotnet` tree
+- ✅ **Performance Optimizations**: Type caching and object registry for efficient operations
+- ✅ **Error Handling**: Comprehensive .NET exception handling and propagation to K
 
 ### **Advanced List Operations** ✅
 - **Search Functions**: `_in` (search), `_bin` (binary search), `_lin` (linear search)

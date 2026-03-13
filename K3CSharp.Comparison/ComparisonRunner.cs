@@ -309,6 +309,14 @@ namespace K3CSharp.Comparison
                     return comparison;
                 }
                 
+                if (fileName.ToLower().StartsWith("ffi_"))
+                {
+                    comparison.Status = ComparisonStatus.Skipped;
+                    comparison.Message = "FFI Test";
+                    comparison.Notes = "k.exe doesn't support FFI";
+                    return comparison;
+                }
+                
                 // Execute K3Sharp first to catch K3Sharp errors
                 try
                 {
