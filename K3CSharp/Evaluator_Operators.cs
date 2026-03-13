@@ -349,6 +349,14 @@ namespace K3CSharp
             if (a is FloatValue floatA && b is FloatValue floatB)
                 return new IntegerValue(floatA.Value < floatB.Value ? 1 : 0);
             
+            // Handle character comparisons based on ASCII values
+            if (a is CharacterValue charA && b is CharacterValue charB)
+            {
+                int asciiA = charA.Value[0];
+                int asciiB = charB.Value[0];
+                return new IntegerValue(asciiA < asciiB ? 1 : 0);
+            }
+            
             // Handle vector operations
             if (a is VectorValue vecA)
             {
@@ -398,6 +406,14 @@ namespace K3CSharp
                 return new IntegerValue(longA.Value > longB.Value ? 1 : 0);
             if (a is FloatValue floatA && b is FloatValue floatB)
                 return new IntegerValue(floatA.Value > floatB.Value ? 1 : 0);
+            
+            // Handle character comparisons based on ASCII values
+            if (a is CharacterValue charA && b is CharacterValue charB)
+            {
+                int asciiA = charA.Value[0];
+                int asciiB = charB.Value[0];
+                return new IntegerValue(asciiA > asciiB ? 1 : 0);
+            }
             
             // Handle vector operations
             if (a is VectorValue vecA)

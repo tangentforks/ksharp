@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-13 03:08:05
+Generated: 2026-03-13 03:24:57
 
 SUMMARY:
 --------
 Total Tests:     802
-✅ Matched:       773
-❌ Differed:      21
+✅ Matched:       774
+❌ Differed:      20
 ⚠️  Skipped:       8
 💥 Errors:        0
-Success Rate:    97.4%
+Success Rate:    97.5%
 
 DETAILED RESULTS:
 -----------------
@@ -336,7 +336,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   idioms_01_510_remove_blanks.k                      "bcdebc"                       "bcdebc"                                                                         
 ✅ PASS   idioms_01_516_multiply_columns.k                   (10 20 30 40 50 60;700 80...   (10 20 30 40 50 60;700 80...   Compact representation                            
 ❌ FAIL   idioms_01_535_avoid_parentheses.k                  1 5                            5 1                                                                              
-❌ FAIL   idioms_01_549_alphabetic_comparison.k                                             1                                                                                
+✅ PASS   idioms_01_549_alphabetic_comparison.k              1                              1                                                                                
 ❌ FAIL   idioms_01_556_all_indices.k                                                       0 1 2 3                                                                          
 ✅ PASS   idioms_01_559_first_marker.k                       2                              2                                                                                
 ❌ FAIL   idioms_01_561_numeric_code.k                                                      32 97 65 48                                                                      
@@ -849,10 +849,6 @@ File: idioms_01_535_avoid_parentheses.k
 K3Sharp: 1 5
 k.exe:   5 1
 
-File: idioms_01_549_alphabetic_comparison.k
-K3Sharp: 
-k.exe:   1
-
 File: idioms_01_556_all_indices.k
 K3Sharp: 
 k.exe:   0 1 2 3
@@ -901,7 +897,11 @@ File: test_simple_period.k
 K3Sharp: ,.((`x;2;);(`y;3;))
 k.exe:   (;.((`x;2;);(`y;3;)))
 
-... and 1 more failed tests
+File: variable_scoping_global_assignment.k
+K3Sharp: 100
+k.exe:   30
+30
+
 
 ERROR TESTS DETAILS:
 -------------------
