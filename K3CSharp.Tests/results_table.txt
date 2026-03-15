@@ -52,6 +52,7 @@
 ║ dictionary_index_value.k                           │ (.((`a;1);(`b;2))) @ `a │ 1                    │                      ║
 ║ dictionary_index_value2.k                          │ (.((`a;1);(`b;2))) @ `b │ 2                    │                      ║
 ║ dictionary_make_symbol_vector.k                    │ .,`a`b               │ .,(`a;`b;)           │                      ║
+║ debug_make.k                                       │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
 ║ dictionary_multiple.k                              │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
 ║ dictionary_null_attributes.k                       │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
 ║ dictionary_single.k                                │ .,(`a;`b)            │ .,(`a;`b;)           │                      ║
@@ -710,7 +711,7 @@
 ║ math_dot_basic.k                                   │ 1 2 3 _dot 4 5 6     │ 32                   │                      ║
 ║ math_dot_matrix_matrix.k                           │ (1 2 3;4 5 6) _dot (7 8 9;10 11 12) │ 47 71 99             │                      ║
 ║ math_dot_matrix_2x2.k                              │ (1 2;3 4) _dot (5 6;7 8) │ 26 44                │                      ║
-║ math_dot_matrix_each_right.k                       │ (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12) │ (47 64 81;52 71...   │                      ║
+║ math_dot_matrix_each_right.k                       │ (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12) │ Error: Numeric ...   │ (47 64 81;52 71...   ║
 ║ math_dot_vector_each_left.k                        │ (1 2) _dot\: (3 4;5 6) │ (8 10;16 20)         │                      ║
 ║ adverb_complex_vector_each_right.k                 │ 10 11 12 +/: ((1 2 3);(4 5 6);(7 8 9)) │ (11 13 15;14 16...   │                      ║
 ║ adverb_complex_matrix_each_right.k                 │ ((1 2 3);(4 5 6);(7 8 9)) +/: 10 11 12 │ ((11 12 13;14 1...   │                      ║
@@ -736,7 +737,7 @@
 ║ ffi_simple_assembly.k                              │ str:"System.Private.CoreLib" 2: `System.String; str │ `._dotnet.Syste...   │                      ║
 ║ ffi_assembly_load.k                                │ // Test basic FFI functionality │ `._dotnet.Syste...   │                      ║
 ║ ffi_type_marshalling.k                             │ // Test type marshalling │ 1 2 3 4 5            │                      ║
-║ ffi_object_management.k                            │ str: "hello" _hint `object; str . ToUpper │                      │ HELLO                ║
+║ ffi_object_management.k                            │ str: "hello";str _sethint `object; str . ToUpper │ Error: Undefine...   │ HELLO                ║
 ║ ffi_constructor.k                                  │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.19\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex │ .((`real;2.0;);...   │                      ║
 ║ ffi_dispose.k                                      │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.19\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex │ `obj1                │ Disposed             ║
 ║ ffi_complete_workflow.k                            │ // Complete FFI Workflow Test │ .((`real;2.0;);...   │                      ║
@@ -785,7 +786,7 @@
 ║ idioms_01_45_binary_representation.k               │ x:16                 │ 1 0 0 0 0            │                      ║
 ║ idioms_01_84_scalar_boolean.k                      │ x:1 0 0 1 1 1 0 1    │ 157                  │                      ║
 ║ idioms_01_129_arctangent.k                         │ x:_sqrt[3]           │ 0.5235988            │                      ║
-║ idioms_01_561_numeric_code.k                       │ x:" aA0"             │ Error: _ic requ...   │ 32 97 65 48          ║
+║ idioms_01_561_numeric_code.k                       │ x:" aA0"             │ 32 97 65 48          │                      ║
 ║ idioms_01_241_sum_subsets.k                        │ x:1+3 4#!12          │ (4 6 4;12 14 12...   │                      ║
 ║ idioms_01_61_cyclic_counter.k                      │ x:!10                │ 1 2 3 4 5 6 7 8...   │                      ║
 ║ idioms_01_384_drop_1st_postpend.k                  │ x:3 4 5 6            │ 4 5 6 0              │                      ║
@@ -807,7 +808,7 @@
 ║ ktree_dot_apply_relative_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `d . `keyA │ 1 2 3                │                      ║
 ║ ktree_dot_apply_absolute_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `.k.d . `keyB │ 1 3 5                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 788/803 tests passed (98.1%)                                                                               ║
+║ SUMMARY: 789/804 tests passed (98.1%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -817,10 +818,15 @@ Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: 100
 ──────────────────────────────────────────────────────────────────────────
+Test: math_dot_matrix_each_right.k
+Input: (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12)
+Expected: (47 64 81;52 71 90;57 78 99)
+Actual: Error: Numeric value required
+──────────────────────────────────────────────────────────────────────────
 Test: ffi_object_management.k
-Input: str: "hello" _hint `object; str . ToUpper
+Input: str: "hello";str _sethint `object; str . ToUpper
 Expected: HELLO
-Actual: 
+Actual: Error: Undefined variable: _sethint
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_dispose.k
 Input: complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.19\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
@@ -871,11 +877,6 @@ Test: idioms_01_496_remove_punctuation.k
 Input: x:"oh! no, stop it. you will?"
 Expected: "oh no stop it you will"
 Actual: Error: Undefined variable: dvl
-──────────────────────────────────────────────────────────────────────────
-Test: idioms_01_561_numeric_code.k
-Input: x:" aA0"
-Expected: 32 97 65 48
-Actual: Error: _ic requires 1 argument
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_178_first_occurrence.k
 Input: x:"st"

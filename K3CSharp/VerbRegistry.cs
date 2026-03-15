@@ -153,12 +153,6 @@ namespace K3CSharp
             return verbs.ContainsKey(tokenName);
         }
 
-        public static VerbInfo? GetVerb(TokenType tokenType)
-        {
-            var tokenName = tokenType.ToString();
-            return GetVerb(tokenName);
-        }
-
         private static void InitializeBasicOperators()
         {
             // Basic mathematical operators - register both symbol and token type names
@@ -225,7 +219,8 @@ namespace K3CSharp
             RegisterVerb("APPLY", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("DOT_APPLY", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("LSQ", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("DOT", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("DOT_MULTIPLY", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("_dot", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("MUL", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("INV", VerbType.Operator, new[] { 1 }, null);
 
@@ -685,25 +680,202 @@ namespace K3CSharp
         }
 
         /// <summary>
-        /// Get verbs that support higher-order operations (adverbs)
+        /// Check if a verb can be used with adverbs
         /// </summary>
-        public static IEnumerable<string> GetHigherOrderVerbs()
+        public static bool SupportsAdverbs(string verbName, string? adverbType = null)
         {
-            return verbs.Where(kvp => 
-                kvp.Value.Type == VerbType.Operator && 
-                kvp.Value.SupportedArities.Contains(1))
-                .Select(kvp => kvp.Key);
+            var verb = GetVerb(verbName);
+            if (verb == null) 
+                return false;
+            
+            // If no specific adverb type, check if verb supports any adverb-compatible operations
+            if (string.IsNullOrEmpty(adverbType))
+                return (verb.Type == VerbType.Operator || verb.Type == VerbType.Function) &&
+                       verb.SupportedArities.Contains(1);
+            
+            // Check specific adverb requirements
+            return adverbType switch
+            {
+                // Over (/) and Scan (\) - support monadic and dyadic verbs
+                "ADVERB_SLASH" or "ADVERB_BACKSLASH" => verb.SupportedArities.Contains(1) || verb.SupportedArities.Contains(2),
+                
+                // Each (') - supports monadic verbs only
+                "ADVERB_TICK" => verb.SupportedArities.Contains(1),
+                
+                // Each-right (/), Each-left (\), Each-prior (') - support dyadic verbs
+                "ADVERB_SLASH_COLON" or "ADVERB_BACKSLASH_COLON" or "ADVERB_TICK_COLON" => verb.SupportedArities.Contains(2),
+                
+                _ => (verb.Type == VerbType.Operator || verb.Type == VerbType.Function) &&
+                       verb.SupportedArities.Contains(1)
+            };
         }
 
         /// <summary>
-        /// Check if a verb can be used with adverbs
+        /// Check if a token type is an adverb
         /// </summary>
-        public static bool SupportsAdverbs(string verbName)
+        public static bool IsAdverbToken(TokenType tokenType)
         {
-            var verb = GetVerb(verbName);
-            return verb != null && 
-                   (verb.Type == VerbType.Operator || verb.Type == VerbType.Function) &&
-                   verb.SupportedArities.Contains(1);
+            return tokenType == TokenType.ADVERB_SLASH || tokenType == TokenType.ADVERB_BACKSLASH || tokenType == TokenType.ADVERB_TICK ||
+                   tokenType == TokenType.ADVERB_SLASH_COLON || tokenType == TokenType.ADVERB_BACKSLASH_COLON || tokenType == TokenType.ADVERB_TICK_COLON;
+        }
+
+        /// <summary>
+        /// Get the string representation of an adverb type
+        /// </summary>
+        public static string GetAdverbType(TokenType tokenType)
+        {
+            return tokenType switch
+            {
+                TokenType.ADVERB_SLASH => "over",
+                TokenType.ADVERB_BACKSLASH => "scan",
+                TokenType.ADVERB_TICK => "each",
+                TokenType.ADVERB_SLASH_COLON => "each-right",
+                TokenType.ADVERB_BACKSLASH_COLON => "each-left",
+                TokenType.ADVERB_TICK_COLON => "each-prior",
+                _ => tokenType.ToString()
+            };
+        }
+
+        /// <summary>
+        /// Check if a token type is a binary operator
+        /// </summary>
+        public static bool IsBinaryOperatorToken(TokenType tokenType)
+        {
+            var verb = GetVerb(tokenType.ToString());
+            return verb != null && verb.Type == VerbType.Operator;
+        }
+
+        /// <summary>
+        /// Get tokens that should stop parsing until end of expression
+        /// </summary>
+        public static readonly TokenType[] ParseUntilEndStopTokens = {
+            TokenType.RIGHT_PAREN, TokenType.RIGHT_BRACE, TokenType.SEMICOLON, TokenType.NEWLINE, TokenType.EOF
+        };
+
+        /// <summary>
+        /// Get default stop tokens for expression parsing
+        /// </summary>
+        public static readonly TokenType[] DefaultStopTokens = {
+            TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.DOT_PRODUCT, TokenType.MIN, TokenType.MAX,
+            TokenType.LESS, TokenType.GREATER, TokenType.EQUAL, TokenType.IN, TokenType.POWER, TokenType.MODULUS, TokenType.JOIN,
+            TokenType.COLON, TokenType.HASH, TokenType.UNDERSCORE, TokenType.QUESTION, TokenType.MATCH, TokenType.NEGATE, TokenType.DOLLAR, TokenType.RIGHT_PAREN,
+            TokenType.RIGHT_BRACE, TokenType.RIGHT_BRACKET, TokenType.SEMICOLON, TokenType.NEWLINE, TokenType.ASSIGNMENT, TokenType.GLOBAL_ASSIGNMENT,
+            TokenType.LEFT_BRACKET, TokenType.APPLY, TokenType.DOT_APPLY, TokenType.TYPE, TokenType.STRING_REPRESENTATION,
+            TokenType.ADVERB_SLASH, TokenType.ADVERB_BACKSLASH, TokenType.ADVERB_TICK,
+            TokenType.ADVERB_SLASH_COLON, TokenType.ADVERB_BACKSLASH_COLON, TokenType.ADVERB_TICK_COLON,
+            TokenType.TIME, TokenType.IN, TokenType.BIN, TokenType.BINL, TokenType.LSQ, TokenType.LIN,
+            TokenType.GTIME, TokenType.LTIME, TokenType.VS, TokenType.SV, TokenType.SS, TokenType.CI, TokenType.IC,
+            TokenType.AND, TokenType.OR, TokenType.XOR, TokenType.ROT, TokenType.SHIFT,
+            TokenType.DIRECTORY, TokenType.BD, TokenType.DB, TokenType.DO, TokenType.WHILE, TokenType.IF_FUNC, TokenType.EXIT, TokenType.EOF
+        };
+
+        /// <summary>
+        /// Check if parsing should stop for given stop tokens
+        /// </summary>
+        public static bool ShouldStopParsing(TokenType currentToken, TokenType[] stopTokens)
+        {
+            return stopTokens.Contains(currentToken);
+        }
+
+        /// <summary>
+        /// Get all binary operator token types
+        /// </summary>
+        public static readonly TokenType[] BinaryOperatorTokens = {
+            TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.DOT_PRODUCT, TokenType.MUL, 
+            TokenType.MIN, TokenType.MAX, TokenType.LESS, TokenType.GREATER, TokenType.EQUAL, TokenType.IN, 
+            TokenType.POWER, TokenType.MODULUS, TokenType.JOIN, TokenType.COLON, TokenType.HASH, 
+            TokenType.UNDERSCORE, TokenType.QUESTION, TokenType.MATCH, TokenType.NEGATE, TokenType.DOLLAR, 
+            TokenType.LSQ, TokenType.AND, TokenType.OR, TokenType.XOR, TokenType.ROT, TokenType.SHIFT,
+            TokenType.APPLY, TokenType.DOT_APPLY
+        };
+
+        /// <summary>
+        /// Get string symbol for binary operator token
+        /// </summary>
+        public static string GetBinaryOperatorSymbol(TokenType tokenType)
+        {
+            return tokenType switch
+            {
+                TokenType.PLUS => "+",
+                TokenType.MINUS => "-",
+                TokenType.MULTIPLY => "*",
+                TokenType.DIVIDE => "%",
+                TokenType.DOT_PRODUCT => "_dot",
+                TokenType.MUL => ".*",
+                TokenType.MIN => "&",
+                TokenType.MAX => "|",
+                TokenType.LESS => "<",
+                TokenType.GREATER => ">",
+                TokenType.EQUAL => "=",
+                TokenType.IN => "in",
+                TokenType.POWER => "^",
+                TokenType.MODULUS => "!",
+                TokenType.JOIN => ",",
+                TokenType.COLON => ":",
+                TokenType.HASH => "#",
+                TokenType.UNDERSCORE => "_",
+                TokenType.QUESTION => "?",
+                TokenType.MATCH => "~",
+                TokenType.NEGATE => "!",
+                TokenType.DOLLAR => "$",
+                TokenType.LSQ => "_lsq",
+                TokenType.AND => "&",
+                TokenType.OR => "|",
+                TokenType.XOR => "^",
+                TokenType.ROT => "rot",
+                TokenType.SHIFT => "shift",
+                TokenType.APPLY => "@",
+                TokenType.DOT_APPLY => ".",
+                TokenType.ADVERB_SLASH => "/",
+                TokenType.ADVERB_BACKSLASH => "\\",
+                TokenType.ADVERB_TICK => "'",
+                TokenType.ADVERB_SLASH_COLON => "/:",
+                TokenType.ADVERB_BACKSLASH_COLON => "\\:",
+                TokenType.ADVERB_TICK_COLON => "':",
+                _ => tokenType.ToString()
+            };
+        }
+
+        /// <summary>
+        /// Check if token type is a binary operator (comprehensive)
+        /// </summary>
+        public static bool IsBinaryOperator(TokenType tokenType)
+        {
+            return BinaryOperatorTokens.Contains(tokenType);
+        }
+
+        /// <summary>
+        /// Get delimiter tokens (parentheses, brackets, braces)
+        /// </summary>
+        public static readonly TokenType[] DelimiterTokens = {
+            TokenType.LEFT_PAREN, TokenType.RIGHT_PAREN,
+            TokenType.LEFT_BRACE, TokenType.RIGHT_BRACE,
+            TokenType.LEFT_BRACKET, TokenType.RIGHT_BRACKET
+        };
+
+        /// <summary>
+        /// Check if a token is a delimiter
+        /// </summary>
+        public static bool IsDelimiterToken(TokenType tokenType)
+        {
+            return tokenType == TokenType.LEFT_PAREN || tokenType == TokenType.RIGHT_PAREN ||
+                   tokenType == TokenType.LEFT_BRACE || tokenType == TokenType.RIGHT_BRACE ||
+                   tokenType == TokenType.LEFT_BRACKET || tokenType == TokenType.RIGHT_BRACKET;
+        }
+
+        /// <summary>
+        /// Get statement separator tokens
+        /// </summary>
+        public static readonly TokenType[] StatementSeparatorTokens = {
+            TokenType.SEMICOLON, TokenType.NEWLINE
+        };
+
+        /// <summary>
+        /// Check if a token is a statement separator
+        /// </summary>
+        public static bool IsStatementSeparatorToken(TokenType tokenType)
+        {
+            return tokenType == TokenType.SEMICOLON || tokenType == TokenType.NEWLINE;
         }
 
         /// <summary>

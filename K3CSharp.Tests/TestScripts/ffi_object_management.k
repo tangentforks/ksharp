@@ -1,1 +1,1 @@
-str: "hello" _hint `object; str . ToUpper
+str: "hello";str _sethint `object; str . ToUpper

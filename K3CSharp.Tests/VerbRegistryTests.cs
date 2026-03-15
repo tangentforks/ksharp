@@ -168,8 +168,6 @@ namespace K3CSharp.Tests
                 if (remainingArity != 0) return $"✗ Remaining arity should be 0, got {remainingArity}";
                 
                 // Test higher-order verbs
-                var higherOrderVerbs = VerbRegistry.GetHigherOrderVerbs().ToList();
-                if (!higherOrderVerbs.Contains("+")) return "✗ + should support higher-order operations";
                 if (!VerbRegistry.SupportsAdverbs("+")) return "✗ + should support adverbs";
                 
                 return "✓ Projected function tests passed";

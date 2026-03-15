@@ -431,6 +431,90 @@ namespace K3CSharp
             return node.Value;
         }
 
+        private K3Value EvaluateBinaryOperatorWithRegistry(string opName, K3Value left, K3Value right)
+        {
+            // Handle IDENTIFIER case - this should not happen with preserved verb names
+            if (opName == "IDENTIFIER")
+            {
+                throw new Exception("IDENTIFIER token encountered - verb names should be preserved from ApplyVerb");
+            }
+
+            // For all other cases, use the original switch statement logic
+            // This maintains compatibility while adding IDENTIFIER support
+            switch (opName)
+            {
+                case "+": return Plus(left, right);
+                case "-": return Minus(left, right);
+                case "*": return Times(left, right);
+                case "%": return Divide(left, right);
+                case "^": return Power(left, right);
+                case "POWER": return Power(left, right);
+                case "!": return ModRotate(left, right);
+                case "&": return Min(left, right);
+                case "|": return Max(left, right);
+                case "<": return Less(left, right);
+                case ">": return More(left, right);
+                case "=": return Equal(left, right);
+                case "~": return Match(left, right);
+                case ",": return Join(left, right);
+                case "#": return Take(left, right);
+                case "_": return FloorBinary(left, right);
+                case "@": return AtIndex(left, right);
+                case ".": return DotApply(left, right);
+                case "$": return Format(left, right);
+                case "::": return GlobalAssignment(left, right);
+                case "ADVERB_SLASH": return Over(new SymbolValue("+"), left, right);
+                case "ADVERB_BACKSLASH": return Scan(new SymbolValue("+"), left, right);
+                case "ADVERB_TICK": return HandleAdverbTick(left, new IntegerValue(0), right);
+                case "_in": return In(left, right);
+                case "_draw": return Draw(left, right);
+                case "_bin": return Bin(left, right);
+                case "_div": return MathDiv(left, right);
+                case "_dot": return MathDot(left, right);
+                case "_mul": return MathMul(left, right);
+                case "_inv": return MathInv(left, right);
+                case "_lsq": return MathLsq(left, right);
+                case "_and": return MathAnd(left, right);
+                case "_or": return MathOr(left, right);
+                case "_xor": return MathXor(left, right);
+                case "_rot": return MathRot(left, right);
+                case "_shift": return MathShift(left, right);
+                case "_binl": return Binl(left, right);
+                case "_lin": return Lin(left, right);
+                case "_dv": return Dv(left, right);
+                case "_di": return Di(left, right);
+                case "_ci": return CiFunction(left);
+                case "_ic": return IcFunction(left);
+                case "_sm": return Sm(left, right);
+                case "_sv": return Sv(left, right);
+                case "_vs": return Vs(left, right);
+                case "_ss": return SsFunction(left, right);
+                case "_setenv": return SetenvFunction(left, right);
+                case "?": return Find(left, right);
+                case "/:": return EachRight(new SymbolValue("_dot"), left, right); // TODO: Make this more generic
+                case "\\:": return EachLeft(new SymbolValue("_dot"), left, right);  // TODO: Make this more generic
+                case "TYPE": return IoVerbDyadic(left, right, 4);
+                case "IO_VERB_0": return IoVerbDyadic(left, right, 0);
+                case "IO_VERB_1": return IoVerbDyadic(left, right, 1);
+                case "IO_VERB_2": return IoVerbDyadic(left, right, 2);
+                case "IO_VERB_3": return IoVerbDyadic(left, right, 3);
+                case "IO_VERB_6": return IoVerbDyadic(left, right, 6);
+                case "IO_VERB_7": return IoVerbDyadic(left, right, 7);
+                case "IO_VERB_8": return IoVerbDyadic(left, right, 8);
+                case "IO_VERB_9": return IoVerbDyadic(left, right, 9);
+                
+                // Handle any other verb names by checking VerbRegistry first
+                default:
+                    var verb = VerbRegistry.GetVerb(opName);
+                    if (verb != null)
+                    {
+                        // For registered verbs not explicitly handled, try ApplySymbolVerb
+                        return ApplySymbolVerb(opName, left, right);
+                    }
+                    throw new Exception($"Unknown binary operator: {opName}");
+            }
+        }
+
         private K3Value EvaluateBinaryOp(ASTNode node)
         {
             if (node.Value is not SymbolValue op) throw new Exception("Binary operator must have a symbol value");
@@ -581,67 +665,7 @@ namespace K3CSharp
                 var right = Evaluate(node.Children[1]);
                 isIntermediateAssignment = previousIntermediate2; // Restore previous context
 
-                return op.Value.ToString() switch
-                    {
-                        "+" => Plus(left, right),
-                        "-" => Minus(left, right),
-                        "*" => Times(left, right),
-                        "%" => Divide(left, right),
-                        "^" => Power(left, right),
-                        "POWER" => Power(left, right),
-                        "!" => ModRotate(left, right),
-                        "&" => Min(left, right),
-                        "|" => Max(left, right),
-                        "<" => Less(left, right),
-                        ">" => More(left, right),
-                        "=" => Equal(left, right),
-                        "~" => Match(left, right),
-                        "," => Join(left, right),
-                        "#" => Take(left, right),
-                        "_" => FloorBinary(left, right),
-                        "@" => AtIndex(left, right),
-                        "." => DotApply(left, right),
-                        "$" => Format(left, right),
-                        "::" => GlobalAssignment(left, right),
-                        "ADVERB_SLASH" => Over(new SymbolValue("+"), left, right),
-                        "ADVERB_BACKSLASH" => Scan(new SymbolValue("+"), left, right),
-                        "ADVERB_TICK" => HandleAdverbTick(left, new IntegerValue(0), right),
-                        "_in" => In(left, right),
-                        "_draw" => Draw(left, right),
-                        "_bin" => Bin(left, right),
-                        "_div" => MathDiv(left, right),
-                        "_dot" => MathDot(left, right),
-                        "_mul" => MathMul(left, right),
-                        "_inv" => MathInv(left, right),
-                        "_lsq" => MathLsq(left, right),
-                        "_and" => MathAnd(left, right),
-                        "_or" => MathOr(left, right),
-                        "_xor" => MathXor(left, right),
-                        "_rot" => MathRot(left, right),
-                        "_shift" => MathShift(left, right),
-                        "_binl" => Binl(left, right),
-                        "_lin" => Lin(left, right),
-                        "_dv" => Dv(left, right),
-                        "_di" => Di(left, right),
-                        "_ci" => CiFunction(left),
-                        "_ic" => IcFunction(left),
-                        "_sm" => Sm(left, right),
-                        "_sv" => Sv(left, right),
-                        "_vs" => Vs(left, right),
-                        "_ss" => SsFunction(left, right),
-                        "_setenv" => SetenvFunction(left, right),
-                        "?" => Find(left, right),
-                        "TYPE" => IoVerbDyadic(left, right, 4),
-                    "IO_VERB_0" => IoVerbDyadic(left, right, 0),
-                    "IO_VERB_1" => IoVerbDyadic(left, right, 1),
-                    "IO_VERB_2" => IoVerbDyadic(left, right, 2),
-                    "IO_VERB_3" => IoVerbDyadic(left, right, 3),
-                    "IO_VERB_6" => IoVerbDyadic(left, right, 6),
-                    "IO_VERB_7" => IoVerbDyadic(left, right, 7),
-                    "IO_VERB_8" => IoVerbDyadic(left, right, 8),
-                    "IO_VERB_9" => IoVerbDyadic(left, right, 9),
-                        _ => throw new Exception($"Unknown binary operator: {op.Value}")
-                    };
+                return EvaluateBinaryOperatorWithRegistry(op.Value.ToString(), left, right);
             }
             // Handle 3-argument adverb structure: ADVERB(verb, left, right)
             else if (node.Children.Count == 3 && 
@@ -695,10 +719,6 @@ namespace K3CSharp
                     "ADVERB_TICK_COLON" => ApplyAdverbTickColon(verb, left, right),
                     _ => throw new Exception($"Unknown adverb: {op.Value}")
                 };
-            }
-            else if (op.Value.ToString() == "ADVERB_CHAIN")
-            {
-                return EvaluateAdverbChain(node);
             }
             else if (node.Children.Count == 0)
             {
@@ -898,9 +918,16 @@ namespace K3CSharp
                 var functionName = functionNode.Value is SymbolValue symbol ? symbol.Value : functionNode.Value?.ToString() ?? "";
                 return CallVariableFunction(functionName, arguments);
             }
-
+            
             // First evaluate the left side to see if it's a vector or dictionary
             var leftValue = Evaluate(functionNode);
+            
+            // Handle Make function specially
+            if (leftValue is FunctionValue func && func.BodyText == "Make")
+            {
+                Console.WriteLine($"DEBUG: Found Make function, calling MakeFunction with {arguments.Count} args");
+                return MakeFunction(arguments[0]);
+            }
             
             // Check if this should be treated as indexing instead of function call
             if (leftValue is VectorValue || leftValue is DictionaryValue)
@@ -2087,14 +2114,10 @@ namespace K3CSharp
             }
         }
 
-
-                
-                
-        
         private K3Value AtIndex(K3Value left, K3Value right)
         {
             // Check if this is Amend Item operation: @[d; i; f; y] or @[d; i; f]
-            // This happens when left is null (from bracket notation) or when left is the at symbol
+            // This happens when left is null (from bracket notation) or when left is at symbol
             if ((left is NullValue || (left is SymbolValue sym && sym.Value == "@")) && 
                 right is VectorValue args && args.Elements.Count >= 3)
             {
@@ -2102,7 +2125,7 @@ namespace K3CSharp
             }
             
             // @ operator for indexing: data @ index
-            // If data is null, return the index (spec: _n@x returns x)
+            // If data is null, return index (spec: _n@x returns x)
             if (left is NullValue)
             {
                 return right ?? throw new ArgumentNullException(nameof(right));
@@ -2264,7 +2287,7 @@ namespace K3CSharp
             // Handle vector indexing
             if (data is VectorValue vector)
             {
-                return VectorIndex(vector, index);
+                return VectorIndex(vector, index ?? throw new ArgumentNullException(nameof(index)));
             }
             
             // Handle function calls via bracket notation
@@ -2279,12 +2302,12 @@ namespace K3CSharp
                 else if (index is SymbolValue)
                 {
                     // Single symbol argument - treat as single argument
-                    args = new List<K3Value> { index };
+                    args = new List<K3Value> { index ?? throw new ArgumentNullException(nameof(index)) };
                 }
                 else
                 {
                     // Single non-vector argument
-                    args = new List<K3Value> { index };
+                    args = new List<K3Value> { index ?? throw new ArgumentNullException(nameof(index)) };
                 }
                 
                 // Call the function
@@ -2405,12 +2428,59 @@ namespace K3CSharp
                 else if (right is VectorValue rightVec && rightVec.Elements.Count == 1 && rightVec.Elements[0] is VectorValue symbolVec)
                 {
                     // Single-item list containing a vector of symbols
-                    return VectorIndex(dict, symbolVec);
+                    // Handle dictionary indexing with vector of symbols
+                    var results = new List<K3Value>();
+                    foreach (var symbolItem in symbolVec.Elements)
+                    {
+                        if (symbolItem is SymbolValue symValue)
+                        {
+                            bool found = false;
+                            foreach (var entry in dict.Entries)
+                            {
+                                if (entry.Key.Equals(symValue))
+                                {
+                                    results.Add(entry.Value.Value);
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found)
+                                throw new Exception($"Key '{symValue.Value}' not found in dictionary");
+                        }
+                        else
+                        {
+                            throw new Exception($"Dictionary keys must be symbols, got {symbolItem.Type}");
+                        }
+                    }
+                    return results.Count == 1 ? results[0] : new VectorValue(results);
                 }
                 else if (right is VectorValue vec && vec.Elements.All(e => e is SymbolValue))
                 {
                     // Vector of symbols - same as dictionary indexing with vector
-                    return VectorIndex(dict, vec);
+                    var results = new List<K3Value>();
+                    foreach (var symbolItem in vec.Elements)
+                    {
+                        if (symbolItem is SymbolValue symValue)
+                        {
+                            bool found = false;
+                            foreach (var entry in dict.Entries)
+                            {
+                                if (entry.Key.Equals(symValue))
+                                {
+                                    results.Add(entry.Value.Value);
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (!found)
+                                throw new Exception($"Key '{symValue.Value}' not found in dictionary");
+                        }
+                        else
+                        {
+                            throw new Exception($"Dictionary keys must be symbols, got {symbolItem.Type}");
+                        }
+                    }
+                    return results.Count == 1 ? results[0] : new VectorValue(results);
                 }
             }
             
@@ -3256,7 +3326,7 @@ namespace K3CSharp
                         }
                         else
                         {
-                            throw new InvalidOperationException($"Dictionary key must be a symbol, got {key.GetType().Name}");
+                            throw new InvalidOperationException($"Dictionary key must be a symbol, got {key?.GetType().Name}");
                         }
                     }
                     else
@@ -3265,7 +3335,8 @@ namespace K3CSharp
                     }
                 }
                 
-                return new DictionaryValue(entries);
+                var result = new DictionaryValue(entries);
+                return result;
             }
             else if (operand is VectorValue emptyVector && emptyVector.Elements.Count == 0)
             {
@@ -3275,7 +3346,7 @@ namespace K3CSharp
             else
             {
                 // For other types, just return the operand as-is
-                return operand;
+                return operand ?? throw new ArgumentNullException(nameof(operand));
             }
         }
         
@@ -3320,7 +3391,8 @@ namespace K3CSharp
             else
             {
                 // Make dictionary from operand
-                return ConvertVectorToDictionary(operand);
+                var result = ConvertVectorToDictionary(operand ?? throw new ArgumentNullException(nameof(operand)));
+                return result ?? throw new InvalidOperationException("ConvertVectorToDictionary returned null");
             }
         }
 

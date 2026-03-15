@@ -61,7 +61,8 @@ namespace K3CSharp
                 TokenType.MULTIPLY => "*",
                 TokenType.DIVIDE => "%",
                 TokenType.DIV => "_div",
-                TokenType.DOT => "_dot",
+                TokenType.DOT_PRODUCT => "_dot",
+
                 TokenType.MUL => "_mul",
                 TokenType.LSQ => "_lsq",
                 TokenType.MIN => "&",
@@ -357,16 +358,11 @@ namespace K3CSharp
             return result;
         }
 
-        private bool IsBinaryOperator(TokenType type)
+        private bool IsUnaryOperator(TokenType type)
         {
-            var verb = VerbRegistry.GetVerb(type);
-            return verb != null && verb.Type == VerbType.Operator;
-        }
-
-        private bool IsAdverbToken(TokenType type)
-        {
-            return type == TokenType.ADVERB_SLASH || type == TokenType.ADVERB_BACKSLASH || type == TokenType.ADVERB_TICK ||
-                   type == TokenType.ADVERB_SLASH_COLON || type == TokenType.ADVERB_BACKSLASH_COLON || type == TokenType.ADVERB_TICK_COLON;
+            var verb = VerbRegistry.GetVerb(type.ToString());
+            return verb != null && verb.Type == VerbType.Operator && 
+                   verb.SupportedArities != null && verb.SupportedArities.Contains(1);
         }
 
         private static readonly TokenType[] ParseUntilEndStopTokens = {
@@ -405,12 +401,7 @@ namespace K3CSharp
             
             // Check if current token is an adverb - if so, we're in a nesting context
             // Don't create placeholder for adverb operations - let ParseTerm handle them
-            if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                              CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                              CurrentToken().Type == TokenType.ADVERB_TICK ||
-                              CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                              CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON ||
-                              CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+            if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
             {
                 // Parse the primary expression normally - adverb will be handled in ParseTerm
                 result = ParsePrimary();
@@ -427,12 +418,7 @@ namespace K3CSharp
             }
 
             // Handle high-precedence adverb operations (verb-adverb binding has higher precedence than operators)
-            if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                              CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                              CurrentToken().Type == TokenType.ADVERB_TICK ||
-                              CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                              CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                              CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+            if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
             {
                 var adverbToken = PreviousToken() ?? CurrentToken();
                 var adverbType = CurrentToken().Type;
@@ -538,13 +524,32 @@ namespace K3CSharp
             {
                 // Check if this would create a mixed-type vector
                 // If current token is an operator, it would create a mixed-type vector
-                if (IsBinaryOperator(CurrentToken().Type))
+                // So stop parsing and let ParseExpression handle it
+                if (IsBinaryOperator(CurrentToken().Type) ||
+                    CurrentToken().Type == TokenType.DV || CurrentToken().Type == TokenType.DI ||
+                    CurrentToken().Type == TokenType.SETENV || CurrentToken().Type == TokenType.SM ||
+                    CurrentToken().Type == TokenType.DIV || CurrentToken().Type == TokenType.DRAW ||
+                    CurrentToken().Type == TokenType.IO_VERB_0 || CurrentToken().Type == TokenType.IO_VERB_1 ||
+                    CurrentToken().Type == TokenType.IO_VERB_2 || CurrentToken().Type == TokenType.IO_VERB_3 ||
+                    CurrentToken().Type == TokenType.IO_VERB_6 || CurrentToken().Type == TokenType.IO_VERB_7 ||
+                    CurrentToken().Type == TokenType.IO_VERB_8 || CurrentToken().Type == TokenType.IO_VERB_9)
                 {
-                    // This would create a mixed-type vector, so stop parsing and let ParseExpression handle it
                     break;
                 }
                 
-                                
+                if (CurrentToken().Type == TokenType.SYMBOL && CurrentToken().Lexeme == "_dv" || CurrentToken().Lexeme == "_di")
+                {
+                    var symbol = CurrentToken().Lexeme;
+                    Match(TokenType.SYMBOL);
+                    var rightArg = ParseTerm(parseUntilEnd);
+                    var binaryOp = new ASTNode(ASTNodeType.BinaryOp);
+                    binaryOp.Value = new SymbolValue(symbol);
+                    if (result != null) binaryOp.Children.Add(result);
+                    if (rightArg != null) binaryOp.Children.Add(rightArg);
+                    result = binaryOp;
+                    break;
+                }
+                
                 var nextElement = ParsePrimary();
                 
                 // Special case: function calls (variable followed by expression)
@@ -782,12 +787,7 @@ namespace K3CSharp
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
-                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                      CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                    if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("+"));
@@ -831,12 +831,7 @@ namespace K3CSharp
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
-                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                       CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                       CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                                       CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                    if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("-"));
@@ -869,12 +864,7 @@ namespace K3CSharp
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
-                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                      CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                    if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("%"));
@@ -915,12 +905,7 @@ namespace K3CSharp
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
-                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                      CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                    if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("*"));
@@ -953,12 +938,7 @@ namespace K3CSharp
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
-                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                      CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                    if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("&"));
@@ -985,12 +965,7 @@ namespace K3CSharp
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
-                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                      CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                    if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("|"));
@@ -1017,12 +992,7 @@ namespace K3CSharp
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
-                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                      CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                    if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("<"));
@@ -1049,12 +1019,7 @@ namespace K3CSharp
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
-                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                      CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                    if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue(">"));
@@ -1081,12 +1046,7 @@ namespace K3CSharp
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
-                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                      CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                    if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("^"));
@@ -1113,12 +1073,7 @@ namespace K3CSharp
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
-                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                      CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                    if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue(","));
@@ -1303,12 +1258,7 @@ namespace K3CSharp
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
-                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                      CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                    if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("~"));
@@ -1339,12 +1289,7 @@ namespace K3CSharp
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
-                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                      CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                    if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("$"));
@@ -1371,12 +1316,7 @@ namespace K3CSharp
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
-                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                      CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                    if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("#"));
@@ -1410,12 +1350,7 @@ namespace K3CSharp
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
-                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                      CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                    if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("_"));
@@ -1442,12 +1377,7 @@ namespace K3CSharp
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
-                    if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                      CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON || 
-                                      CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                    if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         // This is a verb symbol for an adverb operation
                         result = ASTNode.MakeLiteral(new SymbolValue("?"));
@@ -1575,7 +1505,7 @@ namespace K3CSharp
                 if (operand != null) node.Children.Add(operand);
                 return node;
             }
-            else if (Match(TokenType.DOT))
+            else if (Match(TokenType.DOT_PRODUCT))
             {
                 // Linear algebra dot product operation
                 var operand = ParseExpression();
@@ -1806,12 +1736,7 @@ namespace K3CSharp
             else if (Match(TokenType.CI))
             {
                 // Database function - check if followed by an adverb
-                if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                  CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                  CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                  CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                  CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON ||
-                                  CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                 {
                     // This is a monadic verb followed by an adverb - create a verb node
                     var node = new ASTNode(ASTNodeType.Literal);
@@ -1831,12 +1756,7 @@ namespace K3CSharp
             else if (Match(TokenType.IC))
             {
                 // Database function - check if followed by an adverb
-                if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                                  CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                                  CurrentToken().Type == TokenType.ADVERB_TICK ||
-                                  CurrentToken().Type == TokenType.ADVERB_SLASH_COLON || 
-                                  CurrentToken().Type == TokenType.ADVERB_BACKSLASH_COLON ||
-                                  CurrentToken().Type == TokenType.ADVERB_TICK_COLON))
+                if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
                 {
                     // This is a monadic verb followed by an adverb - create a verb node
                     var node = new ASTNode(ASTNodeType.Literal);
@@ -2327,70 +2247,19 @@ namespace K3CSharp
                 {
                     // Standalone operator - treat as symbol
                     var opToken = CurrentToken();
-                    var opSymbol = opToken.Type.ToString() switch
-                    {
-                        "PLUS" => "+",
-                        "MINUS" => "-",
-                        "MULTIPLY" => "*",
-                        "DIVIDE" => "%",
-                        "POWER" => "^",
-                        "MODULUS" => "!",
-                        "MIN" => "&",
-                        "MAX" => "|",
-                        "LESS" => "<",
-                        "GREATER" => ">",
-                        "EQUAL" => "=",
-                        "JOIN" => ",",
-                        "COLON" => ":",
-                        "HASH" => "#",
-                        "UNDERSCORE" => "_",
-                        "QUESTION" => "?",
-                        "DOLLAR" => "$",
-                        "APPLY" => "@",
-                        _ => opToken.Lexeme
-                    };
+                    var opSymbol = VerbRegistry.GetBinaryOperatorSymbol(opToken.Type);
                     Match(opToken.Type);
                     return ASTNode.MakeLiteral(new SymbolValue(opSymbol));
                 }
-                else if (IsAdverbToken(nextType))
+                else if (VerbRegistry.IsAdverbToken(nextType))
                 {
                     // Operator followed by adverb - create projected function
                     var opToken = CurrentToken();
                     var adverbToken = tokens[nextIdx];
                     
-                    var opSymbol = opToken.Type.ToString() switch
-                    {
-                        "PLUS" => "+",
-                        "MINUS" => "-",
-                        "MULTIPLY" => "*",
-                        "DIVIDE" => "%",
-                        "POWER" => "^",
-                        "MODULUS" => "!",
-                        "MIN" => "&",
-                        "MAX" => "|",
-                        "LESS" => "<",
-                        "GREATER" => ">",
-                        "EQUAL" => "=",
-                        "JOIN" => ",",
-                        "COLON" => ":",
-                        "HASH" => "#",
-                        "UNDERSCORE" => "_",
-                        "QUESTION" => "?",
-                        "DOLLAR" => "$",
-                        "APPLY" => "@",
-                        _ => opToken.Lexeme
-                    };
+                    var opSymbol = VerbRegistry.GetBinaryOperatorSymbol(opToken.Type);
                     
-                    var adverbType = adverbToken.Type switch
-                    {
-                        TokenType.ADVERB_SLASH => "over",
-                        TokenType.ADVERB_BACKSLASH => "scan",
-                        TokenType.ADVERB_TICK => "each",
-                        TokenType.ADVERB_SLASH_COLON => "over-each",
-                        TokenType.ADVERB_BACKSLASH_COLON => "scan-each",
-                        TokenType.ADVERB_TICK_COLON => "each-each",
-                        _ => adverbToken.Type.ToString()
-                    };
+                    var adverbType = VerbRegistry.GetAdverbType(adverbToken.Type);
                     
                     // Create projected function
                     var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
@@ -2430,7 +2299,7 @@ namespace K3CSharp
                     // Validate variable name - cannot start with underscore
                     if (variableName.StartsWith("_"))
                     {
-                        throw new Exception("parse error");
+                        throw new Exception("Names starting with _ are reserved");
                     }
                     
                     if (assignToken.Lexeme.Length > 1)
@@ -2518,7 +2387,7 @@ namespace K3CSharp
                 var op = PreviousToken().Type;
                 
                 // Check if this is followed by an adverb
-                if (IsAdverbToken(CurrentToken().Type))
+                if (VerbRegistry.IsAdverbToken(CurrentToken().Type))
                 {
                     var adverbToken = CurrentToken();
                     Advance(); // Consume adverb token
@@ -2810,36 +2679,6 @@ namespace K3CSharp
             return result;
         }
 
-        private ASTNode ParseAdverbChain(string firstAdverb)
-        {
-            var adverbs = new List<string> { firstAdverb };
-            
-            // Collect additional adverbs for nesting
-            while (IsAdverbToken(CurrentToken().Type))
-            {
-                var adverbToken = CurrentToken();
-                Advance(); // Consume the adverb token
-                adverbs.Add(adverbToken.Type.ToString().Replace("TokenType.", ""));
-            }
-            
-            // Parse the operand (the verb or data the adverbs apply to)
-            var operand = ParsePrimary();
-            
-            // Create a nested adverb node
-            var node = new ASTNode(ASTNodeType.BinaryOp);
-            node.Value = new SymbolValue("ADVERB_CHAIN");
-            if (operand != null) node.Children.Add(operand);
-            
-            // Add adverbs as metadata
-            foreach (var adverb in adverbs)
-            {
-                var adverbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(adverb));
-                node.Children.Add(adverbNode);
-            }
-            
-            return node;
-        }
-
         private Token CurrentToken()
         {
             if (IsAtEnd()) return new Token(TokenType.EOF, "", 0);
@@ -2873,19 +2712,9 @@ namespace K3CSharp
                     node.Value is SymbolValue || node.Value is NullValue);
         }
 
-        private bool IsBinaryOperatorContext()
+        private bool IsBinaryOperator(TokenType type)
         {
-            // Check if the current token suggests we're in a binary operator context
-            // This is a simplified check - in a full implementation we'd need more sophisticated parsing
-            return CurrentToken().Type == TokenType.IDENTIFIER ||
-                   CurrentToken().Type == TokenType.INTEGER ||
-                   CurrentToken().Type == TokenType.LONG ||
-                   CurrentToken().Type == TokenType.FLOAT ||
-                   CurrentToken().Type == TokenType.CHARACTER ||
-                   CurrentToken().Type == TokenType.SYMBOL ||
-                   CurrentToken().Type == TokenType.LEFT_PAREN ||
-                   CurrentToken().Type == TokenType.LEFT_BRACE ||
-                   CurrentToken().Type == TokenType.LEFT_BRACKET;
+            return VerbRegistry.IsBinaryOperator(type);
         }
 
         private bool IsUnaryOperatorContext()
@@ -3204,7 +3033,7 @@ namespace K3CSharp
             // Handle binary operators with Long Right Scope (LRS)
             // In K, there's no precedence among operators - they're all right-associative
             while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
-                   Match(TokenType.DIVIDE) || Match(TokenType.DIV) || Match(TokenType.DOT) || Match(TokenType.DOT_APPLY) || Match(TokenType.MUL) || Match(TokenType.AND) || Match(TokenType.OR) || Match(TokenType.XOR) || Match(TokenType.ROT) || Match(TokenType.SHIFT) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
+                   Match(TokenType.DIVIDE) || Match(TokenType.DIV) || Match(TokenType.DOT_PRODUCT) || Match(TokenType.DOT_APPLY) || Match(TokenType.MUL) || Match(TokenType.AND) || Match(TokenType.OR) || Match(TokenType.XOR) || Match(TokenType.ROT) || Match(TokenType.SHIFT) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
                    Match(TokenType.EQUAL) || Match(TokenType.MATCH) || Match(TokenType.IN) || Match(TokenType.BIN) || Match(TokenType.BINL) || Match(TokenType.LIN) ||
                    Match(TokenType.DV) || Match(TokenType.DI) || Match(TokenType.VS) || Match(TokenType.SV) || Match(TokenType.SS) || Match(TokenType.SM) || Match(TokenType.CI) || Match(TokenType.IC) ||
                    Match(TokenType.GETENV) || Match(TokenType.SETENV) || Match(TokenType.SIZE) ||
@@ -3219,14 +3048,14 @@ namespace K3CSharp
                 var op = PreviousToken().Type;
                 
                 // Check if this is followed by an adverb (infix adverb)
-                if (IsAdverbToken(CurrentToken().Type))
+                if (VerbRegistry.IsAdverbToken(CurrentToken().Type))
                 {
                     var adverbToken = CurrentToken();
                     Advance(); // Consume the adverb token
                     var adverbType = adverbToken.Type.ToString().Replace("TokenType.", "");
                     
                     // Check if this adverb is followed by another adverb (adverb nesting)
-                    if (IsAdverbToken(CurrentToken().Type))
+                    if (VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         // This is adverb nesting (e.g., ,/:\:)
                         // Create a composite function representing the nested adverbs
@@ -3515,7 +3344,7 @@ namespace K3CSharp
                     var op = PreviousToken().Type;
                     
                     // Check if this is followed by an adverb (infix adverb)
-                    if (IsAdverbToken(CurrentToken().Type))
+                    if (VerbRegistry.IsAdverbToken(CurrentToken().Type))
                     {
                         var adverbToken = CurrentToken();
                         Advance(); // Consume the adverb token
@@ -3591,9 +3420,7 @@ namespace K3CSharp
             if (verb == null) return null;
             
             // Check if this verb is followed by an adverb (prefix adverb)
-            if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                              CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                              CurrentToken().Type == TokenType.ADVERB_TICK))
+            if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
             {
                 var adverbType = CurrentToken().Type;
                 Match(adverbType); // Consume the adverb
@@ -3616,23 +3443,22 @@ namespace K3CSharp
             return verb;
         }
         
-        private ASTNode ParseVerbWithAdverbsRecursive(ASTNode derivedVerb)
+        private ASTNode? ParseVerbWithAdverbsRecursive(ASTNode derivedVerb)
         {
             // Check if this derived verb is followed by another adverb
-            if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                              CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                              CurrentToken().Type == TokenType.ADVERB_TICK))
+            if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
             {
-                var adverbType = CurrentToken().Type;
-                Match(adverbType); // Consume the adverb
+                var adverbToken = CurrentToken();
+                Match(adverbToken.Type); // Consume adverb
+                var adverbType = adverbToken.Type.ToString().Replace("TokenType.", "");
                 
                 // Parse the arguments for the adverb
                 var arguments = ParseTerm();
                 
-                // Create the proper adverb structure: ADVERB(derivedVerb, 0, arguments)
+                // Create the proper adverb structure: ADVERB(verb, null, arguments)
                 // Use 0 as initialization to signal "consume first element" for monadic derived verbs
                 var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
-                adverbNode.Value = new SymbolValue(adverbType.ToString().Replace("TokenType.", ""));
+                adverbNode.Value = new SymbolValue(adverbType);
                 if (derivedVerb != null) adverbNode.Children.Add(derivedVerb);
                 adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0))); // Use 0 for monadic derived verbs
                 if (arguments != null) adverbNode.Children.Add(arguments);
@@ -3640,8 +3466,11 @@ namespace K3CSharp
                 // Recursively check for more adverbs
                 return ParseVerbWithAdverbsRecursive(adverbNode);
             }
-            
-            return derivedVerb;
+            else
+            {
+                // Not followed by an adverb, return null to indicate regular processing should continue
+                return null;
+            }
         }
 
         private bool IsIdentifierToken(TokenType type)
@@ -3669,20 +3498,13 @@ namespace K3CSharp
                    type == TokenType.STRING_REPRESENTATION;
         }
 
-        private bool IsUnaryOperator(TokenType type)
-        {
-            var verb = VerbRegistry.GetVerb(type);
-            return verb != null && verb.Type == VerbType.Operator && 
-                   verb.SupportedArities.Contains(1);
-        }
-
-        /// <summary>
         /// Get the preferred arity for an operator based on context
         /// </summary>
         private int GetPreferredArity(TokenType type, bool hasLeftOperand)
         {
-            var verbName = GetTokenSymbol(type);
-            return VerbRegistry.GetPreferredArity(verbName, hasLeftOperand);
+            // K doesn't use precedence by type - all operators are right-associative
+            // Default to dyadic (arity 2) for binary operators
+            return 2;
         }
 
         /// <summary>
@@ -3699,43 +3521,9 @@ namespace K3CSharp
         /// </summary>
         private string GetTokenSymbol(TokenType type)
         {
-            return type switch
-            {
-                TokenType.PLUS => "+",
-                TokenType.MINUS => "-",
-                TokenType.MULTIPLY => "*",
-                TokenType.DIVIDE => "%",
-                TokenType.MIN => "&",
-                TokenType.MAX => "|",
-                TokenType.LESS => "<",
-                TokenType.GREATER => ">",
-                TokenType.EQUAL => "=",
-                TokenType.IN => "_in",
-                TokenType.POWER => "^",
-                TokenType.MODULUS => "!",
-                TokenType.JOIN => ",",
-                TokenType.COLON => ":",
-                TokenType.HASH => "#",
-                TokenType.UNDERSCORE => "_",
-                TokenType.QUESTION => "?",
-                TokenType.DOLLAR => "$",
-                TokenType.MATCH => "~",
-                TokenType.APPLY => "@",
-                TokenType.DOT => ".",
-                TokenType.NEGATE => "!",
-                TokenType.TYPE => "_type",
-                TokenType.STRING_REPRESENTATION => "_string",
-                TokenType.LSQ => "_lsq",
-                TokenType.AND => "_and",
-                TokenType.OR => "_or",
-                TokenType.XOR => "_xor",
-                TokenType.ROT => "_rot",
-                TokenType.SHIFT => "_shift",
-                TokenType.CEIL => "_ceil",
-                TokenType.NOT => "_not",
-                _ => type.ToString()
-            };
+            return VerbRegistry.GetBinaryOperatorSymbol(type);
         }
+        
 
         private bool IsAtEnd()
         {
@@ -3745,9 +3533,7 @@ namespace K3CSharp
         private ASTNode? HandlePrefixAdverb(string verbSymbol)
         {
             // Look ahead to see if this is part of an adverb operation
-            if (!IsAtEnd() && (CurrentToken().Type == TokenType.ADVERB_SLASH || 
-                              CurrentToken().Type == TokenType.ADVERB_BACKSLASH || 
-                              CurrentToken().Type == TokenType.ADVERB_TICK))
+            if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
             {
                 // This is a verb symbol for an adverb operation
                 var adverbType = CurrentToken().Type;

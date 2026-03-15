@@ -871,7 +871,7 @@ namespace K3CSharp
                 "_tanh" => new Token(TokenType.TANH, opName, start),
                 
                 // Linear algebra operations
-                "_dot" => new Token(TokenType.DOT, opName, start),
+                "_dot" => new Token(TokenType.DOT_PRODUCT, opName, start),
                 "_mul" => new Token(TokenType.MUL, opName, start),
                 "_inv" => new Token(TokenType.INV, opName, start),
                 

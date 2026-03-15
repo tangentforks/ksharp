@@ -92,7 +92,7 @@ namespace K3CSharp
         SHIFT,          // _shift bitwise-shift
         
         // Linear algebra operations
-        DOT,            // _dot dot product
+        DOT_PRODUCT,     // _dot dot product
         MUL,            // _mul matrix multiplication
         INV,            // _inv matrix inverse
         CEIL,           // _ceil ceiling function

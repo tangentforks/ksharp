@@ -174,15 +174,14 @@ namespace K3CSharp.Tests
                 }
                 
                 // Test higher-order verb support
-                var higherOrderVerbs = VerbRegistry.GetHigherOrderVerbs().ToList();
-                if (!higherOrderVerbs.Contains("+"))
+                if (!VerbRegistry.SupportsAdverbs("+"))
                 {
                     Console.WriteLine("✗ Higher-order verb support failed");
                     allTestsPassed = false;
                 }
                 else
                 {
-                    Console.WriteLine($"✓ Higher-order verbs: {higherOrderVerbs.Count} verbs support adverbs");
+                    Console.WriteLine("✓ Higher-order verb support verified");
                 }
             }
             catch (Exception ex)
