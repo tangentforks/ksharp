@@ -8,3 +8,5 @@ Use the following paths to locate documentation about the K language:
 - Hypotheses (specifications related to serialization/deserialization and I/O, produced from experimental results): T:\_src\github.com\ERufian\ksharp\K3CSharp.SerializationResearch\hypothesis_*
 - K Reference: T:\_src\github.com\ERufian\vibe-docs\ksharp\cleaned\*.html
 - nsl parser: https://www.nsl.com/k/kparse/kparse.k
+- Build the main project (ksharp.exe) from path T:\_src\github.com\ERufian\ksharp\K3CSharp using: dotnet build
+- Run the test project from path T:\_src\github.com\ERufian\ksharp\K3CSharp.Tests using: dotnet run

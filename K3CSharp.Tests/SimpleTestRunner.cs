@@ -276,6 +276,10 @@ namespace K3CSharp.Tests
 
                 ("anonymous_function_empty.k", "{}"),
 
+                ("anonymous_function_over_adverb.k", "0.01666667"),
+
+                ("anonymous_function_scan_adverb.k", "(10;0.5;0.01666667)"),
+
 
 
         // Adverb Scan tests
@@ -498,6 +502,16 @@ namespace K3CSharp.Tests
                 ("function_foo_chain.k", "20"),
 
                 ("function_mul.k", "32"),
+
+                ("lambda_string_assign.k", "\"hello\""),
+
+                ("lambda_string_literal.k", "\"hello\""),
+
+                ("lambda_symbol_literal.k", "`abc"),
+
+                ("named_function_over.k", "0.01666667"),
+
+                ("named_function_scan.k", "(10;0.5;0.01666667)"),
 
                 
 

@@ -31,11 +31,14 @@
 ║ adverb_scan_with_initialization.k                  │ 2 *\ 1 2 3           │ 2 2 4 12             │                      ║
 ║ anonymous_function_double_param.k                  │ {[op1;op2] op1 * op2} │ {[op1;op2] op1 ...   │                      ║
 ║ anonymous_function_empty.k                         │ {}                   │ {}                   │                      ║
-║ anonymous_function_simple.k                        │ {4+5}                │ {4+5}                │                      ║
-║ anonymous_function_single_param.k                  │ {[arg1] arg1+6}      │ {[arg1] arg1+6}      │                      ║
-║ lambda_string_literal.k                            │ {"hello"}[]          │ "hello"              │                      ║
-║ lambda_symbol_literal.k                            │ {`abc}[]             │ `abc                 │                      ║
-║ lambda_string_assign.k                             │ {a:"hello";a}[]      │ "hello"              │                      ║
+║ anonymous_function_over_adverb.k                   │ {x*%y}/10 20 30      │ Error: Cannot a...   │ 0.01666667           ║
+║ anonymous_function_scan_adverb.k                   │ {x*%y}\10 20 30      │ Error: Cannot a...   │ (10;0.5;0.01666...   ║
+║ adverb_scan_divide.k                               │ %\ 100 2 5           │ 100 50 10            │                      ║
+║ adverb_scan_max.k                                  │ |\ 1 3 2 5 4         │ 1 3 3 5 5            │                      ║
+║ adverb_scan_min.k                                  │ &\ 5 3 4 1 2         │ 5 3 3 1 1            │                      ║
+║ adverb_scan_minus.k                                │ -\ 10 2 3 1          │ 10 8 5 4             │                      ║
+║ adverb_scan_multiply.k                             │ *\ 1 2 3 4           │ 1 2 6 24             │                      ║
+║ adverb_scan_plus.k                                 │ +\ 1 2 3 4 5         │ 1 3 6 10 15          │                      ║
 ║ test_projected_function.k                          │ %  // This should create a projected function │ %                    │                      ║
 ║ atom_scalar.k                                      │ @42                  │ 1                    │                      ║
 ║ atom_vector.k                                      │ @1 2 3               │ 0                    │                      ║
@@ -52,10 +55,6 @@
 ║ dictionary_index_value.k                           │ (.((`a;1);(`b;2))) @ `a │ 1                    │                      ║
 ║ dictionary_index_value2.k                          │ (.((`a;1);(`b;2))) @ `b │ 2                    │                      ║
 ║ dictionary_make_symbol_vector.k                    │ .,`a`b               │ .,(`a;`b;)           │                      ║
-║ anonymous_function_adverb_each_right.k             │ {x*%y}/10 20 30      │ Error: Cannot a...   │ 0.01666667           ║
-║ anonymous_function_adverb_slash_colon.k            │ {x*%y} 10 20 30      │ {x*%y}               │ 0.01666667           ║
-║ anonymous_function_adverb_test.k                   │ {[x;y] x*%y}/10 20 30 │ Error: Cannot a...   │ 0.01666667           ║
-║ anonymous_function_adverb_over.k                   │ {[x;y] x*%y}/10 20 30 │ Error: Cannot a...   │ 0.01666667           ║
 ║ dictionary_multiple.k                              │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
 ║ dictionary_null_attributes.k                       │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
 ║ dictionary_single.k                                │ .,(`a;`b)            │ .,(`a;`b;)           │                      ║
@@ -110,6 +109,11 @@
 ║ function_call_simple.k                             │ add7:{[arg1] arg1+7} │ 12                   │                      ║
 ║ function_foo_chain.k                               │ mul:{[op1;op2] op1 * op2} │ 20                   │                      ║
 ║ function_mul.k                                     │ mul:{[op1;op2] op1 * op2} │ 32                   │                      ║
+║ lambda_string_assign.k                             │ {a:"hello";a}[]      │ "hello"              │                      ║
+║ lambda_string_literal.k                            │ {"hello"}[]          │ "hello"              │                      ║
+║ lambda_symbol_literal.k                            │ {`abc}[]             │ `abc                 │                      ║
+║ named_function_over.k                              │ f:{x*%y};f/10 20 30  │ Error: Cannot a...   │ 0.01666667           ║
+║ named_function_scan.k                              │ f:{x*%y};f\10 20 30  │ Error: Cannot a...   │ (10;0.5;0.01666...   ║
 ║ where_generate_scalar.k                            │ &4                   │ 0 0 0 0              │                      ║
 ║ grade_down_operator.k                              │ > (3 11 9 9 4)       │ 1 2 3 4 0            │                      ║
 ║ grade_up_operator.k                                │ < (3 11 9 9 4)       │ 0 4 2 3 1            │                      ║
@@ -811,29 +815,29 @@
 ║ ktree_dot_apply_relative_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `d . `keyA │ 1 2 3                │                      ║
 ║ ktree_dot_apply_absolute_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `.k.d . `keyB │ 1 3 5                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 788/807 tests passed (97.6%)                                                                               ║
+║ SUMMARY: 792/811 tests passed (97.7%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
-Test: anonymous_function_adverb_each_right.k
+Test: anonymous_function_over_adverb.k
 Input: {x*%y}/10 20 30
 Expected: 0.01666667
 Actual: Error: Cannot add Function and Integer
 ──────────────────────────────────────────────────────────────────────────
-Test: anonymous_function_adverb_slash_colon.k
-Input: {x*%y} 10 20 30
-Expected: 0.01666667
-Actual: {x*%y}
+Test: anonymous_function_scan_adverb.k
+Input: {x*%y}\10 20 30
+Expected: (10;0.5;0.01666667)
+Actual: Error: Cannot add Function and Integer
 ──────────────────────────────────────────────────────────────────────────
-Test: anonymous_function_adverb_test.k
-Input: {[x;y] x*%y}/10 20 30
+Test: named_function_over.k
+Input: f:{x*%y};f/10 20 30
 Expected: 0.01666667
 Actual: Error: Cannot add Function and Integer
 ──────────────────────────────────────────────────────────────────────────
-Test: anonymous_function_adverb_over.k
-Input: {[x;y] x*%y}/10 20 30
-Expected: 0.01666667
+Test: named_function_scan.k
+Input: f:{x*%y};f\10 20 30
+Expected: (10;0.5;0.01666667)
 Actual: Error: Cannot add Function and Integer
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
