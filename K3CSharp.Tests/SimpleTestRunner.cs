@@ -176,7 +176,6 @@ namespace K3CSharp.Tests
                 ("dictionary_index_value.k", "1"),
                 ("dictionary_index_value2.k", "2"),
                 ("dictionary_make_symbol_vector.k", ".,(`a;`b;)"),
-                ("debug_make.k", ".((`a;1;);(`b;2;))"),
                 ("dictionary_multiple.k", ".((`a;1;);(`b;2;))"),
                 ("dictionary_null_attributes.k", ".((`a;1;);(`b;2;))"),
                 ("dictionary_single.k", ".,(`a;`b;)"),

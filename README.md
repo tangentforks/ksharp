@@ -457,7 +457,7 @@ cd K3CSharp.Comparison && dotnet run
 ### **Core Function System** ✅
 - **Anonymous Functions**: `{[x;y] x + y}`
 - **Function Assignment**: `func: {[x] x * 2}`
-- **Function Application**: `func . 5` or `@` operator
+- **Function Application**: `func2 . (4;5)`, `func1 @ 5` or `func2[3;5]`
 - **Projections**: `add . 5` creates `{[y] 5 + y}`
 - **Multi-statement**: Functions with semicolon-separated statements
 - **Modified Assignment Operators** 🆕: `i+: 1` (increment), `x-: 2` (decrement), `n*: 3` (multiply-assign)
