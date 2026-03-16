@@ -438,7 +438,7 @@ namespace K3CSharp
                 // Special case: if the result is a unary operator (like _sqrt), treat brackets as grouping
                 // So _sqrt[3] becomes _sqrt 3, not _sqrt @ [3]
                 if (result != null && result.Type == ASTNodeType.BinaryOp && result.Value is SymbolValue opSymbol && 
-                    opSymbol.Value.ToString().StartsWith("_") && result.Children.Count == 1)
+                    opSymbol.Value.StartsWith("_") && result.Children.Count == 1)
                 {
                     // This is a unary operator with brackets - treat as grouping
                     // Replace the unary operator's child with the bracket contents
@@ -453,7 +453,7 @@ namespace K3CSharp
                 // Special case: if the result is a literal underscore function (like _ic), treat brackets as grouping
                 // So _ic[x] becomes _ic x, not _ic @ [x]
                 if (result != null && result.Type == ASTNodeType.Literal && result.Value is SymbolValue literalSymbol && 
-                    literalSymbol.Value.ToString().StartsWith("_"))
+                    literalSymbol.Value.StartsWith("_"))
                 {
                     // This is a literal underscore function with brackets - convert to unary operator
                     var unaryNode = new ASTNode(ASTNodeType.BinaryOp);
@@ -599,7 +599,11 @@ namespace K3CSharp
                 {
                     // Treat as function call: variable is the function, rest are arguments
                     var functionNode = elements[0];
-                    var arguments = elements.Skip(1).ToList();
+                    var arguments = new List<ASTNode>();
+                    for (int i = 1; i < elements.Count; i++)
+                    {
+                        arguments.Add(elements[i]);
+                    }
                     return ASTNode.MakeFunctionCall(functionNode, arguments);
                 }
                 
@@ -1138,7 +1142,7 @@ namespace K3CSharp
                     var variableName = left.Value is SymbolValue symbol ? symbol.Value : left.Value?.ToString() ?? "";
                     
                     // Validate variable name - cannot start with underscore
-                    if (variableName.StartsWith("_"))
+                    if (variableName.Length > 0 && variableName[0] == '_')
                     {
                         throw new Exception("parse error");
                     }
@@ -1154,20 +1158,8 @@ namespace K3CSharp
 
             // Handle binary operators with Long Right Scope (LRS)
             // In K, there's no precedence among operators - they're all right-associative
-            while (Match(TokenType.PLUS) || Match(TokenType.MINUS) || Match(TokenType.MULTIPLY) ||
-                   Match(TokenType.DIVIDE) || Match(TokenType.DIV) || Match(TokenType.DOT_PRODUCT) || Match(TokenType.DOT_APPLY) || Match(TokenType.MUL) || Match(TokenType.AND) || Match(TokenType.OR) || Match(TokenType.XOR) || Match(TokenType.ROT) || Match(TokenType.SHIFT) || Match(TokenType.MIN) || Match(TokenType.MAX) || Match(TokenType.LESS) || Match(TokenType.GREATER) ||
-                   Match(TokenType.EQUAL) || Match(TokenType.MATCH) || Match(TokenType.IN) || Match(TokenType.BIN) || Match(TokenType.BINL) || Match(TokenType.LIN) ||
-                   Match(TokenType.DV) || Match(TokenType.DI) || Match(TokenType.VS) || Match(TokenType.SV) || Match(TokenType.SS) || Match(TokenType.SM) || Match(TokenType.CI) || Match(TokenType.IC) ||
-                   Match(TokenType.GETENV) || Match(TokenType.SETENV) || Match(TokenType.SIZE) ||
-                   Match(TokenType.POWER) || Match(TokenType.MODULUS) || Match(TokenType.JOIN) ||
-                   Match(TokenType.COLON) || Match(TokenType.HASH) || Match(TokenType.UNDERSCORE) || Match(TokenType.QUESTION) ||
-                   Match(TokenType.DOLLAR) || Match(TokenType.DRAW) || Match(TokenType.TYPE) || Match(TokenType.STRING_REPRESENTATION) ||
-                   Match(TokenType.IO_VERB_0) || Match(TokenType.IO_VERB_1) || Match(TokenType.IO_VERB_2) || Match(TokenType.IO_VERB_3) ||
-                   Match(TokenType.IO_VERB_6) || Match(TokenType.IO_VERB_7) || Match(TokenType.IO_VERB_8) || Match(TokenType.IO_VERB_9) ||
-                   Match(TokenType.LSQ) || Match(TokenType.APPLY) || Match(TokenType.DOT_APPLY) ||
-                   Match(TokenType.DO) || Match(TokenType.WHILE) || Match(TokenType.IF_FUNC))
+            while (MatchBinaryOperator(out var op))
             {
-                var op = PreviousToken().Type;
                 
                 // Check if this is followed by an adverb (infix adverb)
                 if (VerbRegistry.IsAdverbToken(CurrentToken().Type))
@@ -1407,7 +1399,6 @@ namespace K3CSharp
                     var right = ParseExpressionWithoutSemicolons();
                     if (right != null)
                         return ASTNode.MakeBinaryOp(op, left, right);
-                    return left;
                 }
             }
             
@@ -1598,6 +1589,34 @@ namespace K3CSharp
             }
             
             return parameters;
+        }
+        
+        private static readonly HashSet<TokenType> BinaryOperatorTokens = new()
+        {
+            TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.DIV, 
+            TokenType.DOT_PRODUCT, TokenType.DOT_APPLY, TokenType.MUL, TokenType.AND, TokenType.OR, 
+            TokenType.XOR, TokenType.ROT, TokenType.SHIFT, TokenType.MIN, TokenType.MAX, 
+            TokenType.LESS, TokenType.GREATER, TokenType.EQUAL, TokenType.MATCH, TokenType.IN, 
+            TokenType.BIN, TokenType.BINL, TokenType.LIN, TokenType.DV, TokenType.DI, TokenType.VS, 
+            TokenType.SV, TokenType.SS, TokenType.SM, TokenType.CI, TokenType.IC, TokenType.GETENV, 
+            TokenType.SETENV, TokenType.SIZE, TokenType.POWER, TokenType.MODULUS, TokenType.JOIN, 
+            TokenType.COLON, TokenType.HASH, TokenType.UNDERSCORE, TokenType.QUESTION, TokenType.DOLLAR, 
+            TokenType.DRAW, TokenType.TYPE, TokenType.STRING_REPRESENTATION, TokenType.IO_VERB_0, 
+            TokenType.IO_VERB_1, TokenType.IO_VERB_2, TokenType.IO_VERB_3, TokenType.IO_VERB_6, 
+            TokenType.IO_VERB_7, TokenType.IO_VERB_8, TokenType.IO_VERB_9, TokenType.LSQ, TokenType.APPLY, 
+            TokenType.DOT_APPLY, TokenType.DO, TokenType.WHILE, TokenType.IF_FUNC
+        };
+
+        private bool MatchBinaryOperator(out TokenType matchedType)
+        {
+            if (!IsAtEnd() && BinaryOperatorTokens.Contains(CurrentToken().Type))
+            {
+                matchedType = CurrentToken().Type;
+                Advance();
+                return true;
+            }
+            matchedType = default;
+            return false;
         }
         
             }
