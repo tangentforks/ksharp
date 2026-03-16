@@ -879,6 +879,25 @@ namespace K3CSharp
         }
 
         /// <summary>
+        /// Extract digit from I/O verb token
+        /// </summary>
+        public static int GetIOVerbDigit(TokenType tokenType)
+        {
+            return tokenType switch
+            {
+                TokenType.IO_VERB_0 => 0,
+                TokenType.IO_VERB_1 => 1,
+                TokenType.IO_VERB_2 => 2,
+                TokenType.IO_VERB_3 => 3,
+                TokenType.IO_VERB_6 => 6,
+                TokenType.IO_VERB_7 => 7,
+                TokenType.IO_VERB_8 => 8,
+                TokenType.IO_VERB_9 => 9,
+                _ => throw new ArgumentException($"Invalid I/O verb token: {tokenType}")
+            };
+        }
+
+        /// <summary>
         /// Get performance statistics for the VerbRegistry
         /// </summary>
         public static Dictionary<string, object> GetPerformanceStats()

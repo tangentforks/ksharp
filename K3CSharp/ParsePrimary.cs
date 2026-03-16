@@ -1405,18 +1405,7 @@ private ASTNode? ParsePrimary()
                 var node = new ASTNode(ASTNodeType.BinaryOp);
                 
                 // Store the digit for later use in evaluator
-                int digit = matchedToken.Type switch
-                {
-                    TokenType.IO_VERB_0 => 0,
-                    TokenType.IO_VERB_1 => 1,
-                    TokenType.IO_VERB_2 => 2,
-                    TokenType.IO_VERB_3 => 3,
-                    TokenType.IO_VERB_6 => 6,
-                    TokenType.IO_VERB_7 => 7,
-                    TokenType.IO_VERB_8 => 8,
-                    TokenType.IO_VERB_9 => 9,
-                    _ => throw new Exception($"Invalid I/O verb token: {matchedToken.Type}")
-                };
+                int digit = VerbRegistry.GetIOVerbDigit(matchedToken.Type);
                 
                 node.Value = new SymbolValue($"IO_VERB_{digit}");
                 if (operand != null) node.Children.Add(operand);
