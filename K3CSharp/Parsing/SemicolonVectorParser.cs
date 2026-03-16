@@ -216,18 +216,7 @@ namespace K3CSharp
 
         private static bool IsBinaryOperator(TokenType tokenType)
         {
-            return tokenType switch
-            {
-                TokenType.PLUS or TokenType.MINUS or TokenType.MULTIPLY or TokenType.DIVIDE or 
-                TokenType.MODULUS or TokenType.POWER or TokenType.LESS or TokenType.GREATER or
-                TokenType.EQUAL or TokenType.MIN or TokenType.MAX or TokenType.MATCH or
-                TokenType.DIV or TokenType.AND or TokenType.OR or TokenType.XOR or
-                TokenType.ROT or TokenType.SHIFT or TokenType.DOT_PRODUCT or TokenType.MUL or
-                TokenType.IN or TokenType.BIN or TokenType.BINL or TokenType.LIN or
-                TokenType.DV or TokenType.DI or TokenType.SV or TokenType.SS or TokenType.SM or
-                TokenType.LSQ or TokenType.JOIN or TokenType.COLON => true,
-                _ => false
-            };
+            return VerbRegistry.IsBinaryOperator(tokenType);
         }
     }
 }

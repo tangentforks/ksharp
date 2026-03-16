@@ -1156,7 +1156,6 @@ private ASTNode? ParsePrimary()
                 // Capture the opening brace position before matching (since Match advances the token)
                 int leftBracePos;
                 
-                delimiterDepth++; // Enter delimiter
                 Match(TokenType.LEFT_BRACE); // Consume the opening brace
                 leftBracePos = PreviousToken().Position; // Get position of the opening brace we just consumed
                 
@@ -1166,7 +1165,6 @@ private ASTNode? ParsePrimary()
                 {
                     // This is {} form specifier
                     Match(TokenType.RIGHT_BRACE); // Consume the }
-                    delimiterDepth--; // Exit delimiter
                     
                     // Create a special node for {} form specifier
                     var node = new ASTNode(ASTNodeType.FormSpecifier);
@@ -1278,8 +1276,6 @@ private ASTNode? ParsePrimary()
                 {
                     throw new Exception("Expected '}' after function body");
                 }
-                
-                delimiterDepth--; // Exit delimiter
                 
                 // Extract the source text of the function body
                 string? bodyText = "";

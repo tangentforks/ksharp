@@ -257,16 +257,13 @@ namespace K3CSharp
             return parentheses != 0 || brackets != 0 || braces != 0 || inString || inSymbol;
         }
 
-        private int delimiterDepth = 0; // Track nesting depth of delimiters
-        
+                
         public ASTNode? Parse()
         {
             if (tokens.Count == 0)
             {
                 throw new Exception("No tokens to parse");
             }
-
-            delimiterDepth = 0; // Reset delimiter depth for each parse
 
             var result = ParseExpression();
 
@@ -388,8 +385,252 @@ namespace K3CSharp
             return IsAtEnd() || stopTokens.Contains(CurrentToken().Type);
         }
         
-        
-        
+        private ASTNode? ParseTerm(bool parseUntilEnd = false)
+        {
+            // Only return null for EOF, not for NEWLINE when parsing expressions
+            // NEWLINE should be handled at higher levels as statement separators
+            if (IsAtEnd() || CurrentToken().Type == TokenType.EOF)
+            {
+                return null;
+            }
+            
+            ASTNode? result;
+            
+            // Check if current token is an adverb - if so, we're in a nesting context
+            // Don't create placeholder for adverb operations - let ParseTerm handle them
+            if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
+            {
+                // Parse the primary expression normally - adverb will be handled in ParseTerm
+                result = ParsePrimary();
+            }
+            else
+            {
+                result = ParsePrimary();
+            }
+
+            // Handle case where ParsePrimary returned null
+            if (result == null)
+            {
+                return null;
+            }
+
+            // Handle high-precedence adverb operations (verb-adverb binding has higher precedence than operators)
+            if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
+            {
+                var adverbToken = PreviousToken() ?? CurrentToken();
+                var adverbType = CurrentToken().Type;
+                Match(adverbType); // Consume the adverb token
+                
+                // Parse the right argument for the adverb
+                var rightArg = ParseTerm(parseUntilEnd);
+                
+                // Create adverb node: ADVERB(adverbType, verb, rightArg)
+                var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                adverbNode.Value = new SymbolValue(adverbType.ToString());
+                adverbNode.Children.Add(result); // verb
+                adverbNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(0))); // left argument (default for dyadic adverbs)
+                if (rightArg != null) adverbNode.Children.Add(rightArg); // right argument
+                result = adverbNode;
+            }
+
+            // Handle postfix operations: bracket notation for indexing or function calls
+            while (!IsAtEnd() && CurrentToken().Type == TokenType.LEFT_BRACKET)
+            {
+                // Parse bracket notation: expression[index] or function[args]
+                Match(TokenType.LEFT_BRACKET); // Consume '['
+
+                // Parse bracket arguments with proper semicolon separation
+                // ParseBracketContentsAsCommaEnlisted handles ']' consumption internally
+                var argsExpression = ParseBracketContentsAsCommaEnlisted();
+
+                // Special case: if the result is a unary operator (like _sqrt), treat brackets as grouping
+                // So _sqrt[3] becomes _sqrt 3, not _sqrt @ [3]
+                if (result != null && result.Type == ASTNodeType.BinaryOp && result.Value is SymbolValue opSymbol && 
+                    opSymbol.Value.ToString().StartsWith("_") && result.Children.Count == 1)
+                {
+                    // This is a unary operator with brackets - treat as grouping
+                    // Replace the unary operator's child with the bracket contents
+                    if (argsExpression != null)
+                    {
+                        result.Children[0] = argsExpression;
+                    }
+                    // Don't consume more brackets - break the loop
+                    break;
+                }
+
+                // Special case: if the result is a literal underscore function (like _ic), treat brackets as grouping
+                // So _ic[x] becomes _ic x, not _ic @ [x]
+                if (result != null && result.Type == ASTNodeType.Literal && result.Value is SymbolValue literalSymbol && 
+                    literalSymbol.Value.ToString().StartsWith("_"))
+                {
+                    // This is a literal underscore function with brackets - convert to unary operator
+                    var unaryNode = new ASTNode(ASTNodeType.BinaryOp);
+                    unaryNode.Value = literalSymbol;
+                    if (argsExpression != null)
+                    {
+                        unaryNode.Children.Add(argsExpression);
+                    }
+                    result = unaryNode;
+                    // Don't consume more brackets - break the loop
+                    break;
+                }
+
+                // Check if this is a control flow verb function call
+                if (result != null && result.Type == ASTNodeType.Variable)
+                {
+                    var varName = result.Value is SymbolValue symbol ? symbol.Value : result.Value?.ToString() ?? "";
+                    if (varName == "if" || varName == "while" || varName == "do")
+                    {
+                        // Create function call for control flow verbs
+                        var funcCall = new ASTNode(ASTNodeType.FunctionCall);
+                        funcCall.Children.Add(result);
+
+                        // For control flow verbs, always add the arguments as a single expression
+                        // The control flow functions will handle parsing the vector internally
+                        if (argsExpression != null) funcCall.Children.Add(argsExpression);
+
+                        result = funcCall;
+                    }
+                    else
+                    {
+                        // Convert to apply operation: expression @ index
+                        result = argsExpression != null && result != null ? ASTNode.MakeBinaryOp(TokenType.APPLY, result, argsExpression) : result;
+                    }
+                }
+                else
+                {
+                    // Convert to apply operation: expression @ index
+                    result = argsExpression != null && result != null ? ASTNode.MakeBinaryOp(TokenType.APPLY, result, argsExpression) : result;
+                }
+            }
+
+            // If we processed bracket notation, return the result (don't continue with vector parsing)
+            if (result != null && result.Type == ASTNodeType.BinaryOp && result.Value is SymbolValue symbolValue && symbolValue.Value == ".")
+            {
+                return result;
+            }
+
+            // Continue with regular term parsing for vectors
+            var elements = new List<ASTNode>();
+            if (result != null) elements.Add(result);
+            var firstElementType = result?.Type ?? ASTNodeType.Literal;
+            var firstValueType = result?.Value?.GetType();
+            var stopTokens = parseUntilEnd ? ParseUntilEndStopTokens : DefaultStopTokens;
+
+            while (!ShouldStopParsing(stopTokens))
+            {
+                // Check if this would create a mixed-type vector
+                // If current token is an operator, it would create a mixed-type vector
+                // So stop parsing and let ParseExpression handle it
+                if (IsBinaryOperator(CurrentToken().Type) ||
+                    CurrentToken().Type == TokenType.DV || CurrentToken().Type == TokenType.DI ||
+                    CurrentToken().Type == TokenType.SETENV || CurrentToken().Type == TokenType.SM ||
+                    CurrentToken().Type == TokenType.DIV || CurrentToken().Type == TokenType.DRAW ||
+                    CurrentToken().Type == TokenType.IO_VERB_0 || CurrentToken().Type == TokenType.IO_VERB_1 ||
+                    CurrentToken().Type == TokenType.IO_VERB_2 || CurrentToken().Type == TokenType.IO_VERB_3 ||
+                    CurrentToken().Type == TokenType.IO_VERB_6 || CurrentToken().Type == TokenType.IO_VERB_7 ||
+                    CurrentToken().Type == TokenType.IO_VERB_8 || CurrentToken().Type == TokenType.IO_VERB_9)
+                {
+                    break;
+                }
+                
+                if (CurrentToken().Type == TokenType.SYMBOL && CurrentToken().Lexeme == "_dv" || CurrentToken().Lexeme == "_di")
+                {
+                    var symbol = CurrentToken().Lexeme;
+                    Match(TokenType.SYMBOL);
+                    var rightArg = ParseTerm(parseUntilEnd);
+                    var binaryOp = new ASTNode(ASTNodeType.BinaryOp);
+                    binaryOp.Value = new SymbolValue(symbol);
+                    if (result != null) binaryOp.Children.Add(result);
+                    if (rightArg != null) binaryOp.Children.Add(rightArg);
+                    result = binaryOp;
+                    break;
+                }
+                
+                var nextElement = ParsePrimary();
+                
+                // Special case: function calls (variable followed by expression)
+                // Check if the first element is a variable and the next element is any expression
+                if (firstElementType == ASTNodeType.Variable && nextElement != null)
+                {
+                    // This is a function call: functionName argument
+                    var funcCall = new ASTNode(ASTNodeType.FunctionCall);
+                    funcCall.Children.Add(elements[0]); // Function name
+                    if (nextElement != null) funcCall.Children.Add(nextElement);  // Argument
+                    return funcCall;
+                }
+                
+                // Special case: compact symbol vectors (symbols back-to-back without spaces)
+                // Check if the first element was a symbol and the current element is also a symbol
+                bool firstIsSymbol = (firstElementType == ASTNodeType.Literal && firstValueType == typeof(SymbolValue)) ||
+                                  (firstElementType == ASTNodeType.Variable && firstValueType == typeof(SymbolValue));
+                bool nextIsSymbol = (nextElement?.Type == ASTNodeType.Literal && nextElement?.Value is SymbolValue) ||
+                                  (nextElement?.Type == ASTNodeType.Variable && nextElement?.Value is SymbolValue);
+                
+                if (firstIsSymbol && nextIsSymbol)
+                {
+                    // Both are symbols, allow them to be combined regardless of uniform type check
+                    if (nextElement != null) elements.Add(nextElement);
+                    continue;
+                }
+                
+                // Check for type uniformity
+                if (nextElement?.Type != firstElementType || 
+                    (nextElement?.Value?.GetType() != firstValueType && firstValueType != null))
+                {
+                    // Check if this is int/float mixing - allow it as it will be converted to float
+                    bool firstIsNumber = elements[0]?.Value is IntegerValue || elements[0]?.Value is LongValue || elements[0]?.Value is FloatValue;
+                    bool nextIsNumber = nextElement?.Value is IntegerValue || nextElement?.Value is LongValue || nextElement?.Value is FloatValue;
+                    
+                    if (firstIsNumber && nextIsNumber)
+                    {
+                        if (nextElement != null) elements.Add(nextElement);
+                    }
+                    else
+                    {
+                        // Mixed types detected - this should be an arithmetic expression, not a vector
+                        // Put the element back and let ParseExpression handle it
+                        // For now, just break the vector parsing
+                        break;
+                    }
+                }
+                else
+                {
+                    if (nextElement != null) elements.Add(nextElement);
+                }
+            }
+
+            if (elements.Count > 1)
+            {
+                // Check if this might be a function call (variable followed by arguments)
+                if (elements[0].Type == ASTNodeType.Variable)
+                {
+                    // Treat as function call: variable is the function, rest are arguments
+                    var functionNode = elements[0];
+                    var arguments = elements.Skip(1).ToList();
+                    return ASTNode.MakeFunctionCall(functionNode, arguments);
+                }
+                
+                return ASTNode.MakeVector(elements);
+            }
+
+            return elements[0];
+        }
+
+        private bool IsVectorLiteral(ASTNode node)
+        {
+            // A vector literal is a node that was parsed as a vector
+            // This is a simple heuristic - if it has multiple children and they're all literals/variables
+            if (node.Type == ASTNodeType.Vector && node.Children.Count > 0)
+            {
+                return true;
+            }
+            
+            // Also check if it's a variable that we know represents a vector from context
+            // For now, we'll be conservative and only treat explicit vectors as vector literals
+            return false;
+        }
+
         private ASTNode ParseBracketContentsAsCommaEnlisted()
         {
             // Parse bracket contents to handle the comma enlistment part of f[x] is (f) .,(x)
@@ -931,11 +1172,64 @@ namespace K3CSharp
 
         private void Backtrack()
         {
+            if (current > 0)
                 current--;
         }
 
+        public ASTNode? ParseExpression()
+        {
+            // Parse the first expression
+            var result = ParseExpressionWithoutSemicolons();
+
+            // Handle case where ParseExpressionWithoutSemicolons returns null (e.g., due to NEWLINE at start)
+            if (result == null)
+            {
+                return null;
+            }
+
+            // Only look for additional statements if we haven't consumed all tokens
+            // and the next token is a semicolon or newline (indicating multiple statements)
+            if (!IsAtEnd() && (CurrentToken().Type == TokenType.SEMICOLON || CurrentToken().Type == TokenType.NEWLINE))
+            {
+                var statements = new List<ASTNode>();
+                statements.Add(result);
+                
+                // Parse additional statements separated by semicolons or newlines
+                while (Match(TokenType.SEMICOLON) || Match(TokenType.NEWLINE))
+                {
+                    // Skip empty lines
+                    while (!IsAtEnd() && CurrentToken().Type == TokenType.NEWLINE)
+                    {
+                        Match(TokenType.NEWLINE);
+                    }
+                    
+                    if (!IsAtEnd())
+                    {
+                        var stmt = ParseExpression();
+                        if (stmt != null)  // Only add non-null statements
+                        {
+                            statements.Add(stmt);
+                        }
+                    }
+                }
+
+                // If we have multiple statements, create a block
+                if (statements.Count > 1)
+                {
+                    var block = new ASTNode(ASTNodeType.Block);
+                    block.Children.AddRange(statements);
+                    
+                    // At top level, this block represents a niladic function
+                    // According to K spec, it should return the value of the last expression
+                    // We'll handle this in the evaluator by returning the last statement's value
+                    return block;
+                }
+            }
+
+            return result;
+        }
         
-        private ASTNode? ParseExpression()
+        private ASTNode? ParseExpressionWithoutSemicolons()
         {
             // Check for conditional statements at the start of an expression
             if (!IsAtEnd())
@@ -969,31 +1263,7 @@ namespace K3CSharp
                     // This is operator[...] - treat as verb with bracket notation
                     // Create the operator variable directly instead of calling ParseTerm
                     var opToken = CurrentToken();
-                    var opSymbol = opToken.Type.ToString() switch
-                    {
-                        "PLUS" => "+",
-                        "MINUS" => "-",
-                        "MULTIPLY" => "*",
-                        "DIVIDE" => "%",
-                        "POWER" => "^",
-                        "MODULUS" => "!",
-                        "MIN" => "&",
-                        "MAX" => "|",
-                        "LESS" => "<",
-                        "GREATER" => ">",
-                        "EQUAL" => "=",
-                        "IN" => "in",
-                        "JOIN" => ",",
-                        "COLON" => ":",
-                        "HASH" => "#",
-                        "UNDERSCORE" => "_",
-                        "QUESTION" => "?",
-                        "DOLLAR" => "$",
-                        "TYPE" => "@",
-                        "STRING_REPRESENTATION" => "$",
-                        "APPLY" => "@",
-                        _ => opToken.Lexeme
-                    };
+                    var opSymbol = VerbRegistry.GetBinaryOperatorSymbol(opToken.Type);
                     left = ASTNode.MakeLiteral(new SymbolValue(opSymbol));
                     Match(opToken.Type); // Consume the operator token
                     
@@ -1438,6 +1708,28 @@ namespace K3CSharp
             return left;
         }
         
+        private ASTNode? ParseExpressionInsideDelimiters()
+        {
+            // Parse expression with the knowledge that we're inside delimiters
+            // This affects semicolon behavior - they should create mixed lists
+            var left = ParseTerm();
+            
+            // Handle case where first element is empty (e.g., "(;1;2)")
+            if (left == null && !IsAtEnd() && CurrentToken().Type == TokenType.SEMICOLON)
+            {
+                // Empty first element becomes null in K semicolon-separated lists
+                // Just continue to semicolon handling
+            }
+            
+            // Handle semicolon-separated expressions - inside delimiters, create mixed lists
+            if (Match(TokenType.SEMICOLON))
+            {
+                return ParseSemicolonList(left ?? ASTNode.MakeLiteral(new NullValue()), true); // Inside delimiters = true
+            }
+            
+            return left;
+        }
+
         private ASTNode? ParseSemicolonList(ASTNode left, bool insideDelimiters)
         {
             var elements = new List<ASTNode> { left };
@@ -1654,38 +1946,7 @@ namespace K3CSharp
             return current >= tokens.Count || (current < tokens.Count && tokens[current].Type == TokenType.EOF);
         }
 
-        private ASTNode? HandlePrefixAdverb(string verbSymbol)
-        {
-            // Look ahead to see if this is part of an adverb operation
-            if (!IsAtEnd() && VerbRegistry.IsAdverbToken(CurrentToken().Type))
-            {
-                // This is a verb symbol for an adverb operation
-                var adverbType = CurrentToken().Type;
-                Match(adverbType); // Consume the adverb
-                
-                // Create the verb node
-                var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbSymbol));
-                
-                // Parse the arguments for the adverb
-                var arguments = ParseTerm();
-                
-                // Create the proper adverb structure: ADVERB(verb, null, arguments)
-                // For prefix adverbs, there's no left argument, so we use null
-                var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
-                adverbNode.Value = new SymbolValue(adverbType.ToString().Replace("TokenType.", ""));
-                if (verbNode != null) adverbNode.Children.Add(verbNode);
-                adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new NullValue())); // Left argument is null for prefix adverbs
-                if (arguments != null) adverbNode.Children.Add(arguments);
-                
-                return adverbNode;
-            }
-            else
-            {
-                // Not followed by an adverb, return null to indicate regular processing should continue
-                return null;
-            }
-        }
-
+        
         private bool Match(TokenType type)
         {
             if (CurrentToken().Type == type)
