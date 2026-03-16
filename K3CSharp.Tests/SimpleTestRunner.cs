@@ -1815,8 +1815,6 @@ namespace K3CSharp.Tests
 
                 ("db_mixed_list.k", "(1;`test;3.14)"),
 
-                ("db_dict_simple.k", ".((`a;1;);(`b;2;);(`c;3;))"),
-
                 ("db_dict_single_entry.k", ".,(`a;1;)"),
 
                 ("db_dict_symbol_2char.k", ".,(`ab;1 2;)"),
@@ -2334,9 +2332,15 @@ namespace K3CSharp.Tests
 
 
                 var expectedTestFiles = allTests.Select(t => t.Item1).ToList();
-
+                
+                // Check for duplicates in expected test files
+                var duplicateTestFiles = expectedTestFiles
+                    .GroupBy(f => f)
+                    .Where(g => g.Count() > 1)
+                    .Select(g => g.Key)
+                    .ToList();
+                
                 var missingFromRunner = actualTestFiles.Except(expectedTestFiles).ToList();
-
                 var extraInRunner = expectedTestFiles.Except(actualTestFiles).ToList();
 
 
@@ -2346,8 +2350,20 @@ namespace K3CSharp.Tests
                 Console.WriteLine($"  Expected tests: {allTests.Length}");
 
                 Console.WriteLine($"  Actual .k files: {actualTestFiles.Count}");
-
-
+                
+                // Report duplicates if found
+                if (duplicateTestFiles.Any())
+                {
+                    Console.WriteLine($"  ❌ DUPLICATE TEST FILES ({duplicateTestFiles.Count}):");
+                    foreach (var duplicate in duplicateTestFiles.Take(10))
+                    {
+                        Console.WriteLine($"    - {duplicate}");
+                    }
+                    if (duplicateTestFiles.Count > 10)
+                    {
+                        Console.WriteLine($"    ... and {duplicateTestFiles.Count - 10} more");
+                    }
+                }
 
                 if (missingFromRunner.Any())
 

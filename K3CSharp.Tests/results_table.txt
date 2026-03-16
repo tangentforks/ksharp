@@ -601,7 +601,6 @@
 ║ db_nested_dict_vectors.k                           │ _db _bd .((`a;(1;2;3));(`b;(`hello;`world;`test))) │ .((`a;1 2 3;);(...   │                      ║
 ║ db_nested_lists.k                                  │ _db _bd ((1;2;3);(`hello;`world;`test);(4.5;6.7)) │ (1 2 3;`hello`w...   │                      ║
 ║ db_mixed_list.k                                    │ _db _bd (1;`test;3.14) │ (1;`test;3.14)       │                      ║
-║ db_dict_simple.k                                   │ _db _bd .((`a;1);(`b;2);(`c;3;)) │ .((`a;1;);(`b;2...   │                      ║
 ║ db_dict_single_entry.k                             │ _db _bd .,(`a;1)     │ .,(`a;1;)            │                      ║
 ║ db_dict_symbol_2char.k                             │ _db _bd .,(`ab;1 2)  │ .,(`ab;1 2;)         │                      ║
 ║ db_dict_symbol_8char.k                             │ _db _bd .,(`abcdefgh;1 2 3 4 5 6 7 8) │ .,(`abcdefgh;1 ...   │                      ║
@@ -815,7 +814,7 @@
 ║ ktree_dot_apply_relative_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `d . `keyA │ 1 2 3                │                      ║
 ║ ktree_dot_apply_absolute_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `.k.d . `keyB │ 1 3 5                │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 792/811 tests passed (97.7%)                                                                               ║
+║ SUMMARY: 791/810 tests passed (97.7%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
