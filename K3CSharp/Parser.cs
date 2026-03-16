@@ -198,6 +198,16 @@ namespace K3CSharp
                    CurrentToken().Type == TokenType.NEWLINE;
         }
 
+        private static readonly Dictionary<TokenType, (int paren, int bracket, int brace)> DelimiterAdjustments = new()
+        {
+            { TokenType.LEFT_PAREN, (1, 0, 0) },
+            { TokenType.RIGHT_PAREN, (-1, 0, 0) },
+            { TokenType.LEFT_BRACKET, (0, 1, 0) },
+            { TokenType.RIGHT_BRACKET, (0, -1, 0) },
+            { TokenType.LEFT_BRACE, (0, 0, 1) },
+            { TokenType.RIGHT_BRACE, (0, 0, -1) }
+        };
+
         public bool IsIncompleteExpression()
         {
             // Check for unmatched brackets, parentheses, or braces
@@ -227,29 +237,11 @@ namespace K3CSharp
                 {
                     inSymbol = false;
                 }
-                else if (!inString && !inSymbol)
+                else if (!inString && !inSymbol && DelimiterAdjustments.TryGetValue(token.Type, out var adjustment))
                 {
-                    switch (token.Type)
-                    {
-                        case TokenType.LEFT_PAREN:
-                            parentheses++;
-                            break;
-                        case TokenType.RIGHT_PAREN:
-                            parentheses--;
-                            break;
-                        case TokenType.LEFT_BRACKET:
-                            brackets++;
-                            break;
-                        case TokenType.RIGHT_BRACKET:
-                            brackets--;
-                            break;
-                        case TokenType.LEFT_BRACE:
-                            braces++;
-                            break;
-                        case TokenType.RIGHT_BRACE:
-                            braces--;
-                            break;
-                    }
+                    parentheses += adjustment.paren;
+                    brackets += adjustment.bracket;
+                    braces += adjustment.brace;
                 }
             }
             
@@ -1563,6 +1555,13 @@ namespace K3CSharp
             current++;
         }
 
+        private static readonly Dictionary<TokenType, Func<string, string>> TokenLexemeReconstructors = new()
+        {
+            { TokenType.CHARACTER, lexeme => "\"" + lexeme.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"" },
+            { TokenType.CHARACTER_VECTOR, lexeme => "\"" + lexeme.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"" },
+            { TokenType.SYMBOL, lexeme => "`" + lexeme }
+        };
+
         /// <summary>
         /// Reconstruct a token's source representation including delimiters that the lexer strips.
         /// CHARACTER and CHARACTER_VECTOR tokens lose their surrounding quotes,
@@ -1570,18 +1569,9 @@ namespace K3CSharp
         /// </summary>
         private static string ReconstructTokenLexeme(Token token)
         {
-            switch (token.Type)
-            {
-                case TokenType.CHARACTER:
-                case TokenType.CHARACTER_VECTOR:
-                    // Re-add surrounding double quotes, escaping any embedded quotes or backslashes
-                    return "\"" + token.Lexeme.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
-                case TokenType.SYMBOL:
-                    // Re-add the leading backtick
-                    return "`" + token.Lexeme;
-                default:
-                    return token.Lexeme;
-            }
+            return TokenLexemeReconstructors.TryGetValue(token.Type, out var reconstructor)
+                ? reconstructor(token.Lexeme)
+                : token.Lexeme;
         }
 
         /// <summary>

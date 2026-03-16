@@ -439,60 +439,77 @@ namespace K3CSharp
                 throw new Exception("IDENTIFIER token encountered - verb names should be preserved from ApplyVerb");
             }
 
-            // For all other cases, use the original switch statement logic
-            // This maintains compatibility while adding IDENTIFIER support
+            // Handle single-argument operators first
+            if (opName == "_ci")
+            {
+                return CiFunction(left);
+            }
+            if (opName == "_ic")
+            {
+                return IcFunction(left);
+            }
+
+            // Use dictionary lookup for standard binary operators
+            var binaryOps = new Dictionary<string, Func<K3Value, K3Value, K3Value>>
+            {
+                { "+", Plus },
+                { "-", Minus },
+                { "*", Times },
+                { "%", Divide },
+                { "^", Power },
+                { "POWER", Power },
+                { "!", ModRotate },
+                { "&", Min },
+                { "|", Max },
+                { "<", Less },
+                { ">", More },
+                { "=", Equal },
+                { "~", Match },
+                { ",", Join },
+                { "#", Take },
+                { "_", FloorBinary },
+                { "@", AtIndex },
+                { ".", DotApply },
+                { "$", Format },
+                { "::", GlobalAssignment },
+                { "_in", In },
+                { "_draw", Draw },
+                { "_bin", Bin },
+                { "_div", MathDiv },
+                { "_dot", MathDot },
+                { "_mul", MathMul },
+                { "_inv", MathInv },
+                { "_lsq", MathLsq },
+                { "_and", MathAnd },
+                { "_or", MathOr },
+                { "_xor", MathXor },
+                { "_rot", MathRot },
+                { "_shift", MathShift },
+                { "_binl", Binl },
+                { "_lin", Lin },
+                { "_dv", Dv },
+                { "_di", Di },
+                { "_sm", Sm },
+                { "_sv", Sv },
+                { "_vs", Vs },
+                { "_ss", SsFunction },
+                { "_setenv", SetenvFunction },
+                { "?", Find }
+            };
+
+            if (binaryOps.TryGetValue(opName, out var binaryOp))
+            {
+                return binaryOp(left, right);
+            }
+
+            // Handle special cases with lambda expressions
             switch (opName)
             {
-                case "+": return Plus(left, right);
-                case "-": return Minus(left, right);
-                case "*": return Times(left, right);
-                case "%": return Divide(left, right);
-                case "^": return Power(left, right);
-                case "POWER": return Power(left, right);
-                case "!": return ModRotate(left, right);
-                case "&": return Min(left, right);
-                case "|": return Max(left, right);
-                case "<": return Less(left, right);
-                case ">": return More(left, right);
-                case "=": return Equal(left, right);
-                case "~": return Match(left, right);
-                case ",": return Join(left, right);
-                case "#": return Take(left, right);
-                case "_": return FloorBinary(left, right);
-                case "@": return AtIndex(left, right);
-                case ".": return DotApply(left, right);
-                case "$": return Format(left, right);
-                case "::": return GlobalAssignment(left, right);
                 case "ADVERB_SLASH": return Over(new SymbolValue("+"), left, right);
                 case "ADVERB_BACKSLASH": return Scan(new SymbolValue("+"), left, right);
                 case "ADVERB_TICK": return HandleAdverbTick(left, new IntegerValue(0), right);
-                case "_in": return In(left, right);
-                case "_draw": return Draw(left, right);
-                case "_bin": return Bin(left, right);
-                case "_div": return MathDiv(left, right);
-                case "_dot": return MathDot(left, right);
-                case "_mul": return MathMul(left, right);
-                case "_inv": return MathInv(left, right);
-                case "_lsq": return MathLsq(left, right);
-                case "_and": return MathAnd(left, right);
-                case "_or": return MathOr(left, right);
-                case "_xor": return MathXor(left, right);
-                case "_rot": return MathRot(left, right);
-                case "_shift": return MathShift(left, right);
-                case "_binl": return Binl(left, right);
-                case "_lin": return Lin(left, right);
-                case "_dv": return Dv(left, right);
-                case "_di": return Di(left, right);
-                case "_ci": return CiFunction(left);
-                case "_ic": return IcFunction(left);
-                case "_sm": return Sm(left, right);
-                case "_sv": return Sv(left, right);
-                case "_vs": return Vs(left, right);
-                case "_ss": return SsFunction(left, right);
-                case "_setenv": return SetenvFunction(left, right);
-                case "?": return Find(left, right);
-                case "/:": return EachRight(new SymbolValue("_dot"), left, right); // TODO: Make this more generic
-                case "\\:": return EachLeft(new SymbolValue("_dot"), left, right);  // TODO: Make this more generic
+                case "/:": return EachRight(new SymbolValue("_dot"), left, right);
+                case "\\:": return EachLeft(new SymbolValue("_dot"), left, right);
                 case "TYPE": return IoVerbDyadic(left, right, 4);
                 case "IO_VERB_0": return IoVerbDyadic(left, right, 0);
                 case "IO_VERB_1": return IoVerbDyadic(left, right, 1);
@@ -502,17 +519,16 @@ namespace K3CSharp
                 case "IO_VERB_7": return IoVerbDyadic(left, right, 7);
                 case "IO_VERB_8": return IoVerbDyadic(left, right, 8);
                 case "IO_VERB_9": return IoVerbDyadic(left, right, 9);
-                
-                // Handle any other verb names by checking VerbRegistry first
-                default:
-                    var verb = VerbRegistry.GetVerb(opName);
-                    if (verb != null)
-                    {
-                        // For registered verbs not explicitly handled, try ApplySymbolVerb
-                        return ApplySymbolVerb(opName, left, right);
-                    }
-                    throw new Exception($"Unknown binary operator: {opName}");
             }
+
+            // Handle any other verb names by checking VerbRegistry first
+            var verb = VerbRegistry.GetVerb(opName);
+            if (verb != null)
+            {
+                // For registered verbs not explicitly handled, try ApplySymbolVerb
+                return ApplySymbolVerb(opName, left, right);
+            }
+            throw new Exception($"Unknown binary operator: {opName}");
         }
 
         private K3Value EvaluateBinaryOp(ASTNode node)
