@@ -2,17 +2,26 @@ namespace K3CSharp
 {
     partial class Parser
     {
-private ASTNode? ParsePrimary()
+        /// <summary>
+        /// Create a unary operator node with the given symbol and operand
+        /// </summary>
+        private static ASTNode MakeUnaryOperatorNode(string symbol, ASTNode? operand)
+        {
+            var node = new ASTNode(ASTNodeType.BinaryOp);
+            node.Value = new SymbolValue(symbol);
+            if (operand != null) 
+                node.Children.Add(operand);
+            return node;
+        }
+
+        private ASTNode? ParsePrimary()
         {
             ASTNode? result = null;
 
-            // Handle NEWLINE tokens as statement separators (per NSL parser insight)
+            // NEWLINE should be handled at higher levels as statement separator
+            // Return null to indicate no primary expression found
             if (Match(TokenType.NEWLINE))
-            {
-                // NEWLINE should be handled at higher levels as statement separator
-                // Return null to indicate no primary expression found
                 return null;
-            }
 
             // Handle SEMICOLON tokens as expression separators (for empty positions)
             // Check without consuming so higher levels can handle it
@@ -180,10 +189,7 @@ private ASTNode? ParsePrimary()
                         {
                             // This is unary transpose
                             var operand = ParsePrimary();
-                            var node = new ASTNode(ASTNodeType.BinaryOp);
-                            node.Value = new SymbolValue("+");
-                            if (operand != null) node.Children.Add(operand);
-                            return node;
+                            return MakeUnaryOperatorNode("+", operand);
                         }
                     }
                 }
@@ -214,10 +220,7 @@ private ASTNode? ParsePrimary()
                     {
                         // This is unary minus
                         var operand = ParsePrimary();
-                        var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("-");
-                        if (operand != null) node.Children.Add(operand);
-                        return node;
+                        return MakeUnaryOperatorNode("-", operand);
                     }
                 }
                 else
@@ -288,10 +291,7 @@ private ASTNode? ParsePrimary()
                     {
                         // This is unary first
                         var operand = ParsePrimary();
-                        var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("*");
-                        if (operand != null) node.Children.Add(operand);
-                        return node;
+                        return MakeUnaryOperatorNode("*", operand);
                     }
                 }
                 else
@@ -315,10 +315,7 @@ private ASTNode? ParsePrimary()
                     {
                         // This is unary where (&)
                         var operand = ParsePrimary();
-                        var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("&");
-                        if (operand != null) node.Children.Add(operand);
-                        return node;
+                        return MakeUnaryOperatorNode("&", operand);
                     }
                 }
                 else
@@ -342,10 +339,7 @@ private ASTNode? ParsePrimary()
                     {
                         // This is unary reverse (|)
                         var operand = ParsePrimary();
-                        var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("|");
-                        if (operand != null) node.Children.Add(operand);
-                        return node;
+                        return MakeUnaryOperatorNode("|", operand);
                     }
                 }
                 else
@@ -396,10 +390,7 @@ private ASTNode? ParsePrimary()
                     {
                         // This is unary grade down
                         var operand = ParseTerm(parseUntilEnd: true);
-                        var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue(">");
-                        if (operand != null) node.Children.Add(operand);
-                        return node;
+                        return MakeUnaryOperatorNode(">", operand);
                     }
                 }
                 else
@@ -423,10 +414,7 @@ private ASTNode? ParsePrimary()
                     {
                         // This is unary shape
                         var operand = ParseTerm();
-                        var node = new ASTNode(ASTNodeType.BinaryOp);
-                        node.Value = new SymbolValue("^");
-                        if (operand != null) node.Children.Add(operand);
-                        return node;
+                        return MakeUnaryOperatorNode("^", operand);
                     }
                 }
                 else
