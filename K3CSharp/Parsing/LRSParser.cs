@@ -159,13 +159,10 @@ namespace K3CSharp.Parsing
             if (argTokens.Count == 1)
                 return CreateNodeFromToken(argTokens[0]);
                 
-            // For multiple tokens, create a simple binary operation or function call
-            // This is a simplified implementation - the full parser would handle this properly
-            var left = CreateNodeFromToken(argTokens[0]);
-            var right = CreateNodeFromToken(argTokens[argTokens.Count - 1]);
-            var op = argTokens.Count > 2 ? argTokens[1] : new Token(TokenType.PLUS, "+", 0);
-            
-            return ASTNode.MakeBinaryOp(op.Type, left, right);
+            // For multiple tokens, this should delegate to the main parser
+            // but for now we'll create a simple structure to avoid crashes
+            // The full implementation would use the main parser pipeline
+            throw new Exception($"ParseArgumentWithStandardParser: Multiple tokens ({argTokens.Count}) not yet implemented - delegate to main parser");
         }
         
         /// <summary>
