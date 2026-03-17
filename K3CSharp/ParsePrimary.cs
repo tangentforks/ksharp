@@ -290,7 +290,39 @@ namespace K3CSharp
                     else
                     {
                         // This is unary first
-                        var operand = ParsePrimary();
+                        // For monadic operators, try to parse a vector if multiple elements are present
+                        var elements = new List<ASTNode>();
+                        
+                        while (!IsAtEnd() && !IsExpressionTerminator(CurrentToken().Type))
+                        {
+                            var element = ParsePrimary();
+                            if (element != null)
+                            {
+                                elements.Add(element);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        
+                        ASTNode operand;
+                        if (elements.Count == 1)
+                        {
+                            // Single element
+                            operand = elements[0];
+                        }
+                        else if (elements.Count > 1)
+                        {
+                            // Multiple elements - create a vector
+                            operand = ASTNode.MakeVector(elements);
+                        }
+                        else
+                        {
+                            // No elements - this shouldn't happen
+                            throw new Exception("Monadic * operator requires an operand");
+                        }
+                        
                         return MakeUnaryOperatorNode("*", operand);
                     }
                 }
@@ -1548,6 +1580,16 @@ namespace K3CSharp
             }
 
             return result;
+        }
+        
+        private bool IsExpressionTerminator(TokenType tokenType)
+        {
+            return tokenType switch
+            {
+                TokenType.SEMICOLON or TokenType.NEWLINE or TokenType.EOF or
+                TokenType.RIGHT_PAREN or TokenType.RIGHT_BRACKET or TokenType.RIGHT_BRACE => true,
+                _ => false
+            };
         }
     }
 }

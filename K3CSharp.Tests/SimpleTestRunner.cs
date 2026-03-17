@@ -2260,6 +2260,9 @@ namespace K3CSharp.Tests
 
                 ("ktree_dot_apply_absolute_path.k", "1 3 5"),
                 ("test_semicolon_parsing.k", ""),
+                ("test_parse_monadic_star.k", "(`\"*:\";1 2 3 4)"),
+                ("test_eval_monadic_star.k", "1"),
+                ("test_eval_monadic_star_atomic.k", "1"),
             };
 
 

@@ -30,9 +30,10 @@ trigger: always_on
 - **Multiple lines only**: When variable assignments are required before the test (this including assigning anonymous functions to give them a name)
 
 #### **Setting Test Expectations**
-1. **Call the k MCP Server using execute_k_script and the full script path**: 
-2. **If the test result in a dictionary, nested vectors or vectors of symbols then add a known difference in T:\_src\github.com\ERufian\ksharp\known_differences.txt with the test name, a regex:^\s+|\s+$|\s*\n\s*:\; and a note of Compact Representation**
-3. **Call the ApplyTweaks MCP Server using tweakstring with the test name (without folder nor extension) as the id parameter and the result from the k MCP Server as the string parameter**
+1. **If the test is related to FFI and uses the 2: verb, or the test uses the _eval verb, or the test uses the _parse verb then set expectation based on the spec/speclet or on User's comments and skip the remaining steps**
+2. **Call the k MCP Server using execute_k_script and the full script path**: 
+3. **If the test result in a dictionary, nested vectors or vectors of symbols then add a known difference in T:\_src\github.com\ERufian\ksharp\known_differences.txt with the test name, a regex:^\s+|\s+$|\s*\n\s*:\; and a note of Compact Representation**
+4. **Call the ApplyTweaks MCP Server using tweakstring with the test name (without folder nor extension) as the id parameter and the result from the k MCP Server as the string parameter**
 
 ##### **Test Structure Guidelines**
 ```k

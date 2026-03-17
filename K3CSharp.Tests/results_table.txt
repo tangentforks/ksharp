@@ -794,7 +794,7 @@
 ║ idioms_01_61_cyclic_counter.k                      │ x:!10                │ 1 2 3 4 5 6 7 8...   │                      ║
 ║ idioms_01_384_drop_1st_postpend.k                  │ x:3 4 5 6            │ 4 5 6 0              │                      ║
 ║ idioms_01_385_drop_last_prepend.k                  │ x:3 4 5 6            │ 0 3 4 5              │                      ║
-║ idioms_01_178_first_occurrence.k                   │ x:"st"               │ !0                   │ 12                   ║
+║ idioms_01_178_first_occurrence.k                   │ x:"st"               │ Error: _ss: Exp...   │ 12                   ║
 ║ idioms_01_447_conditional_drop.k                   │ x:4 3#!12            │ (0 1 2;3 4 5;6 ...   │                      ║
 ║ idioms_01_448_conditional_drop_last.k              │ x:4 3#!12            │ (0 1 2;3 4 5;6 ...   │ (0 1 2;3 4 5;6 ...   ║
 ║ idioms_01_549_alphabetic_comparison.k              │ "a"<"b"              │ 1                    │                      ║
@@ -811,8 +811,11 @@
 ║ ktree_dot_apply_relative_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `d . `keyA │ 1 2 3                │                      ║
 ║ ktree_dot_apply_absolute_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `.k.d . `keyB │ 1 3 5                │                      ║
 ║ test_semicolon_parsing.k                           │ x: (1;2;3)           │                      │                      ║
+║ test_parse_monadic_star.k                          │ _parse "*1 2 3 4"    │ (`"*:";1 2 3 4)      │                      ║
+║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
+║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 789/808 tests passed (97.6%)                                                                               ║
+║ SUMMARY: 792/811 tests passed (97.7%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -905,7 +908,7 @@ Actual: Error: Undefined variable: dvl
 Test: idioms_01_178_first_occurrence.k
 Input: x:"st"
 Expected: 12
-Actual: !0
+Actual: Error: _ss: Expected semicolon after left operand
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_448_conditional_drop_last.k
 Input: x:4 3#!12

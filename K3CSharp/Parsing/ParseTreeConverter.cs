@@ -65,24 +65,33 @@ namespace K3CSharp.Parsing
         /// </summary>
         private static K3Value ConvertBinaryOp(ASTNode node)
         {
-            if (node.Children.Count < 2)
-                throw new Exception($"Binary operation requires 2 children, got {node.Children.Count}");
+            if (node.Children.Count == 0)
+                throw new Exception($"Binary operation requires at least 1 child, got {node.Children.Count}");
                 
             var opSymbol = node.Value as SymbolValue ?? new SymbolValue(node.Value?.ToString() ?? "+");
-            var elements = new List<K3Value> { opSymbol };
+            var elements = new List<K3Value>();
             
             // Check if this is a monadic operator (only right operand)
             if (node.Children.Count == 1)
             {
-                // For monadic operators, add disambiguating colon
-                elements.Add(new SymbolValue(":"));
+                // For monadic operators, combine operator with disambiguating colon
+                var monadicOpSymbol = new SymbolValue(opSymbol.Value + ":");
+                elements.Add(monadicOpSymbol);
+                
+                // Convert right operand
+                elements.Add(ToKList(node.Children[0]));
             }
-            
-            // Convert left operand
-            elements.Add(ToKList(node.Children[0]));
-            
-            // Convert right operand
-            elements.Add(ToKList(node.Children[1]));
+            else
+            {
+                // For dyadic operators, use the operator symbol as-is
+                elements.Add(opSymbol);
+                
+                // Convert left operand
+                elements.Add(ToKList(node.Children[0]));
+                
+                // Convert right operand
+                elements.Add(ToKList(node.Children[1]));
+            }
             
             return new VectorValue(elements);
         }
@@ -113,7 +122,16 @@ namespace K3CSharp.Parsing
             
             foreach (var child in node.Children)
             {
-                elements.Add(ToKList(child));
+                // For vector elements, we want the raw values, not enlisted vectors
+                if (child.Type == ASTNodeType.Literal)
+                {
+                    elements.Add(child.Value ?? new NullValue());
+                }
+                else
+                {
+                    // For non-literals, use the normal conversion
+                    elements.Add(ToKList(child));
+                }
             }
             
             return new VectorValue(elements);
@@ -182,22 +200,18 @@ namespace K3CSharp.Parsing
                 verbSymbol = elements[0].ToString();
             
             // Check if this is an operator that should be BinaryOp
-            if (IsOperatorVerb(verbSymbol) && elements.Count >= 3)
+            // Handle both dyadic operators (>=3 elements) and monadic operators with disambiguating colon (>=2 elements)
+            bool isMonadicWithColon = verbSymbol.EndsWith(":");
+            bool isOperator = IsOperatorVerb(verbSymbol);
+            
+            if (isOperator && (elements.Count >= 3 || (isMonadicWithColon && elements.Count >= 2)))
             {
                 // Create binary operation node
                 var binaryOp = new ASTNode(ASTNodeType.BinaryOp);
                 binaryOp.Value = new SymbolValue(verbSymbol);
                 
-                // Handle disambiguating colon if present
-                int argIndex = 1;
-                if (elements.Count > 1 && elements[1] is SymbolValue && elements[1].ToString() == ":")
-                {
-                    // Skip the colon and move to next argument
-                    argIndex = 2;
-                }
-                
-                // Add remaining elements as operands
-                for (int i = argIndex; i < elements.Count; i++)
+                // Convert arguments
+                for (int i = 1; i < elements.Count; i++)
                 {
                     binaryOp.Children.Add(ConvertKListElementToAST(elements[i]));
                 }
@@ -248,6 +262,23 @@ namespace K3CSharp.Parsing
                 "@" => true,
                 "." => true,
                 "," => true,
+                // Monadic operators with disambiguating colon
+                "+:" => true,
+                "-:" => true,
+                "*:" => true,
+                "%:" => true,
+                "^:" => true,
+                "<:" => true,
+                ">:" => true,
+                "&:" => true,
+                "|:" => true,
+                "~:" => true,
+                "!:" => true,
+                "#:" => true,
+                "_:" => true,
+                "?:" => true,
+                "@:" => true,
+                ".:" => true,
                 _ => false
             };
         }
@@ -257,7 +288,6 @@ namespace K3CSharp.Parsing
         /// </summary>
         private static ASTNode ConvertKListElementToAST(K3Value element)
         {
-            Console.WriteLine($"DEBUG: ConvertKListElementToAST called with type: {element.GetType()}, value: {element}");
             return element switch
             {
                 SymbolValue symbol => ASTNode.MakeVariable(symbol.ToString()),

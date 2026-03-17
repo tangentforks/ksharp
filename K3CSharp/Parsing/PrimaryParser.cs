@@ -587,11 +587,54 @@ namespace K3CSharp
         private ASTNode ParseUnaryFirst(ParseContext context)
         {
             context.Advance();
-            var operand = ParseBracketArgument(context);
+            
+            // For monadic operators, try to parse a vector if multiple elements are present
+            var elements = new List<ASTNode>();
+            
+            while (!context.IsAtEnd() && !IsExpressionTerminator(context.CurrentToken().Type))
+            {
+                var element = ParsePrimaryToken(context);
+                if (element != null)
+                {
+                    elements.Add(element);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            
             var node = new ASTNode(ASTNodeType.BinaryOp);
             node.Value = new SymbolValue("*");
-            if (operand != null) node.Children.Add(operand);
+            
+            if (elements.Count == 1)
+            {
+                // Single element
+                node.Children.Add(elements[0]);
+            }
+            else if (elements.Count > 1)
+            {
+                // Multiple elements - create a vector
+                var vectorNode = ASTNode.MakeVector(elements);
+                node.Children.Add(vectorNode);
+            }
+            else
+            {
+                // No elements - this shouldn't happen
+                throw new Exception("Monadic * operator requires an operand");
+            }
+            
             return node;
+        }
+        
+        private bool IsExpressionTerminator(TokenType tokenType)
+        {
+            return tokenType switch
+            {
+                TokenType.SEMICOLON or TokenType.NEWLINE or TokenType.EOF or
+                TokenType.RIGHT_PAREN or TokenType.RIGHT_BRACKET or TokenType.RIGHT_BRACE => true,
+                _ => false
+            };
         }
 
         private ASTNode ParseUnaryMin(ParseContext context)

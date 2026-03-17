@@ -1714,8 +1714,12 @@ namespace K3CSharp
                     if (arguments.Count >= 2) return Minus(arguments[0], arguments[1]);
                     throw new Exception("- operator requires 2 arguments");
                 case "*":
+                    if (arguments.Count == 1) return First(arguments[0]);
                     if (arguments.Count >= 2) return Times(arguments[0], arguments[1]);
-                    throw new Exception("* operator requires 2 arguments");
+                    throw new Exception("* operator requires 1 or 2 arguments");
+                case "*:":
+                    if (arguments.Count == 1) return First(arguments[0]);
+                    throw new Exception("*: operator requires 1 argument");
                 case "%":
                     if (arguments.Count >= 2) return Divide(arguments[0], arguments[1]);
                     throw new Exception("% operator requires 2 arguments");
@@ -3672,6 +3676,14 @@ namespace K3CSharp
                 ValueType.Vector => obj is VectorValue vv ? vv.Elements.Count.GetHashCode() : 0,
                 _ => obj.ToString().GetHashCode()
             };
+        }
+
+        private K3Value First(K3Value a)
+        {
+            if (a is VectorValue vecA && vecA.Elements.Count > 0)
+                return vecA.Elements[0];
+            
+            return a; // For scalars, return the value itself
         }
     }
 }

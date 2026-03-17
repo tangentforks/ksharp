@@ -91,18 +91,37 @@ namespace K3CSharp.Verbs
             
             if (astNode.Type == ASTNodeType.BinaryOp)
             {
-                var left = EvaluateAST(astNode.Children[0]);
-                var right = EvaluateAST(astNode.Children[1]);
                 var op = astNode.Value?.ToString()?.Trim('`').Trim('"') ?? "+";
                 
-                return op switch
+                if (astNode.Children.Count == 1)
                 {
-                    "+" => UnenlistIfSingleElement(left.Add(right)),
-                    "-" => UnenlistIfSingleElement(left.Subtract(right)),
-                    "*" => UnenlistIfSingleElement(left.Multiply(right)),
-                    "/" => UnenlistIfSingleElement(left.Divide(right)),
-                    _ => throw new Exception($"Operator {op} not implemented")
-                };
+                    // Monadic operator
+                    var operand = EvaluateAST(astNode.Children[0]);
+                    return op switch
+                    {
+                        "*:" => UnenlistIfSingleElement(First(operand)),
+                        _ => throw new Exception($"Monadic operator {op} not implemented")
+                    };
+                }
+                else if (astNode.Children.Count >= 2)
+                {
+                    // Dyadic operator
+                    var left = EvaluateAST(astNode.Children[0]);
+                    var right = EvaluateAST(astNode.Children[1]);
+                    
+                    return op switch
+                    {
+                        "+" => UnenlistIfSingleElement(left.Add(right)),
+                        "-" => UnenlistIfSingleElement(left.Subtract(right)),
+                        "*" => UnenlistIfSingleElement(left.Multiply(right)),
+                        "/" => UnenlistIfSingleElement(left.Divide(right)),
+                        _ => throw new Exception($"Dyadic operator {op} not implemented")
+                    };
+                }
+                else
+                {
+                    throw new Exception($"BinaryOp requires at least 1 child, got {astNode.Children.Count}");
+                }
             }
             
             if (astNode.Type == ASTNodeType.Vector)
@@ -118,6 +137,15 @@ namespace K3CSharp.Verbs
             // Base case: return null for unimplemented node types instead of throwing
             return new NullValue();
         }
+        
+        private static K3Value First(K3Value a)
+        {
+            if (a is VectorValue vecA && vecA.Elements.Count > 0)
+                return vecA.Elements[0];
+            
+            return a; // For scalars, return the value itself
+        }
+
         private static K3Value HandleAddition(K3Value left, K3Value right)
         {
             if (left is FloatValue leftFloat && right is FloatValue rightFloat)
