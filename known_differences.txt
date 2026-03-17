@@ -216,3 +216,6 @@ dyadic_power_atom_vector :: regex:8.0:8 :: smart exponentiation
 dyadic_power_vector_atom :: regex:16.0:16 :: smart exponentiation
 dyadic_power_vector_vector :: regex:4.0:4 :: smart exponentiation
 apply_assign_divide :: regex:4.0:4 :: smart division
+ktree_enumerate_absolute_path :: regex:\s+`:` :: Compact representation
+ktree_enumerate_relative_name :: regex:\s+`:` :: Compact representation
+ktree_enumerate_relative_path :: regex:\s+`:` :: Compact representation

@@ -43,6 +43,14 @@ namespace K3CSharp
                     Advance();
                     SkipWhitespace();
                 }
+                else if (c == '"')
+                {
+                    tokens.Add(ReadString());
+                }
+                else if (c == '`')
+                {
+                    tokens.Add(ReadSymbol());
+                }
                 else if (c == '(')
                 {
                     tokens.Add(new Token(TokenType.LEFT_PAREN, "(", position));
@@ -53,21 +61,6 @@ namespace K3CSharp
                     tokens.Add(new Token(TokenType.RIGHT_PAREN, ")", position));
                     Advance();
                 }
-                else if (c == '{')
-                {
-                    tokens.Add(new Token(TokenType.LEFT_BRACE, "{", position));
-                    Advance();
-                }
-                else if (c == '}')
-                {
-                    tokens.Add(new Token(TokenType.RIGHT_BRACE, "}", position));
-                    Advance();
-                }
-                else if (c == '`')
-                {
-                    var symbolToken = ReadSymbol();
-                    tokens.Add(symbolToken);
-                }
                 else if (c == '[')
                 {
                     tokens.Add(new Token(TokenType.LEFT_BRACKET, "[", position));
@@ -76,6 +69,16 @@ namespace K3CSharp
                 else if (c == ']')
                 {
                     tokens.Add(new Token(TokenType.RIGHT_BRACKET, "]", position));
+                    Advance();
+                }
+                else if (c == '{')
+                {
+                    tokens.Add(new Token(TokenType.LEFT_BRACE, "{", position));
+                    Advance();
+                }
+                else if (c == '}')
+                {
+                    tokens.Add(new Token(TokenType.RIGHT_BRACE, "}", position));
                     Advance();
                 }
                 else if (c == '+')

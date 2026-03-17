@@ -169,27 +169,21 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Find the rightmost operator with lowest precedence
+        /// Find the rightmost binary operator (LRS: all operators have same precedence)
         /// </summary>
         private int FindRightmostOperator(List<Token> tokens)
         {
-            var rightmostIndex = -1;
-            var lowestPrecedence = int.MaxValue;
-            
+            // In K LRS, all binary operators have the same precedence and are right-associative
+            // Simply find the rightmost binary operator
             for (int i = tokens.Count - 1; i >= 0; i--)
             {
                 if (IsBinaryOperator(tokens[i].Type))
                 {
-                    var precedence = GetOperatorPrecedence(tokens[i].Type);
-                    if (precedence <= lowestPrecedence)
-                    {
-                        lowestPrecedence = precedence;
-                        rightmostIndex = i;
-                    }
+                    return i;
                 }
             }
             
-            return rightmostIndex;
+            return -1;
         }
         
         /// <summary>
@@ -198,21 +192,6 @@ namespace K3CSharp.Parsing
         private bool IsBinaryOperator(TokenType tokenType)
         {
             return VerbRegistry.IsBinaryOperatorToken(tokenType);
-        }
-        
-        /// <summary>
-        /// Get operator precedence for LRS evaluation
-        /// </summary>
-        private int GetOperatorPrecedence(TokenType tokenType)
-        {
-            // Simplified precedence - higher number = higher precedence
-            return tokenType switch
-            {
-                TokenType.PLUS or TokenType.MINUS => 1,
-                TokenType.MULTIPLY or TokenType.DIVIDE => 2,
-                TokenType.POWER => 3,
-                _ => 0
-            };
         }
         
         /// <summary>

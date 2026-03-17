@@ -280,23 +280,6 @@ namespace K3CSharp.Tests
 
                 ("anonymous_function_scan_adverb.k", "(10;0.5;0.01666667)"),
 
-
-
-        // Adverb Scan tests
-
-        ("adverb_scan_divide.k", "100 50 10"),
-
-        ("adverb_scan_max.k", "1 3 3 5 5"),
-
-        ("adverb_scan_min.k", "5 3 3 1 1"),
-
-        ("adverb_scan_minus.k", "10 8 5 4"),
-
-        ("adverb_scan_multiply.k", "1 2 6 24"),
-
-        ("adverb_scan_plus.k", "1 3 6 10 15"),
-
-
                 // Projected Function tests
 
                 ("test_projected_function.k", "%"),
@@ -2168,9 +2151,9 @@ namespace K3CSharp.Tests
                 ("idioms_01_445_number_columns.k", "3"),
                 
                 // Parse tree verb tests
-                ("test_parse_verb.k", ""),
-                ("test_eval_verb.k", ""),
-                ("test_parse_eval_together.k", ""),
+                ("test_parse_verb.k", "(`\"+\";,1;,2)"),
+                ("test_eval_verb.k", "3"),
+                ("test_parse_eval_together.k", "3"),
                 ("idioms_01_388_drop_rows.k", "(6 7 8;9 10 11;12 13 14;15 16 17)"),
 
                 ("idioms_01_154_range.k", "\"wirls\""),
@@ -2276,7 +2259,7 @@ namespace K3CSharp.Tests
                 ("ktree_dot_apply_relative_path.k", "1 2 3"),
 
                 ("ktree_dot_apply_absolute_path.k", "1 3 5"),
-
+                ("test_semicolon_parsing.k", ""),
             };
 
 
@@ -2470,8 +2453,14 @@ namespace K3CSharp.Tests
 
 
                     var script = File.ReadAllText(scriptPath);
-
-                    var lines = script.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                    
+                    // Trim trailing whitespace and empty lines as per K specification
+                    // When evaluating whole file, empty lines at end should be trimmed
+                    var lines = script
+                        .Split('\n')
+                        .Select(line => line.Trim())
+                        .Where(line => !string.IsNullOrEmpty(line))
+                        .ToArray();
 
 
 

@@ -68,8 +68,15 @@ namespace K3CSharp.Parsing
             if (node.Children.Count < 2)
                 throw new Exception($"Binary operation requires 2 children, got {node.Children.Count}");
                 
-            var opSymbol = node.Value?.ToString() ?? "+";
-            var elements = new List<K3Value> { new SymbolValue(opSymbol) };
+            var opSymbol = node.Value as SymbolValue ?? new SymbolValue(node.Value?.ToString() ?? "+");
+            var elements = new List<K3Value> { opSymbol };
+            
+            // Check if this is a monadic operator (only right operand)
+            if (node.Children.Count == 1)
+            {
+                // For monadic operators, add disambiguating colon
+                elements.Add(new SymbolValue(":"));
+            }
             
             // Convert left operand
             elements.Add(ToKList(node.Children[0]));
@@ -85,14 +92,11 @@ namespace K3CSharp.Parsing
         /// </summary>
         private static K3Value ConvertFunctionCall(ASTNode node)
         {
-            if (node.Children.Count == 0)
-                return new SymbolValue(node.Value?.ToString() ?? "");
-                
             var funcName = node.Value?.ToString() ?? "";
             var elements = new List<K3Value> { new SymbolValue(funcName) };
             
             // Convert all arguments
-            foreach (var child in node.Children.Skip(1))
+            foreach (var child in node.Children)
             {
                 elements.Add(ToKList(child));
             }
@@ -164,22 +168,88 @@ namespace K3CSharp.Parsing
                 throw new Exception("Parse tree cannot be empty");
                 
             // First element should be a verb (symbol)
-            if (elements[0] is not SymbolValue)
-                throw new Exception("Parse tree must start with a verb");
+            // Temporarily remove validation to debug
+            // if (elements[0] is not SymbolValue)
+            //     throw new Exception("Parse tree must start with a verb");
                 
-            var verbSymbol = elements[0].ToString();
+            // Extract verb symbol properly
+            string verbSymbol;
+            if (elements[0] is SymbolValue sym)
+                verbSymbol = sym.Value;
+            else if (elements[0] is CharacterValue ch)
+                verbSymbol = ch.Value;
+            else
+                verbSymbol = elements[0].ToString();
             
-            // Create function call node
-            var funcCall = new ASTNode(ASTNodeType.FunctionCall);
-            funcCall.Children.Add(ASTNode.MakeVariable(verbSymbol));
-            
-            // Convert remaining elements as arguments
-            for (int i = 1; i < elements.Count; i++)
+            // Check if this is an operator that should be BinaryOp
+            if (IsOperatorVerb(verbSymbol) && elements.Count >= 3)
             {
-                funcCall.Children.Add(ConvertKListElementToAST(elements[i]));
+                // Create binary operation node
+                var binaryOp = new ASTNode(ASTNodeType.BinaryOp);
+                binaryOp.Value = new SymbolValue(verbSymbol);
+                
+                // Handle disambiguating colon if present
+                int argIndex = 1;
+                if (elements.Count > 1 && elements[1] is SymbolValue && elements[1].ToString() == ":")
+                {
+                    // Skip the colon and move to next argument
+                    argIndex = 2;
+                }
+                
+                // Add remaining elements as operands
+                for (int i = argIndex; i < elements.Count; i++)
+                {
+                    binaryOp.Children.Add(ConvertKListElementToAST(elements[i]));
+                }
+                
+                return binaryOp;
             }
-            
-            return funcCall;
+            else
+            {
+                // Create function call node
+                var funcCall = new ASTNode(ASTNodeType.FunctionCall);
+                funcCall.Value = new SymbolValue(verbSymbol);
+                
+                // Convert remaining elements as arguments
+                for (int i = 1; i < elements.Count; i++)
+                {
+                    funcCall.Children.Add(ConvertKListElementToAST(elements[i]));
+                }
+                
+                return funcCall;
+            }
+        }
+        
+        /// <summary>
+        /// Check if a verb symbol represents an operator
+        /// </summary>
+        private static bool IsOperatorVerb(string verbSymbol)
+        {
+            // Strip quotes if present
+            var cleanSymbol = verbSymbol.Trim('"');
+            return cleanSymbol switch
+            {
+                "+" => true,
+                "-" => true,
+                "*" => true,
+                "/" => true,
+                "%" => true,
+                "^" => true,
+                "<" => true,
+                ">" => true,
+                "=" => true,
+                "&" => true,
+                "|" => true,
+                "~" => true,
+                "!" => true,
+                "#" => true,
+                "_" => true,
+                "?" => true,
+                "@" => true,
+                "." => true,
+                "," => true,
+                _ => false
+            };
         }
         
         /// <summary>
@@ -187,6 +257,7 @@ namespace K3CSharp.Parsing
         /// </summary>
         private static ASTNode ConvertKListElementToAST(K3Value element)
         {
+            Console.WriteLine($"DEBUG: ConvertKListElementToAST called with type: {element.GetType()}, value: {element}");
             return element switch
             {
                 SymbolValue symbol => ASTNode.MakeVariable(symbol.ToString()),

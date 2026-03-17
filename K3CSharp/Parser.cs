@@ -302,48 +302,6 @@ namespace K3CSharp
                 }
             }
 
-            // Check if the result is a semicolon-separated vector (mixed list)
-            // Only apply niladic wrapping if we're at true top level (no delimiters in original expression)
-            // AND this is a semicolon-separated vector, not a space-separated vector
-            if (result.Type == ASTNodeType.Vector && result.Children.Count > 1)
-            {
-                // Simple heuristic: if the original expression contains any delimiters, 
-                // don't apply niladic wrapping
-                bool hasDelimiters = false;
-                foreach (var token in tokens)
-                {
-                    if (token.Type == TokenType.LEFT_PAREN || token.Type == TokenType.RIGHT_PAREN ||
-                        token.Type == TokenType.LEFT_BRACE || token.Type == TokenType.RIGHT_BRACE ||
-                        token.Type == TokenType.LEFT_BRACKET || token.Type == TokenType.RIGHT_BRACKET)
-                    {
-                        hasDelimiters = true;
-                        break;
-                    }
-                }
-                
-                // Additional check: only apply niladic wrapping if there are semicolons in the original tokens
-                // This distinguishes semicolon-separated vectors from space-separated vectors
-                bool hasSemicolons = false;
-                foreach (var token in tokens)
-                {
-                    if (token.Type == TokenType.SEMICOLON)
-                    {
-                        hasSemicolons = true;
-                        break;
-                    }
-                }
-                
-                // Only apply niladic wrapping if no delimiters were found AND there are semicolons
-                if (!hasDelimiters && hasSemicolons)
-                {
-                    // This represents a semicolon-separated list at top level
-                    // According to K spec, evaluate as niladic function returning last element
-                    var block = new ASTNode(ASTNodeType.Block);
-                    block.Children.AddRange(result.Children);
-                    return block;
-                }
-            }
-
             return result;
         }
 
@@ -362,7 +320,7 @@ namespace K3CSharp
         
         private static readonly TokenType[] DefaultStopTokens = {
             TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.MIN, TokenType.MAX,
-            TokenType.LESS, TokenType.GREATER, TokenType.EQUAL, TokenType.IN, TokenType.POWER, TokenType.MODULUS, TokenType.JOIN,
+            TokenType.LESS, TokenType.GREATER, TokenType.EQUAL, TokenType.IN, TokenType.POWER, TokenType.MODULUS,
             TokenType.COLON, TokenType.HASH, TokenType.UNDERSCORE, TokenType.QUESTION, TokenType.MATCH, TokenType.NEGATE, TokenType.DOLLAR, TokenType.RIGHT_PAREN,
             TokenType.RIGHT_BRACE, TokenType.RIGHT_BRACKET, TokenType.SEMICOLON, TokenType.NEWLINE, TokenType.ASSIGNMENT, TokenType.GLOBAL_ASSIGNMENT,
             TokenType.LEFT_BRACKET, TokenType.APPLY, TokenType.DOT_APPLY, TokenType.TYPE, TokenType.STRING_REPRESENTATION,

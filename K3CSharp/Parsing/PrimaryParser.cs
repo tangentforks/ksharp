@@ -182,62 +182,86 @@ namespace K3CSharp
         private ASTNode ParseParentheses(ParseContext context)
         {
             context.Advance(); // Consume '('
+
+            // Parse expressions inside parentheses according to K specification
+            // Semicolons and newlines are expression separators
+            // Commas are OPERATORS (join/enlist), not separators
+            var elements = new List<ASTNode>();
             
-            // Check for empty parentheses () which should be an empty list
+            // Handle empty parentheses () - should be treated as 1 expression of value null
             if (context.Check(TokenType.RIGHT_PAREN))
             {
                 context.Advance(); // Consume ')'
-                return ASTNode.MakeVector(new List<ASTNode>());
+                return ASTNode.MakeLiteral(new NullValue());
             }
             
-            // Parse parenthesized expression - inside parentheses, semicolons create lists
-            // Handle leading semicolons for null elements: (;1;2)
-            ASTNode? firstExpr = null;
-            bool hasSemicolon = false;
-
-            if (context.CurrentToken().Type == TokenType.SEMICOLON)
+            // Parse expressions sequentially from left to right
+            while (!context.IsAtEnd() && !context.Check(TokenType.RIGHT_PAREN))
             {
-                // Leading semicolon: first element is null
-                firstExpr = ASTNode.MakeLiteral(new NullValue());
-                hasSemicolon = true;
-                context.Advance(); // consume the semicolon
-            }
-            else
-            {
-                firstExpr = ParseBracketArgument(context);
-                if (firstExpr == null)
+                // Skip newlines as they are also expression separators
+                while (!context.IsAtEnd() && context.CurrentToken().Type == TokenType.NEWLINE)
                 {
-                    throw new Exception("Expected expression after '('");
+                    context.Advance();
                 }
-                hasSemicolon = context.Match(TokenType.SEMICOLON);
-            }
-
-            if (hasSemicolon)
-            {
-                // Semicolon-separated list
-                var elements = new List<ASTNode> { firstExpr! };
-                do
-                {
-                    // Skip empty lines
-                    while (!context.IsAtEnd() && context.CurrentToken().Type == TokenType.NEWLINE)
-                    {
-                        context.Match(TokenType.NEWLINE);
-                    }
-                    
-                    if (!context.IsAtEnd() && context.CurrentToken().Type != TokenType.RIGHT_PAREN)
-                    {
-                        elements.Add(ParseBracketArgument(context)!);
-                    }
-                } while (!context.IsAtEnd() && context.Match(TokenType.SEMICOLON));
                 
-                context.Advance(); // Consume ')'
+                // Check for empty expressions (consecutive separators)
+                if (context.CurrentToken().Type == TokenType.SEMICOLON || 
+                    context.CurrentToken().Type == TokenType.NEWLINE)
+                {
+                    elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                    context.Advance(); // Consume the separator
+                    continue;
+                }
+                
+                // Parse the expression (commas are operators, so they're handled as part of expressions)
+                var expr = ParseExpressionInGrouping(context);
+                if (expr != null)
+                {
+                    elements.Add(expr);
+                }
+                else
+                {
+                    elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                }
+                
+                // Check for separator (semicolon or newline only - commas are operators!)
+                if (context.Match(TokenType.SEMICOLON))
+                {
+                    continue; // Next expression
+                }
+                else if (context.Match(TokenType.NEWLINE))
+                {
+                    continue; // Next expression
+                }
+                else if (context.Check(TokenType.RIGHT_PAREN))
+                {
+                    break; // End of parentheses
+                }
+                else
+                {
+                    // No separator and not at end - this should not happen in valid K
+                    break;
+                }
+            }
+            
+            context.Advance(); // Consume ')'
+            
+            // Apply K specification rules for the result
+            if (elements.Count == 1)
+            {
+                // If the content has 1 expression, return the value of the expression
+                return elements[0];
+            }
+            else if (elements.Count > 1)
+            {
+                // If the content has more than 1 expression, generate a list
+                // The evaluator will handle vector collapsing if all elements have the same type
                 return ASTNode.MakeVector(elements);
             }
             else
             {
-                // Single expression
-                context.Advance(); // Consume ')'
-                return firstExpr;
+                // Should not reach here due to empty parentheses handling above
+                return ASTNode.MakeLiteral(new NullValue());
             }
         }
 
@@ -251,6 +275,106 @@ namespace K3CSharp
             }
             
             throw new Exception("Expected expression in brackets");
+        }
+
+        private ASTNode? ParseExpressionInGrouping(ParseContext context)
+        {
+            // Parse a single expression within grouping constructs (parentheses, brackets, braces)
+            // This method respects semicolons and newlines as expression separators
+            // Commas are OPERATORS (join/enlist), not separators
+            // but doesn't consume them unless they're part of current expression
+            
+            if (context.IsAtEnd())
+                return null;
+                
+            var token = context.CurrentToken();
+            
+            // Handle primary expressions
+            switch (token.Type)
+            {
+                case TokenType.INTEGER:
+                case TokenType.LONG:
+                case TokenType.FLOAT:
+                case TokenType.CHARACTER:
+                case TokenType.CHARACTER_VECTOR:
+                case TokenType.SYMBOL:
+                case TokenType.IDENTIFIER:
+                case TokenType.NULL:
+                    return ParsePrimaryToken(context);
+                    
+                case TokenType.LEFT_PAREN:
+                    return ParseParentheses(context);
+                    
+                case TokenType.LEFT_BRACKET:
+                    return ParseBrackets(context);
+                    
+                case TokenType.LEFT_BRACE:
+                    return ParseBraces(context);
+                    
+                case TokenType.PLUS:
+                case TokenType.MINUS:
+                case TokenType.MULTIPLY:
+                case TokenType.DIVIDE:
+                case TokenType.MODULUS:
+                case TokenType.POWER:
+                case TokenType.MIN:
+                case TokenType.MAX:
+                case TokenType.MATCH:
+                case TokenType.NOT:
+                case TokenType.HASH:
+                case TokenType.UNDERSCORE:
+                case TokenType.QUESTION:
+                case TokenType.DOLLAR:
+                case TokenType.APPLY:
+                case TokenType.JOIN: // Comma is an operator, not a separator
+                    return ParseUnaryOperator(context);
+                    
+                default:
+                    // Stop at expression separators (semicolons and newlines only)
+                    if (token.Type == TokenType.SEMICOLON || 
+                        token.Type == TokenType.NEWLINE ||
+                        token.Type == TokenType.RIGHT_PAREN ||
+                        token.Type == TokenType.RIGHT_BRACKET ||
+                        token.Type == TokenType.RIGHT_BRACE)
+                    {
+                        return null; // End of current expression
+                    }
+                    
+                    throw new Exception($"Unexpected token in expression: {token.Type}({token.Lexeme})");
+            }
+        }
+        
+        private ASTNode ParsePrimaryToken(ParseContext context)
+        {
+            var token = context.CurrentToken();
+            context.Advance();
+            
+            return token.Type switch
+            {
+                TokenType.INTEGER => ASTNode.MakeLiteral(new IntegerValue(int.Parse(token.Lexeme))),
+                TokenType.LONG => ASTNode.MakeLiteral(new LongValue(long.Parse(token.Lexeme.Substring(0, token.Lexeme.Length - 1)))),
+                TokenType.FLOAT => ASTNode.MakeLiteral(new FloatValue(double.Parse(token.Lexeme))),
+                TokenType.CHARACTER => ASTNode.MakeLiteral(new CharacterValue(token.Lexeme)),
+                TokenType.CHARACTER_VECTOR => ASTNode.MakeLiteral(new SymbolValue(token.Lexeme.Substring(1, token.Lexeme.Length - 2))),
+                TokenType.SYMBOL => ASTNode.MakeLiteral(new SymbolValue(token.Lexeme.Trim('`'))),
+                TokenType.IDENTIFIER => ASTNode.MakeVariable(token.Lexeme),
+                TokenType.NULL => ASTNode.MakeLiteral(new NullValue()),
+                _ => throw new Exception($"Unexpected primary token: {token.Type}")
+            };
+        }
+        
+        private ASTNode ParseUnaryOperator(ParseContext context)
+        {
+            var token = context.CurrentToken();
+            context.Advance();
+            
+            var operand = ParseExpressionInGrouping(context);
+            if (operand == null)
+            {
+                throw new Exception($"Expected expression after unary operator {token.Lexeme}");
+            }
+            
+            return ASTNode.MakeBinaryOp(token.Type, operand, ASTNode.MakeLiteral(new NullValue()));
         }
 
         private ASTNode ParseBraces(ParseContext context)

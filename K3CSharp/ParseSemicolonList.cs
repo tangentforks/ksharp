@@ -1,12 +1,14 @@
 namespace K3CSharp 
 {
     /// <summary>
-    /// Handles parsing of semicolon-separated lists
+    /// Handles parsing of expressions separated by semicolons according to K specification
+    /// Semicolons are expression separators, not special "semicolon-separated lists"
     /// </summary>
     partial class Parser
     {
         /// <summary>
-        /// Parse semicolon-separated expressions into a vector
+        /// Parse expressions separated by semicolons into a list according to K specification
+        /// Semicolons are expression separators that create lists when multiple expressions are present
         /// </summary>
         private ASTNode? ParseSemicolonList(ASTNode left, bool insideDelimiters)
         {
@@ -64,20 +66,20 @@ namespace K3CSharp
                     }
                 }
                 
-                // Handle empty positions: if next is null, add a null literal
-                // This represents an empty position in a semicolon-separated list
+                // Handle empty expressions (consecutive separators) - should be null values
                 if (next != null)
                 {
                     elements.Add(next);
                 }
                 else
                 {
-                    // Empty position becomes null in K semicolon-separated lists
+                    // Empty expression becomes null according to K specification
                     elements.Add(ASTNode.MakeLiteral(new NullValue()));
                 }
             } while (Match(TokenType.SEMICOLON));
             
-            // Always create mixed list (anonymous list) for semicolon-separated expressions
+            // Create list according to K specification rules
+            // The evaluator will handle vector collapsing if all elements have the same type
             return ASTNode.MakeVector(elements);
         }
     }

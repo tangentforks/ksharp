@@ -33,157 +33,48 @@ namespace K3CSharp.Verbs
         }
         
         /// <summary>
-        /// Tokenize character vector expression
+        /// Parse character vector expression using proper K parser
         /// </summary>
         private static K3Value ParseExpression(string expressionText)
         {
             try
             {
-                // Tokenize the expression
-                var tokens = TokenizeExpression(expressionText);
+                // Use same pattern as Program.cs
+                var lexer = new Lexer(expressionText);
+                var tokens = lexer.Tokenize();
                 
-                // Parse tokens to AST using existing parser
-                var astNode = ParseTokensToAST(tokens);
-                
-                // Convert AST to K list representation
-                return ParseTreeConverter.ToKList(astNode);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Parse error at {expressionText.Length}: {ex.Message}");
-            }
-        }
-        
-        /// <summary>
-        /// Tokenize character vector expression
-        /// </summary>
-        private static List<Token> TokenizeExpression(string expression)
-        {
-            // For now, use a simple tokenization approach
-            // In a full implementation, this would use the existing lexer
-            var tokens = new List<Token>();
-            var position = 0;
-            
-            while (position < expression.Length)
-            {
-                var c = expression[position];
-                
-                if (char.IsWhiteSpace(c))
+                // Check if we have a single CHARACTER_VECTOR token (from a quoted string)
+                if (tokens.Count == 2 && tokens[0].Type == TokenType.CHARACTER_VECTOR && tokens[1].Type == TokenType.EOF)
                 {
-                    position++;
-                    continue;
-                }
-                
-                if (c == '"')
-                {
-                    var endPos = expression.IndexOf('"', position + 1);
-                    if (endPos == -1)
-                        throw new Exception("Unterminated string");
+                    // Extract the content from the quoted string and parse it
+                    var content = tokens[0].Lexeme;
+                    var contentLexer = new Lexer(content);
+                    var contentTokens = contentLexer.Tokenize();
+                    var parser = new Parser(contentTokens, content);
+                    var astNode = parser.Parse();
                     
-                    var stringValue = expression.Substring(position + 1, endPos - position - 1);
-                    tokens.Add(new Token(TokenType.CHARACTER_VECTOR, stringValue, position));
-                    position = endPos + 1;
-                }
-                else if (char.IsDigit(c) || (c == '-' && position + 1 < expression.Length && char.IsDigit(expression[position + 1])))
-                {
-                    var numberStart = position;
-                    while (position < expression.Length && (char.IsDigit(expression[position]) || (expression[position] == '.' && position + 1 < expression.Length && char.IsDigit(expression[position + 1]))))
-                    {
-                        position++;
-                    }
+                    if (astNode == null)
+                        throw new Exception("Failed to parse expression");
                     
-                    var numberString = expression.Substring(numberStart, position - numberStart);
-                    if (numberString.Contains('.'))
-                        tokens.Add(new Token(TokenType.FLOAT, numberString, numberStart));
-                    else
-                        tokens.Add(new Token(TokenType.INTEGER, numberString, numberStart));
-                }
-                else if (char.IsLetter(c) || c == '_')
-                {
-                    var start = position;
-                    while (position < expression.Length && (char.IsLetterOrDigit(expression[position]) || expression[position] == '_'))
-                    {
-                        position++;
-                    }
-                    
-                    var identifier = expression.Substring(start, position - start);
-                    tokens.Add(new Token(TokenType.IDENTIFIER, identifier, start));
-                }
-                else if (c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '^')
-                {
-                    tokens.Add(new Token(TokenType.PLUS, c.ToString(), position));
-                    position++;
-                }
-                else if (c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}')
-                {
-                    var tokenType = c switch
-                    {
-                        '(' => TokenType.LEFT_PAREN,
-                        ')' => TokenType.RIGHT_PAREN,
-                        '[' => TokenType.LEFT_BRACKET,
-                        ']' => TokenType.RIGHT_BRACKET,
-                        '{' => TokenType.LEFT_BRACE,
-                        '}' => TokenType.RIGHT_BRACE,
-                        _ => TokenType.UNKNOWN
-                    };
-                    tokens.Add(new Token(tokenType, c.ToString(), position));
-                    position++;
+                    // Convert AST to K list representation
+                    return ParseTreeConverter.ToKList(astNode);
                 }
                 else
                 {
-                    tokens.Add(new Token(TokenType.UNKNOWN, c.ToString(), position));
-                    position++;
+                    // Parse normally for other cases
+                    var parser = new Parser(tokens, expressionText);
+                    var astNode = parser.Parse();
+                    
+                    if (astNode == null)
+                        throw new Exception("Failed to parse expression");
+                    
+                    // Convert AST to K list representation
+                    return ParseTreeConverter.ToKList(astNode);
                 }
             }
-            
-            return tokens;
-        }
-        
-        /// <summary>
-        /// Parse tokens to AST using existing parser infrastructure
-        /// </summary>
-        private static ASTNode ParseTokensToAST(List<Token> tokens)
-        {
-            // This is a simplified implementation
-            // In a full implementation, this would use the existing Parser class
-            if (tokens.Count == 0)
-                throw new Exception("Empty expression");
-                
-            if (tokens.Count == 1)
-                return CreateNodeFromToken(tokens[0]);
-                
-            // For multiple tokens, create a simple binary operation
-            // This is a placeholder - the full parser would handle this properly
-            var left = CreateNodeFromToken(tokens[0]);
-            var right = CreateNodeFromToken(tokens[tokens.Count - 1]);
-            var op = tokens.Count > 2 ? tokens[1] : new Token(TokenType.PLUS, "+", 0);
-            
-            return ASTNode.MakeBinaryOp(op.Type, left, right);
-        }
-        
-        /// <summary>
-        /// Create AST node from token
-        /// </summary>
-        private static ASTNode CreateNodeFromToken(Token token)
-        {
-            switch (token.Type)
+            catch (Exception ex)
             {
-                case TokenType.INTEGER:
-                    return ASTNode.MakeLiteral(new IntegerValue(int.Parse(token.Lexeme)));
-                case TokenType.FLOAT:
-                    return ASTNode.MakeLiteral(new FloatValue(double.Parse(token.Lexeme)));
-                case TokenType.IDENTIFIER:
-                    return ASTNode.MakeVariable(token.Lexeme);
-                case TokenType.CHARACTER_VECTOR:
-                    // Remove quotes from the lexeme and create a proper string value
-                    var content = token.Lexeme;
-                    if (content.Length >= 2 && content[0] == '"' && content[content.Length - 1] == '"')
-                    {
-                        content = content.Substring(1, content.Length - 2);
-                    }
-                    return ASTNode.MakeLiteral(new SymbolValue(content));
-                default:
-                    throw new Exception($"Unsupported token type: {token.Type}");
+                throw new Exception($"Parse error: {ex.Message}");
             }
         }
     }
