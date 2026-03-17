@@ -1499,7 +1499,7 @@ namespace K3CSharp
                     commaNode.Children.Add(bracketContents);
                     
                     dotApplyNode.Children.Add(commaNode);
-                    result = dotApplyNode;
+                    return dotApplyNode;
                 }
                 else
                 {
@@ -1510,6 +1510,24 @@ namespace K3CSharp
                     if (operand != null) atomNode.Children.Add(operand);
                     return atomNode;
                 }
+            }
+            else if (Match(TokenType.PARSE))
+            {
+                // This is unary PARSE (_parse) operator
+                var operand = ParsePrimary();
+                var parseNode = new ASTNode(ASTNodeType.BinaryOp);
+                parseNode.Value = new SymbolValue("_parse");
+                if (operand != null) parseNode.Children.Add(operand);
+                return parseNode;
+            }
+            else if (Match(TokenType.EVAL))
+            {
+                // This is unary EVAL (_eval) operator
+                var operand = ParsePrimary();
+                var evalNode = new ASTNode(ASTNodeType.BinaryOp);
+                evalNode.Value = new SymbolValue("_eval");
+                if (operand != null) evalNode.Children.Add(operand);
+                return evalNode;
             }
             else if (Match(TokenType.EOF))
             {

@@ -641,6 +641,8 @@ namespace K3CSharp
                     "ADVERB_SLASH_COLON" => ApplyAdverbSlashColon(operand, new IntegerValue(0), new IntegerValue(0)),
                     "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(operand, new IntegerValue(0), new IntegerValue(0)),
                     "ADVERB_TICK_COLON" => ApplyAdverbTickColon(operand, new IntegerValue(0), new IntegerValue(0)),
+                    "_parse" => Verbs.ParseVerbHandler.Parse(new[] { operand }),
+                    "_eval" => Verbs.EvalVerbHandler.Evaluate(new[] { operand }),
                     _ => throw new Exception($"Unknown unary operator: {op.Value}")
                 };
             }

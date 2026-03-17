@@ -132,6 +132,8 @@ namespace K3CSharp
         HINT,           // _hint hint system
         GETHINT,        // _gethint get hint
         SETHINT,        // _sethint set hint
+        PARSE,          // _parse verb token
+        EVAL,           // _eval verb token
         EOF,
         UNKNOWN
     }

@@ -283,6 +283,20 @@ namespace K3CSharp
                             Advance(); // Skip n
                             Advance(); // Skip t
                         }
+                        // Check for _parse next (greedy precedence)
+                        else if (position + 5 < input.Length && input.Substring(position, 6) == "_parse")
+                        {
+                            tokens.Add(new Token(TokenType.PARSE, "_parse", position));
+                            Advance(); // Skip _
+                            for (int i = 0; i < 5; i++) Advance(); // Skip "parse"
+                        }
+                        // Check for _eval next (greedy precedence)
+                        else if (position + 4 < input.Length && input.Substring(position, 5) == "_eval")
+                        {
+                            tokens.Add(new Token(TokenType.EVAL, "_eval", position));
+                            Advance(); // Skip _
+                            for (int i = 0; i < 4; i++) Advance(); // Skip "eval"
+                        }
                         // Check for _n null value (only if not followed by letters)
                         else if (position + 1 < input.Length && input[position + 1] == 'n')
                         {

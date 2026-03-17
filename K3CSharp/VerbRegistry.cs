@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using K3CSharp.Verbs;
 
 namespace K3CSharp
 {
@@ -203,6 +204,10 @@ namespace K3CSharp
             RegisterVerb("MAX", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("LESS", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("GREATER", VerbType.Operator, new[] { 1, 2 }, null);
+            
+            // Parse tree verbs
+            RegisterVerb("_parse", VerbType.Operator, new[] { 1 }, new Func<K3Value[], K3Value>?[] { ParseVerbHandler.Parse, null });
+            RegisterVerb("_eval", VerbType.Operator, new[] { 1 }, new Func<K3Value[], K3Value>?[] { EvalVerbHandler.Evaluate, null });
             RegisterVerb("MATCH", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("IN", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("POWER", VerbType.Operator, new[] { 1, 2 }, null);
@@ -826,6 +831,8 @@ namespace K3CSharp
                 TokenType.SHIFT => "shift",
                 TokenType.APPLY => "@",
                 TokenType.DOT_APPLY => ".",
+                TokenType.PARSE => "_parse",
+                TokenType.EVAL => "_eval",
                 TokenType.ADVERB_SLASH => "/",
                 TokenType.ADVERB_BACKSLASH => "\\",
                 TokenType.ADVERB_TICK => "'",

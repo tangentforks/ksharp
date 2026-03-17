@@ -350,8 +350,10 @@ namespace K3CSharp
         private bool IsUnaryOperator(TokenType type)
         {
             var verb = VerbRegistry.GetVerb(type.ToString());
-            return verb != null && verb.Type == VerbType.Operator && 
+            var result = verb != null && verb.Type == VerbType.Operator && 
                    verb.SupportedArities != null && verb.SupportedArities.Contains(1);
+            
+            return result;
         }
 
         private static readonly TokenType[] ParseUntilEndStopTokens = {

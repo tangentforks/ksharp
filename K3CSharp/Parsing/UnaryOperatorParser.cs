@@ -36,6 +36,8 @@ namespace K3CSharp
                 TokenType.QUESTION => ParseUnaryUnique(context),
                 TokenType.DOLLAR => ParseUnaryFormat(context),
                 TokenType.APPLY => ParseUnaryApply(context),
+                TokenType.PARSE => ParseUnaryParse(context),
+                TokenType.EVAL => ParseUnaryEval(context),
                 _ => throw new Exception($"Unexpected unary operator: {token.Type}({token.Lexeme})")
             };
         }
@@ -214,6 +216,24 @@ namespace K3CSharp
             return node;
         }
 
+        private static ASTNode ParseUnaryParse(ParseContext context)
+        {
+            var operand = ParseBracketArgument(context);
+            var node = new ASTNode(ASTNodeType.BinaryOp);
+            node.Value = new SymbolValue("_parse");
+            if (operand != null) node.Children.Add(operand);
+            return node;
+        }
+
+        private static ASTNode ParseUnaryEval(ParseContext context)
+        {
+            var operand = ParseBracketArgument(context);
+            var node = new ASTNode(ASTNodeType.BinaryOp);
+            node.Value = new SymbolValue("_eval");
+            if (operand != null) node.Children.Add(operand);
+            return node;
+        }
+
         /// <summary>
         /// Parse bracket argument for unary operators
         /// </summary>
@@ -372,7 +392,8 @@ namespace K3CSharp
                 TokenType.PLUS or TokenType.MINUS or TokenType.MULTIPLY or TokenType.DIVIDE or 
                 TokenType.MODULUS or TokenType.POWER or TokenType.MIN or TokenType.MAX or
                 TokenType.MATCH or TokenType.NOT or TokenType.HASH or TokenType.UNDERSCORE or
-                TokenType.QUESTION or TokenType.DOLLAR or TokenType.APPLY => true,
+                TokenType.QUESTION or TokenType.DOLLAR or TokenType.APPLY or 
+                TokenType.PARSE or TokenType.EVAL => true,
                 _ => false
             };
         }

@@ -317,6 +317,14 @@ namespace K3CSharp.Comparison
                     return comparison;
                 }
                 
+                if (scriptContent.Contains("_parse") || scriptContent.Contains("_eval") )
+                {
+                    comparison.Status = ComparisonStatus.Skipped;
+                    comparison.Message = "Parse Tree Test";
+                    comparison.Notes = "k.exe doesn't support _parse/_eval";
+                    return comparison;
+                }
+
                 // Execute K3Sharp first to catch K3Sharp errors
                 try
                 {

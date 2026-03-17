@@ -2166,7 +2166,11 @@ namespace K3CSharp.Tests
                 ("idioms_01_411_number_rows.k", "2"),
 
                 ("idioms_01_445_number_columns.k", "3"),
-
+                
+                // Parse tree verb tests
+                ("test_parse_verb.k", ""),
+                ("test_eval_verb.k", ""),
+                ("test_parse_eval_together.k", ""),
                 ("idioms_01_388_drop_rows.k", "(6 7 8;9 10 11;12 13 14;15 16 17)"),
 
                 ("idioms_01_154_range.k", "\"wirls\""),
