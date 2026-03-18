@@ -73,10 +73,37 @@ namespace K3CSharp
         private static ASTNode ParseUnaryPlus(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
+            
+            // Check if this is a projection (has semicolon structure)
+            if (operand != null && operand.Type == ASTNodeType.Vector && HasProjectionStructure(operand))
+            {
+                // Create a vector structure for projection: (operator, ::, args...)
+                var projectionVector = new List<ASTNode>();
+                projectionVector.Add(ASTNode.MakeLiteral(new SymbolValue("+"))); // Add operator
+                projectionVector.Add(ASTNode.MakeLiteral(new SymbolValue("::"))); // Add projection symbol
+                
+                // Add the projection arguments
+                foreach (var child in operand.Children)
+                {
+                    projectionVector.Add(child);
+                }
+                
+                return ASTNode.MakeVector(projectionVector);
+            }
+            
+            // Regular unary plus
             var node = new ASTNode(ASTNodeType.BinaryOp);
             node.Value = new SymbolValue("+");
             if (operand != null) node.Children.Add(operand);
             return node;
+        }
+
+        private static bool HasProjectionStructure(ASTNode node)
+        {
+            // Check if this vector represents a projection (has missing arguments)
+            // For now, we'll consider any vector from bracket parsing as potentially a projection
+            // The ParseTreeConverter will handle the actual projection logic
+            return node.Type == ASTNodeType.Vector && node.Children.Count > 0;
         }
 
         private static ASTNode ParseUnaryMinus(ParseContext context)
@@ -375,7 +402,8 @@ namespace K3CSharp
         {
             context.Advance(); // Consume '['
             
-            var result = ParseSimpleExpression(context);
+            // Use the same projection logic as PrimaryParser
+            var result = ParseBracketContentsWithProjection(context);
             
             if (!context.Match(TokenType.RIGHT_BRACKET))
             {
@@ -383,6 +411,107 @@ namespace K3CSharp
             }
             
             return result ?? throw new Exception("Expected expression inside brackets");
+        }
+
+        private static ASTNode ParseBracketContentsWithProjection(ParseContext context)
+        {
+            var elements = new List<ASTNode>();
+            var projectionSlots = new List<ASTNode?>();
+            var hasSemicolon = false;
+            
+            if (context.Check(TokenType.RIGHT_BRACKET))
+            {
+                return ASTNode.MakeVector(elements);
+            }
+            
+            // Check if the first token is a semicolon (indicating a projection)
+            if (context.Match(TokenType.SEMICOLON))
+            {
+                hasSemicolon = true;
+                projectionSlots.Add(null); // Missing first argument
+                
+                // Skip empty lines
+                while (!context.IsAtEnd() && context.CurrentToken().Type == TokenType.NEWLINE)
+                {
+                    context.Match(TokenType.NEWLINE);
+                }
+            }
+            
+            // Parse first element if not at end
+            if (!context.IsAtEnd() && context.CurrentToken().Type != TokenType.RIGHT_BRACKET)
+            {
+                var firstElement = ParseSimpleExpression(context);
+                if (firstElement == null)
+                {
+                    throw new Exception("Expected expression in brackets");
+                }
+                
+                if (hasSemicolon)
+                {
+                    projectionSlots.Add(firstElement);
+                }
+                else
+                {
+                    elements.Add(firstElement);
+                }
+            }
+            
+            // Parse additional elements separated by semicolons
+            while (!context.IsAtEnd() && context.CurrentToken().Type != TokenType.RIGHT_BRACKET)
+            {
+                if (context.Match(TokenType.SEMICOLON))
+                {
+                    hasSemicolon = true;
+                    
+                    // Add null for missing argument
+                    projectionSlots.Add(null);
+                    
+                    // Skip empty lines
+                    while (!context.IsAtEnd() && context.CurrentToken().Type == TokenType.NEWLINE)
+                    {
+                        context.Match(TokenType.NEWLINE);
+                    }
+                    
+                    if (!context.IsAtEnd() && context.CurrentToken().Type != TokenType.RIGHT_BRACKET)
+                    {
+                        var element = ParseSimpleExpression(context);
+                        if (element != null)
+                        {
+                            projectionSlots[projectionSlots.Count - 1] = element; // Replace the null
+                        }
+                    }
+                }
+                else
+                {
+                    var element = ParseSimpleExpression(context);
+                    if (element != null)
+                    {
+                        if (hasSemicolon)
+                        {
+                            projectionSlots.Add(element);
+                        }
+                        else
+                        {
+                            elements.Add(element);
+                        }
+                    }
+                }
+            }
+            
+            // If we detected semicolons (projection syntax), create a projection node
+            if (hasSemicolon)
+            {
+                // For projections, we need to create a vector with the projection arguments
+                var projectionElements = new List<ASTNode>();
+                
+                // Add all non-null projection arguments
+                var nonNullElements = projectionSlots.Where(x => x != null).Cast<ASTNode>().ToList();
+                projectionElements.AddRange(nonNullElements);
+                
+                return ASTNode.MakeVector(projectionElements);
+            }
+            
+            return ASTNode.MakeVector(elements);
         }
 
         public static bool IsUnaryOperatorToken(TokenType tokenType)

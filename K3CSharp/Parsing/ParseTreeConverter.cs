@@ -105,20 +105,10 @@ namespace K3CSharp.Parsing
                 // This is a monadic operation
                 var operand = node.Children[0];
                 
-                // Check if operator has double colon (projection)
-                if (opSymbol.Value.Contains("::"))
-                {
-                    // Projection: keep operator as-is, add projection symbol
-                    elements.Add(new SymbolValue(opSymbol.Value));
-                    elements.Add(operand.Type == ASTNodeType.Vector ? ConvertVector(operand) : ConvertAtomicValue(operand));
-                }
-                else
-                {
-                    // For monadic operators, combine operator with disambiguating colon
-                    var monadicOpSymbol = new SymbolValue(opSymbol.Value + ":");
-                    elements.Add(monadicOpSymbol);
-                    elements.Add(operand.Type == ASTNodeType.Vector ? ConvertVector(operand) : ConvertAtomicValue(operand));
-                }
+                // Regular monadic operators, combine operator with disambiguating colon
+                var monadicOpSymbol = new SymbolValue(opSymbol.Value + ":");
+                elements.Add(monadicOpSymbol);
+                elements.Add(operand.Type == ASTNodeType.Vector ? ConvertVector(operand) : ConvertAtomicValue(operand));
             }
             else
             {
@@ -126,28 +116,14 @@ namespace K3CSharp.Parsing
                 var leftChild = node.Children[0];
                 var rightChild = node.Children[1];
                 
-                // Check if either argument is a projection symbol (::)
-                bool isProjection = (leftChild.Value is SymbolValue leftSym && leftSym.Value == "::") ||
-                                 (rightChild.Value is SymbolValue rightSym && rightSym.Value == "::");
+                // Regular dyadic operators, use the operator symbol as-is
+                elements.Add(opSymbol);
                 
-                if (isProjection)
-                {
-                    // Projection: use operator as-is, add projection arguments
-                    elements.Add(opSymbol);
-                    elements.Add(ConvertAtomicValue(leftChild));
-                    elements.Add(ConvertAtomicValue(rightChild));
-                }
-                else
-                {
-                    // Regular dyadic operators, use the operator symbol as-is
-                    elements.Add(opSymbol);
-                    
-                    // Convert left operand
-                    elements.Add(ConvertAtomicValue(node.Children[0]));
-                    
-                    // Convert right operand
-                    elements.Add(ConvertAtomicValue(node.Children[1]));
-                }
+                // Convert left operand
+                elements.Add(ConvertAtomicValue(node.Children[0]));
+                
+                // Convert right operand
+                elements.Add(ConvertAtomicValue(node.Children[1]));
             }
             
             return new VectorValue(elements);
@@ -435,6 +411,43 @@ namespace K3CSharp.Parsing
             }
             
             return new VectorValue(elements);
+        }
+        
+        /// <summary>
+        /// Check if a BinaryOp node represents a projection structure
+        /// </summary>
+        private static bool IsProjectionStructure(ASTNode node)
+        {
+            // Check if this node is marked as a projection
+            if (node.Parameters.Contains("PROJECTION"))
+            {
+                return true;
+            }
+            
+            // A projection structure is identified by:
+            // 1. Having children that came from bracket parsing with semicolons
+            // 2. Having NullValue children to indicate missing arguments
+            // 3. Having fewer children than expected for the operator arity
+            if (node.Children.Count == 0) return false;
+            
+            // Check if any child is a NullValue (missing argument placeholder)
+            bool hasNullChild = node.Children.Any(child => child.Value is NullValue);
+            if (hasNullChild)
+            {
+                return true;
+            }
+            
+            // Check if any child is a vector from bracket parsing
+            foreach (var child in node.Children)
+            {
+                // If we have a vector child, it's likely from bracket parsing with semicolons
+                if (child.Type == ASTNodeType.Vector)
+                {
+                    return true;
+                }
+            }
+            
+            return false;
         }
     }
 }
