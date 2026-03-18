@@ -126,13 +126,22 @@ namespace K3CSharp.Verbs
             {
                 var op = astNode.Value?.ToString()?.Trim('`').Trim('"') ?? "+";
                 
+                // Strip disambiguating colon for monadic operators (e.g., "*:" -> "*")
+                if (op.EndsWith(":") && astNode.Children.Count == 1)
+                {
+                    op = op[..^1]; // Remove trailing colon
+                }
+                
                 if (astNode.Children.Count == 1)
                 {
-                    // Monadic operator
+                    // Monadic operator - handle essential operators
                     var operand = EvaluateAST(astNode.Children[0]);
+                    
                     return op switch
                     {
-                        "*:" => UnenlistIfSingleElement(First(operand)),
+                        "*" => UnenlistIfSingleElement(First(operand)),
+                        "," => UnenlistIfSingleElement(new VectorValue(new List<K3Value> { operand })),
+                        "#" => UnenlistIfSingleElement(new IntegerValue(operand is VectorValue vec ? vec.Elements.Count : 1)),
                         _ => throw new Exception($"Monadic operator {op} not implemented")
                     };
                 }
@@ -145,17 +154,17 @@ namespace K3CSharp.Verbs
                         var left = EvaluateAST(astNode.Children[0]);
                         var right = EvaluateAST(astNode.Children[1]);
                         
-                        // For projections, we need to handle the projection logic
-                        // For now, just return the operator applied to arguments
+                        // For projections, handle basic cases
                         return op switch
                         {
                             "+::" => UnenlistIfSingleElement(left.Add(right)),
+                            "*::" => UnenlistIfSingleElement(left.Multiply(right)),
                             _ => throw new Exception($"Projection operator {op} not implemented")
                         };
                     }
                     else
                     {
-                        // Regular dyadic operator
+                        // Regular dyadic operator - handle essential operators
                         var left = EvaluateAST(astNode.Children[0]);
                         var right = EvaluateAST(astNode.Children[1]);
                         
@@ -164,7 +173,8 @@ namespace K3CSharp.Verbs
                             "+" => UnenlistIfSingleElement(left.Add(right)),
                             "-" => UnenlistIfSingleElement(left.Subtract(right)),
                             "*" => UnenlistIfSingleElement(left.Multiply(right)),
-                            "/" => UnenlistIfSingleElement(left.Divide(right)),
+                            "%" => UnenlistIfSingleElement(left.Divide(right)),
+                            "," => UnenlistIfSingleElement(new VectorValue(new List<K3Value> { left, right })),
                             _ => throw new Exception($"Dyadic operator {op} not implemented")
                         };
                     }

@@ -821,7 +821,7 @@
 ║ parse_monadic_shape_atomic.k                       │ _parse "^,`a"        │ Error: Parse er...   │ (`"^:";(`",:";,...   ║
 ║ eval_dyadic_plus.k                                 │ _eval (`"+";5 6 7 8;1 2 3 4) │ 6 8 10 12            │                      ║
 ║ eval_monadic_star_nested.k                         │ _eval (`"*";2;(`"+";4;7)) │ Error: Cannot m...   │ 22                   ║
-║ eval_dot_execute_path.k                            │ v:`e`f               │ Error: Dyadic o...   │ 7                    ║
+║ eval_dot_execute_path.k                            │ v:`e`f               │ (,`a`b`c;(`",";...   │ 7                    ║
 ║ eval_dot_repl_dir.k                                │ ."\\d ^";d:_d;."\\d .k";(d;_d) │ Error: Adverb b...   │ ``.k                 ║
 ║ eval_dot_parse_and_eval.k                          │ a:7                  │ 11                   │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
@@ -945,7 +945,7 @@ Actual: Error: Cannot multiply Integer by Vector
 Test: eval_dot_execute_path.k
 Input: v:`e`f
 Expected: 7
-Actual: Error: Dyadic operator , not implemented
+Actual: (,`a`b`c;(`",";,`d;`e`f))
 ──────────────────────────────────────────────────────────────────────────
 Test: eval_dot_repl_dir.k
 Input: ."\\d ^";d:_d;."\\d .k";(d;_d)
