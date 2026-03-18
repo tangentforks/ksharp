@@ -50,17 +50,34 @@ namespace K3CSharp.Verbs
         /// <summary>
         /// Eval verb implementation matching delegate signature
         /// </summary>
-        public static K3Value Evaluate(K3Value[] args)
+        public static K3Value Evaluate(K3Value[] arguments)
         {
-            if (args.Length != 1)
-                throw new Exception("_eval: Requires exactly one argument");
+            if (arguments.Length != 1)
+                throw new Exception("_eval requires exactly 1 argument");
                 
-            var parseTree = args[0];
-            ValidateParseTree(parseTree);
-            
+            var parseTree = arguments[0];
             var astNode = ParseTreeConverter.FromKList(parseTree);
             var result = EvaluateAST(astNode);
             return UnenlistIfSingleElement(result);
+        }
+        
+        private static string ASTNodeToString(ASTNode node, int indent = 0)
+        {
+            var indentStr = new string(' ', indent * 2);
+            var result = $"{indentStr}{node.Type}";
+            if (node.Value != null)
+                result += $"({node.Value})";
+            if (node.Children.Count > 0)
+            {
+                result += ":\n";
+                for (int i = 0; i < node.Children.Count; i++)
+                {
+                    result += ASTNodeToString(node.Children[i], indent + 1);
+                    if (i < node.Children.Count - 1)
+                        result += ",\n";
+                }
+            }
+            return result;
         }
         
         /// <summary>
@@ -90,6 +107,96 @@ namespace K3CSharp.Verbs
                 return vec.Elements[0];
             }
             return value;
+        }
+        
+        /// <summary>
+        /// Check if a symbol represents any callable verb (operator, function, projected function, or system variable)
+        /// </summary>
+        private static bool IsCallableVerb(string symbol)
+        {
+            string cleanSymbol = CleanVerbSymbol(symbol);
+            
+            // Use VerbRegistry to check if this is a registered verb
+            return VerbRegistry.IsVerb(cleanSymbol);
+        }
+        
+        /// <summary>
+        /// Clean verb symbol by removing various quote and backtick formats
+        /// </summary>
+        private static string CleanVerbSymbol(string symbol)
+        {
+            if (symbol == null) return "";
+            
+            // Handle backtick-quote format: `"+"
+            if (symbol.StartsWith("`\"") && symbol.EndsWith("\""))
+            {
+                return symbol.Substring(2, symbol.Length - 3);
+            }
+            // Handle standard quote format: "+"
+            else if (symbol.StartsWith("\"") && symbol.EndsWith("\""))
+            {
+                return symbol.Substring(1, symbol.Length - 2);
+            }
+            // Handle backtick format: `+
+            else if (symbol.StartsWith("`") && symbol.EndsWith("`"))
+            {
+                return symbol.Substring(1, symbol.Length - 2);
+            }
+            // Handle other quote/backtick combinations
+            else
+            {
+                return symbol?.Trim('"').Trim('`').Trim('\'') ?? "";
+            }
+        }
+        
+        /// <summary>
+        /// Evaluate any callable verb using Verb Registry (operators, functions, projected functions, system variables)
+        /// </summary>
+        private static K3Value EvaluateCallableVerb(string verbSymbol, K3Value[] arguments)
+        {
+            var cleanSymbol = CleanVerbSymbol(verbSymbol);
+            var verbInfo = VerbRegistry.GetVerb(cleanSymbol);
+            
+            if (verbInfo == null)
+            {
+                throw new Exception($"Unknown verb: {cleanSymbol}");
+            }
+            
+            // Get the appropriate implementation based on arity
+            var arity = arguments.Length;
+            if (!verbInfo.SupportedArities.Contains(arity))
+            {
+                var aritiesStr = string.Join(", ", verbInfo.SupportedArities);
+                throw new Exception($"Verb '{cleanSymbol}' does not support {arity} argument{(arity == 1 ? "" : "s")}. Supported arities: [{aritiesStr}]");
+            }
+            
+            // Get the implementation for this arity
+            var implementation = verbInfo.Implementations?[arity - 1];
+            if (implementation == null)
+            {
+                // For operators without implementations, use K3Value methods
+                return EvaluateOperatorUsingK3ValueMethods(cleanSymbol, arguments);
+            }
+            
+            try
+            {
+                return implementation(arguments);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error evaluating verb '{cleanSymbol}' with {arity} arguments: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// Fallback evaluation - should only be used for operators without Verb Registry implementations
+        /// This method is intentionally generic and does not hardcode any operators
+        /// </summary>
+        private static K3Value EvaluateOperatorUsingK3ValueMethods(string operatorSymbol, K3Value[] arguments)
+        {
+            // This method should ideally never be called if Verb Registry is properly populated
+            // All operators should have Verb Registry implementations
+            throw new Exception($"Operator '{operatorSymbol}' not available in Verb Registry - implementation missing");
         }
         
         /// <summary>
@@ -124,59 +231,27 @@ namespace K3CSharp.Verbs
             
             if (astNode.Type == ASTNodeType.BinaryOp)
             {
-                var op = astNode.Value?.ToString()?.Trim('`').Trim('"') ?? "+";
-                
-                // Strip disambiguating colon for monadic operators (e.g., "*:" -> "*")
-                if (op.EndsWith(":") && astNode.Children.Count == 1)
+                // BinaryOp: use generic Verb Registry approach
+                if (astNode.Children.Count >= 1)
                 {
-                    op = op[..^1]; // Remove trailing colon
-                }
-                
-                if (astNode.Children.Count == 1)
-                {
-                    // Monadic operator - handle essential operators
-                    var operand = EvaluateAST(astNode.Children[0]);
+                    // Get the operator symbol from the BinaryOp node
+                    var operatorSymbol = astNode.Value?.ToString() ?? "";
                     
-                    return op switch
+                    if (IsCallableVerb(operatorSymbol))
                     {
-                        "*" => UnenlistIfSingleElement(First(operand)),
-                        "," => UnenlistIfSingleElement(new VectorValue(new List<K3Value> { operand })),
-                        "#" => UnenlistIfSingleElement(new IntegerValue(operand is VectorValue vec ? vec.Elements.Count : 1)),
-                        _ => throw new Exception($"Monadic operator {op} not implemented")
-                    };
-                }
-                else if (astNode.Children.Count >= 2)
-                {
-                    // Dyadic operator - check for projections
-                    if (op.Contains("::"))
-                    {
-                        // Projection: operator with double colon
-                        var left = EvaluateAST(astNode.Children[0]);
-                        var right = EvaluateAST(astNode.Children[1]);
-                        
-                        // For projections, handle basic cases
-                        return op switch
+                        // Evaluate all operands
+                        var arguments = new List<K3Value>();
+                        for (int i = 0; i < astNode.Children.Count; i++)
                         {
-                            "+::" => UnenlistIfSingleElement(left.Add(right)),
-                            "*::" => UnenlistIfSingleElement(left.Multiply(right)),
-                            _ => throw new Exception($"Projection operator {op} not implemented")
-                        };
+                            arguments.Add(EvaluateAST(astNode.Children[i]));
+                        }
+                        
+                        // Use the Verb Registry-based evaluation
+                        return EvaluateCallableVerb(operatorSymbol, arguments.ToArray());
                     }
                     else
                     {
-                        // Regular dyadic operator - handle essential operators
-                        var left = EvaluateAST(astNode.Children[0]);
-                        var right = EvaluateAST(astNode.Children[1]);
-                        
-                        return op switch
-                        {
-                            "+" => UnenlistIfSingleElement(left.Add(right)),
-                            "-" => UnenlistIfSingleElement(left.Subtract(right)),
-                            "*" => UnenlistIfSingleElement(left.Multiply(right)),
-                            "%" => UnenlistIfSingleElement(left.Divide(right)),
-                            "," => UnenlistIfSingleElement(new VectorValue(new List<K3Value> { left, right })),
-                            _ => throw new Exception($"Dyadic operator {op} not implemented")
-                        };
+                        throw new Exception($"Unknown operator: {operatorSymbol}");
                     }
                 }
                 else
@@ -187,11 +262,41 @@ namespace K3CSharp.Verbs
             
             if (astNode.Type == ASTNodeType.Vector)
             {
+                // Vector: evaluate as a single unit to respect operator precedence
+                // This ensures that parenthesized expressions are evaluated correctly
+                
+                // Generic case: if this vector contains a callable verb as the first element, evaluate it as a parse tree
+                // Only check if first element is a SymbolValue (verb) that could be any callable verb
+                if (astNode.Children.Count >= 2 && 
+                    astNode.Children[0].Type == ASTNodeType.Literal &&
+                    astNode.Children[0].Value is SymbolValue &&
+                    IsCallableVerb(astNode.Children[0].Value?.ToString() ?? ""))
+                {
+                    // This looks like a verb expression: verb operand1 [operand2 ...]
+                    var verbSymbol = astNode.Children[0].Value?.ToString() ?? "";
+                    
+                    // Evaluate all operands
+                    var arguments = new List<K3Value>();
+                    for (int i = 1; i < astNode.Children.Count; i++)
+                    {
+                        arguments.Add(EvaluateAST(astNode.Children[i]));
+                    }
+                    
+                    // Use the Verb Registry-based evaluation
+                    return EvaluateCallableVerb(verbSymbol, arguments.ToArray());
+                }
+                
                 var elements = new List<K3Value>();
                 foreach (var child in astNode.Children)
                 {
                     elements.Add(EvaluateAST(child));
                 }
+                
+                // If this is a single-element vector from a parenthesized expression, 
+                // return it as-is to preserve precedence
+                if (elements.Count == 1)
+                    return elements[0];
+                    
                 return new VectorValue(elements);
             }
             

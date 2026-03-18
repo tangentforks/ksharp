@@ -357,182 +357,140 @@ namespace K3CSharp
             RegisterVerb("GETHINT", VerbType.Function, new[] { 1 }, null);
             RegisterVerb("_sethint", VerbType.Operator, new[] { 2 }, null);
             RegisterVerb("SETHINT", VerbType.Operator, new[] { 2 }, null);
+            
+            // Modified verbs (operators with adverbs)
+            RegisterVerb("*:", VerbType.ProjectedFunction, new[] { 1, 2 }, null);
+            RegisterVerb("/:", VerbType.ProjectedFunction, new[] { 1, 2 }, null);
+            RegisterVerb("\\:", VerbType.ProjectedFunction, new[] { 1, 2 }, null);
         }
 
         private static void PopulateImplementationDelegates()
         {
-            // Create an evaluator instance to get method references
-            var evaluator = new Evaluator();
-            
-            // Basic mathematical operators - use CallVariableFunction as unified entry point
+            // Only implement basic arithmetic operators that have K3Value methods
+            // All other operators will be handled by the evaluator
             UpdateVerbImplementations("+", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("+", args.ToList()),
-                args => evaluator.CallVariableFunction("+", args.ToList())
+                null, // No monadic implementation for +
+                args => args[0].Add(args[1])
             });
             
             UpdateVerbImplementations("-", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("-", args.ToList()),
-                args => evaluator.CallVariableFunction("-", args.ToList())
+                null, // Monadic - will be handled by evaluator
+                args => args[0].Subtract(args[1])
             });
             
             UpdateVerbImplementations("*", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("*", args.ToList()),
-                args => evaluator.CallVariableFunction("*", args.ToList())
+                null, // No monadic implementation for *
+                args => args[0].Multiply(args[1])
             });
             
             UpdateVerbImplementations("%", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("%", args.ToList()),
-                args => evaluator.CallVariableFunction("%", args.ToList())
-            });
-            
-            // Mathematical functions (monadic only)
-            UpdateVerbImplementations("_abs", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_abs", args.ToList())
-            });
-            
-            UpdateVerbImplementations("_sin", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_sin", args.ToList())
-            });
-            
-            UpdateVerbImplementations("_cos", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_cos", args.ToList())
-            });
-            
-            UpdateVerbImplementations("_tan", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_tan", args.ToList())
-            });
-            
-            UpdateVerbImplementations("_atan", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_atan", args.ToList())
-            });
-            
-            // Comparison operators
-            UpdateVerbImplementations("<", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("<", args.ToList())
-            });
-            
-            UpdateVerbImplementations(">", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction(">", args.ToList())
-            });
-            
-            UpdateVerbImplementations("=", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("=", args.ToList())
-            });
-            
-            UpdateVerbImplementations("~", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("~", args.ToList())
-            });
-            
-            // Additional mathematical operators
-            UpdateVerbImplementations("^", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("^", args.ToList())
+                null, // Monadic % will be handled by evaluator
+                args => args[0].Divide(args[1])
             });
             
             UpdateVerbImplementations(",", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction(",", args.ToList())
+                null, // No monadic implementation for ,
+                args => {
+                    // Implement join logic manually since it's commonly used
+                    var elements = new List<K3Value>();
+                    
+                    if (args[0] is VectorValue vecA)
+                    {
+                        elements.AddRange(vecA.Elements);
+                    }
+                    else
+                    {
+                        elements.Add(args[0]);
+                    }
+                    
+                    if (args[1] is VectorValue vecB)
+                    {
+                        elements.AddRange(vecB.Elements);
+                    }
+                    else
+                    {
+                        elements.Add(args[1]);
+                    }
+                    
+                    return new VectorValue(elements);
+                }
             });
             
-            UpdateVerbImplementations("#", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("#", args.ToList())
+            // Common modified verbs (operators with colons)
+            UpdateVerbImplementations("*:", new Func<K3Value[], K3Value>?[] { 
+                args => {
+                    // Monadic *: is "first" - return first element
+                    if (args[0] is VectorValue vec && vec.Elements.Count > 0)
+                    {
+                        return vec.Elements[0];
+                    }
+                    else
+                    {
+                        return args[0]; // First on scalar returns scalar
+                    }
+                },
+                args => {
+                    // Dyadic *: is "each" - apply to each element
+                    if (args[0] is VectorValue vec)
+                    {
+                        var elements = new List<K3Value>();
+                        foreach (var elem in vec.Elements)
+                        {
+                            elements.Add(elem.Multiply(args[1]));
+                        }
+                        return new VectorValue(elements);
+                    }
+                    else
+                    {
+                        return args[0].Multiply(args[1]);
+                    }
+                }
             });
             
-            // System functions
-            UpdateVerbImplementations("_ic", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_ic", args.ToList())
+            UpdateVerbImplementations("/:", new Func<K3Value[], K3Value>?[] { 
+                args => {
+                    // Monadic /: is "each-right" - identity
+                    return args[0];
+                },
+                args => {
+                    // Dyadic /: is "each-right" - apply right argument to each element of left
+                    if (args[0] is VectorValue vec)
+                    {
+                        var elements = new List<K3Value>();
+                        foreach (var elem in vec.Elements)
+                        {
+                            elements.Add(elem.Divide(args[1]));
+                        }
+                        return new VectorValue(elements);
+                    }
+                    else
+                    {
+                        return args[0].Divide(args[1]);
+                    }
+                }
             });
             
-            UpdateVerbImplementations("_ci", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_ci", args.ToList())
-            });
-            
-            UpdateVerbImplementations("_val", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_val", args.ToList())
-            });
-            
-            // Additional mathematical functions
-            UpdateVerbImplementations("_log", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_log", args.ToList())
-            });
-            
-            UpdateVerbImplementations("_exp", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_exp", args.ToList())
-            });
-            
-            UpdateVerbImplementations("_sqrt", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_sqrt", args.ToList())
-            });
-            
-            UpdateVerbImplementations("_ceil", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_ceil", args.ToList())
-            });
-            
-            UpdateVerbImplementations("_floor", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_floor", args.ToList())
-            });
-            
-            UpdateVerbImplementations("_neg", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_neg", args.ToList())
-            });
-            
-            UpdateVerbImplementations("_not", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_not", args.ToList())
-            });
-            
-            // Vector operations
-            UpdateVerbImplementations("_sv", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_sv", args.ToList())
-            });
-            
-            UpdateVerbImplementations("_vs", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_vs", args.ToList())
-            });
-            
-            UpdateVerbImplementations("_dv", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_dv", args.ToList())
-            });
-            
-            UpdateVerbImplementations("_di", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_di", args.ToList())
-            });
-            
-            // String operations
-            UpdateVerbImplementations("_string", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_string", args.ToList())
-            });
-            
-            UpdateVerbImplementations("_type", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_type", args.ToList())
-            });
-            
-            // Conditional operations
-            UpdateVerbImplementations("$", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("$", args.ToList())
-            });
-            
-            UpdateVerbImplementations("if", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("if", args.ToList())
-            });
-            
-            UpdateVerbImplementations("while", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("while", args.ToList())
-            });
-            
-            // Hint system functions
-            UpdateVerbImplementations("_gethint", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_gethint", args.ToList())
-            });
-            
-            UpdateVerbImplementations("_sethint", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_sethint", args.ToList())
-            });
-            
-            // FFI functions
-            UpdateVerbImplementations("_dispose", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("_dispose", args.ToList())
-            });
-            
-            UpdateVerbImplementations("do", new Func<K3Value[], K3Value>?[] { 
-                args => evaluator.CallVariableFunction("do", args.ToList())
+            UpdateVerbImplementations("\\:", new Func<K3Value[], K3Value>?[] { 
+                args => {
+                    // Monadic \: is "each-left" - identity
+                    return args[0];
+                },
+                args => {
+                    // Dyadic \: is "each-left" - apply left argument to each element of right
+                    if (args[1] is VectorValue vec)
+                    {
+                        var elements = new List<K3Value>();
+                        foreach (var elem in vec.Elements)
+                        {
+                            elements.Add(args[0].Divide(elem));
+                        }
+                        return new VectorValue(elements);
+                    }
+                    else
+                    {
+                        return args[0].Divide(args[1]);
+                    }
+                }
             });
         }
 

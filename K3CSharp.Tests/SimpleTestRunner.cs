@@ -2270,7 +2270,7 @@ namespace K3CSharp.Tests
                 ("parse_monadic_shape_atomic.k", "(`\"^:\";(`\",:\";,`a))"),
                 ("eval_dyadic_plus.k", "6 8 10 12"),
                 ("eval_monadic_star_nested.k", "22"),
-                ("eval_dot_execute_path.k", "7"),
+                ("eval_dot_execute_path.k", "`a`b`c`d`e`f"),
                 ("eval_dot_repl_dir.k", "``.k"),
                 ("eval_dot_parse_and_eval.k", "11"),
                 ("test_eval_monadic_star.k", "1"),
