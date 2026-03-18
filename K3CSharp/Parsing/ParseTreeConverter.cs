@@ -110,14 +110,14 @@ namespace K3CSharp.Parsing
                 {
                     // Projection: keep operator as-is, add projection symbol
                     elements.Add(new SymbolValue(opSymbol.Value));
-                    elements.Add(ConvertAtomicValue(operand));
+                    elements.Add(operand.Type == ASTNodeType.Vector ? ConvertVector(operand) : ConvertAtomicValue(operand));
                 }
                 else
                 {
                     // For monadic operators, combine operator with disambiguating colon
                     var monadicOpSymbol = new SymbolValue(opSymbol.Value + ":");
                     elements.Add(monadicOpSymbol);
-                    elements.Add(ConvertAtomicValue(operand));
+                    elements.Add(operand.Type == ASTNodeType.Vector ? ConvertVector(operand) : ConvertAtomicValue(operand));
                 }
             }
             else

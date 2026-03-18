@@ -432,7 +432,8 @@ namespace K3CSharp
                 return projectedNode;
             }
             
-            var operand = ParseExpressionInGrouping(context);
+            var expressionParser = new ExpressionParser();
+            var operand = expressionParser.Parse(context);
             if (operand == null)
             {
                 throw new Exception($"Expected expression after unary operator {token.Lexeme}");
