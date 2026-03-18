@@ -889,53 +889,6 @@ namespace K3CSharp
             }
         }
 
-        private K3Value NegateBinary(K3Value a, K3Value b)
-        {
-            return Negate(a);
-        }
-
-        private K3Value Minimum(K3Value a, K3Value b)
-        {
-            if (a is IntegerValue intA && b is IntegerValue intB)
-                return new IntegerValue(Math.Min(intA.Value, intB.Value));
-            if (a is LongValue longA && b is LongValue longB)
-                return new LongValue(Math.Min(longA.Value, longB.Value));
-            if (a is FloatValue floatA && b is FloatValue floatB)
-                return new FloatValue(Math.Min(floatA.Value, floatB.Value));
-            
-            // Handle vector operations
-            if (a is VectorValue vecA)
-            {
-                if (b is VectorValue vecB)
-                    return vecA.Minimum(vecB);
-                else
-                    return vecA.Minimum(b);
-            }
-            
-            throw new Exception($"Cannot find minimum of {a.Type} and {b.Type}");
-        }
-
-        private K3Value Maximum(K3Value a, K3Value b)
-        {
-            if (a is IntegerValue intA && b is IntegerValue intB)
-                return new IntegerValue(Math.Max(intA.Value, intB.Value));
-            if (a is LongValue longA && b is LongValue longB)
-                return new LongValue(Math.Max(longA.Value, longB.Value));
-            if (a is FloatValue floatA && b is FloatValue floatB)
-                return new FloatValue(Math.Max(floatA.Value, floatB.Value));
-            
-            // Handle vector operations
-            if (a is VectorValue vecA)
-            {
-                if (b is VectorValue vecB)
-                    return vecA.Maximum(vecB);
-                else
-                    return vecA.Maximum(b);
-            }
-            
-            throw new Exception($"Cannot find maximum of {a.Type} and {b.Type}");
-        }
-
         private K3Value LessThan(K3Value a, K3Value b)
         {
             if (a is IntegerValue intA && b is IntegerValue intB)

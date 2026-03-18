@@ -5,87 +5,6 @@ namespace K3CSharp
 {
     public partial class Evaluator
     {
-        private K3Value ApplyVerb(K3Value verb, K3Value left, K3Value right)
-        {
-            // Create a single AST node with children and use main evaluator
-            var verbNode = ASTNode.MakeLiteral(verb);
-            var leftNode = ASTNode.MakeLiteral(left);
-            var rightNode = ASTNode.MakeLiteral(right);
-            
-            if (verb is SymbolValue symbol)
-            {
-                // Create binary operation with the original verb symbol preserved
-                // This allows us to handle system functions like _dot, _lsq, etc. properly
-                var binaryNode = new ASTNode(ASTNodeType.BinaryOp, symbol);
-                binaryNode.Children.Add(leftNode);
-                binaryNode.Children.Add(rightNode);
-                return Evaluate(binaryNode);
-            }
-            else
-            {
-                // For other verb types, treat them as values with operators
-                // Create a function application node with verb, left, and right as children
-                var applyNode = new ASTNode(ASTNodeType.BinaryOp, new SymbolValue(TokenType.APPLY.ToString()));
-                applyNode.Children.Add(verbNode);
-                applyNode.Children.Add(leftNode);
-                applyNode.Children.Add(rightNode);
-                return Evaluate(applyNode);
-            }
-        }
-        
-        private TokenType GetTokenTypeForVerbSymbol(string verbSymbol)
-        {
-            // Handle adverb-modified verbs (ending with ':')
-            if (verbSymbol.EndsWith(":"))
-            {
-                string baseSymbol = verbSymbol[..^1]; // Remove trailing ':'
-                var verb = VerbRegistry.GetVerb(baseSymbol);
-                if (verb != null && verb.SupportedArities.Contains(1))
-                {
-                    // Found monadic verb for adverb-modified symbol
-                    return GetTokenTypeFromVerbName(baseSymbol);
-                }
-            }
-            
-            // Try dyadic verb first
-            var dyadicVerb = VerbRegistry.GetVerb(verbSymbol);
-            if (dyadicVerb != null && dyadicVerb.SupportedArities.Contains(2))
-            {
-                return GetTokenTypeFromVerbName(verbSymbol);
-            }
-            
-            // Fall back to monadic verb
-            var monadicVerb = VerbRegistry.GetVerb(verbSymbol);
-            if (monadicVerb != null && monadicVerb.SupportedArities.Contains(1))
-            {
-                return GetTokenTypeFromVerbName(verbSymbol);
-            }
-            
-            // Default to identifier if no verb found
-            return TokenType.IDENTIFIER;
-        }
-        
-        private TokenType GetTokenTypeFromVerbName(string verbName)
-        {
-            // Try to find token type by parsing verb name as TokenType enum
-            if (Enum.TryParse<TokenType>(verbName.ToUpper(), true, out var tokenType))
-            {
-                return tokenType;
-            }
-            
-            // For verbs that don't map directly to TokenType enum, 
-            // check if they're registered and return appropriate token type
-            var verb = VerbRegistry.GetVerb(verbName);
-            if (verb != null)
-            {
-                // For system verbs and functions, use IDENTIFIER token type
-                // The evaluator will handle them by name lookup
-                return TokenType.IDENTIFIER;
-            }
-            
-            // Default fallback
-            return TokenType.IDENTIFIER;
-        }
         
         private K3Value ApplySymbolVerb(string verbName, K3Value left, K3Value right)
         {
@@ -837,26 +756,7 @@ namespace K3CSharp
             throw new Exception($"Each not implemented for types: {verb.Type}, {data.Type}");
         }
 
-        private K3Value EvaluateAdverbNode(string adverbType, K3Value left, K3Value right)
-        {
-            // Check if this is a known adverb type using VerbRegistry
-            if (VerbRegistry.IsAdverbToken(Enum.Parse<TokenType>(adverbType)))
-            {
-                return adverbType switch
-                {
-                    "ADVERB_SLASH" => ApplyAdverbSlash(new SymbolValue("+"), left, right),
-                    "ADVERB_BACKSLASH" => ApplyAdverbBackslash(new SymbolValue("+"), left, right),
-                    "ADVERB_TICK" => ApplyAdverbTick(new SymbolValue("+"), left, right),
-                    "ADVERB_SLASH_COLON" => ApplyAdverbSlashColon(new SymbolValue("+"), left, right),
-                    "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(new SymbolValue("+"), left, right),
-                    "ADVERB_TICK_COLON" => ApplyAdverbTickColon(new SymbolValue("+"), left, right),
-                    _ => throw new Exception($"Unsupported adverb: {adverbType}")
-                };
-            }
-            
-            throw new Exception($"Unknown adverb: {adverbType}");
-        }
-
+        
         private int DetermineVectorType(List<K3Value> elements)
         {
             if (elements.Count == 0) return 0; // Empty list

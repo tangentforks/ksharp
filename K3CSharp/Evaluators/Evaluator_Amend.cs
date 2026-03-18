@@ -332,13 +332,7 @@ namespace K3CSharp
             }
         }
 
-        private K3Value ApplyAmendFunctionWithValue(K3Value currentValue, K3Value function, K3Value value, K3Value perItemValue)
-        {
-            // Apply function with a per-item value (for vector value distribution)
-            var arguments = new List<K3Value> { currentValue, perItemValue };
-            return CallFunction(function, arguments);
-        }
-        
+                
         private K3Value CallFunction(K3Value function, List<K3Value> arguments)
         {
             if (function is FunctionValue func)

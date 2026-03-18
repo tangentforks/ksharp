@@ -69,11 +69,5 @@ namespace K3CSharp
             
             return a; // For scalars, return value itself
         }
-
-        // Binary versions for operators that can be both unary and binary
-        private K3Value UniqueBinary(K3Value a, K3Value b)
-        {
-            return Unique(a);
-        }
     }
 }

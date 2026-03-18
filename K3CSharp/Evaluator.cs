@@ -427,11 +427,7 @@ namespace K3CSharp
             }
         }
 
-        private K3Value? EvaluateLiteral(ASTNode node)
-        {
-            return node.Value;
-        }
-
+        
         private K3Value EvaluateBinaryOperatorWithRegistry(string opName, K3Value left, K3Value right)
         {
             // Handle IDENTIFIER case - this should not happen with preserved verb names
@@ -3094,33 +3090,6 @@ namespace K3CSharp
                 charElements.Add(new CharacterValue(c.ToString()));
             }
             return new VectorValue(charElements, -3);
-        }
-        
-        private static VectorValue CreateCharacterVectorFromRawChars(string s)
-        {
-            var charElements = new List<K3Value>();
-            foreach (char c in s)
-            {
-                // Create CharacterValue directly from char without string processing
-                charElements.Add(new CharacterValue(c.ToString()));
-            }
-            return new VectorValue(charElements, -3);
-        }
-        
-        private static VectorValue CreateCharacterVectorFromRawString(string s)
-        {
-            var charElements = new List<K3Value>();
-            foreach (char c in s)
-            {
-                charElements.Add(new CharacterValue(c.ToString()));
-            }
-            return new VectorValue(charElements, -3);
-        }
-        
-        private static VectorValue CreateCharacterVectorDirect(string s)
-        {
-            // Create character vector directly using VectorValue constructor
-            return new VectorValue(new List<K3Value> { new CharacterValue(s) }, -3);
         }
         
         private List<byte> ParseCharacterStringToBytes(string charString)

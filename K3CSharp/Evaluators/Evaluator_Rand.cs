@@ -8,17 +8,6 @@ namespace K3CSharp
     {
         private static int _randomSeed = -314159; // Default seed value
         
-        private K3Value DrawFunction(K3Value operand)
-        {
-            // _draw is a function used to generate random numbers based on seed value
-            // It has 3 different cases depending on input types: Select, Deal and Probability
-            // The left argument must be either a nonnegative integer or a vector of nonnegative integers
-            // The right argument must be an integer
-            // There is no monadic form of _draw. If _draw is called with 1 argument it will produce a valence error.
-            
-            throw new Exception("_draw requires dyadic call (left and right arguments)");
-        }
-        
         private K3Value Draw(K3Value left, K3Value right)
         {
             // _draw function - dyadic implementation

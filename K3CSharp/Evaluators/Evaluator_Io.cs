@@ -9,13 +9,6 @@ public partial class Evaluator
     // I/O Verbs - digit-colon operators (0: through 9:)
     // Based on io_verbs.txt speclet
     
-    private K3Value IoVerb(K3Value left, K3Value right)
-    {
-        // Extract the digit from the operator (stored in the AST node value)
-        // This will be called from the main evaluator with the appropriate digit
-        throw new NotImplementedException($"I/O verb {left}:{right} not yet implemented");
-    }
-    
     // Monadic I/O verbs (single argument)
     private K3Value IoVerbMonadic(K3Value operand, int digit)
     {
@@ -108,20 +101,6 @@ public partial class Evaluator
             charElements.Add(new CharacterValue(c.ToString()));
         }
         return new VectorValue(charElements, -3);
-    }
-    
-    private string ToStringWithEscaping(K3Value value)
-    {
-        if (value is CharacterValue charVal)
-        {
-            // For character values, escape the result of ToString() which already includes quotes
-            return EscapeString(charVal.ToString());
-        }
-        else
-        {
-            // For other types, convert to string and escape
-            return EscapeString(value.ToString());
-        }
     }
     
     private string EscapeString(string input)

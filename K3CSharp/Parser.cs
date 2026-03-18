@@ -1367,11 +1367,7 @@ namespace K3CSharp
         
         
         
-        private ASTNode? ParseAssignment()
-        {
-            return ParseTerm();
-        }
-
+        
         private ASTNode? ParseVerbWithAdverbs()
         {
             // Parse any expression that could be a verb
@@ -1467,23 +1463,7 @@ namespace K3CSharp
             return 2;
         }
 
-        /// <summary>
-        /// Check if an operator should be treated as unary in the current context
-        /// </summary>
-        private bool ShouldTreatAsUnary(TokenType type, bool hasLeftOperand)
-        {
-            var preferredArity = GetPreferredArity(type, hasLeftOperand);
-            return preferredArity == 1;
-        }
-
-        /// <summary>
-        /// Convert TokenType to its symbol representation
-        /// </summary>
-        private string GetTokenSymbol(TokenType type)
-        {
-            return VerbRegistry.GetBinaryOperatorSymbol(type);
-        }
-        
+                
 
         private bool IsAtEnd()
         {
