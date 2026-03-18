@@ -2595,6 +2595,16 @@ namespace K3CSharp
         {
             // Execute the string expression using dot execute
             // This evaluates the expression in the current variable context
+            
+            // Check if this is a REPL command (starts with backslash)
+            if (expression.StartsWith("\\"))
+            {
+                // This is a REPL command, execute it directly and return null
+                // REPL commands are void operations that write to console
+                Program.HandleReplCommand(expression, this);
+                return new NullValue();
+            }
+            
             try
             {
                 var lexer = new Lexer(expression);

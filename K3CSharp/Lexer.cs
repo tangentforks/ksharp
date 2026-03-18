@@ -43,10 +43,6 @@ namespace K3CSharp
                     Advance();
                     SkipWhitespace();
                 }
-                else if (c == '"')
-                {
-                    tokens.Add(ReadString());
-                }
                 else if (c == '`')
                 {
                     tokens.Add(ReadSymbol());
@@ -163,6 +159,10 @@ namespace K3CSharp
                         tokens.Add(new Token(TokenType.ADVERB_SLASH, "/", position));
                         Advance();
                     }
+                }
+                else if (c == '"')
+                {
+                    tokens.Add(ReadString());
                 }
                 else if (c == '\\')
                 {
@@ -562,16 +562,20 @@ namespace K3CSharp
             if (currentChar == '"')
             {
                 Advance(); // Skip closing quote
-            }
-            
-            // Determine if this is a single character or character vector
-            if (value.Length == 1)
-            {
-                return new Token(TokenType.CHARACTER, value, start);
+                
+                // Return CHARACTER token for single-character strings, CHARACTER_VECTOR otherwise
+                if (value.Length == 1)
+                {
+                    return new Token(TokenType.CHARACTER, value, start);
+                }
+                else
+                {
+                    return new Token(TokenType.CHARACTER_VECTOR, value, start);
+                }
             }
             else
             {
-                return new Token(TokenType.CHARACTER_VECTOR, value, start);
+                throw new Exception("Unterminated string literal");
             }
         }
         

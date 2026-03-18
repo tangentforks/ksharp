@@ -1,6 +1,6 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-17 23:48:21
+Generated: 2026-03-18 15:42:57
 
 SUMMARY:
 --------
@@ -221,7 +221,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   equal_operator.k                                   0                              0                                                                                
 ⚠️  SKIP eval_dot_execute_path.k                                                                                          k.exe doesn't support _parse/_eval                
 ✅ PASS   eval_dot_parse_and_eval.k                          11                             11                                                                               
-❌ FAIL   eval_dot_repl_precision.k                                                         7                                                                                
+❌ FAIL   eval_dot_repl_dir.k                                                               ``.k                           Compact representation                            
 ⚠️  SKIP eval_dyadic_plus.k                                                                                               k.exe doesn't support _parse/_eval                
 ⚠️  SKIP eval_monadic_star_nested.k                                                                                       k.exe doesn't support _parse/_eval                
 ⚠️  SKIP ffi_assembly_load.k                                                                                              k.exe doesn't support FFI                         
@@ -848,9 +848,9 @@ File: anonymous_function_scan_adverb.k
 K3Sharp: 
 k.exe:   (10;0.5;0.01666667)
 
-File: eval_dot_repl_precision.k
+File: eval_dot_repl_dir.k
 K3Sharp: 
-k.exe:   7
+k.exe:   ``.k
 
 File: idioms_01_178_first_occurrence.k
 K3Sharp: 
