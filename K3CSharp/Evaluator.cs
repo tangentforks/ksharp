@@ -405,14 +405,11 @@ namespace K3CSharp
             // Check if this is a K tree dotted notation variable
             if (variableName.Contains('.'))
             {
-                if (kTree.SetValue(variableName, value))
-                {
-                    return value;
-                }
-                // If K tree assignment fails, fall back to global assignment
+                // Handle K tree dotted notation: set in current branch
+                return SetVariable(variableName, value);
             }
             
-            // Global assignment - always set in global scope
+            // Set in global scope (main branch)
             if (parentEvaluator != null)
             {
                 // If we have a parent, set the global variable there
@@ -420,8 +417,12 @@ namespace K3CSharp
             }
             else
             {
-                // We're the root evaluator, set in our global scope
+                // Set in current evaluator's global scope
                 globalVariables[variableName] = value;
+                
+                // Also set variable in EvalVerbHandler for _eval operations
+                K3CSharp.Verbs.EvalVerbHandler.SetVariable(variableName, value);
+                
                 return value;
             }
         }
@@ -1881,6 +1882,9 @@ namespace K3CSharp
             // Assignment: variable : value
             // Uses local variable assignment
             SetVariable(variableName, value);
+            
+            // Also set variable in EvalVerbHandler for _eval operations
+            K3CSharp.Verbs.EvalVerbHandler.SetVariable(variableName, value);
             
             // LRS behavior: Return value for intermediate assignments, null for terminal assignments
             return isIntermediateAssignment ? value : new NullValue();

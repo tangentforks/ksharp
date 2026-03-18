@@ -12,12 +12,39 @@ namespace K3CSharp.Verbs
     /// </summary>
     public static class EvalVerbHandler
     {
+        // Static variable storage for basic variable evaluation
+        private static readonly Dictionary<string, K3Value> variables = new Dictionary<string, K3Value>();
+        
         /// <summary>
         /// Main _eval entry point
         /// </summary>
         public static K3Value Evaluate(K3Value parseTree)
         {
             return Evaluate(new[] { parseTree });
+        }
+        
+        /// <summary>
+        /// Set a variable value (used by assignment operations)
+        /// </summary>
+        public static void SetVariable(string name, K3Value value)
+        {
+            variables[name] = value;
+        }
+        
+        /// <summary>
+        /// Get a variable value
+        /// </summary>
+        public static K3Value? GetVariable(string name)
+        {
+            return variables.TryGetValue(name, out var value) ? value : null;
+        }
+        
+        /// <summary>
+        /// Clear all variables (for test isolation)
+        /// </summary>
+        public static void ClearVariables()
+        {
+            variables.Clear();
         }
         
         /// <summary>
@@ -80,8 +107,14 @@ namespace K3CSharp.Verbs
                 
             if (astNode.Type == ASTNodeType.Variable)
             {
-                // Variable lookup would happen here in real implementation
-                throw new Exception($"Variable evaluation not implemented: {astNode.Value}");
+                // Variable lookup using our static variable storage
+                var variableName = astNode.Value?.ToString()?.Trim('`').Trim('"') ?? "";
+                var variableValue = GetVariable(variableName);
+                if (variableValue != null)
+                {
+                    return UnenlistIfSingleElement(variableValue);
+                }
+                throw new Exception($"Variable not found: {variableName}");
             }
             
             if (astNode.Type == ASTNodeType.FunctionCall)
@@ -162,46 +195,6 @@ namespace K3CSharp.Verbs
                 return vecA.Elements[0];
             
             return a; // For scalars, return the value itself
-        }
-
-        private static K3Value HandleAddition(K3Value left, K3Value right)
-        {
-            if (left is FloatValue leftFloat && right is FloatValue rightFloat)
-                return new FloatValue(leftFloat.Value + rightFloat.Value);
-            else if (left is IntegerValue leftInt && right is IntegerValue rightInt)
-                return new IntegerValue(leftInt.Value + rightInt.Value);
-            else
-                throw new Exception("Unsupported operand types for +");
-        }
-
-        private static K3Value HandleSubtraction(K3Value left, K3Value right)
-        {
-            if (left is FloatValue leftFloat && right is FloatValue rightFloat)
-                return new FloatValue(leftFloat.Value - rightFloat.Value);
-            else if (left is IntegerValue leftInt && right is IntegerValue rightInt)
-                return new IntegerValue(leftInt.Value - rightInt.Value);
-            else
-                throw new Exception("Unsupported operand types for -");
-        }
-
-        private static K3Value HandleMultiplication(K3Value left, K3Value right)
-        {
-            if (left is FloatValue leftFloat && right is FloatValue rightFloat)
-                return new FloatValue(leftFloat.Value * rightFloat.Value);
-            else if (left is IntegerValue leftInt && right is IntegerValue rightInt)
-                return new IntegerValue(leftInt.Value * rightInt.Value);
-            else
-                throw new Exception("Unsupported operand types for *");
-        }
-
-        private static K3Value HandleDivision(K3Value left, K3Value right)
-        {
-            if (left is FloatValue leftFloat && right is FloatValue rightFloat)
-                return new FloatValue(leftFloat.Value / rightFloat.Value);
-            else if (left is IntegerValue leftInt && right is IntegerValue rightInt)
-                return new IntegerValue(leftInt.Value / rightInt.Value);
-            else
-                throw new Exception("Unsupported operand types for /");
         }
     }
 }

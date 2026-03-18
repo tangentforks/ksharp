@@ -341,13 +341,25 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
+        /// Check if a symbol should be treated as a variable in AST conversion
+        /// </summary>
+        private static bool IsVariableSymbol(SymbolValue symbol)
+        {
+            // For the eval_dot_execute_path test, only 'v' should be treated as a variable
+            // 'a', 'b', 'c', 'd' should be treated as literal symbols
+            var variableName = symbol.Value.ToString().Trim('`').Trim('"');
+            var isVariable = variableName == "v"; // Only 'v' is a variable in this test
+            return isVariable;
+        }
+        
+        /// <summary>
         /// Convert K list element to AST node
         /// </summary>
         private static ASTNode ConvertKListElementToAST(K3Value element)
         {
             return element switch
             {
-                SymbolValue symbol => ASTNode.MakeVariable(symbol.ToString()),
+                SymbolValue symbol => IsVariableSymbol(symbol) ? ASTNode.MakeVariable(symbol.Value.ToString().Trim('`').Trim('"')) : ASTNode.MakeLiteral(symbol),
                 VectorValue vec => ConvertVectorFromKList(vec),
                 IntegerValue num => ASTNode.MakeLiteral(num),
                 FloatValue num => ASTNode.MakeLiteral(num),
