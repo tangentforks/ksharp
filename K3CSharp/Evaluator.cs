@@ -2430,97 +2430,30 @@ namespace K3CSharp
                     var values = dict.Entries.Values.Select(e => e.Value).ToList();
                     return new VectorValue(values);
                 }
-                else if (right is SymbolValue symbolValue)
+                else
                 {
-                    // Check if this is the special case of "." for all attributes access
-                    if (symbolValue.Value == ".")
-                    {
-                        return AtIndexOperation(dict, symbolValue);
-                    }
-                    
-                    // Check if this is attribute access (symbol ends with .)
-                    if (symbolValue.Value.EndsWith("."))
-                    {
-                        return AtIndexOperation(dict, symbolValue);
-                    }
-                    
-                    // Regular dictionary key access - no special FFI handling
-                    return AtIndexOperation(dict, symbolValue);
+                    // For symbol vectors, use dictionary indexing
+                    return AtIndexOperation(dict, right ?? throw new ArgumentNullException(nameof(right)));
                 }
-                else if (right is VectorValue rightVec && rightVec.Elements.Count == 1 && rightVec.Elements[0] is VectorValue symbolVec)
-                {
-                    // Single-item list containing a vector of symbols
-                    // Handle dictionary indexing with vector of symbols
-                    var results = new List<K3Value>();
-                    foreach (var symbolItem in symbolVec.Elements)
-                    {
-                        if (symbolItem is SymbolValue symValue)
-                        {
-                            bool found = false;
-                            foreach (var entry in dict.Entries)
-                            {
-                                if (entry.Key.Equals(symValue))
-                                {
-                                    results.Add(entry.Value.Value);
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if (!found)
-                                throw new Exception($"Key '{symValue.Value}' not found in dictionary");
-                        }
-                        else
-                        {
-                            throw new Exception($"Dictionary keys must be symbols, got {symbolItem.Type}");
-                        }
-                    }
-                    return results.Count == 1 ? results[0] : new VectorValue(results);
-                }
-                else if (right is VectorValue vec && vec.Elements.All(e => e is SymbolValue))
-                {
-                    // Vector of symbols - same as dictionary indexing with vector
-                    var results = new List<K3Value>();
-                    foreach (var symbolItem in vec.Elements)
-                    {
-                        if (symbolItem is SymbolValue symValue)
-                        {
-                            bool found = false;
-                            foreach (var entry in dict.Entries)
-                            {
-                                if (entry.Key.Equals(symValue))
-                                {
-                                    results.Add(entry.Value.Value);
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if (!found)
-                                throw new Exception($"Key '{symValue.Value}' not found in dictionary");
-                        }
-                        else
-                        {
-                            throw new Exception($"Dictionary keys must be symbols, got {symbolItem.Type}");
-                        }
-                    }
-                    return results.Count == 1 ? results[0] : new VectorValue(results);
-                }
-            }
-            
-            if (left is FunctionValue function)
-            {
-                // Create a temporary AST node for the function to reuse existing logic
-                var tempFunctionNode = new ASTNode(ASTNodeType.Function);
-                tempFunctionNode.Value = function;
-                
-                // Create arguments list
-                var arguments = new List<K3Value> { right ?? throw new ArgumentNullException(nameof(right)) };
-                
-                return CallDirectFunction(tempFunctionNode, arguments);
             }
             else if (left is VectorValue vector)
             {
                 // Vector indexing: vector . indices
                 return VectorIndex(vector, right ?? throw new ArgumentNullException(nameof(right)));
+            }
+            else if (left is FunctionValue function)
+            {
+                // Direct function application: function . argument
+                List<K3Value> arguments;
+                if (right is VectorValue argVector)
+                {
+                    arguments = new List<K3Value>(argVector.Elements);
+                }
+                else
+                {
+                    arguments = new List<K3Value> { right ?? throw new ArgumentNullException(nameof(right)) };
+                }
+                return CallFunction(function, arguments);
             }
             else if (left != null && left.Type == ValueType.Symbol)
             {

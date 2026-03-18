@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-17 16:45:09
+Generated: 2026-03-17 23:48:21
 
 SUMMARY:
 --------
-Total Tests:     808
-✅ Matched:       776
-❌ Differed:      21
-⚠️  Skipped:       11
+Total Tests:     821
+✅ Matched:       777
+❌ Differed:      22
+⚠️  Skipped:       22
 💥 Errors:        0
-Success Rate:    97.4%
+Success Rate:    97.2%
 
 DETAILED RESULTS:
 -----------------
@@ -219,6 +219,11 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   enumerate_operator.k                               0 1 2 3 4                      0 1 2 3 4                                                                        
 ✅ PASS   enumerate.k                                        0 1                            0 1                                                                              
 ✅ PASS   equal_operator.k                                   0                              0                                                                                
+⚠️  SKIP eval_dot_execute_path.k                                                                                          k.exe doesn't support _parse/_eval                
+✅ PASS   eval_dot_parse_and_eval.k                          11                             11                                                                               
+❌ FAIL   eval_dot_repl_precision.k                                                         7                                                                                
+⚠️  SKIP eval_dyadic_plus.k                                                                                               k.exe doesn't support _parse/_eval                
+⚠️  SKIP eval_monadic_star_nested.k                                                                                       k.exe doesn't support _parse/_eval                
 ⚠️  SKIP ffi_assembly_load.k                                                                                              k.exe doesn't support FFI                         
 ⚠️  SKIP ffi_complete_workflow.k                                                                                          k.exe doesn't support FFI                         
 ⚠️  SKIP ffi_constructor.k                                                                                                k.exe doesn't support FFI                         
@@ -307,7 +312,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   idioms_01_143_indices_distinct.k                   (0 3 7;1 4 6;2 5)              (0 3 7;1 4 6;2 5)              Compact representation                            
 ✅ PASS   idioms_01_154_range.k                              "wirls"                        "wirls"                                                                          
 ✅ PASS   idioms_01_177_string_search.k                      11 20 32                       11 20 32                                                                         
-❌ FAIL   idioms_01_178_first_occurrence.k                   !0                             12                                                                               
+❌ FAIL   idioms_01_178_first_occurrence.k                                                  12                                                                               
 ✅ PASS   idioms_01_228_is_row.k                             1                              1                                                                                
 ✅ PASS   idioms_01_232_is_row_in.k                          1                              1                                                                                
 ✅ PASS   idioms_01_241_sum_subsets.k                        (4 6 4;12 14 12;20 22 20)      (4 6 4;12 14 12;20 22 20)      Compact representation                            
@@ -538,6 +543,11 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   parentheses_nested5.k                              29                             29                                                                               
 ✅ PASS   parentheses_precedence.k                           7                              7                                                                                
 ✅ PASS   parenthesized_vector.k                             1 2 3 4                        1 2 3 4                                                                          
+⚠️  SKIP parse_atomic_value_no_verb.k                                                                                     k.exe doesn't support _parse/_eval                
+⚠️  SKIP parse_monadic_shape_atomic.k                                                                                     k.exe doesn't support _parse/_eval                
+⚠️  SKIP parse_projection_dyadic_plus_fixed_left.k                                                                        k.exe doesn't support _parse/_eval                
+⚠️  SKIP parse_projection_dyadic_plus_fixed_right.k                                                                       k.exe doesn't support _parse/_eval                
+⚠️  SKIP parse_projection_dyadic_plus.k                                                                                   k.exe doesn't support _parse/_eval                
 ✅ PASS   plus_over_empty.k                                  0                              0                                                                                
 ✅ PASS   power_operator.k                                   8                              8                              smart integer division, inverse and exponenti...  
 ✅ PASS   precedence_chain1.k                                1410                           1410                                                                             
@@ -730,6 +740,8 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   test_dict_larger.k                                 .((`a;1;);(`b;2;);(`c;3;)...   .((`a;1;);(`b;2;);(`c;3;)...   Compact representation                            
 ✅ PASS   test_dict_simple.k                                 .((`a;1;);(`b;2;);(`c;3;))     .((`a;1;);(`b;2;);(`c;3;))     Compact representation                            
 ✅ PASS   test_dict_with_attr.k                              .((`a;1;);(`b;2;.((`x;2;)...   .((`a;1;);(`b;2;.((`x;2;)...   Compact representation                            
+⚠️  SKIP test_eval_monadic_star_atomic.k                                                                                  k.exe doesn't support _parse/_eval                
+⚠️  SKIP test_eval_monadic_star.k                                                                                         k.exe doesn't support _parse/_eval                
 ⚠️  SKIP test_eval_verb.k                                                                                                 k.exe doesn't support _parse/_eval                
 ✅ PASS   test_ic_basic.k                                    65                             65                                                                               
 ✅ PASS   test_ic_vector.k                                   65 66 67                       65 66 67                                                                         
@@ -737,6 +749,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   test_monadic_colon.k                               42                             42                                                                               
 ✅ PASS   test_nested_adverb.k                               ((1 4;1 5;1 6);(2 4;2 5;2...   ((1 4;1 5;1 6);(2 4;2 5;2...   Compact representation                            
 ⚠️  SKIP test_parse_eval_together.k                                                                                       k.exe doesn't support _parse/_eval                
+⚠️  SKIP test_parse_monadic_star.k                                                                                        k.exe doesn't support _parse/_eval                
 ⚠️  SKIP test_parse_verb.k                                                                                                k.exe doesn't support _parse/_eval                
 ✅ PASS   test_projected_function.k                          %                              %                                                                                
 ✅ PASS   test_quoted_symbol_serialization.k                 "\001\000\000\000\006\000...   "\001\000\000\000\006\000...                                                     
@@ -835,8 +848,12 @@ File: anonymous_function_scan_adverb.k
 K3Sharp: 
 k.exe:   (10;0.5;0.01666667)
 
+File: eval_dot_repl_precision.k
+K3Sharp: 
+k.exe:   7
+
 File: idioms_01_178_first_occurrence.k
-K3Sharp: !0
+K3Sharp: 
 k.exe:   12
 
 File: idioms_01_433_replace_last.k
@@ -903,11 +920,7 @@ File: test_show_dict.k
 K3Sharp: .((`col01;11 12 13 14 15;.((`format;,`n;);(`name;`ID;)));(`col02;`yellow`white`blue`red`black;.((`format;,`c;);(`name;`Color;)));(`col03;("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`c;);(`name;`Retailer;))))
 k.exe:   .((`col01;11 12 13 14 15;.((`format;,`n;);(`name;`ID;)));(`col02;`yellow `white `blue `red `black;.((`format;,`c;);(`name;`Color;)));(`col03;("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`c;);(`name;`Retailer;))))
 
-File: test_simple_period.k
-K3Sharp: ,.((`x;2;);(`y;3;))
-k.exe:   (;.((`x;2;);(`y;3;)))
-
-... and 1 more failed tests
+... and 2 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------

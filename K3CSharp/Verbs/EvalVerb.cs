@@ -105,18 +105,36 @@ namespace K3CSharp.Verbs
                 }
                 else if (astNode.Children.Count >= 2)
                 {
-                    // Dyadic operator
-                    var left = EvaluateAST(astNode.Children[0]);
-                    var right = EvaluateAST(astNode.Children[1]);
-                    
-                    return op switch
+                    // Dyadic operator - check for projections
+                    if (op.Contains("::"))
                     {
-                        "+" => UnenlistIfSingleElement(left.Add(right)),
-                        "-" => UnenlistIfSingleElement(left.Subtract(right)),
-                        "*" => UnenlistIfSingleElement(left.Multiply(right)),
-                        "/" => UnenlistIfSingleElement(left.Divide(right)),
-                        _ => throw new Exception($"Dyadic operator {op} not implemented")
-                    };
+                        // Projection: operator with double colon
+                        var left = EvaluateAST(astNode.Children[0]);
+                        var right = EvaluateAST(astNode.Children[1]);
+                        
+                        // For projections, we need to handle the projection logic
+                        // For now, just return the operator applied to arguments
+                        return op switch
+                        {
+                            "+::" => UnenlistIfSingleElement(left.Add(right)),
+                            _ => throw new Exception($"Projection operator {op} not implemented")
+                        };
+                    }
+                    else
+                    {
+                        // Regular dyadic operator
+                        var left = EvaluateAST(astNode.Children[0]);
+                        var right = EvaluateAST(astNode.Children[1]);
+                        
+                        return op switch
+                        {
+                            "+" => UnenlistIfSingleElement(left.Add(right)),
+                            "-" => UnenlistIfSingleElement(left.Subtract(right)),
+                            "*" => UnenlistIfSingleElement(left.Multiply(right)),
+                            "/" => UnenlistIfSingleElement(left.Divide(right)),
+                            _ => throw new Exception($"Dyadic operator {op} not implemented")
+                        };
+                    }
                 }
                 else
                 {

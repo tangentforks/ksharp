@@ -50,8 +50,8 @@ namespace K3CSharp.Verbs
                     var content = tokens[0].Lexeme;
                     var contentLexer = new Lexer(content);
                     var contentTokens = contentLexer.Tokenize();
-                    var parser = new Parser(contentTokens, content);
-                    var astNode = parser.Parse();
+                    var pipeline = new ParserPipeline(contentTokens, content);
+                    var astNode = pipeline.TryParseWithModules();
                     
                     if (astNode == null)
                         throw new Exception("Failed to parse expression");
@@ -62,8 +62,8 @@ namespace K3CSharp.Verbs
                 else
                 {
                     // Parse normally for other cases
-                    var parser = new Parser(tokens, expressionText);
-                    var astNode = parser.Parse();
+                    var pipeline = new ParserPipeline(tokens, expressionText);
+                    var astNode = pipeline.TryParseWithModules();
                     
                     if (astNode == null)
                         throw new Exception("Failed to parse expression");

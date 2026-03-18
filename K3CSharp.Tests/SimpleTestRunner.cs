@@ -8,7 +8,7 @@ using System.Linq;
 
 using K3CSharp;
 
-
+using K3CSharp.Verbs;
 
 namespace K3CSharp.Tests
 
@@ -2232,7 +2232,7 @@ namespace K3CSharp.Tests
 
                 ("idioms_01_549_alphabetic_comparison.k", "1"),
 
-                
+
 
                 // KTree (K Tree namespace) tests
 
@@ -2260,36 +2260,35 @@ namespace K3CSharp.Tests
 
                 ("ktree_dot_apply_absolute_path.k", "1 3 5"),
                 ("test_semicolon_parsing.k", ""),
-                ("test_parse_monadic_star.k", "(`\"*:\";1 2 3 4)"),
+                ("test_parse_monadic_star.k", $"(`\"*:\";1 2 3 4)"),
+                ("test_eval_monadic_star.k", "1"),
+                ("test_eval_monadic_star_atomic.k", "1"),
+                ("parse_atomic_value_no_verb.k", ",`a"),
+                ("parse_projection_dyadic_plus.k", "(`\"+\";::;::)"),
+                ("parse_projection_dyadic_plus_fixed_left.k", "(`\"+\";1;::)"),
+                ("parse_projection_dyadic_plus_fixed_right.k", "(`\"+\";::;2)"),
+                ("parse_monadic_shape_atomic.k", "(`\"^:\";(`\",:\";,`a))"),
+                ("eval_dyadic_plus.k", "6 8 10 12"),
+                ("eval_monadic_star_nested.k", "22"),
+                ("eval_dot_execute_path.k", "7"),
+                ("eval_dot_repl_precision.k", "7"),
+                ("eval_dot_parse_and_eval.k", "11"),
                 ("test_eval_monadic_star.k", "1"),
                 ("test_eval_monadic_star_atomic.k", "1"),
             };
 
-
-
             // Filter tests if a pattern was provided
 
             var tests = filter != null
-
                 ? allTests.Where(t => t.Item1.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToArray()
-
                 : allTests;
 
-
-
             if (filter != null)
-
             {
-
                 Console.WriteLine($"Filter: '{filter}' — matched {tests.Length} of {allTests.Length} tests");
-
                 if (tests.Length == 0)
-
                 {
-
                     Console.WriteLine("No tests matched the filter.");
-
-                    return;
 
                 }
 

@@ -368,6 +368,68 @@ namespace K3CSharp
             var token = context.CurrentToken();
             context.Advance();
             
+            // Check if this is a projection (no operand before closing parenthesis/separator)
+            var isProjection = context.IsAtEnd() || 
+                context.CurrentToken().Type == TokenType.RIGHT_PAREN ||
+                context.CurrentToken().Type == TokenType.RIGHT_BRACKET ||
+                context.CurrentToken().Type == TokenType.RIGHT_BRACE ||
+                context.CurrentToken().Type == TokenType.SEMICOLON ||
+                context.CurrentToken().Type == TokenType.NEWLINE;
+                
+            if (isProjection)
+            {
+                // This is a projection - create a ProjectedFunction node
+                var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
+                
+                // Convert token type to operator symbol
+                var operatorSymbol = token.Type switch
+                {
+                    TokenType.PLUS => "+",
+                    TokenType.MINUS => "-",
+                    TokenType.MULTIPLY => "*",
+                    TokenType.DIVIDE => "%",
+                    TokenType.MIN => "&",
+                    TokenType.MAX => "|",
+                    TokenType.LESS => "<",
+                    TokenType.GREATER => ">",
+                    TokenType.EQUAL => "=",
+                    TokenType.IN => "_in",
+                    TokenType.BIN => "_bin",
+                    TokenType.BINL => "_binl",
+                    TokenType.LIN => "_lin",
+                    TokenType.DV => "_dv",
+                    TokenType.DI => "_di",
+                    TokenType.VS => "_vs",
+                    TokenType.SV => "_sv",
+                    TokenType.SS => "_ss",
+                    TokenType.SM => "_sm",
+                    TokenType.CI => "_ci",
+                    TokenType.IC => "_ic",
+                    TokenType.POWER => "^",
+                    TokenType.MODULUS => "!",
+                    TokenType.JOIN => ",",
+                    TokenType.COLON => ":",
+                    TokenType.HASH => "#",
+                    TokenType.UNDERSCORE => "_",
+                    TokenType.QUESTION => "?",
+                    TokenType.DOLLAR => "$",
+                    TokenType.TYPE => "@",
+                    TokenType.STRING_REPRESENTATION => "$",
+                    TokenType.APPLY => "@",
+                    TokenType.DOT_APPLY => "_dot",
+                    _ => token.Lexeme
+                };
+                
+                projectedNode.Value = new SymbolValue(operatorSymbol);
+                
+                // Determine arity from VerbRegistry - use highest supported arity as default
+                var verb = VerbRegistry.GetVerb(operatorSymbol);
+                int defaultArity = verb?.SupportedArities.Max() ?? 2;
+                projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(defaultArity)));
+                
+                return projectedNode;
+            }
+            
             var operand = ParseExpressionInGrouping(context);
             if (operand == null)
             {

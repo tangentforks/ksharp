@@ -811,11 +811,23 @@
 ║ ktree_dot_apply_relative_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `d . `keyA │ 1 2 3                │                      ║
 ║ ktree_dot_apply_absolute_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `.k.d . `keyB │ 1 3 5                │                      ║
 ║ test_semicolon_parsing.k                           │ x: (1;2;3)           │                      │                      ║
-║ test_parse_monadic_star.k                          │ _parse "*1 2 3 4"    │ (`"*:";1 2 3 4)      │                      ║
+║ test_parse_monadic_star.k                          │ _parse "*1 2 3 4"    │ (`"*:";)             │ (`"*:";1 2 3 4)      ║
+║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
+║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
+║ parse_atomic_value_no_verb.k                       │ _parse "`a"          │ ,`a                  │                      ║
+║ parse_projection_dyadic_plus.k                     │ _parse "(+)"         │ `"+"`"::"`"::"       │ (`"+";::;::)         ║
+║ parse_projection_dyadic_plus_fixed_left.k          │ _parse "1+"          │ Error: Parse er...   │ (`"+";1;::)          ║
+║ parse_projection_dyadic_plus_fixed_right.k         │ _parse "+[;2]"       │ Error: Parse er...   │ (`"+";::;2)          ║
+║ parse_monadic_shape_atomic.k                       │ _parse "^,`a"        │ Error: Parse er...   │ (`"^:";(`",:";,...   ║
+║ eval_dyadic_plus.k                                 │ _eval (`"+";5 6 7 8;1 2 3 4) │ 6 8 10 12            │                      ║
+║ eval_monadic_star_nested.k                         │ _eval (`"*";2;(`"+";4;7)) │ Error: Variable...   │ 22                   ║
+║ eval_dot_execute_path.k                            │ v:`e`f               │ Error: Variable...   │ 7                    ║
+║ eval_dot_repl_precision.k                          │ . "\\p"              │ Error: Adverb b...   │ 7                    ║
+║ eval_dot_parse_and_eval.k                          │ a:7                  │ 11                   │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 792/811 tests passed (97.7%)                                                                               ║
+║ SUMMARY: 796/823 tests passed (96.7%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -914,4 +926,44 @@ Test: idioms_01_448_conditional_drop_last.k
 Input: x:4 3#!12
 Expected: (0 1 2;3 4 5;6 7 8)
 Actual: (0 1 2;3 4 5;6 7 8;9 10 11)
+──────────────────────────────────────────────────────────────────────────
+Test: test_parse_monadic_star.k
+Input: _parse "*1 2 3 4"
+Expected: (`"*:";1 2 3 4)
+Actual: (`"*:";)
+──────────────────────────────────────────────────────────────────────────
+Test: parse_projection_dyadic_plus.k
+Input: _parse "(+)"
+Expected: (`"+";::;::)
+Actual: `"+"`"::"`"::"
+──────────────────────────────────────────────────────────────────────────
+Test: parse_projection_dyadic_plus_fixed_left.k
+Input: _parse "1+"
+Expected: (`"+";1;::)
+Actual: Error: Parse error: Failed to parse expression
+──────────────────────────────────────────────────────────────────────────
+Test: parse_projection_dyadic_plus_fixed_right.k
+Input: _parse "+[;2]"
+Expected: (`"+";::;2)
+Actual: Error: Parse error: Failed to parse expression
+──────────────────────────────────────────────────────────────────────────
+Test: parse_monadic_shape_atomic.k
+Input: _parse "^,`a"
+Expected: (`"^:";(`",:";,`a))
+Actual: Error: Parse error: Failed to parse expression
+──────────────────────────────────────────────────────────────────────────
+Test: eval_monadic_star_nested.k
+Input: _eval (`"*";2;(`"+";4;7))
+Expected: 22
+Actual: Error: Variable evaluation not implemented: `"`"+""
+──────────────────────────────────────────────────────────────────────────
+Test: eval_dot_execute_path.k
+Input: v:`e`f
+Expected: 7
+Actual: Error: Variable evaluation not implemented: `"`a"
+──────────────────────────────────────────────────────────────────────────
+Test: eval_dot_repl_precision.k
+Input: . "\\p"
+Expected: 7
+Actual: Error: Adverb backslash must be preceded by a verb
 ──────────────────────────────────────────────────────────────────────────

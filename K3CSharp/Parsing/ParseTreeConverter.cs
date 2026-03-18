@@ -29,6 +29,7 @@ namespace K3CSharp.Parsing
                 ASTNodeType.Vector => ConvertVector(node),
                 ASTNodeType.Assignment => ConvertAssignment(node),
                 ASTNodeType.Block => ConvertBlock(node),
+                ASTNodeType.ProjectedFunction => ConvertProjectedFunction(node),
                 _ => throw new NotSupportedException($"Node type {node.Type} not supported in parse tree conversion")
             };
         }
@@ -42,13 +43,39 @@ namespace K3CSharp.Parsing
                 return new NullValue();
                 
             // Atomic values become enlisted vectors in parse trees
-            if (value is IntegerValue || value is FloatValue || value is SymbolValue || value is CharacterValue)
+            // EXCEPT for projection symbols (::) which should remain as symbols
+            if ((value is IntegerValue || value is FloatValue || value is SymbolValue || value is CharacterValue) &&
+                !(value is SymbolValue sym && sym.Value == "::"))
             {
                 var elements = new List<K3Value> { value };
                 return new VectorValue(elements);
             }
             
             return value; // Pass through complex values as-is
+        }
+        
+        /// <summary>
+        /// Convert atomic values to enlisted vectors (according to Parse.md speclet)
+        /// </summary>
+        private static K3Value ConvertAtomicValue(ASTNode value)
+        {
+            if (value == null)
+                return new NullValue();
+                
+            var k3Value = value.Value;
+            if (k3Value == null)
+                return new NullValue();
+                
+            // Atomic values become enlisted vectors in parse trees
+            // EXCEPT for projection symbols (::) which should remain as symbols
+            if ((k3Value is IntegerValue || k3Value is FloatValue || k3Value is SymbolValue || k3Value is CharacterValue) &&
+                !(k3Value is SymbolValue sym && sym.Value == "::"))
+            {
+                var elements = new List<K3Value> { k3Value };
+                return new VectorValue(elements);
+            }
+            
+            return k3Value; // Pass through complex values as-is
         }
         
         /// <summary>
@@ -74,23 +101,49 @@ namespace K3CSharp.Parsing
             // Check if this is a monadic operator (only right operand)
             if (node.Children.Count == 1)
             {
-                // For monadic operators, combine operator with disambiguating colon
-                var monadicOpSymbol = new SymbolValue(opSymbol.Value + ":");
-                elements.Add(monadicOpSymbol);
-                
-                // Convert right operand
-                elements.Add(ToKList(node.Children[0]));
+                // Check if operator has double colon (projection)
+                if (opSymbol.Value.Contains("::"))
+                {
+                    // Projection: keep operator as-is, add projection symbol
+                    elements.Add(new SymbolValue(opSymbol.Value));
+                    elements.Add(ConvertAtomicValue(node.Children[0]));
+                }
+                else
+                {
+                    // For monadic operators, combine operator with disambiguating colon
+                    var monadicOpSymbol = new SymbolValue(opSymbol.Value + ":");
+                    elements.Add(monadicOpSymbol);
+                    elements.Add(ConvertAtomicValue(node.Children[0]));
+                }
             }
             else
             {
-                // For dyadic operators, use the operator symbol as-is
-                elements.Add(opSymbol);
+                // For dyadic operators, check if this is a projection
+                var leftChild = node.Children[0];
+                var rightChild = node.Children[1];
                 
-                // Convert left operand
-                elements.Add(ToKList(node.Children[0]));
+                // Check if either argument is a projection symbol (::)
+                bool isProjection = (leftChild.Value is SymbolValue leftSym && leftSym.Value == "::") ||
+                                 (rightChild.Value is SymbolValue rightSym && rightSym.Value == "::");
                 
-                // Convert right operand
-                elements.Add(ToKList(node.Children[1]));
+                if (isProjection)
+                {
+                    // Projection: use operator as-is, add projection arguments
+                    elements.Add(opSymbol);
+                    elements.Add(ConvertAtomicValue(leftChild));
+                    elements.Add(ConvertAtomicValue(rightChild));
+                }
+                else
+                {
+                    // Regular dyadic operators, use the operator symbol as-is
+                    elements.Add(opSymbol);
+                    
+                    // Convert left operand
+                    elements.Add(ConvertAtomicValue(node.Children[0]));
+                    
+                    // Convert right operand
+                    elements.Add(ConvertAtomicValue(node.Children[1]));
+                }
             }
             
             return new VectorValue(elements);
@@ -107,7 +160,7 @@ namespace K3CSharp.Parsing
             // Convert all arguments
             foreach (var child in node.Children)
             {
-                elements.Add(ToKList(child));
+                elements.Add(ConvertAtomicValue(child));
             }
             
             return new VectorValue(elements);
@@ -130,7 +183,7 @@ namespace K3CSharp.Parsing
                 else
                 {
                     // For non-literals, use the normal conversion
-                    elements.Add(ToKList(child));
+                    elements.Add(ConvertAtomicValue(child));
                 }
             }
             
@@ -149,11 +202,11 @@ namespace K3CSharp.Parsing
             
             // Left side
             if (node.Children.Count > 0)
-                elements.Add(ToKList(node.Children[0]));
+                elements.Add(ConvertAtomicValue(node.Children[0]));
                 
             // Right side
             if (node.Children.Count > 1)
-                elements.Add(ToKList(node.Children[1]));
+                elements.Add(ConvertAtomicValue(node.Children[1]));
                 
             return new VectorValue(elements);
         }
@@ -167,7 +220,7 @@ namespace K3CSharp.Parsing
             
             foreach (var child in node.Children)
             {
-                elements.Add(ToKList(child));
+                elements.Add(ConvertAtomicValue(child));
             }
             
             return new VectorValue(elements);
@@ -324,6 +377,33 @@ namespace K3CSharp.Parsing
             if (operand != new NullValue())
                 elements.Add(new SymbolValue(":")); // Monadic disambiguation
             elements.Add(operand);
+            
+            return new VectorValue(elements);
+        }
+        
+        /// <summary>
+        /// Convert ProjectedFunction node to K list representation with :: symbols
+        /// </summary>
+        private static K3Value ConvertProjectedFunction(ASTNode node)
+        {
+            if (node.Value is not SymbolValue operatorSymbol)
+                throw new Exception("ProjectedFunction node must have a SymbolValue");
+            
+            // Get the arity from the first child if available
+            int arity = 2; // Default arity for dyadic operators
+            if (node.Children.Count > 0 && node.Children[0].Value is IntegerValue arityValue)
+            {
+                arity = arityValue.Value;
+            }
+            
+            // Create the projection representation based on arity
+            var elements = new List<K3Value> { operatorSymbol };
+            
+            // Add :: placeholders for missing arguments
+            for (int i = 0; i < arity; i++)
+            {
+                elements.Add(new SymbolValue("::"));
+            }
             
             return new VectorValue(elements);
         }
