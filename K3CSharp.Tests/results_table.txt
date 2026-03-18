@@ -822,7 +822,7 @@
 ║ eval_dyadic_plus.k                                 │ _eval (`"+";5 6 7 8;1 2 3 4) │ 6 8 10 12            │                      ║
 ║ eval_monadic_star_nested.k                         │ _eval (`"*";2;(`"+";4;7)) │ 22                   │                      ║
 ║ eval_dot_execute_path.k                            │ v:`e`f               │ `a`b`c`d`e`f         │                      ║
-║ eval_dot_repl_dir.k                                │ ."\\d ^";d:_d;."\\d .k";(d;_d) │ Error: Adverb b...   │ ``.k                 ║
+║ eval_dot_repl_dir.k                                │ ."\\d ^";.d:_d;."\\d .k";(.d;_d) │ Error: Adverb b...   │ ``.k                 ║
 ║ eval_dot_parse_and_eval.k                          │ a:7                  │ 11                   │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
@@ -933,7 +933,7 @@ Expected: (`"^:";(`",:";,`a))
 Actual: Error: Parse error: Failed to parse expression
 ──────────────────────────────────────────────────────────────────────────
 Test: eval_dot_repl_dir.k
-Input: ."\\d ^";d:_d;."\\d .k";(d;_d)
+Input: ."\\d ^";.d:_d;."\\d .k";(.d;_d)
 Expected: ``.k
 Actual: Error: Adverb backslash must be preceded by a verb
 ──────────────────────────────────────────────────────────────────────────

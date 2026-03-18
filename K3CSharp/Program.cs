@@ -180,6 +180,11 @@ namespace K3CSharp
                     Console.WriteLine("\\cmd       execute OS command");
                     break;
 
+                case "\\d^":
+                    // Set current branch to parent
+                    evaluator.SetParentBranch();
+                    break;
+
                 case "\\d":
                     if (arg == null)
                     {
@@ -190,6 +195,11 @@ namespace K3CSharp
                             Console.WriteLine(sym.Value);
                         }
                         // Root branch - display nothing per spec
+                    }
+                    else if (0 == string.CompareOrdinal("^", arg))
+                    {
+                        // Set current branch to parent
+                        evaluator.SetParentBranch();
                     }
                     else
                     {
@@ -273,11 +283,6 @@ namespace K3CSharp
                     // Reset K tree to default state (for testing purposes)
                     evaluator.ResetKTree();
                     Evaluator.RandomSeed = -314159;
-                    break;
-
-                case "\\^":
-                    // Set current branch to parent
-                    evaluator.SetParentBranch();
                     break;
 
                 case "\\p":

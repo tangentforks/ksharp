@@ -724,9 +724,9 @@ namespace K3CSharp
 
         public override string ToString()
         {
-            // Check if symbol is empty - in K, empty symbols display as nothing
+            // Check if symbol is empty - in K, empty symbols display as `
             if (string.IsNullOrEmpty(Value))
-                return "";
+                return "`";
             
             // Check if symbol is a valid variable name according to K spec
             if (IsValidVariableName(Value))
