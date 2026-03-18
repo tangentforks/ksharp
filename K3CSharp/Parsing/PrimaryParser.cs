@@ -369,12 +369,14 @@ namespace K3CSharp
             context.Advance();
             
             // Check if this is a projection (no operand before closing parenthesis/separator)
+            // Only treat as projection if we're at end or before a delimiter, NOT if there are operands
             var isProjection = context.IsAtEnd() || 
                 context.CurrentToken().Type == TokenType.RIGHT_PAREN ||
                 context.CurrentToken().Type == TokenType.RIGHT_BRACKET ||
                 context.CurrentToken().Type == TokenType.RIGHT_BRACE ||
                 context.CurrentToken().Type == TokenType.SEMICOLON ||
-                context.CurrentToken().Type == TokenType.NEWLINE;
+                context.CurrentToken().Type == TokenType.NEWLINE ||
+                context.CurrentToken().Type == TokenType.JOIN; // Comma as separator
                 
             if (isProjection)
             {

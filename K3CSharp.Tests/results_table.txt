@@ -815,19 +815,19 @@
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ║ parse_atomic_value_no_verb.k                       │ _parse "`a"          │ ,`a                  │                      ║
-║ parse_projection_dyadic_plus.k                     │ _parse "(+)"         │ `"+"`"::"`"::"       │ (`"+";::;::)         ║
-║ parse_projection_dyadic_plus_fixed_left.k          │ _parse "1+"          │ Error: Parse er...   │ (`"+";1;::)          ║
-║ parse_projection_dyadic_plus_fixed_right.k         │ _parse "+[;2]"       │ Error: Parse er...   │ (`"+";::;2)          ║
+║ parse_projection_dyadic_plus.k                     │ _parse "(+)"         │ `"+"`"::"`"::"       │                      ║
+║ parse_projection_dyadic_plus_fixed_left.k          │ _parse "1+"          │ (`"+";,1;`"::")      │                      ║
+║ parse_projection_dyadic_plus_fixed_right.k         │ _parse "+[;2]"       │ Error: Parse er...   │ (`"+";`"::";,2)      ║
 ║ parse_monadic_shape_atomic.k                       │ _parse "^,`a"        │ Error: Parse er...   │ (`"^:";(`",:";,...   ║
 ║ eval_dyadic_plus.k                                 │ _eval (`"+";5 6 7 8;1 2 3 4) │ 6 8 10 12            │                      ║
 ║ eval_monadic_star_nested.k                         │ _eval (`"*";2;(`"+";4;7)) │ Error: Variable...   │ 22                   ║
 ║ eval_dot_execute_path.k                            │ v:`e`f               │ Error: Variable...   │ 7                    ║
-║ eval_dot_repl_precision.k                          │ . "\\p"              │ Error: Adverb b...   │ 7                    ║
+║ eval_dot_repl_dir.k                                │ ."\\d ^";d:_d;."\\d .k";(d;_d) │ Error: Adverb b...   │ ``.k                 ║
 ║ eval_dot_parse_and_eval.k                          │ a:7                  │ 11                   │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 796/823 tests passed (96.7%)                                                                               ║
+║ SUMMARY: 798/823 tests passed (97.0%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -932,19 +932,9 @@ Input: _parse "*1 2 3 4"
 Expected: (`"*:";1 2 3 4)
 Actual: (`"*:";)
 ──────────────────────────────────────────────────────────────────────────
-Test: parse_projection_dyadic_plus.k
-Input: _parse "(+)"
-Expected: (`"+";::;::)
-Actual: `"+"`"::"`"::"
-──────────────────────────────────────────────────────────────────────────
-Test: parse_projection_dyadic_plus_fixed_left.k
-Input: _parse "1+"
-Expected: (`"+";1;::)
-Actual: Error: Parse error: Failed to parse expression
-──────────────────────────────────────────────────────────────────────────
 Test: parse_projection_dyadic_plus_fixed_right.k
 Input: _parse "+[;2]"
-Expected: (`"+";::;2)
+Expected: (`"+";`"::";,2)
 Actual: Error: Parse error: Failed to parse expression
 ──────────────────────────────────────────────────────────────────────────
 Test: parse_monadic_shape_atomic.k
@@ -962,8 +952,8 @@ Input: v:`e`f
 Expected: 7
 Actual: Error: Variable evaluation not implemented: `"`a"
 ──────────────────────────────────────────────────────────────────────────
-Test: eval_dot_repl_precision.k
-Input: . "\\p"
-Expected: 7
+Test: eval_dot_repl_dir.k
+Input: ."\\d ^";d:_d;."\\d .k";(d;_d)
+Expected: ``.k
 Actual: Error: Adverb backslash must be preceded by a verb
 ──────────────────────────────────────────────────────────────────────────

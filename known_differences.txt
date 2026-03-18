@@ -219,3 +219,4 @@ apply_assign_divide :: regex:4.0:4 :: smart division
 ktree_enumerate_absolute_path :: regex:\s+`:` :: Compact representation
 ktree_enumerate_relative_name :: regex:\s+`:` :: Compact representation
 ktree_enumerate_relative_path :: regex:\s+`:` :: Compact representation
+eval_dot_repl_dir :: regex:\s+`:` :: Compact representation

@@ -101,7 +101,62 @@ namespace K3CSharp
                 var right = ParseTerm(context);
                 if (right == null)
                 {
-                    throw new Exception($"Expected expression after operator {opToken.Lexeme}");
+                    // This is a projection - create a ProjectedFunction node
+                    var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
+                    
+                    // Convert token type to operator symbol
+                    var operatorSymbol = opToken.Type switch
+                    {
+                        TokenType.PLUS => "+",
+                        TokenType.MINUS => "-",
+                        TokenType.MULTIPLY => "*",
+                        TokenType.DIVIDE => "%",
+                        TokenType.MIN => "&",
+                        TokenType.MAX => "|",
+                        TokenType.LESS => "<",
+                        TokenType.GREATER => ">",
+                        TokenType.EQUAL => "=",
+                        TokenType.IN => "_in",
+                        TokenType.BIN => "_bin",
+                        TokenType.BINL => "_binl",
+                        TokenType.LIN => "_lin",
+                        TokenType.DV => "_dv",
+                        TokenType.DI => "_di",
+                        TokenType.VS => "_vs",
+                        TokenType.SV => "_sv",
+                        TokenType.SS => "_ss",
+                        TokenType.SM => "_sm",
+                        TokenType.CI => "_ci",
+                        TokenType.IC => "_ic",
+                        TokenType.POWER => "^",
+                        TokenType.MODULUS => "!",
+                        TokenType.JOIN => ",",
+                        TokenType.COLON => ":",
+                        TokenType.HASH => "#",
+                        TokenType.UNDERSCORE => "_",
+                        TokenType.QUESTION => "?",
+                        TokenType.DOLLAR => "$",
+                        TokenType.TYPE => "@",
+                        TokenType.STRING_REPRESENTATION => "$",
+                        TokenType.APPLY => "@",
+                        TokenType.DOT_APPLY => "_dot",
+                        _ => opToken.Lexeme
+                    };
+                    
+                    projectedNode.Value = new SymbolValue(operatorSymbol);
+                    
+                    // Determine arity from VerbRegistry - use highest supported arity as default
+                    var verb = VerbRegistry.GetVerb(operatorSymbol);
+                    int defaultArity = verb?.SupportedArities.Max() ?? 2;
+                    projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(defaultArity)));
+                    
+                    // Add the left operand if we have one
+                    if (left != null)
+                    {
+                        projectedNode.Children.Add(left);
+                    }
+                    
+                    return projectedNode;
                 }
 
                 // Create binary operation node

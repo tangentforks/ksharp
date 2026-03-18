@@ -98,22 +98,26 @@ namespace K3CSharp.Parsing
             var opSymbol = node.Value as SymbolValue ?? new SymbolValue(node.Value?.ToString() ?? "+");
             var elements = new List<K3Value>();
             
-            // Check if this is a monadic operator (only right operand)
-            if (node.Children.Count == 1)
+            // Check if this is a monadic operator (only right operand or right operand is NullValue)
+            if (node.Children.Count == 1 || 
+                (node.Children.Count == 2 && node.Children[1].Value is NullValue))
             {
+                // This is a monadic operation
+                var operand = node.Children[0];
+                
                 // Check if operator has double colon (projection)
                 if (opSymbol.Value.Contains("::"))
                 {
                     // Projection: keep operator as-is, add projection symbol
                     elements.Add(new SymbolValue(opSymbol.Value));
-                    elements.Add(ConvertAtomicValue(node.Children[0]));
+                    elements.Add(ConvertAtomicValue(operand));
                 }
                 else
                 {
                     // For monadic operators, combine operator with disambiguating colon
                     var monadicOpSymbol = new SymbolValue(opSymbol.Value + ":");
                     elements.Add(monadicOpSymbol);
-                    elements.Add(ConvertAtomicValue(node.Children[0]));
+                    elements.Add(ConvertAtomicValue(operand));
                 }
             }
             else
@@ -391,18 +395,31 @@ namespace K3CSharp.Parsing
             
             // Get the arity from the first child if available
             int arity = 2; // Default arity for dyadic operators
+            int startIndex = 0; // Index to start processing operands
+            
             if (node.Children.Count > 0 && node.Children[0].Value is IntegerValue arityValue)
             {
                 arity = arityValue.Value;
+                startIndex = 1; // Skip arity, start from operands
             }
             
-            // Create the projection representation based on arity
+            // Create the projection representation based on arity and available operands
             var elements = new List<K3Value> { operatorSymbol };
             
-            // Add :: placeholders for missing arguments
+            // Process operands up to arity
             for (int i = 0; i < arity; i++)
             {
-                elements.Add(new SymbolValue("::"));
+                int childIndex = startIndex + i;
+                if (childIndex < node.Children.Count)
+                {
+                    // Use the provided operand
+                    elements.Add(ConvertAtomicValue(node.Children[childIndex]));
+                }
+                else
+                {
+                    // Add :: placeholder for missing argument
+                    elements.Add(new SymbolValue("::"));
+                }
             }
             
             return new VectorValue(elements);
