@@ -1506,12 +1506,6 @@ namespace K3CSharp
             return x;
         }
         
-        private K3Value MathLsq(K3Value operand)
-        {
-            // Legacy monadic version - should not be used
-            throw new Exception("_lsq requires two arguments (x and y)");
-        }
-        
         private double[] ExtractVector(VectorValue vec)
         {
             var result = new double[vec.Elements.Count];
