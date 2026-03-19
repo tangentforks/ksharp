@@ -101,6 +101,11 @@ namespace K3CSharp
             {
                 return ApplySymbolVerb(verbSymbol.Value, verb, right);
             }
+            else if (verb is FunctionValue function)
+            {
+                // For functions, execute the function with left and right as arguments
+                return ExecuteFunction(function, new List<K3Value> { left, right });
+            }
             else
             {
                 // For numeric verbs, assume addition by default
@@ -119,7 +124,31 @@ namespace K3CSharp
 
         private K3Value ApplyAdverbSlash(K3Value verb, K3Value left, K3Value right)
         {
-            // Natural nested evaluation: call Over with the verb and arguments
+            // For adverb slash /:
+            // If left is dummy 0 and right is vector, use Over (e.g., +/ 1 2 3 4 5)
+            // If left is vector and right is scalar, use Each (e.g., (1 2 3) %/ 2)
+            // If left is vector and right is vector, use Each (e.g., (1 2 3) %/ (4 5 6))
+            // If only right argument, use Over (e.g., %/ 1 2 3)
+            
+            // Check for "over" case: left is dummy 0 and right is vector
+            if (left is IntegerValue leftInt && leftInt.Value == 0 && right is VectorValue)
+            {
+                return Over(verb, left, right);
+            }
+            
+            // Check for "each" case: left is vector and right is scalar
+            if (left is VectorValue && IsScalar(right))
+            {
+                return Each(verb, left, right);
+            }
+            
+            // Check for vector-vector case
+            if (left is VectorValue && right is VectorValue)
+            {
+                return Each(verb, left, right);
+            }
+            
+            // Default case: use Over
             return Over(verb, left ?? new IntegerValue(0), right ?? new IntegerValue(0));
         }
 
@@ -450,26 +479,41 @@ namespace K3CSharp
                     return new VectorValue(result, vectorType);
                 }
                 
+                // Handle vector + scalar case (e.g., (1 2 3) %/ 2)
+                if (left is VectorValue leftVec && IsScalar(right))
+                {
+                    // Apply binary operation element-wise with scalar right
+                    var result = new List<K3Value>();
+                    foreach (var leftElement in leftVec.Elements)
+                    {
+                        result.Add(ApplySymbolVerb(verbSymbol.Value, leftElement, right));
+                    }
+                    
+                    int vectorType = DetermineVectorType(result);
+                    return new VectorValue(result, vectorType);
+                }
+                
                 // Handle vector + vector case (same length) - should behave like default operator
-                if (left is VectorValue leftVec && right is VectorValue rightVec)
+                if (left is VectorValue leftVec2 && right is VectorValue rightVec)
                 {
                     // Check if vectors have different lengths - should throw length error
-                    if (leftVec.Elements.Count != rightVec.Elements.Count)
+                    if (leftVec2.Elements.Count != rightVec.Elements.Count)
                     {
-                        throw new Exception($"length error: {leftVec.Elements.Count} != {rightVec.Elements.Count}");
+                        throw new Exception($"length error: {leftVec2.Elements.Count} != {rightVec.Elements.Count}");
                     }
                     
                     // Apply binary operation element-wise (same as default operator behavior)
                     var result = new List<K3Value>();
-                    for (int i = 0; i < leftVec.Elements.Count; i++)
+                    for (int i = 0; i < leftVec2.Elements.Count; i++)
                     {
-                        var leftElement = leftVec.Elements[i];
+                        var leftElement = leftVec2.Elements[i];
                         var rightElement = rightVec.Elements[i];
                         
                         result.Add(ApplySymbolVerb(verbSymbol.Value, leftElement, rightElement));
                     }
                     
-                    return ApplySymbolVerb(verbSymbol.Value, left, right);
+                    int vectorType = DetermineVectorType(result);
+                    return new VectorValue(result, vectorType);
                 }
             }
             

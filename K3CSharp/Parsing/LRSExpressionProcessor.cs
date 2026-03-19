@@ -12,13 +12,11 @@ namespace K3CSharp.Parsing
     {
         private readonly List<Token> tokens;
         private readonly bool buildParseTree;
-        private readonly ILRSParser? lrsParser;
         
-        public LRSExpressionProcessor(List<Token> tokens, bool buildParseTree = false, ILRSParser? lrsParser = null)
+        public LRSExpressionProcessor(List<Token> tokens, bool buildParseTree = false)
         {
             this.tokens = tokens;
             this.buildParseTree = buildParseTree;
-            this.lrsParser = lrsParser;
         }
 
         /// <summary>
@@ -169,17 +167,8 @@ namespace K3CSharp.Parsing
             // Parse the unary expression
             if (unaryTokens.Count >= 2)
             {
-                // Create unary operator node using injected LRSParser or fallback
-                if (lrsParser != null)
-                {
-                    var unaryPosition = 0;
-                    return lrsParser.ParseExpression(ref unaryPosition);
-                }
-                else
-                {
-                    // Fallback to direct creation without LRSParser dependency
-                    return CreateUnaryOperatorNode(unaryTokens);
-                }
+                var unaryParser = new LRSUnaryParser(new LRSParser(tokens, buildParseTree));
+                return unaryParser.ParseMonadicOperator(unaryTokens);
             }
             
             // Fallback to atomic parsing if only operator
@@ -257,63 +246,10 @@ namespace K3CSharp.Parsing
             if (expressionTokens.Count == 1)
                 return LRSAtomicParser.ParseAtomicToken(expressionTokens[0]);
             
-            // Use injected LRS parser for complex expressions or fallback
-            if (lrsParser != null)
-            {
-                var complexPosition = 0;
-                return lrsParser.ParseExpression(ref complexPosition);
-            }
-            else
-            {
-                // Fallback to ExpressionParser for complex cases
-                return ProcessComplexExpressionFallback(expressionTokens);
-            }
-        }
-        
-        /// <summary>
-        /// Create unary operator node from tokens
-        /// </summary>
-        private ASTNode? CreateUnaryOperatorNode(List<Token> unaryTokens)
-        {
-            if (unaryTokens.Count < 2)
-                return null;
-                
-            var operatorToken = unaryTokens[0];
-            var operandTokens = unaryTokens.Skip(1).ToList();
-            
-            // Parse operand
-            if (operandTokens.Count == 1)
-            {
-                var operand = LRSAtomicParser.ParseAtomicToken(operandTokens[0]);
-                if (operand != null)
-                {
-                    return CreateUnaryOperatorNode(operatorToken.Type, operand);
-                }
-            }
-            
-            return null;
-        }
-        
-        /// <summary>
-        /// Create unary operator node
-        /// </summary>
-        private ASTNode CreateUnaryOperatorNode(TokenType operatorType, ASTNode operand)
-        {
-            var node = new ASTNode(ASTNodeType.BinaryOp);
-            node.Value = new SymbolValue(operatorType.ToString().ToLower());
-            node.Children.Add(operand);
-            return node;
-        }
-        
-        /// <summary>
-        /// Process complex expression without LRSParser dependency
-        /// </summary>
-        private ASTNode? ProcessComplexExpressionFallback(List<Token> tokens)
-        {
-            // Simple fallback - use ExpressionParser for complex cases
-            var expressionParser = new ExpressionParser();
-            var context = new ParseContext(tokens, "");
-            return expressionParser.Parse(context);
+            // Use LRS parser for complex expressions
+            var lrsParser = new LRSParser(expressionTokens, buildParseTree);
+            var position = 0;
+            return lrsParser.ParseExpression(ref position);
         }
     }
 }

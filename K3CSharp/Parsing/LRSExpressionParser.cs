@@ -28,8 +28,8 @@ namespace K3CSharp.Parsing
             {
                 var token = tokens[position];
                 
-                // Stop at separators when at base level
-                if (delimiterDepth.IsAtBaseLevel() && ShouldStopAtToken(token.Type))
+                // Stop at separators when at base level, but only if we have some tokens already
+                if (delimiterDepth.IsAtBaseLevel() && ShouldStopAtToken(token.Type) && expressionTokens.Count > 0)
                     break;
                     
                 // Update delimiter depth

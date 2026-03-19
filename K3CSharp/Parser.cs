@@ -174,9 +174,6 @@ namespace K3CSharp
         private readonly List<Token> tokens;
         private int current = 0;
         private readonly string sourceText;
-        #pragma warning disable CS0414
-        private bool parsingDotApplyArguments = false; // Track context for dot-apply arguments
-#pragma warning restore CS0414
 
         public Parser(List<Token> tokens, string sourceText)
         {
@@ -577,53 +574,6 @@ namespace K3CSharp
             }
 
             return elements[0];
-        }
-
-        private bool IsVectorLiteral(ASTNode node)
-        {
-            // A vector literal is a node that was parsed as a vector
-            // This is a simple heuristic - if it has multiple children and they're all literals/variables
-            if (node.Type == ASTNodeType.Vector && node.Children.Count > 0)
-            {
-                return true;
-            }
-            
-            // Also check if it's a variable that we know represents a vector from context
-            // For now, we'll be conservative and only treat explicit vectors as vector literals
-            return false;
-        }
-
-        
-        
-        private ASTNode? ParseElementForSemicolonVector()
-        {
-            // Parse an element for semicolon-separated vectors, handling nested structures properly
-            // This method parses expressions but doesn't stop at semicolons at the top level of nested parentheses
-            
-            var left = ParseTerm();
-            if (left == null)
-            {
-                return null;
-            }
-
-            // Handle binary operators but be careful about semicolons in nested structures
-            while (!IsAtEnd() && 
-                   CurrentToken().Type != TokenType.SEMICOLON && 
-                   CurrentToken().Type != TokenType.RIGHT_PAREN &&
-                   CurrentToken().Type != TokenType.RIGHT_BRACE &&
-                   CurrentToken().Type != TokenType.RIGHT_BRACKET &&
-                   IsBinaryOperator(CurrentToken().Type))
-            {
-                var op = MatchAndGetOperator();
-                if (op == null) break;
-                
-                var right = ParseTerm();
-                if (right == null) break;
-                
-                left = ASTNode.MakeBinaryOp(op.Type, left, right);
-            }
-
-            return left;
         }
 
         private ASTNode ParseParenthesizedForElement()

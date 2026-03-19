@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using K3CSharp.Parsing;
 
 namespace K3CSharp
 {
@@ -201,20 +200,6 @@ namespace K3CSharp
             }
             
             // Use expression parser for assignment values
-            // Try LRS Expression Processor integration first
-            try
-            {
-                var lrsResult = TestLRSExpressionProcessor(context);
-                if (lrsResult != null)
-                {
-                    return lrsResult;
-                }
-            }
-            catch
-            {
-                // Fall back to original parsing if LRS fails
-            }
-            
             var expressionParser = new ExpressionParser();
             if (expressionParser.CanHandle(context.CurrentToken().Type))
             {
@@ -287,60 +272,6 @@ namespace K3CSharp
             }
             
             return leftSide;
-        }
-        
-        /// <summary>
-        /// Test LRS Expression Processor integration for assignment values
-        /// </summary>
-        private ASTNode? TestLRSExpressionProcessor(ParseContext context)
-        {
-            // Extract tokens from current position to appropriate end
-            var tokens = new List<Token>();
-            var startPos = context.Current;
-            var parenDepth = 0;
-            var braceDepth = 0;
-            var bracketDepth = 0;
-            
-            while (context.Current < context.Tokens.Count)
-            {
-                var token = context.Tokens[context.Current];
-                tokens.Add(token);
-                
-                if (token.Type == TokenType.LEFT_PAREN) parenDepth++;
-                else if (token.Type == TokenType.RIGHT_PAREN) parenDepth--;
-                else if (token.Type == TokenType.LEFT_BRACE) braceDepth++;
-                else if (token.Type == TokenType.RIGHT_BRACE) braceDepth--;
-                else if (token.Type == TokenType.LEFT_BRACKET) bracketDepth++;
-                else if (token.Type == TokenType.RIGHT_BRACKET) bracketDepth--;
-                
-                // Stop if we reach a separator or end of expression
-                if ((parenDepth == 0 && braceDepth == 0 && bracketDepth == 0) && 
-                    (token.Type == TokenType.SEMICOLON || token.Type == TokenType.NEWLINE || token.Type == TokenType.EOF))
-                {
-                    break;
-                }
-                
-                context.Current++;
-            }
-            
-            // Remove the final separator token if present
-            if (tokens.Count > 0 && (tokens.Last().Type == TokenType.SEMICOLON || tokens.Last().Type == TokenType.NEWLINE || tokens.Last().Type == TokenType.EOF))
-            {
-                tokens.RemoveAt(tokens.Count - 1);
-            }
-            
-            // Reset position for LRS processing
-            context.Current = startPos;
-            
-            // Use factory to create LRS Expression Processor with dependency injection
-            var processor = LRSParserFactory.CreateExpressionProcessor(tokens, false);
-            var position = 0;
-            var result = processor.ProcessExpression(ref position);
-            
-            // Update context position to after processed tokens
-            context.Current = startPos + position;
-            
-            return result;
         }
     }
 }

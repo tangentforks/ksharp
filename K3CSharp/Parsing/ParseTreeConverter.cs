@@ -379,20 +379,6 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Handle monadic operator disambiguation (add colon)
-        /// </summary>
-        private static K3Value AddMonadicDisambiguation(K3Value verb, K3Value operand)
-        {
-            // Add colon for monadic operators in parse trees
-            var elements = new List<K3Value> { verb };
-            if (operand != new NullValue())
-                elements.Add(new SymbolValue(":")); // Monadic disambiguation
-            elements.Add(operand);
-            
-            return new VectorValue(elements);
-        }
-        
-        /// <summary>
         /// Convert ProjectedFunction node to K list representation with :: symbols
         /// </summary>
         private static K3Value ConvertProjectedFunction(ASTNode node)
@@ -430,43 +416,6 @@ namespace K3CSharp.Parsing
             }
             
             return new VectorValue(elements);
-        }
-        
-        /// <summary>
-        /// Check if a BinaryOp node represents a projection structure
-        /// </summary>
-        private static bool IsProjectionStructure(ASTNode node)
-        {
-            // Check if this node is marked as a projection
-            if (node.Parameters.Contains("PROJECTION"))
-            {
-                return true;
-            }
-            
-            // A projection structure is identified by:
-            // 1. Having children that came from bracket parsing with semicolons
-            // 2. Having NullValue children to indicate missing arguments
-            // 3. Having fewer children than expected for the operator arity
-            if (node.Children.Count == 0) return false;
-            
-            // Check if any child is a NullValue (missing argument placeholder)
-            bool hasNullChild = node.Children.Any(child => child.Value is NullValue);
-            if (hasNullChild)
-            {
-                return true;
-            }
-            
-            // Check if any child is a vector from bracket parsing
-            foreach (var child in node.Children)
-            {
-                // If we have a vector child, it's likely from bracket parsing with semicolons
-                if (child.Type == ASTNodeType.Vector)
-                {
-                    return true;
-                }
-            }
-            
-            return false;
         }
     }
 }

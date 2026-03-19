@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using K3CSharp.Parsing;
 
 namespace K3CSharp
 {
@@ -276,10 +275,10 @@ namespace K3CSharp
                 // Parse bracket contents directly to avoid recursion
                 context.Advance(); // Consume '['
                 
-                // Try LRS Expression Processor integration
+                // Try LRS-based parsing first (simplified integration)
                 try
                 {
-                    var lrsResult = TestLRSExpressionProcessor(context);
+                    var lrsResult = TestLRSIntegration(context);
                     if (lrsResult != null)
                     {
                         if (!context.Match(TokenType.RIGHT_BRACKET))
@@ -317,9 +316,9 @@ namespace K3CSharp
         }
 
         /// <summary>
-        /// Test LRS Expression Processor integration using factory pattern
+        /// Test LRS Integration using simplified approach without circular dependencies
         /// </summary>
-        private ASTNode? TestLRSExpressionProcessor(ParseContext context)
+        private ASTNode? TestLRSIntegration(ParseContext context)
         {
             // Extract tokens from current position to matching ]
             var tokens = new List<Token>();
@@ -346,15 +345,34 @@ namespace K3CSharp
             // Reset position for LRS processing
             context.Current = startPos;
             
-            // Use factory to create LRS Expression Processor with dependency injection
-            var processor = LRSParserFactory.CreateExpressionProcessor(tokens, false);
-            var position = 0;
-            var result = processor.ProcessExpression(ref position);
+            // Use simplified parsing that demonstrates LRS concept
+            if (tokens.Count == 0)
+                return null;
+                
+            if (tokens.Count == 1)
+            {
+                // Single token - create atomic node
+                return CreateAtomicNode(tokens[0]);
+            }
             
-            // Update context position to after processed tokens
-            context.Current = startPos + position;
+            // Multiple tokens - try simple unary operator detection
+            if (CouldBeUnaryOperator(tokens[0].Type))
+            {
+                var unaryTokens = tokens.Skip(1).ToList();
+                if (unaryTokens.Count == 1)
+                {
+                    var operand = CreateAtomicNode(unaryTokens[0]);
+                    if (operand != null)
+                    {
+                        return CreateUnaryOperatorNode(tokens[0].Type, operand);
+                    }
+                }
+            }
             
-            return result;
+            // Fall back to expression parsing for complex cases
+            var expressionParser = new ExpressionParser();
+            var tempContext = new ParseContext(tokens, "");
+            return expressionParser.Parse(tempContext);
         }
         
         /// <summary>

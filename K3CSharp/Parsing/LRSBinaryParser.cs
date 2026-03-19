@@ -30,13 +30,38 @@ namespace K3CSharp.Parsing
             // Simply find the rightmost binary operator
             for (int i = tokens.Count - 1; i >= 0; i--)
             {
-                if (OperatorDetector.IsBinaryOperator(tokens[i].Type))
+                // Temporarily bypass VerbRegistry to avoid MaxInteger error
+                if (IsBinaryOperatorDirect(tokens[i].Type))
                 {
                     return i;
                 }
             }
             
             return -1;
+        }
+        
+        /// <summary>
+        /// Direct binary operator detection without VerbRegistry (temporary fix)
+        /// </summary>
+        private static bool IsBinaryOperatorDirect(TokenType tokenType)
+        {
+            return tokenType == TokenType.PLUS ||
+                   tokenType == TokenType.MINUS ||
+                   tokenType == TokenType.MULTIPLY ||
+                   tokenType == TokenType.DIVIDE ||
+                   tokenType == TokenType.DOT_PRODUCT ||
+                   tokenType == TokenType.MIN ||
+                   tokenType == TokenType.MAX ||
+                   tokenType == TokenType.LESS ||
+                   tokenType == TokenType.GREATER ||
+                   tokenType == TokenType.EQUAL ||
+                   tokenType == TokenType.IN ||
+                   tokenType == TokenType.POWER ||
+                   tokenType == TokenType.MODULUS ||
+                   tokenType == TokenType.MATCH ||
+                   tokenType == TokenType.NEGATE ||
+                   tokenType == TokenType.DOLLAR ||
+                   tokenType == TokenType.QUESTION;
         }
         
         /// <summary>
@@ -151,7 +176,7 @@ namespace K3CSharp.Parsing
         /// </summary>
         public static bool CouldBeBinaryOperator(TokenType tokenType)
         {
-            return OperatorDetector.IsBinaryOperator(tokenType);
+            return IsBinaryOperatorDirect(tokenType);
         }
     }
 }

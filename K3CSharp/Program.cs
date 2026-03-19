@@ -133,12 +133,6 @@ namespace K3CSharp
         {
             return Console.ReadLine();
         }
-        
-        static void ReplaceCurrentLine(string newText)
-        {
-            Console.Write(new string(' ', newText.Length));
-            Console.Write($"\r    {newText}");
-        }
 
         public static K3Value ExecuteLine(string input, Evaluator evaluator)
         {
@@ -151,9 +145,9 @@ namespace K3CSharp
             
             var lexer = new Lexer(input);
             var tokens = lexer.Tokenize();
-            var lrsParser = new LRSParser(tokens);
-            var position = 0;
-            var ast = lrsParser.ParseExpression(ref position);
+            
+            // Use ParserConfig for consistent parser selection
+            var ast = ParserConfig.ParseWithConfig(tokens, input);
             return evaluator.Evaluate(ast) ?? new NullValue();
         }
 

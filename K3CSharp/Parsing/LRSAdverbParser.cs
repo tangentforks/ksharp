@@ -219,35 +219,5 @@ namespace K3CSharp.Parsing
             var position = 0;
             return ParseAdverbChain(ref position);
         }
-
-        /// <summary>
-        /// Handle nested adverb operations
-        /// </summary>
-        private ASTNode? HandleNestedAdverb(ref int position)
-        {
-            if (position >= tokens.Count)
-                return null;
-
-            // Check for nested adverb pattern like '//' or '\\'
-            if (position + 1 < tokens.Count && 
-                VerbRegistry.IsAdverbToken(tokens[position].Type) &&
-                VerbRegistry.IsAdverbToken(tokens[position + 1].Type))
-            {
-                var firstAdverb = tokens[position];
-                var secondAdverb = tokens[position + 1];
-                position += 2;
-
-                // Parse the argument for the nested adverb
-                var arg = ParseAdverbArgument(ref position);
-                if (arg == null)
-                    throw new Exception($"Expected expression after nested adverbs {firstAdverb.Lexeme}{secondAdverb.Lexeme}");
-
-                // Create nested adverb structure
-                var innerAdverb = CreateAdverbNode(secondAdverb, arg);
-                return CreateAdverbNode(firstAdverb, innerAdverb);
-            }
-
-            return null;
-        }
     }
 }

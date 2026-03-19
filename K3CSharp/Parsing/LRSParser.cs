@@ -8,7 +8,7 @@ namespace K3CSharp.Parsing
     /// Implements right-first parsing strategy with proper K language rules
     /// Uses verb-agnostic design with modular components
     /// </summary>
-    public class LRSParser : ILRSParser
+    public class LRSParser
     {
         private readonly List<Token> tokens;
         private readonly LRSExpressionParser expressionParser;
@@ -82,7 +82,12 @@ namespace K3CSharp.Parsing
             }
             
             // Handle binary operations
-            return binaryParser.ParseBinaryOperation(expressionTokens);
+            var binaryResult = binaryParser.ParseBinaryOperation(expressionTokens);
+            if (binaryResult != null)
+                return binaryResult;
+                
+            // If binary parsing fails, try monadic
+            return unaryParser.ParseMonadicOperator(expressionTokens);
         }
         
         /// <summary>
@@ -97,9 +102,14 @@ namespace K3CSharp.Parsing
                 
             if (expressionTokens.Count == 1)
                 return CreateNodeFromToken(expressionTokens[0]);
-            
+                
             // Try binary operation first
-            return binaryParser.ParseBinaryOperation(expressionTokens);
+            var binaryResult = binaryParser.ParseBinaryOperation(expressionTokens);
+            if (binaryResult != null)
+                return binaryResult;
+                
+            // If binary parsing fails, try monadic
+            return unaryParser.ParseMonadicOperator(expressionTokens);
         }
         
         /// <summary>

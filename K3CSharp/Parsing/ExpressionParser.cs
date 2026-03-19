@@ -66,15 +66,15 @@ namespace K3CSharp
     {
         public bool CanHandle(TokenType currentToken)
         {
-            // Enhanced to handle more cases for better coverage
-            // Exclude true delimiters and operators that should be handled by other modules
-            return currentToken != TokenType.EOF &&
-                   currentToken != TokenType.NEWLINE &&
+            // Expression parser handles most tokens except delimiters that start primary expressions
+            return currentToken != TokenType.LEFT_PAREN && 
+                   currentToken != TokenType.LEFT_BRACE && 
+                   currentToken != TokenType.LEFT_BRACKET &&
                    currentToken != TokenType.RIGHT_PAREN &&
                    currentToken != TokenType.RIGHT_BRACE &&
                    currentToken != TokenType.RIGHT_BRACKET &&
-                   currentToken != TokenType.SEMICOLON &&
-                   currentToken != TokenType.COLON;
+                   currentToken != TokenType.EOF &&
+                   currentToken != TokenType.NEWLINE;
         }
 
         public ASTNode? Parse(ParseContext context)
@@ -92,68 +92,11 @@ namespace K3CSharp
                 return null;
             }
 
-            // Enhanced vector formation - collect multiple elements
-            var elements = new List<ASTNode>();
-            if (left != null) elements.Add(left);
-            var firstElementType = left?.Type ?? ASTNodeType.Literal;
-
-            while (!context.IsAtEnd() && !ShouldStopParsing(context))
-            {
-                // Check if this would create a mixed-type vector or binary operation
-                if (IsBinaryOperator(context.CurrentToken().Type))
-                {
-                    // Check if this might be an adverb context with the current vector
-                    if (elements.Count > 0 && elements.Last().Type == ASTNodeType.Vector && 
-                        IsPotentialAdverbOperator(context.CurrentToken().Type))
-                    {
-                        // This might be an adverb context - check if it's %/ pattern
-                        if (context.CurrentToken().Type == TokenType.MODULUS)
-                        {
-                            // Look ahead to see if next token is DIVIDE
-                            context.Advance(); // Consume the MODULUS token
-                            if (!context.IsAtEnd() && context.CurrentToken().Type == TokenType.DIVIDE)
-                            {
-                                // This is %/ pattern - break vector formation and let adverb handling take over
-                                context.Current--; // Back up to MODULUS position
-                                break;
-                            }
-                            context.Current--; // Back up if not DIVIDE
-                        }
-                    }
-                    break; // Let binary operator handling take over
-                }
-                
-                var nextElement = ParseTerm(context);
-                if (nextElement != null)
-                {
-                    elements.Add(nextElement);
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            // If we have multiple elements, create a vector
-            if (elements.Count > 1)
-            {
-                var vectorNode = new ASTNode(ASTNodeType.Vector);
-                vectorNode.Children.AddRange(elements);
-                return vectorNode;
-            }
-
-            // Continue with binary operator handling
+            // Handle binary operators with Long Right Scope (right-associative, equal precedence)
             while (!context.IsAtEnd() && IsBinaryOperator(context.CurrentToken().Type))
             {
                 var opToken = context.CurrentToken();
                 context.Advance();
-                
-                // Check if this might be an adverb context
-                if (left != null && IsAdverbContext(left, opToken, context))
-                {
-                    // Handle as adverb operation instead of binary operation
-                    return ParseAdverbOperation(left, opToken, context);
-                }
                 
                 var right = ParseTerm(context);
                 if (right == null)
@@ -217,72 +160,10 @@ namespace K3CSharp
                 }
 
                 // Create binary operation node
-                if (left != null && right != null)
-                {
-                    left = ASTNode.MakeBinaryOp(opToken.Type, left, right);
-                }
-                else if (left != null)
-                {
-                    // This is a projection - create a ProjectedFunction node
-                    var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
-                    
-                    // Determine operator symbol
-                    var operatorSymbol = opToken.Type switch
-                    {
-                        TokenType.PLUS => "+",
-                        TokenType.MINUS => "-",
-                        TokenType.MULTIPLY => "*",
-                        TokenType.DIVIDE => "%",
-                        TokenType.MIN => "min",
-                        TokenType.MAX => "max",
-                        TokenType.LESS => "<",
-                        TokenType.GREATER => ">",
-                        TokenType.EQUAL => "=",
-                        TokenType.IN => "_in",
-                        TokenType.POWER => "^",
-                        TokenType.MODULUS => "!",
-                        TokenType.JOIN => ",",
-                        TokenType.COLON => ":",
-                        TokenType.HASH => "#",
-                        TokenType.UNDERSCORE => "_",
-                        TokenType.QUESTION => "?",
-                        TokenType.DOLLAR => "$",
-                        TokenType.TYPE => "@",
-                        TokenType.STRING_REPRESENTATION => "$",
-                        TokenType.APPLY => "@",
-                        TokenType.DOT_APPLY => "_dot",
-                        _ => opToken.Lexeme
-                    };
-                    
-                    projectedNode.Value = new SymbolValue(operatorSymbol);
-                    
-                    // Determine arity from VerbRegistry
-                    var verb = VerbRegistry.GetVerb(operatorSymbol);
-                    int defaultArity = verb?.SupportedArities.Max() ?? 2;
-                    projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(defaultArity)));
-                    
-                    // Add the left operand
-                    projectedNode.Children.Add(left);
-                    
-                    return projectedNode;
-                }
+                left = ASTNode.MakeBinaryOp(opToken.Type, left, right);
             }
 
             return left;
-        }
-
-        private bool ShouldStopParsing(ParseContext context)
-        {
-            // Stop parsing for statement separators and end-of-input
-            return context.IsAtEnd() || 
-                   context.CurrentToken().Type == TokenType.SEMICOLON ||
-                   context.CurrentToken().Type == TokenType.NEWLINE ||
-                   context.CurrentToken().Type == TokenType.EOF;
-        }
-
-        private bool IsBinaryOperator(TokenType tokenType)
-        {
-            return VerbRegistry.IsBinaryOperator(tokenType);
         }
 
         private ASTNode? ParseTerm(ParseContext context, bool parseUntilEnd = false)
@@ -346,118 +227,9 @@ namespace K3CSharp
             throw new Exception($"Unexpected token: {context.CurrentToken().Type}({context.CurrentToken().Lexeme})");
         }
 
-        /// <summary>
-        /// Check if the current context represents an adverb operation
-        /// </summary>
-        private bool IsAdverbContext(ASTNode? left, Token opToken, ParseContext context)
+        private bool IsBinaryOperator(TokenType tokenType)
         {
-            // Check if this is a potential adverb context
-            // Pattern: (vector) operator scalar
-            if (left != null && left.Type == ASTNodeType.Vector && IsPotentialAdverbOperator(opToken.Type))
-            {
-                // Look ahead to see if the right side is a scalar
-                if (!context.IsAtEnd())
-                {
-                    var nextToken = context.CurrentToken();
-                    return IsScalarToken(nextToken.Type);
-                }
-            }
-            
-            // Check for %/ pattern specifically
-            if (left != null && left.Type == ASTNodeType.Vector && opToken.Type == TokenType.MODULUS)
-            {
-                // Look ahead to see if this is %/ pattern
-                if (!context.IsAtEnd() && context.CurrentToken().Type == TokenType.DIVIDE)
-                {
-                    // This is %/ pattern - check if right side is scalar
-                    context.Advance(); // Consume the / token
-                    if (!context.IsAtEnd())
-                    {
-                        var nextToken = context.CurrentToken();
-                        // Back up one position to let the main loop handle the /
-                        context.Current--;
-                        return IsScalarToken(nextToken.Type);
-                    }
-                    context.Current--; // Back up if no scalar found
-                }
-            }
-            
-            return false;
-        }
-
-        /// <summary>
-        /// Check if the operator can be used as an adverb
-        /// </summary>
-        private bool IsPotentialAdverbOperator(TokenType tokenType)
-        {
-            return tokenType == TokenType.MULTIPLY ||  // * (each)
-                   tokenType == TokenType.DIVIDE ||    // / (each-right)
-                   tokenType == TokenType.MODULUS ||   // % (part of %/ pattern)
-                   tokenType == TokenType.ADVERB_BACKSLASH || // \ (each-left)
-                   tokenType == TokenType.ADVERB_TICK;       // ' (each)
-        }
-
-        /// <summary>
-        /// Check if the token represents a scalar value
-        /// </summary>
-        private bool IsScalarToken(TokenType tokenType)
-        {
-            return tokenType == TokenType.INTEGER ||
-                   tokenType == TokenType.FLOAT ||
-                   tokenType == TokenType.SYMBOL ||
-                   tokenType == TokenType.QUOTE ||
-                   tokenType == TokenType.CHARACTER;
-        }
-
-        /// <summary>
-        /// Parse an adverb operation
-        /// </summary>
-        private ASTNode? ParseAdverbOperation(ASTNode left, Token opToken, ParseContext context)
-        {
-            // Handle %/ pattern specifically
-            if (opToken.Type == TokenType.MODULUS && !context.IsAtEnd() && context.CurrentToken().Type == TokenType.DIVIDE)
-            {
-                // This is %/ pattern - consume the / and handle as each-right adverb
-                context.Advance(); // Consume the / token
-                
-                // Parse the right argument (scalar)
-                var right = ParseTerm(context);
-                if (right == null)
-                {
-                    throw new Exception("Expected scalar argument after %/ operator");
-                }
-
-                // Create %/ adverb node with proper structure
-                var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
-                adverbNode.Value = new SymbolValue("ADVERB_SLASH_COLON"); // %/ maps to each-right
-                
-                // Structure: [verb, left-argument, right-argument]
-                adverbNode.Children.Add(left); // verb (the vector)
-                adverbNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(0))); // left argument (default)
-                adverbNode.Children.Add(right); // right argument (the scalar)
-                
-                return adverbNode;
-            }
-            
-            // Parse the right argument (scalar) for other adverb patterns
-            var rightArg = ParseTerm(context);
-            if (rightArg == null)
-            {
-                throw new Exception($"Expected scalar argument after adverb operator {opToken.Lexeme}");
-            }
-
-            // Create adverb node with proper structure
-            var adverbNode2 = new ASTNode(ASTNodeType.BinaryOp);
-            
-            // Use original token type, don't convert - let evaluation handle context
-            adverbNode2.Value = new SymbolValue(opToken.Type.ToString());
-            
-            // Structure: [verb, left-argument, right-argument]
-            adverbNode2.Children.Add(left); // verb (the vector)
-            adverbNode2.Children.Add(ASTNode.MakeLiteral(new IntegerValue(0))); // left argument (default)
-            adverbNode2.Children.Add(rightArg); // right argument (the scalar)
-            
-            return adverbNode2;
+            return VerbRegistry.IsBinaryOperator(tokenType);
         }
 
         }

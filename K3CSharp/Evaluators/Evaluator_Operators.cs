@@ -167,7 +167,7 @@ namespace K3CSharp
 
         private K3Value Divide(K3Value a, K3Value b)
         {
-            // Handle integer division with modulo check
+            // Handle integer division - always promote to float in K
             if (a is IntegerValue && b is IntegerValue)
             {
                 int divisor = ((IntegerValue)b).Value;
@@ -175,14 +175,11 @@ namespace K3CSharp
                     throw new Exception("Division by zero");
                 
                 int dividend = ((IntegerValue)a).Value;
-                // Check modulo - if zero, do integer division
-                if (dividend % divisor == 0)
-                    return new IntegerValue(dividend / divisor);
-                else
-                    return new FloatValue((double)dividend / divisor);
+                // In K, division always promotes to float
+                return new FloatValue((double)dividend / divisor);
             }
             
-            // Handle long division with modulo check
+            // Handle long division - always promote to float in K
             if (a is LongValue && b is LongValue)
             {
                 long divisor = ((LongValue)b).Value;
@@ -190,11 +187,8 @@ namespace K3CSharp
                     throw new Exception("Division by zero");
                 
                 long dividend = ((LongValue)a).Value;
-                // Check modulo - if zero, do integer division
-                if (dividend % divisor == 0)
-                    return new LongValue(dividend / divisor);
-                else
-                    return new FloatValue((double)dividend / divisor);
+                // In K, division always promotes to float
+                return new FloatValue((double)dividend / divisor);
             }
             
             // Handle mixed type promotion
