@@ -8,7 +8,7 @@ namespace K3CSharp.Parsing
     /// Implements right-first parsing strategy with proper K language rules
     /// Uses verb-agnostic design with modular components
     /// </summary>
-    public class LRSParser
+    public class LRSParser : ILRSParser
     {
         private readonly List<Token> tokens;
         private readonly LRSExpressionParser expressionParser;
