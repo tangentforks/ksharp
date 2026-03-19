@@ -67,14 +67,12 @@ namespace K3CSharp
         public bool CanHandle(TokenType currentToken)
         {
             // Expression parser handles most tokens except delimiters that start primary expressions
-            return currentToken != TokenType.LEFT_PAREN && 
-                   currentToken != TokenType.LEFT_BRACE && 
-                   currentToken != TokenType.LEFT_BRACKET &&
+            // Enhanced to handle more cases for better coverage
+            return currentToken != TokenType.EOF &&
+                   currentToken != TokenType.NEWLINE &&
                    currentToken != TokenType.RIGHT_PAREN &&
                    currentToken != TokenType.RIGHT_BRACE &&
-                   currentToken != TokenType.RIGHT_BRACKET &&
-                   currentToken != TokenType.EOF &&
-                   currentToken != TokenType.NEWLINE;
+                   currentToken != TokenType.RIGHT_BRACKET;
         }
 
         public ASTNode? Parse(ParseContext context)
@@ -92,7 +90,39 @@ namespace K3CSharp
                 return null;
             }
 
-            // Handle binary operators with Long Right Scope (right-associative, equal precedence)
+            // Enhanced vector formation - collect multiple elements
+            var elements = new List<ASTNode>();
+            if (left != null) elements.Add(left);
+            var firstElementType = left?.Type ?? ASTNodeType.Literal;
+
+            while (!context.IsAtEnd() && !ShouldStopParsing(context))
+            {
+                // Check if this would create a mixed-type vector or binary operation
+                if (IsBinaryOperator(context.CurrentToken().Type))
+                {
+                    break; // Let binary operator handling take over
+                }
+                
+                var nextElement = ParseTerm(context);
+                if (nextElement != null)
+                {
+                    elements.Add(nextElement);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            // If we have multiple elements, create a vector
+            if (elements.Count > 1)
+            {
+                var vectorNode = new ASTNode(ASTNodeType.Vector);
+                vectorNode.Children.AddRange(elements);
+                return vectorNode;
+            }
+
+            // Continue with binary operator handling
             while (!context.IsAtEnd() && IsBinaryOperator(context.CurrentToken().Type))
             {
                 var opToken = context.CurrentToken();
@@ -160,10 +190,72 @@ namespace K3CSharp
                 }
 
                 // Create binary operation node
-                left = ASTNode.MakeBinaryOp(opToken.Type, left, right);
+                if (left != null && right != null)
+                {
+                    left = ASTNode.MakeBinaryOp(opToken.Type, left, right);
+                }
+                else if (left != null)
+                {
+                    // This is a projection - create a ProjectedFunction node
+                    var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
+                    
+                    // Determine operator symbol
+                    var operatorSymbol = opToken.Type switch
+                    {
+                        TokenType.PLUS => "+",
+                        TokenType.MINUS => "-",
+                        TokenType.MULTIPLY => "*",
+                        TokenType.DIVIDE => "%",
+                        TokenType.MIN => "min",
+                        TokenType.MAX => "max",
+                        TokenType.LESS => "<",
+                        TokenType.GREATER => ">",
+                        TokenType.EQUAL => "=",
+                        TokenType.IN => "_in",
+                        TokenType.POWER => "^",
+                        TokenType.MODULUS => "!",
+                        TokenType.JOIN => ",",
+                        TokenType.COLON => ":",
+                        TokenType.HASH => "#",
+                        TokenType.UNDERSCORE => "_",
+                        TokenType.QUESTION => "?",
+                        TokenType.DOLLAR => "$",
+                        TokenType.TYPE => "@",
+                        TokenType.STRING_REPRESENTATION => "$",
+                        TokenType.APPLY => "@",
+                        TokenType.DOT_APPLY => "_dot",
+                        _ => opToken.Lexeme
+                    };
+                    
+                    projectedNode.Value = new SymbolValue(operatorSymbol);
+                    
+                    // Determine arity from VerbRegistry
+                    var verb = VerbRegistry.GetVerb(operatorSymbol);
+                    int defaultArity = verb?.SupportedArities.Max() ?? 2;
+                    projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(defaultArity)));
+                    
+                    // Add the left operand
+                    projectedNode.Children.Add(left);
+                    
+                    return projectedNode;
+                }
             }
 
             return left;
+        }
+
+        private bool ShouldStopParsing(ParseContext context)
+        {
+            // Stop parsing for statement separators and end-of-input
+            return context.IsAtEnd() || 
+                   context.CurrentToken().Type == TokenType.SEMICOLON ||
+                   context.CurrentToken().Type == TokenType.NEWLINE ||
+                   context.CurrentToken().Type == TokenType.EOF;
+        }
+
+        private bool IsBinaryOperator(TokenType tokenType)
+        {
+            return VerbRegistry.IsBinaryOperator(tokenType);
         }
 
         private ASTNode? ParseTerm(ParseContext context, bool parseUntilEnd = false)
@@ -225,11 +317,6 @@ namespace K3CSharp
             }
             
             throw new Exception($"Unexpected token: {context.CurrentToken().Type}({context.CurrentToken().Lexeme})");
-        }
-
-        private bool IsBinaryOperator(TokenType tokenType)
-        {
-            return VerbRegistry.IsBinaryOperator(tokenType);
         }
 
         }
