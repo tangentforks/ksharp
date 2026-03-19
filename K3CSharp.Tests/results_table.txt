@@ -767,7 +767,7 @@
 ║ idioms_01_232_is_row_in.k                          │ x:("aaa";"bbb";"ooo";"ppp";"kkk") │ 1                    │                      ║
 ║ idioms_01_559_first_marker.k                       │ x:0 0 1 0 1 0 0 1 1 0 │ 2                    │                      ║
 ║ idioms_01_78_eval_number.k                         │ x:"1998 51"          │ 1998 51              │                      ║
-║ idioms_01_88_name_variable.k                       │ x:"test"             │ Error: Undefine...   │ (0 1 2;3 4 5)        ║
+║ idioms_01_88_name_variable.k                       │ x:"test"             │ Error: Error ev...   │ (0 1 2;3 4 5)        ║
 ║ idioms_01_96_conditional_execution.k               │ @[+/;!6;:]           │ 0 15                 │                      ║
 ║ idioms_01_493_choose_boolean.k                     │ x:"abcdef"           │ "xyz"                │                      ║
 ║ idioms_01_434_replace_first.k                      │ x:"abbccdefcdab"     │ (1;"Assignment ...   │ "tbbccdefcdab"       ║
@@ -818,16 +818,16 @@
 ║ parse_projection_dyadic_plus.k                     │ _parse "(+)"         │ `"+"`"::"`"::"       │                      ║
 ║ parse_projection_dyadic_plus_fixed_left.k          │ _parse "1+"          │ (`"+";,1;`"::")      │                      ║
 ║ parse_projection_dyadic_plus_fixed_right.k         │ _parse "+[;2]"       │ (`"+";`"::";,2)      │                      ║
-║ parse_monadic_shape_atomic.k                       │ _parse "^,`a"        │ Error: Parse er...   │ (`"^:";(`",:";,...   ║
+║ parse_monadic_shape_atomic.k                       │ _parse "^,`a"        │ (`"^:";(`",:";,...   │                      ║
 ║ eval_dyadic_plus.k                                 │ _eval (`"+";5 6 7 8;1 2 3 4) │ 6 8 10 12            │                      ║
 ║ eval_monadic_star_nested.k                         │ _eval (`"*";2;(`"+";4;7)) │ 22                   │                      ║
 ║ eval_dot_execute_path.k                            │ v:`e`f               │ `a`b`c`d`e`f         │                      ║
-║ eval_dot_repl_dir.k                                │ ."\\d ^";.d:_d;."\\d .k";(.d;_d) │ Error: Adverb b...   │ ``.k                 ║
+║ eval_dot_repl_dir.k                                │ ."\\d ^";.d:_d;."\\d .k";(.d;_d) │ ``.k                 │                      ║
 ║ eval_dot_parse_and_eval.k                          │ a:7                  │ 11                   │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 802/823 tests passed (97.4%)                                                                               ║
+║ SUMMARY: 804/823 tests passed (97.7%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -875,7 +875,7 @@ Actual: `obj1
 Test: idioms_01_88_name_variable.k
 Input: x:"test"
 Expected: (0 1 2;3 4 5)
-Actual: Error: Undefined variable: var
+Actual: Error: Error evaluating string expression 'var': Undefined variable: var
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_434_replace_first.k
 Input: x:"abbccdefcdab"
@@ -926,14 +926,4 @@ Test: idioms_01_448_conditional_drop_last.k
 Input: x:4 3#!12
 Expected: (0 1 2;3 4 5;6 7 8)
 Actual: (0 1 2;3 4 5;6 7 8;9 10 11)
-──────────────────────────────────────────────────────────────────────────
-Test: parse_monadic_shape_atomic.k
-Input: _parse "^,`a"
-Expected: (`"^:";(`",:";,`a))
-Actual: Error: Parse error: Failed to parse expression
-──────────────────────────────────────────────────────────────────────────
-Test: eval_dot_repl_dir.k
-Input: ."\\d ^";.d:_d;."\\d .k";(.d;_d)
-Expected: ``.k
-Actual: Error: Adverb backslash must be preceded by a verb
 ──────────────────────────────────────────────────────────────────────────

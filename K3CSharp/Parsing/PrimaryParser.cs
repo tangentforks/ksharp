@@ -20,6 +20,7 @@ namespace K3CSharp
                 TokenType.MODULUS or TokenType.POWER or TokenType.MIN or TokenType.MAX or
                 TokenType.MATCH or TokenType.NOT or TokenType.HASH or TokenType.UNDERSCORE or
                 TokenType.QUESTION or TokenType.DOLLAR or TokenType.APPLY or
+                TokenType.JOIN or // Add JOIN for monadic ENLIST operations
                 TokenType.NULL => true,
                 _ => false
             };
@@ -48,6 +49,7 @@ namespace K3CSharp
                 TokenType.DIVIDE => ParseUnaryReciprocal(context),
                 TokenType.MODULUS => ParseUnaryReciprocal(context),
                 TokenType.POWER => ParseUnaryPower(context),
+                TokenType.JOIN => ParseUnaryJoin(context), // Add monadic ENLIST
                 TokenType.MIN => ParseUnaryMin(context),
                 TokenType.MAX => ParseUnaryMax(context),
                 TokenType.MATCH => ParseUnaryMatch(context),
@@ -792,6 +794,16 @@ namespace K3CSharp
             var operand = ParseBracketArgument(context);
             var node = new ASTNode(ASTNodeType.BinaryOp);
             node.Value = new SymbolValue("^");
+            if (operand != null) node.Children.Add(operand);
+            return node;
+        }
+
+        private ASTNode ParseUnaryJoin(ParseContext context)
+        {
+            context.Advance();
+            var operand = ParseBracketArgument(context);
+            var node = new ASTNode(ASTNodeType.BinaryOp);
+            node.Value = new SymbolValue(",");
             if (operand != null) node.Children.Add(operand);
             return node;
         }

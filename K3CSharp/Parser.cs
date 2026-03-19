@@ -314,6 +314,12 @@ namespace K3CSharp
             return result;
         }
 
+        // Public method for debugging
+        public bool TestUnaryOperator(TokenType type)
+        {
+            return IsUnaryOperator(type);
+        }
+
         private static readonly TokenType[] ParseUntilEndStopTokens = {
             TokenType.RIGHT_PAREN, TokenType.RIGHT_BRACE, TokenType.SEMICOLON, TokenType.NEWLINE, TokenType.EOF
         };

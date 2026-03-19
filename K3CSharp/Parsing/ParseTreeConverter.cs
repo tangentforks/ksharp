@@ -108,7 +108,17 @@ namespace K3CSharp.Parsing
                 // Regular monadic operators, combine operator with disambiguating colon
                 var monadicOpSymbol = new SymbolValue(opSymbol.Value + ":");
                 elements.Add(monadicOpSymbol);
-                elements.Add(operand.Type == ASTNodeType.Vector ? ConvertVector(operand) : ConvertAtomicValue(operand));
+                
+                // Convert operand based on its type
+                K3Value convertedOperand;
+                if (operand.Type == ASTNodeType.BinaryOp)
+                    convertedOperand = ConvertBinaryOp(operand);
+                else if (operand.Type == ASTNodeType.Vector)
+                    convertedOperand = ConvertVector(operand);
+                else
+                    convertedOperand = ConvertAtomicValue(operand);
+                    
+                elements.Add(convertedOperand);
             }
             else
             {
