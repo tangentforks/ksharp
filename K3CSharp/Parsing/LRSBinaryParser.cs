@@ -133,35 +133,17 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Create AST node from atomic token
+        /// Create AST node from atomic token using LRSAtomicParser
         /// </summary>
         private ASTNode? CreateNodeFromToken(Token token)
         {
-            return token.Type switch
+            if (LRSAtomicParser.IsAtomicToken(token.Type))
             {
-                TokenType.INTEGER => ASTNode.MakeLiteral(new IntegerValue(int.Parse(token.Lexeme))),
-                TokenType.FLOAT => ASTNode.MakeLiteral(new FloatValue(double.Parse(token.Lexeme))),
-                TokenType.SYMBOL or TokenType.IDENTIFIER => ASTNode.MakeVariable(token.Lexeme.Trim('`')),
-                TokenType.CHARACTER_VECTOR => ASTNode.MakeLiteral(new CharacterValue(token.Lexeme)),
-                
-                // Operators that should be treated as symbols in parse trees
-                TokenType.PLUS => ASTNode.MakeLiteral(new SymbolValue("+")),
-                TokenType.MINUS => ASTNode.MakeLiteral(new SymbolValue("-")),
-                TokenType.MULTIPLY => ASTNode.MakeLiteral(new SymbolValue("*")),
-                TokenType.DIVIDE => ASTNode.MakeLiteral(new SymbolValue("%")),
-                TokenType.POWER => ASTNode.MakeLiteral(new SymbolValue("^")),
-                TokenType.MODULUS => ASTNode.MakeLiteral(new SymbolValue("!")),
-                TokenType.JOIN => ASTNode.MakeLiteral(new SymbolValue(",")),
-                TokenType.MATCH => ASTNode.MakeLiteral(new SymbolValue("~")),
-                TokenType.NEGATE => ASTNode.MakeLiteral(new SymbolValue("~")),
-                TokenType.DOLLAR => ASTNode.MakeLiteral(new SymbolValue("$")),
-                TokenType.QUESTION => ASTNode.MakeLiteral(new SymbolValue("?")),
-                TokenType.HASH => ASTNode.MakeLiteral(new SymbolValue("#")),
-                TokenType.UNDERSCORE => ASTNode.MakeLiteral(new SymbolValue("_")),
-                TokenType.GLOBAL_ASSIGNMENT => ASTNode.MakeLiteral(new SymbolValue("::")),
-                
-                _ => (ASTNode?)null
-            };
+                return LRSAtomicParser.ParseAtomicToken(token);
+            }
+            
+            // Handle operator symbols for parse trees
+            return LRSAtomicParser.CreateOperatorNode(token.Type);
         }
         
         /// <summary>

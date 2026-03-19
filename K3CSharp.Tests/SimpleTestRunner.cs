@@ -291,6 +291,11 @@ namespace K3CSharp.Tests
                 ("atom_scalar.k", "1"),
 
                 ("atom_vector.k", "0"),
+                
+                // LRS Parser tests
+                ("lrs_atomic_parser_basic.k", "1 2 3 4 5"),
+                ("lrs_adverb_parser_each.k", "0.5 1.0 1.5"),
+                ("lrs_adverb_parser_basic.k", "1 2 3 4 5"),
 
                 
 

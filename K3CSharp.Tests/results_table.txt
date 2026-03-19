@@ -36,6 +36,9 @@
 ║ test_projected_function.k                          │ %  // This should create a projected function │ %                    │                      ║
 ║ atom_scalar.k                                      │ @42                  │ 1                    │                      ║
 ║ atom_vector.k                                      │ @1 2 3               │ 0                    │                      ║
+║ lrs_atomic_parser_basic.k                          │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
+║ lrs_adverb_parser_each.k                           │ (1 2 3) %/ 2         │ 2                    │ 0.5 1 1.5            ║
+║ lrs_adverb_parser_basic.k                          │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
 ║ attribute_handle_symbol.k                          │ ~`a                  │ `a.                  │                      ║
 ║ attribute_handle_vector.k                          │ ~(`a`b`c)            │ `a.`b.`c.            │                      ║
 ║ character_single.k                                 │ "f"                  │ "f"                  │                      ║
@@ -815,7 +818,7 @@
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ║ parse_atomic_value_no_verb.k                       │ _parse "`a"          │ ,`a                  │                      ║
-║ parse_projection_dyadic_plus.k                     │ _parse "(+)"         │ (`"+:";)             │ `"+"`"::"`"::"       ║
+║ parse_projection_dyadic_plus.k                     │ _parse "(+)"         │ (`"+";,`"(";,`")")   │ `"+"`"::"`"::"       ║
 ║ parse_projection_dyadic_plus_fixed_left.k          │ _parse "1+"          │ Error: Parse er...   │ (`"+";,1;`"::")      ║
 ║ parse_projection_dyadic_plus_fixed_right.k         │ _parse "+[;2]"       │ (`"+:";)             │ (`"+";`"::";,2)      ║
 ║ parse_monadic_shape_atomic.k                       │ _parse "^,`a"        │ (`",";,`"^";,`a)     │ (`"^:";(`",:";,...   ║
@@ -827,7 +830,7 @@
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 799/823 tests passed (97.1%)                                                                               ║
+║ SUMMARY: 801/826 tests passed (97.0%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -841,6 +844,11 @@ Test: anonymous_function_scan_adverb.k
 Input: {x*%y}\10 20 30
 Expected: (10;0.5;0.01666667)
 Actual: Error: Cannot add Function and Integer
+──────────────────────────────────────────────────────────────────────────
+Test: lrs_adverb_parser_each.k
+Input: (1 2 3) %/ 2
+Expected: 0.5 1 1.5
+Actual: 2
 ──────────────────────────────────────────────────────────────────────────
 Test: named_function_over.k
 Input: f:{x*%y};f/10 20 30
@@ -935,7 +943,7 @@ Actual: (`"*:";)
 Test: parse_projection_dyadic_plus.k
 Input: _parse "(+)"
 Expected: `"+"`"::"`"::"
-Actual: (`"+:";)
+Actual: (`"+";,`"(";,`")")
 ──────────────────────────────────────────────────────────────────────────
 Test: parse_projection_dyadic_plus_fixed_left.k
 Input: _parse "1+"
