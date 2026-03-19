@@ -23,7 +23,7 @@ namespace K3CSharp.Parsing
             return node.Type switch
             {
                 ASTNodeType.Literal => ToEnlistedVector(node.Value ?? new NullValue()),
-                ASTNodeType.Variable => ToSymbolPath(node.Value?.ToString() ?? ""),
+                ASTNodeType.Variable => ToEnlistedVector(ToSymbolPath((node.Value as SymbolValue)?.Value ?? "")),
                 ASTNodeType.BinaryOp => ConvertBinaryOp(node),
                 ASTNodeType.FunctionCall => ConvertFunctionCall(node),
                 ASTNodeType.Vector => ConvertVector(node),
@@ -113,7 +113,7 @@ namespace K3CSharp.Parsing
                 K3Value convertedOperand;
                 if (operand.Type == ASTNodeType.BinaryOp)
                     convertedOperand = ConvertBinaryOp(operand);
-                else if (operand.Type == ASTNodeType.Vector)
+                else if (operand.Type == ASTNodeType.Vector || operand.Type == ASTNodeType.Block)
                     convertedOperand = ConvertVector(operand);
                 else
                     convertedOperand = ConvertAtomicValue(operand);
@@ -210,7 +210,16 @@ namespace K3CSharp.Parsing
             
             foreach (var child in node.Children)
             {
-                elements.Add(ConvertAtomicValue(child));
+                // For vector elements, we want raw values, not enlisted vectors
+                if (child.Type == ASTNodeType.Literal)
+                {
+                    elements.Add(child.Value ?? new NullValue());
+                }
+                else
+                {
+                    // For non-literals, use the normal conversion
+                    elements.Add(ConvertAtomicValue(child));
+                }
             }
             
             return new VectorValue(elements);

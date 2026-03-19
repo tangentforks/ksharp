@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using K3CSharp.Parsing;
 
 namespace K3CSharp
 {
@@ -150,8 +151,9 @@ namespace K3CSharp
             
             var lexer = new Lexer(input);
             var tokens = lexer.Tokenize();
-            var parser = new Parser(tokens, input);
-            var ast = parser.Parse();
+            var lrsParser = new LRSParser(tokens);
+            var position = 0;
+            var ast = lrsParser.ParseExpression(ref position);
             return evaluator.Evaluate(ast) ?? new NullValue();
         }
 
@@ -246,8 +248,9 @@ namespace K3CSharp
                             // Execute the expression (result is discarded)
                             var lexer = new Lexer(arg);
                             var tokens = lexer.Tokenize();
-                            var parser = new Parser(tokens, arg);
-                            var ast = parser.Parse();
+                            var lrsParser = new LRSParser(tokens);
+                            var position = 0;
+                            var ast = lrsParser.ParseExpression(ref position);
                             evaluator.Evaluate(ast);
                         }
                         catch (Exception ex)
@@ -424,8 +427,9 @@ namespace K3CSharp
                 // Execute the entire file content as a single unit (same as file execution mode)
                 var lexer = new Lexer(content);
                 var tokens = lexer.Tokenize();
-                var parser = new Parser(tokens, content);
-                var ast = parser.Parse();
+                var lrsParser = new LRSParser(tokens);
+                var position = 0;
+                var ast = lrsParser.ParseExpression(ref position);
                 var result = evaluator.Evaluate(ast);
                 // Print result only if non-null
                 if (result != null && !(result is NullValue))

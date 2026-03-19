@@ -33,7 +33,7 @@ namespace K3CSharp.Verbs
         }
         
         /// <summary>
-        /// Parse character vector expression using proper K parser
+        /// Parse character vector expression using LRS parser
         /// </summary>
         private static K3Value ParseExpression(string expressionText)
         {
@@ -50,26 +50,32 @@ namespace K3CSharp.Verbs
                     var content = tokens[0].Lexeme;
                     var contentLexer = new Lexer(content);
                     var contentTokens = contentLexer.Tokenize();
-                    var pipeline = new ParserPipeline(contentTokens, content);
-                    var astNode = pipeline.TryParseWithModules();
+                    
+                    // Use LRS parser with parse tree building mode
+                    var lrsParser = new LRSParser(contentTokens, buildParseTree: true);
+                    var position = 0;
+                    var astNode = lrsParser.ParseExpression(ref position);
                     
                     if (astNode == null)
                         throw new Exception("Failed to parse expression");
                     
                     // Convert AST to K list representation
-                    return ParseTreeConverter.ToKList(astNode);
+                    var result = ParseTreeConverter.ToKList(astNode);
+                    return result;
                 }
                 else
                 {
-                    // Parse normally for other cases
-                    var pipeline = new ParserPipeline(tokens, expressionText);
-                    var astNode = pipeline.TryParseWithModules();
+                    // Use LRS parser with parse tree building mode for _parse function
+                    var lrsParser = new LRSParser(tokens, buildParseTree: true);
+                    var position = 0;
+                    var astNode = lrsParser.ParseExpression(ref position);
                     
                     if (astNode == null)
                         throw new Exception("Failed to parse expression");
                     
                     // Convert AST to K list representation
-                    return ParseTreeConverter.ToKList(astNode);
+                    var result = ParseTreeConverter.ToKList(astNode);
+                    return result;
                 }
             }
             catch (Exception ex)

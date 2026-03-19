@@ -1,0 +1,63 @@
+using System;
+
+namespace K3CSharp.Parsing
+{
+    /// <summary>
+    /// Verb-agnostic operator detection using VerbRegistry
+    /// Provides operator classification without hardcoded verb knowledge
+    /// </summary>
+    public class OperatorDetector
+    {
+        /// <summary>
+        /// Check if token type is a binary operator using VerbRegistry
+        /// </summary>
+        public static bool IsBinaryOperator(TokenType tokenType)
+        {
+            return VerbRegistry.IsBinaryOperatorToken(tokenType);
+        }
+        
+        /// <summary>
+        /// Check if token type supports monadic operations using VerbRegistry
+        /// </summary>
+        public static bool SupportsMonadic(TokenType tokenType)
+        {
+            var verb = VerbRegistry.GetVerb(tokenType.ToString());
+            return verb?.SupportedArities?.Contains(1) ?? false;
+        }
+        
+        /// <summary>
+        /// Check if token type supports dyadic operations using VerbRegistry
+        /// </summary>
+        public static bool SupportsDyadic(TokenType tokenType)
+        {
+            var verb = VerbRegistry.GetVerb(tokenType.ToString());
+            return verb?.SupportedArities?.Contains(2) ?? false;
+        }
+        
+        /// <summary>
+        /// Get verb information for a token type
+        /// </summary>
+        public static VerbInfo? GetVerbInfo(TokenType tokenType)
+        {
+            return VerbRegistry.GetVerb(tokenType.ToString());
+        }
+        
+        /// <summary>
+        /// Check if token type represents a function
+        /// </summary>
+        public static bool IsFunction(TokenType tokenType)
+        {
+            var verb = VerbRegistry.GetVerb(tokenType.ToString());
+            return verb?.Type == VerbType.Function;
+        }
+        
+        /// <summary>
+        /// Check if token type represents a system variable
+        /// </summary>
+        public static bool IsSystemVariable(TokenType tokenType)
+        {
+            var verb = VerbRegistry.GetVerb(tokenType.ToString());
+            return verb?.Type == VerbType.SystemVariable;
+        }
+    }
+}

@@ -6,14 +6,26 @@ namespace K3CSharp.Parsing
     /// <summary>
     /// Long Right Scope (LRS) parser for K expressions
     /// Implements right-first parsing strategy with proper K language rules
+    /// Uses verb-agnostic design with modular components
     /// </summary>
     public class LRSParser
     {
         private readonly List<Token> tokens;
+        private readonly LRSExpressionParser expressionParser;
+        private readonly LRSBinaryParser binaryParser;
+        private readonly LRSUnaryParser unaryParser;
+        private readonly LRSFunctionParser functionParser;
         
-        public LRSParser(List<Token> tokens)
+        // Parse tree construction mode flag
+        public bool BuildParseTree { get; set; }
+        
+        public LRSParser(List<Token> tokens, bool buildParseTree = false)
         {
             this.tokens = tokens;
+            this.expressionParser = new LRSExpressionParser(tokens);
+            this.binaryParser = new LRSBinaryParser(tokens, this);
+            this.unaryParser = new LRSUnaryParser(this);
+            this.functionParser = new LRSFunctionParser(tokens);
         }
         
         /// <summary>
@@ -24,70 +36,24 @@ namespace K3CSharp.Parsing
         public ASTNode? ParseExpression(ref int position)
         {
             // Step 1: Read entire expression until separator
-            var expressionTokens = ReadExpressionTokens(ref position);
+            var expressionTokens = expressionParser.ReadExpressionTokens(ref position);
             
             if (expressionTokens.Count == 0)
                 return null;
                 
-            // Step 2: Evaluate from rightmost subexpression
-            return EvaluateFromRight(expressionTokens);
+            // Step 2: Choose strategy based on mode
+            if (BuildParseTree)
+                return BuildParseTreeFromRight(expressionTokens);
+            else
+                return EvaluateFromRight(expressionTokens);
         }
         
         /// <summary>
-        /// Read tokens until we hit a separator (semicolon, newline, EOF, or closing delimiter)
+        /// Build parse tree from rightmost subexpression (for _parse function)
         /// </summary>
-        private List<Token> ReadExpressionTokens(ref int position)
-        {
-            var expressionTokens = new List<Token>();
-            var parenLevel = 0;
-            var bracketLevel = 0;
-            var braceLevel = 0;
-            
-            while (position < tokens.Count)
-            {
-                var token = tokens[position];
-                
-                // Stop at separators
-                if (token.Type == TokenType.SEMICOLON || token.Type == TokenType.NEWLINE || token.Type == TokenType.EOF)
-                    break;
-                    
-                // Handle delimiters
-                switch (token.Type)
-                {
-                    case TokenType.LEFT_PAREN:
-                        parenLevel++;
-                        break;
-                    case TokenType.RIGHT_PAREN:
-                        parenLevel--;
-                        if (parenLevel < 0) return expressionTokens;
-                        break;
-                    case TokenType.LEFT_BRACKET:
-                        bracketLevel++;
-                        break;
-                    case TokenType.RIGHT_BRACKET:
-                        bracketLevel--;
-                        if (bracketLevel < 0) return expressionTokens;
-                        break;
-                    case TokenType.LEFT_BRACE:
-                        braceLevel++;
-                        break;
-                    case TokenType.RIGHT_BRACE:
-                        braceLevel--;
-                        if (braceLevel < 0) return expressionTokens;
-                        break;
-                }
-                
-                expressionTokens.Add(token);
-                position++;
-            }
-            
-            return expressionTokens;
-        }
-        
-        /// <summary>
-        /// Evaluate expression tokens from right to left (LRS strategy)
-        /// </summary>
-        private ASTNode? EvaluateFromRight(List<Token> expressionTokens)
+        /// <param name="expressionTokens">Tokens to build parse tree from</param>
+        /// <returns>AST node representing parse tree structure</returns>
+        internal ASTNode? BuildParseTreeFromRight(List<Token> expressionTokens)
         {
             if (expressionTokens.Count == 0)
                 return null;
@@ -95,100 +61,60 @@ namespace K3CSharp.Parsing
             if (expressionTokens.Count == 1)
                 return CreateNodeFromToken(expressionTokens[0]);
             
-            // Special handling for PARSE and EVAL tokens - treat as regular function calls
-            if (expressionTokens[0].Type == TokenType.PARSE || expressionTokens[0].Type == TokenType.EVAL)
+            // Check for special functions first (_parse, _eval)
+            if (expressionTokens.Count >= 2)
             {
-                return HandleParseEvalFunction(expressionTokens);
-            }
-            
-            // Find rightmost binary operator with lowest precedence
-            var rightmostOpIndex = FindRightmostOperator(expressionTokens);
-            
-            if (rightmostOpIndex == -1)
-                return CreateNodeFromToken(expressionTokens[0]);
-                
-            // Split at rightmost operator
-            var leftTokens = expressionTokens.GetRange(0, rightmostOpIndex);
-            var rightTokens = expressionTokens.GetRange(rightmostOpIndex + 1, expressionTokens.Count - rightmostOpIndex - 1);
-            
-            var leftNode = EvaluateFromRight(leftTokens);
-            var rightNode = EvaluateFromRight(rightTokens);
-            var opToken = expressionTokens[rightmostOpIndex];
-            
-            // Handle null nodes by creating appropriate literals
-            if (leftNode == null)
-                leftNode = ASTNode.MakeLiteral(new NullValue());
-            if (rightNode == null)
-                rightNode = ASTNode.MakeLiteral(new NullValue());
-            
-            return ASTNode.MakeBinaryOp(opToken.Type, leftNode, rightNode);
-        }
-        
-        /// <summary>
-        /// Handle _parse and _eval function calls
-        /// </summary>
-        private ASTNode HandleParseEvalFunction(List<Token> expressionTokens)
-        {
-            if (expressionTokens.Count < 2)
-                throw new Exception($"Parse error at {expressionTokens[0].Position}: {expressionTokens[0].Lexeme}");
-                
-            var funcToken = expressionTokens[0];
-            var argTokens = expressionTokens.GetRange(1, expressionTokens.Count - 1);
-            
-            // Parse argument using standard parser (not LRS)
-            var argNode = ParseArgumentWithStandardParser(argTokens);
-            
-            var funcCall = new ASTNode(ASTNodeType.FunctionCall);
-            funcCall.Children.Add(ASTNode.MakeVariable(funcToken.Lexeme));
-            if (argNode != null)
-                funcCall.Children.Add(argNode);
-                
-            return funcCall;
-        }
-        
-        /// <summary>
-        /// Parse argument tokens using standard parser (fallback for parse tree functions)
-        /// </summary>
-        private ASTNode? ParseArgumentWithStandardParser(List<Token> argTokens)
-        {
-            // This would need to be implemented by calling back into the main parser
-            // For now, create a simple expression from the tokens
-            if (argTokens.Count == 0)
-                return null;
-                
-            if (argTokens.Count == 1)
-                return CreateNodeFromToken(argTokens[0]);
-                
-            // For multiple tokens, this should delegate to the main parser
-            // but for now we'll create a simple structure to avoid crashes
-            // The full implementation would use the main parser pipeline
-            throw new Exception($"ParseArgumentWithStandardParser: Multiple tokens ({argTokens.Count}) not yet implemented - delegate to main parser");
-        }
-        
-        /// <summary>
-        /// Find the rightmost binary operator (LRS: all operators have same precedence)
-        /// </summary>
-        private int FindRightmostOperator(List<Token> tokens)
-        {
-            // In K LRS, all binary operators have the same precedence and are right-associative
-            // Simply find the rightmost binary operator
-            for (int i = tokens.Count - 1; i >= 0; i--)
-            {
-                if (IsBinaryOperator(tokens[i].Type))
+                var firstToken = expressionTokens[0];
+                if (LRSFunctionParser.CouldBeFunction(firstToken.Type))
                 {
-                    return i;
+                    return functionParser.ParseFunctionCall(expressionTokens);
                 }
             }
             
-            return -1;
+            // Check for monadic operations first (K LRS: monadic has lower precedence than binary)
+            if (expressionTokens.Count >= 2)
+            {
+                var firstToken = expressionTokens[0];
+                if (LRSUnaryParser.CouldBeMonadicOperator(firstToken.Type))
+                {
+                    return unaryParser.ParseMonadicOperator(expressionTokens);
+                }
+            }
+            
+            // Handle binary operations
+            return binaryParser.ParseBinaryOperation(expressionTokens);
         }
         
         /// <summary>
-        /// Check if token is a binary operator
+        /// Parse expression tokens from right to left (LRS strategy)
         /// </summary>
-        private bool IsBinaryOperator(TokenType tokenType)
+        /// <param name="expressionTokens">Tokens to parse</param>
+        /// <returns>AST node representing parsed expression</returns>
+        internal ASTNode? EvaluateFromRight(List<Token> expressionTokens)
         {
-            return VerbRegistry.IsBinaryOperatorToken(tokenType);
+            if (expressionTokens.Count == 0)
+                return null;
+                
+            if (expressionTokens.Count == 1)
+                return CreateNodeFromToken(expressionTokens[0]);
+            
+            // Try binary operation first
+            return binaryParser.ParseBinaryOperation(expressionTokens);
+        }
+        
+        /// <summary>
+        /// Parse sub-expression for unary parser (handles position parameter)
+        /// </summary>
+        /// <param name="tokens">Tokens to parse</param>
+        /// <param name="position">Reference to position parameter</param>
+        /// <returns>AST node representing parsed expression</returns>
+        internal ASTNode? ParseSubExpressionForUnary(List<Token> tokens, ref int position)
+        {
+            if (tokens.Count == 0) return null;
+            if (tokens.Count == 1) return CreateNodeFromToken(tokens[0]);
+            
+            // Try binary operation first (unary parsing is handled at main LRS level)
+            return binaryParser.ParseBinaryOperation(tokens);
         }
         
         /// <summary>
@@ -200,8 +126,34 @@ namespace K3CSharp.Parsing
             {
                 TokenType.INTEGER => ASTNode.MakeLiteral(new IntegerValue(int.Parse(token.Lexeme))),
                 TokenType.FLOAT => ASTNode.MakeLiteral(new FloatValue(double.Parse(token.Lexeme))),
-                TokenType.SYMBOL or TokenType.IDENTIFIER => ASTNode.MakeVariable(token.Lexeme),
-                TokenType.CHARACTER_VECTOR => ASTNode.MakeLiteral(new CharacterValue(token.Lexeme)),
+                TokenType.SYMBOL or TokenType.IDENTIFIER => ASTNode.MakeVariable(token.Lexeme.Trim('`')),
+                
+                // Delimiters for parse tree representation
+                TokenType.LEFT_PAREN => ASTNode.MakeLiteral(new SymbolValue("(")),
+                TokenType.RIGHT_PAREN => ASTNode.MakeLiteral(new SymbolValue(")")),
+                TokenType.LEFT_BRACKET => ASTNode.MakeLiteral(new SymbolValue("[")),
+                TokenType.RIGHT_BRACKET => ASTNode.MakeLiteral(new SymbolValue("]")),
+                TokenType.LEFT_BRACE => ASTNode.MakeLiteral(new SymbolValue("{")),
+                TokenType.RIGHT_BRACE => ASTNode.MakeLiteral(new SymbolValue("}")),
+                TokenType.COLON => ASTNode.MakeLiteral(new SymbolValue(":")),
+                TokenType.SEMICOLON => ASTNode.MakeLiteral(new SymbolValue(";")),
+                
+                // Operators that should be treated as symbols in parse trees
+                TokenType.PLUS => ASTNode.MakeLiteral(new SymbolValue("+")),
+                TokenType.MINUS => ASTNode.MakeLiteral(new SymbolValue("-")),
+                TokenType.MULTIPLY => ASTNode.MakeLiteral(new SymbolValue("*")),
+                TokenType.DIVIDE => ASTNode.MakeLiteral(new SymbolValue("%")),
+                TokenType.POWER => ASTNode.MakeLiteral(new SymbolValue("^")),
+                TokenType.MODULUS => ASTNode.MakeLiteral(new SymbolValue("!")),
+                TokenType.JOIN => ASTNode.MakeLiteral(new SymbolValue(",")),
+                TokenType.MATCH => ASTNode.MakeLiteral(new SymbolValue("~")),
+                TokenType.NEGATE => ASTNode.MakeLiteral(new SymbolValue("~")),
+                TokenType.DOLLAR => ASTNode.MakeLiteral(new SymbolValue("$")),
+                TokenType.QUESTION => ASTNode.MakeLiteral(new SymbolValue("?")),
+                TokenType.HASH => ASTNode.MakeLiteral(new SymbolValue("#")),
+                TokenType.UNDERSCORE => ASTNode.MakeLiteral(new SymbolValue("_")),
+                TokenType.GLOBAL_ASSIGNMENT => ASTNode.MakeLiteral(new SymbolValue("::")),
+                
                 _ => throw new Exception($"Unsupported token type: {token.Type}")
             };
         }
