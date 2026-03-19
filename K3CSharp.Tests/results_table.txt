@@ -45,6 +45,7 @@
 ║ lrs_function_integration_test.k                    │ {1 + 2 + 3}          │ {1 + 2 + 3}          │                      ║
 ║ lrs_bracket_parser_integration_test.k              │ (1 2 3)[0]           │ 1                    │                      ║
 ║ lrs_assignment_integration_test.k                  │ x: 1 + 2 + 3         │                      │ 6                    ║
+║ lrs_adverb_integration_test.k                      │ +/1 2 3              │ 6                    │                      ║
 ║ attribute_handle_symbol.k                          │ ~`a                  │ `a.                  │                      ║
 ║ attribute_handle_vector.k                          │ ~(`a`b`c)            │ `a.`b.`c.            │                      ║
 ║ character_single.k                                 │ "f"                  │ "f"                  │                      ║
@@ -836,7 +837,7 @@
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 806/832 tests passed (96.9%)                                                                               ║
+║ SUMMARY: 807/833 tests passed (96.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
