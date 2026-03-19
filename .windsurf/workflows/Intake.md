@@ -3,10 +3,10 @@
     - This test may be slow and you want to leave it running while you are doing other work, that is why we want to start it at the beginning. 
 [ ] Check periodically if the full comparison that was running in the background has finished running
 [ ] Update the current project plan by comparing current functionality to the functionality described in T:\\_src\\github.com\\ERufian\\vibe-docs\\ksharp\\cleaned\\*.html 
-    - Take into account that the UI and related attributes are excluded from the scope 
-    - Take into account that we want to implement a Foreign Function Interface for interoperating with .NET. 
+    - Take into account that the UI and related attributes are excluded from the scope  
 [ ] Identify if there is new functionality that is not yet described in T:\\_src\\github.com\\ERufian\\ksharp\\README.md 
 [ ] Identify if there is new functionality that is not yet described in T:\\_src\\github.com\\ERufian\\vibe-docs\\ksharp\\K3CSharp_implementation_details.md 
+[ ] Read plans in C:\\Users\\euseb\\.windsurf\\plans\\*.md that have a modification date later than the current T:\\_src\\github.com\\ERufian\\ksharp\\README.md or T:\\_src\\github.com\\ERufian\\vibe-docs\\ksharp\\K3CSharp_implementation_details.md and look at the code to determine if they resulted in new functionaity that has been implemented.
 [ ] Describe the identified new functionality from the user's perspective in T:\\_src\\github.com\\ERufian\\ksharp\\README.md. 
 [ ] Describe the identified new functionality from the developer perspective in T:\\_src\\github.com\\ERufian\\vibe-docs\\ksharp\\K3CSharp_implementation_details.md. 
 [ ] Identify if there is obsolete functionality in T:\\_src\\github.com\\ERufian\\ksharp\\README.md that should be removed
