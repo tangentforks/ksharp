@@ -298,6 +298,8 @@ namespace K3CSharp.Tests
                 ("lrs_adverb_parser_basic.k", "1 2 3 4 5"),
                 ("lrs_expression_processor_test.k", "3"),
                 ("lrs_integration_bracket.k", "8"),
+                ("lrs_full_integration_test.k", "8"),
+                ("lrs_function_integration_test.k", "{1 + 2 + 3}"),
 
                 
 
