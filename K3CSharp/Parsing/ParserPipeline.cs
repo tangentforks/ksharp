@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace K3CSharp
 {
@@ -27,6 +28,62 @@ namespace K3CSharp
             modules.Add(new BracketParser());
             modules.Add(new FunctionParser());
             modules.Add(new AssignmentParser());
+        }
+
+        /// <summary>
+        /// Main parse method that matches the Parser interface expected by test runner
+        /// </summary>
+        public ASTNode? Parse()
+        {
+            if (context.IsAtEnd())
+            {
+                return null;
+            }
+
+            var result = TryParseWithModules();
+            
+            // Handle case where TryParseWithModules returns null
+            if (result == null)
+            {
+                return null;
+            }
+
+            // Handle multiple statements separated by semicolons or newlines
+            var statements = new List<ASTNode>();
+            statements.Add(result);
+            
+            // Parse additional statements separated by semicolons or newlines
+            while (!context.IsAtEnd() && 
+                  (context.CurrentToken().Type == TokenType.SEMICOLON || 
+                   context.CurrentToken().Type == TokenType.NEWLINE))
+            {
+                context.Advance(); // Consume semicolon or newline
+                
+                // Skip empty lines
+                while (!context.IsAtEnd() && context.CurrentToken().Type == TokenType.NEWLINE)
+                {
+                    context.Advance();
+                }
+                
+                if (!context.IsAtEnd())
+                {
+                    var stmt = TryParseWithModules();
+                    if (stmt != null)
+                    {
+                        statements.Add(stmt);
+                    }
+                }
+            }
+
+            // If we have multiple statements, create a block
+            if (statements.Count > 1)
+            {
+                var block = new ASTNode(ASTNodeType.Block);
+                block.Children.AddRange(statements);
+                return block;
+            }
+
+            return result;
         }
 
         /// <summary>

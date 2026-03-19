@@ -2612,7 +2612,7 @@ namespace K3CSharp.Tests
 
                             var tokens = lexer.Tokenize();
 
-                            var parser = new Parser(tokens, accumulatedLine);
+                            var parser = new HybridParser(tokens, accumulatedLine);
 
                             var ast = parser.Parse();
 
