@@ -275,6 +275,24 @@ namespace K3CSharp
                 // Parse bracket contents directly to avoid recursion
                 context.Advance(); // Consume '['
                 
+                // Try LRS-based parsing first (simplified integration)
+                try
+                {
+                    var lrsResult = TestLRSIntegration(context);
+                    if (lrsResult != null)
+                    {
+                        if (!context.Match(TokenType.RIGHT_BRACKET))
+                        {
+                            throw new Exception("Expected ']' after bracket expression");
+                        }
+                        return lrsResult;
+                    }
+                }
+                catch
+                {
+                    // Fall back to original parsing if LRS fails
+                }
+                
                 // Simple case: just parse the contents as a single expression
                 var expressionParser = new ExpressionParser();
                 var result = expressionParser.Parse(context);
@@ -295,6 +313,109 @@ namespace K3CSharp
             }
             
             throw new Exception("Expected expression in brackets");
+        }
+
+        /// <summary>
+        /// Test LRS Integration using simplified approach without circular dependencies
+        /// </summary>
+        private ASTNode? TestLRSIntegration(ParseContext context)
+        {
+            // Extract tokens from current position to matching ]
+            var tokens = new List<Token>();
+            var depth = 1;
+            var startPos = context.Current;
+            
+            while (context.Current < context.Tokens.Count && depth > 0)
+            {
+                var token = context.Tokens[context.Current];
+                tokens.Add(token);
+                
+                if (token.Type == TokenType.LEFT_BRACKET) depth++;
+                else if (token.Type == TokenType.RIGHT_BRACKET) depth--;
+                
+                context.Current++;
+            }
+            
+            // Remove the final ] from tokens
+            if (tokens.Count > 0 && tokens.Last().Type == TokenType.RIGHT_BRACKET)
+            {
+                tokens.RemoveAt(tokens.Count - 1);
+            }
+            
+            // Reset position for LRS processing
+            context.Current = startPos;
+            
+            // Use simplified parsing that demonstrates LRS concept
+            if (tokens.Count == 0)
+                return null;
+                
+            if (tokens.Count == 1)
+            {
+                // Single token - create atomic node
+                return CreateAtomicNode(tokens[0]);
+            }
+            
+            // Multiple tokens - try simple unary operator detection
+            if (CouldBeUnaryOperator(tokens[0].Type))
+            {
+                var unaryTokens = tokens.Skip(1).ToList();
+                if (unaryTokens.Count == 1)
+                {
+                    var operand = CreateAtomicNode(unaryTokens[0]);
+                    if (operand != null)
+                    {
+                        return CreateUnaryOperatorNode(tokens[0].Type, operand);
+                    }
+                }
+            }
+            
+            // Fall back to expression parsing for complex cases
+            var expressionParser = new ExpressionParser();
+            var tempContext = new ParseContext(tokens, "");
+            return expressionParser.Parse(tempContext);
+        }
+        
+        /// <summary>
+        /// Create atomic node from token (simplified LRS approach)
+        /// </summary>
+        private ASTNode? CreateAtomicNode(Token token)
+        {
+            switch (token.Type)
+            {
+                case TokenType.INTEGER:
+                    return ASTNode.MakeLiteral(new IntegerValue(int.Parse(token.Lexeme)));
+                case TokenType.FLOAT:
+                    return ASTNode.MakeLiteral(new FloatValue(double.Parse(token.Lexeme)));
+                case TokenType.CHARACTER:
+                    return ASTNode.MakeLiteral(new CharacterValue(token.Lexeme[0].ToString()));
+                case TokenType.SYMBOL:
+                    return ASTNode.MakeLiteral(new SymbolValue(token.Lexeme));
+                case TokenType.NULL:
+                    return ASTNode.MakeLiteral(new NullValue());
+                default:
+                    return null;
+            }
+        }
+        
+        /// <summary>
+        /// Check if token could be unary operator
+        /// </summary>
+        private bool CouldBeUnaryOperator(TokenType tokenType)
+        {
+            return tokenType == TokenType.PLUS || tokenType == TokenType.MINUS ||
+                   tokenType == TokenType.MULTIPLY || tokenType == TokenType.DIVIDE ||
+                   tokenType == TokenType.MODULUS || tokenType == TokenType.POWER;
+        }
+        
+        /// <summary>
+        /// Create unary operator node (simplified LRS approach)
+        /// </summary>
+        private ASTNode CreateUnaryOperatorNode(TokenType operatorType, ASTNode operand)
+        {
+            var node = new ASTNode(ASTNodeType.BinaryOp);
+            node.Value = new SymbolValue(operatorType.ToString().ToLower());
+            node.Children.Add(operand);
+            return node;
         }
 
         private ASTNode? ParseExpressionInGrouping(ParseContext context)

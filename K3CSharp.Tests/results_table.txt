@@ -37,8 +37,10 @@
 ║ atom_scalar.k                                      │ @42                  │ 1                    │                      ║
 ║ atom_vector.k                                      │ @1 2 3               │ 0                    │                      ║
 ║ lrs_atomic_parser_basic.k                          │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
-║ lrs_adverb_parser_each.k                           │ (1 2 3) %/ 2         │ 2                    │ 0.5 1 1.5            ║
+║ lrs_adverb_parser_each.k                           │ (1 2 3) %/ 2         │ 2                    │ 0.5 1.0 1.5          ║
 ║ lrs_adverb_parser_basic.k                          │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
+║ lrs_expression_processor_test.k                    │ 1 + 2                │ 3                    │                      ║
+║ lrs_integration_bracket.k                          │ +[3; 5]              │ 8                    │                      ║
 ║ attribute_handle_symbol.k                          │ ~`a                  │ `a.                  │                      ║
 ║ attribute_handle_vector.k                          │ ~(`a`b`c)            │ `a.`b.`c.            │                      ║
 ║ character_single.k                                 │ "f"                  │ "f"                  │                      ║
@@ -830,7 +832,7 @@
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 801/826 tests passed (97.0%)                                                                               ║
+║ SUMMARY: 803/828 tests passed (97.0%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -847,7 +849,7 @@ Actual: Error: Cannot add Function and Integer
 ──────────────────────────────────────────────────────────────────────────
 Test: lrs_adverb_parser_each.k
 Input: (1 2 3) %/ 2
-Expected: 0.5 1 1.5
+Expected: 0.5 1.0 1.5
 Actual: 2
 ──────────────────────────────────────────────────────────────────────────
 Test: named_function_over.k

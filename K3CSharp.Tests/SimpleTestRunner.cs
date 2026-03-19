@@ -296,6 +296,8 @@ namespace K3CSharp.Tests
                 ("lrs_atomic_parser_basic.k", "1 2 3 4 5"),
                 ("lrs_adverb_parser_each.k", "0.5 1.0 1.5"),
                 ("lrs_adverb_parser_basic.k", "1 2 3 4 5"),
+                ("lrs_expression_processor_test.k", "3"),
+                ("lrs_integration_bracket.k", "8"),
 
                 
 
