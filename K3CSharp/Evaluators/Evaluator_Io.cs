@@ -103,36 +103,6 @@ public partial class Evaluator
         return new VectorValue(charElements, -3);
     }
     
-    private string EscapeString(string input)
-    {
-        var result = new System.Text.StringBuilder();
-        foreach (char c in input)
-        {
-            switch (c)
-            {
-                case '\n':
-                    result.Append("\\n");
-                    break;
-                case '\t':
-                    result.Append("\\t");
-                    break;
-                case '\r':
-                    result.Append("\\r");
-                    break;
-                case '"':
-                    result.Append("\\\"");
-                    break;
-                case '\\':
-                    result.Append("\\\\");
-                    break;
-                default:
-                    result.Append(c);
-                    break;
-            }
-        }
-        return result.ToString();
-    }
-    
     // Stub implementations for new I/O verbs
     private K3Value ReadText(K3Value operand)
     {

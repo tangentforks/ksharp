@@ -682,28 +682,6 @@ namespace K3CSharp
             return ASTNode.MakeVector(elements);
         }
 
-        private List<ASTNode> ParseBracketArguments(ParseContext context)
-        {
-            var args = new List<ASTNode>();
-            
-            do
-            {
-                var arg = ParseBracketArgument(context);
-                if (arg != null)
-                {
-                    args.Add(arg);
-                }
-                
-                // Skip empty lines
-                while (!context.IsAtEnd() && context.CurrentToken().Type == TokenType.NEWLINE)
-                {
-                    context.Match(TokenType.NEWLINE);
-                }
-            } while (!context.IsAtEnd() && context.Match(TokenType.SEMICOLON));
-            
-            return args;
-        }
-
         private ASTNode ParseFunctionBody(ParseContext context)
         {
             var parameters = new List<string>();
