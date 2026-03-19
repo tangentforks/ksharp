@@ -46,6 +46,9 @@
 ║ lrs_bracket_parser_integration_test.k              │ (1 2 3)[0]           │ 1                    │                      ║
 ║ lrs_assignment_integration_test.k                  │ x: 1 + 2 + 3         │ Error: Cannot a...   │ 6                    ║
 ║ lrs_adverb_integration_test.k                      │ +/1 2 3              │ 6                    │                      ║
+║ debug_adverb_each.k                                │ (1 2 3) * 2          │ 2 4 6                │                      ║
+║ debug_slash_each.k                                 │ (1 2 3) %/ 2         │ 2                    │ 0.5 1 1.5            ║
+║ debug_percent_slash_simple.k                       │ 1 2 3 %/ 2           │ 1 2 3                │ 0.5 1 1.5            ║
 ║ attribute_handle_symbol.k                          │ ~`a                  │ `a.                  │                      ║
 ║ attribute_handle_vector.k                          │ ~(`a`b`c)            │ `a.`b.`c.            │                      ║
 ║ character_single.k                                 │ "f"                  │ "f"                  │                      ║
@@ -839,7 +842,7 @@ inner: {[y...   │ 140                  ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 611/833 tests passed (73.3%)                                                                               ║
+║ SUMMARY: 612/836 tests passed (73.2%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -898,6 +901,16 @@ Test: lrs_assignment_integration_test.k
 Input: x: 1 + 2 + 3
 Expected: 6
 Actual: Error: Cannot add Null and Integer
+──────────────────────────────────────────────────────────────────────────
+Test: debug_slash_each.k
+Input: (1 2 3) %/ 2
+Expected: 0.5 1 1.5
+Actual: 2
+──────────────────────────────────────────────────────────────────────────
+Test: debug_percent_slash_simple.k
+Input: 1 2 3 %/ 2
+Expected: 0.5 1 1.5
+Actual: 1 2 3
 ──────────────────────────────────────────────────────────────────────────
 Test: complex_function.k
 Input: distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2}

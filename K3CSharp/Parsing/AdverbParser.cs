@@ -35,6 +35,7 @@ namespace K3CSharp
             var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
             adverbNode.Value = new SymbolValue(adverbType.ToString());
             adverbNode.Children.Add(leftArg); // verb
+            adverbNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(0))); // left argument (default for dyadic adverbs)
             if (rightArg != null) adverbNode.Children.Add(rightArg); // right argument
             
             return adverbNode;

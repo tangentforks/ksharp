@@ -303,6 +303,9 @@ namespace K3CSharp.Tests
                 ("lrs_bracket_parser_integration_test.k", "1"),
                 ("lrs_assignment_integration_test.k", "6"),
                 ("lrs_adverb_integration_test.k", "6"),
+                ("debug_adverb_each.k", "2 4 6"),
+                ("debug_slash_each.k", "0.5 1 1.5"),
+                ("debug_percent_slash_simple.k", "0.5 1 1.5"),
 
                 
 
