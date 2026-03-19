@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using K3CSharp.Parsing;
 
 namespace K3CSharp
 {
@@ -119,6 +120,20 @@ namespace K3CSharp
             }
             
             // Use expression parser for bracket arguments
+            // Try LRS Expression Processor integration first
+            try
+            {
+                var lrsResult = TestLRSExpressionProcessor(context);
+                if (lrsResult != null)
+                {
+                    return lrsResult;
+                }
+            }
+            catch
+            {
+                // Fall back to original parsing if LRS fails
+            }
+            
             var expressionParser = new ExpressionParser();
             if (expressionParser.CanHandle(context.CurrentToken().Type))
             {
@@ -280,6 +295,47 @@ namespace K3CSharp
             
             var bracketParser = new BracketParser();
             return bracketParser.Parse(context);
+        }
+        
+        /// <summary>
+        /// Test LRS Expression Processor integration for bracket arguments
+        /// </summary>
+        private ASTNode? TestLRSExpressionProcessor(ParseContext context)
+        {
+            // Extract tokens from current position to matching ]
+            var tokens = new List<Token>();
+            var depth = 1;
+            var startPos = context.Current;
+            
+            while (context.Current < context.Tokens.Count && depth > 0)
+            {
+                var token = context.Tokens[context.Current];
+                tokens.Add(token);
+                
+                if (token.Type == TokenType.LEFT_BRACKET) depth++;
+                else if (token.Type == TokenType.RIGHT_BRACKET) depth--;
+                
+                context.Current++;
+            }
+            
+            // Remove the final ] from tokens
+            if (tokens.Count > 0 && tokens.Last().Type == TokenType.RIGHT_BRACKET)
+            {
+                tokens.RemoveAt(tokens.Count - 1);
+            }
+            
+            // Reset position for LRS processing
+            context.Current = startPos;
+            
+            // Use factory to create LRS Expression Processor with dependency injection
+            var processor = LRSParserFactory.CreateExpressionProcessor(tokens, false);
+            var position = 0;
+            var result = processor.ProcessExpression(ref position);
+            
+            // Update context position to after processed tokens
+            context.Current = startPos + position;
+            
+            return result;
         }
     }
 }
