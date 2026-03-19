@@ -9,7 +9,6 @@ namespace K3CSharp
     class Program
     {
         private static readonly List<string> commandHistory = new List<string>();
-        //private static int historyIndex = -1;
 
         // Sentinel used in --mcp mode for reliable output framing.
         public const string McpSentinel = "\x01\x02";

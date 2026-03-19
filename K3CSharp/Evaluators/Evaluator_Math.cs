@@ -650,17 +650,6 @@ namespace K3CSharp
             return new VectorValue(resultRows);
         }
         
-        private VectorValue CreateVectorFromColumn(VectorValue matrix, int colIndex)
-        {
-            var columnElements = new List<K3Value>();
-            foreach (var row in matrix.Elements)
-            {
-                var rowVec = (VectorValue)row;
-                columnElements.Add(rowVec.Elements[colIndex]);
-            }
-            return new VectorValue(columnElements);
-        }
-        
         private double[][] TransposeMatrix(double[][] matrix)
         {
             int rows = matrix.Length;

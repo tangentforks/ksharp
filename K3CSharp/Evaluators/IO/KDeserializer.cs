@@ -77,13 +77,6 @@ namespace K3CSharp
             return new SymbolValue(Encoding.UTF8.GetString(bytes.ToArray()));
         }
         
-        private string ReadSymbol(KSerializationReader reader, int length)
-        {
-            var symbolLength = length - 8; // Subtract header (type_id + length + subtype)
-            var symbolBytes = reader.ReadBytes(symbolLength);
-            return Encoding.UTF8.GetString(symbolBytes);
-        }
-        
         private object DeserializeIntegerVector(KSerializationReader reader)
         {
             var elementCount = reader.ReadInt32();
@@ -144,13 +137,6 @@ namespace K3CSharp
             return new VectorValue(vectorElements);
         }
         
-        private object DeserializeListEntry(KSerializationReader reader)
-        {
-            // For dictionary entries, we don't want the list-level padding logic
-            // Pass isDictionaryContext=true to DeserializeValue so it passes it to DeserializeList
-            return DeserializeValue(reader, true);
-        }
-
         private object DeserializeList(KSerializationReader reader, bool isInMixedList = false)
         {
             // Note: typeId (listFlag) was already read by DeserializeValue

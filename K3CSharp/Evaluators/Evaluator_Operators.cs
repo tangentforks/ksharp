@@ -1405,11 +1405,6 @@ namespace K3CSharp
         }
 
         // Binary versions for operators that can be both unary and binary
-        private K3Value CountBinary(K3Value a, K3Value b)
-        {
-            return Count(a);
-        }
-
         private bool IsScalar(K3Value value)
         {
             return value is IntegerValue || value is LongValue || value is FloatValue || 

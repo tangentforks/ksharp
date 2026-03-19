@@ -576,175 +576,6 @@ namespace K3CSharp
             return elements[0];
         }
 
-        private ASTNode ParseParenthesizedForElement()
-        {
-            // Parse a parenthesized expression as a single element, handling internal semicolons properly
-            // Reuse the existing parenthesized parsing logic from ParsePrimary
-            
-            // Check if this is a semicolon-separated vector
-            if (!Match(TokenType.RIGHT_PAREN))
-            {
-                // Look ahead to see if we have semicolons
-                var hasSemicolons = false;
-                var tokenCount = 0;
-                var currentPos = current;
-                var parenLevel = 1; // Start with 1 because we're already inside one (
-                
-                while (!IsAtEnd() && parenLevel > 0)
-                {
-                    if (CurrentToken().Type == TokenType.LEFT_PAREN)
-                    {
-                        parenLevel++;
-                    }
-                    else if (CurrentToken().Type == TokenType.RIGHT_PAREN)
-                    {
-                        parenLevel--;
-                    }
-                    else if (CurrentToken().Type == TokenType.SEMICOLON && parenLevel == 1)
-                    {
-                        hasSemicolons = true;
-                        break;
-                    }
-                    Advance();
-                    tokenCount++;
-                    if (tokenCount > 20) break; // Safety check
-                }
-                
-                // Reset position
-                current = currentPos;
-                
-                if (hasSemicolons)
-                {
-                    // Parse semicolon-separated vector
-                    var elements = new List<ASTNode>();
-                    
-                    // Check if vector starts with empty position
-                    if (CurrentToken().Type == TokenType.SEMICOLON)
-                    {
-                        elements.Add(ASTNode.MakeLiteral(new NullValue()));
-                        Match(TokenType.SEMICOLON);
-                        
-                        // Handle multiple consecutive semicolons at start
-                        while (CurrentToken().Type == TokenType.SEMICOLON)
-                        {
-                            elements.Add(ASTNode.MakeLiteral(new NullValue()));
-                            Match(TokenType.SEMICOLON);
-                        }
-                    }
-                    
-                    // Parse first element if not at end
-                    if (CurrentToken().Type != TokenType.RIGHT_PAREN)
-                    {
-                        var beforeParsePos = current;
-                        var expr = ParseExpression();
-                        
-                        // If we didn't make progress, break to avoid infinite loop
-                        if (current == beforeParsePos)
-                        {
-                            elements.Add(ASTNode.MakeLiteral(new NullValue()));
-                        }
-                        else if (expr != null)
-                        {
-                            elements.Add(expr);
-                        }
-                        else
-                        {
-                            elements.Add(ASTNode.MakeLiteral(new NullValue()));
-                        }
-                    }
-                    
-                    // Parse remaining elements separated by semicolons
-                    while (Match(TokenType.SEMICOLON))
-                    {
-                        // Handle empty position (consecutive semicolons)
-                        if (CurrentToken().Type == TokenType.RIGHT_PAREN)
-                        {
-                            elements.Add(ASTNode.MakeLiteral(new NullValue()));
-                        }
-                        else
-                        {
-                            var beforeParsePos = current;
-                            var expr = ParseExpression();
-                            
-                            // If we didn't make progress, break to avoid infinite loop
-                            if (current == beforeParsePos)
-                            {
-                                elements.Add(ASTNode.MakeLiteral(new NullValue()));
-                            }
-                            else if (expr != null)
-                            {
-                                elements.Add(expr);
-                            }
-                            else
-                            {
-                                elements.Add(ASTNode.MakeLiteral(new NullValue()));
-                            }
-                        }
-                    }
-                    
-                    if (!Match(TokenType.RIGHT_PAREN))
-                    {
-                        throw new Exception("Expected ')' after expression");
-                    }
-                    
-                    // Return the vector
-                    return ASTNode.MakeVector(elements);
-                }
-                else
-                {
-                    // Parse space-separated vector
-                    var expression = ParseExpression();
-                    
-                    if (!Match(TokenType.RIGHT_PAREN))
-                    {
-                        throw new Exception("Expected ')' after expression");
-                    }
-                    
-                    // If the expression is a vector, keep it as a vector
-                    // Otherwise, return the expression as-is
-                    return expression ?? ASTNode.MakeLiteral(new NullValue());
-                }
-            }
-            else
-            {
-                // Empty parentheses - create empty vector
-                return ASTNode.MakeVector(new List<ASTNode>());
-            }
-        }
-
-        private Token? MatchAndGetOperator()
-        {
-            if (IsAtEnd()) return null;
-            
-            var token = CurrentToken();
-            if (IsBinaryOperator(token.Type))
-            {
-                Advance();
-                return token;
-            }
-            return null;
-        }
-
-        private ASTNode SafeParsePrimary()
-        {
-            var result = ParsePrimary();
-            if (result == null)
-            {
-                throw new Exception("Expected primary expression but found statement separator");
-            }
-            return result;
-        }
-
-        private ASTNode SafeParseExpression()
-        {
-            var result = ParseExpression();
-            if (result == null)
-            {
-                throw new Exception("Expected expression but found statement separator");
-            }
-            return result;
-        }
-
         private Token CurrentToken()
         {
             if (IsAtEnd()) return new Token(TokenType.EOF, "", 0);
@@ -770,36 +601,9 @@ namespace K3CSharp
             return tokens[targetIndex];
         }
 
-        private bool IsScalar(ASTNode node)
-        {
-            return node.Type == ASTNodeType.Literal && 
-                   (node.Value is IntegerValue || node.Value is LongValue || 
-                    node.Value is FloatValue || node.Value is CharacterValue || 
-                    node.Value is SymbolValue || node.Value is NullValue);
-        }
-
         private bool IsBinaryOperator(TokenType type)
         {
             return VerbRegistry.IsBinaryOperator(type);
-        }
-
-        private bool IsUnaryOperatorContext()
-        {
-            // Check if we're at the start of an expression or after a binary operator
-            // This is a simplified check - in a full implementation we'd need more sophisticated parsing
-            return CurrentToken().Type == TokenType.EOF ||
-                   CurrentToken().Type == TokenType.SEMICOLON ||
-                   CurrentToken().Type == TokenType.NEWLINE ||
-                   CurrentToken().Type == TokenType.RIGHT_PAREN ||
-                   CurrentToken().Type == TokenType.RIGHT_BRACE ||
-                   CurrentToken().Type == TokenType.RIGHT_BRACKET ||
-                   CurrentToken().Type == TokenType.ASSIGNMENT;
-        }
-
-        private void Backtrack()
-        {
-            if (current > 0)
-                current--;
         }
 
         public ASTNode? ParseExpression()
@@ -1409,17 +1213,6 @@ namespace K3CSharp
                    type == TokenType.TYPE ||
                    type == TokenType.STRING_REPRESENTATION;
         }
-
-        /// Get the preferred arity for an operator based on context
-        /// </summary>
-        private int GetPreferredArity(TokenType type, bool hasLeftOperand)
-        {
-            // K doesn't use precedence by type - all operators are right-associative
-            // Default to dyadic (arity 2) for binary operators
-            return 2;
-        }
-
-                
 
         private bool IsAtEnd()
         {

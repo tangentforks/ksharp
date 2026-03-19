@@ -863,23 +863,6 @@ namespace K3CSharp
             return node;
         }
 
-        private static bool HasProjectionStructure(ASTNode node)
-        {
-            // A projection structure is identified by having vector children from bracket parsing
-            if (node.Children.Count == 0) return false;
-            
-            foreach (var child in node.Children)
-            {
-                // If we have a vector child, it's likely from bracket parsing with semicolons
-                if (child.Type == ASTNodeType.Vector)
-                {
-                    return true;
-                }
-            }
-            
-            return false;
-        }
-
         private ASTNode ParseUnaryMinus(ParseContext context)
         {
             context.Advance();

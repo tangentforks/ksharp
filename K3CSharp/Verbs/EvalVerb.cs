@@ -81,23 +81,6 @@ namespace K3CSharp.Verbs
         }
         
         /// <summary>
-        /// Validate input is proper parse tree structure
-        /// </summary>
-        private static void ValidateParseTree(K3Value parseTree)
-        {
-            if (parseTree is not VectorValue vector)
-                throw new Exception("_eval: Input must be a vector");
-                
-            var elements = vector.Elements;
-            if (elements.Count == 0)
-                throw new Exception("_eval: Parse tree cannot be empty");
-                
-            // First element should be a verb (symbol)
-            if (elements[0] is not SymbolValue && elements[0] is not CharacterValue)
-                throw new Exception("_eval: Parse tree must start with a verb");
-        }
-        
-        /// <summary>
         /// Un-enlist 1-item vectors as required by the spec
         /// </summary>
         private static K3Value UnenlistIfSingleElement(K3Value value)
@@ -302,14 +285,6 @@ namespace K3CSharp.Verbs
             
             // Base case: return null for unimplemented node types instead of throwing
             return new NullValue();
-        }
-        
-        private static K3Value First(K3Value a)
-        {
-            if (a is VectorValue vecA && vecA.Elements.Count > 0)
-                return vecA.Elements[0];
-            
-            return a; // For scalars, return the value itself
         }
     }
 }

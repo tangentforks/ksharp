@@ -439,11 +439,11 @@ namespace K3CSharp
             // Handle single-argument operators first
             if (opName == "_ci")
             {
-                return CiFunction(left);
+                return Ci(left, new NullValue());
             }
             if (opName == "_ic")
             {
-                return IcFunction(left);
+                return Ic(left, new NullValue());
             }
 
             // Use dictionary lookup for standard binary operators
@@ -602,8 +602,8 @@ namespace K3CSharp
                     "_ltime" => LtimeFunction(operand),
                     "_bd" => BdFunction(operand),
                     "_db" => DbFunction(operand),
-                    "_ci" => CiFunction(operand),
-                    "_ic" => IcFunction(operand),
+                    "_ci" => Ci(operand, new NullValue()),
+                    "_ic" => Ic(operand, new NullValue()),
                     "_v" => VarFunction(operand),
                     "_i" => IndexFunction(operand),
                     "_f" => FunctionFunction(operand),
@@ -1781,10 +1781,10 @@ namespace K3CSharp
                     throw new Exception("_tanh requires 1 argument");
                 // Database functions
                 case "_ic":
-                    if (arguments.Count == 1) return IcFunction(arguments[0]);
+                    if (arguments.Count == 1) return Ic(arguments[0], new NullValue());
                     throw new Exception("_ic requires 1 argument");
                 case "_ci":
-                    if (arguments.Count == 1) return CiFunction(arguments[0]);
+                    if (arguments.Count == 1) return Ci(arguments[0], new NullValue());
                     throw new Exception("_ci requires 1 argument");
                 case "_val":
                     if (arguments.Count == 1) return ValFunction(arguments[0]);
@@ -3583,14 +3583,6 @@ namespace K3CSharp
                 ValueType.Vector => obj is VectorValue vv ? vv.Elements.Count.GetHashCode() : 0,
                 _ => obj.ToString().GetHashCode()
             };
-        }
-
-        private K3Value First(K3Value a)
-        {
-            if (a is VectorValue vecA && vecA.Elements.Count > 0)
-                return vecA.Elements[0];
-            
-            return a; // For scalars, return the value itself
         }
     }
 }

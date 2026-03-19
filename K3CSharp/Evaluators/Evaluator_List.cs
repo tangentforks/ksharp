@@ -244,13 +244,6 @@ namespace K3CSharp
         }
 
         // Database and system functions (placeholders)
-        private K3Value DvFunction(K3Value operand)
-        {
-            // _dv function should be handled as dyadic in binary operations
-            // This unary case should not be reached in normal operation
-            throw new Exception("_dv (delete by value) function requires two arguments - use infix notation: x _dv y");
-        }
-
         private K3Value Dv(K3Value left, K3Value right)
         {
             // _dv (Delete by Value) function
@@ -293,13 +286,6 @@ namespace K3CSharp
                     return new VectorValue(new List<K3Value>()); // Empty vector
                 }
             }
-        }
-
-        private K3Value DiFunction(K3Value operand)
-        {
-            // _di function should be handled as dyadic in binary operations
-            // This unary case should not be reached in normal operation
-            throw new Exception("_di (delete by index) function requires two arguments - use infix notation: x _di y");
         }
 
         private K3Value Di(K3Value left, K3Value right)
@@ -421,13 +407,6 @@ namespace K3CSharp
             {
                 throw new Exception("_di: index must be an integer");
             }
-        }
-
-        private K3Value SvFunction(K3Value operand)
-        {
-            // _sv function should be handled as dyadic in binary operations
-            // This unary case should not be reached in normal operation
-            throw new Exception("_sv (scalar from vector) function requires two arguments - use infix notation: x _sv y");
         }
 
         private K3Value Sv(K3Value left, K3Value right)
@@ -628,39 +607,6 @@ namespace K3CSharp
             return new VectorValue(digits.Select(d => (K3Value)new IntegerValue(d)).ToList());
         }
 
-        private K3Value CiFunction(K3Value operand)
-        {
-            // _ci (character from integer) function
-            // Monadic verb: _ci x
-            
-            if (operand is IntegerValue intVal)
-            {
-                // Single integer case
-                return CiSingle((int)intVal.Value);
-            }
-            else if (operand is VectorValue vec)
-            {
-                // Vector case - convert each integer to character
-                var results = new List<K3Value>();
-                foreach (var element in vec.Elements)
-                {
-                    if (element is IntegerValue innerIntVal)
-                    {
-                        results.Add(CiSingle((int)innerIntVal.Value));
-                    }
-                    else
-                    {
-                        throw new Exception("_ci: all elements must be integers");
-                    }
-                }
-                return new VectorValue(results);
-            }
-            else
-            {
-                throw new Exception("_ci: operand must be integer or integer vector");
-            }
-        }
-
         private K3Value Ci(K3Value left, K3Value right)
         {
             // _ci (character from integer) function
@@ -706,53 +652,6 @@ namespace K3CSharp
             // Convert to unsigned byte to get proper ASCII behavior
             var charValue = (char)(intValue & 0xFF);
             return new CharacterValue(charValue.ToString());
-        }
-
-        private K3Value IcFunction(K3Value operand)
-        {
-            // _ic (integer from character) function
-            // Monadic verb: _ic x
-            
-            if (operand is CharacterValue charVal)
-            {
-                // Single character case
-                if (charVal.Value.Length == 1)
-                {
-                    char c = charVal.Value[0];  // Get first character
-                    return IcSingle(c);
-                }
-                else
-                    throw new Exception("_ic: operand must be a single character");
-            }
-            else if (operand is VectorValue vec)
-            {
-                // Vector case - convert each character to integer
-                var results = new List<K3Value>();
-                foreach (var element in vec.Elements)
-                {
-                    if (element is CharacterValue innerCharVal)
-                    {
-                        if (innerCharVal.Value.Length == 1)
-                        {
-                            char c = innerCharVal.Value[0];
-                            results.Add(IcSingle(c));
-                        }
-                        else
-                        {
-                            throw new Exception("_ic: all elements must be single characters");
-                        }
-                    }
-                    else
-                    {
-                        throw new Exception("_ic: all elements must be characters");
-                    }
-                }
-                return new VectorValue(results);
-            }
-            else
-            {
-                throw new Exception("_ic: operand must be character or character vector");
-            }
         }
 
         private K3Value Ic(K3Value left, K3Value right)
@@ -893,10 +792,6 @@ namespace K3CSharp
                 return new VectorValue(new List<K3Value>(), -1); // Empty integer vector
             else
                 return new VectorValue(indices.Select(i => new IntegerValue(i)).Cast<K3Value>().ToList());
-        }
-        private K3Value SsrFunction(K3Value operand)
-        {
-            throw new Exception("_ssr (string search and replace) operation reserved for future use");
         }
 
         private K3Value GetenvFunction(K3Value operand)

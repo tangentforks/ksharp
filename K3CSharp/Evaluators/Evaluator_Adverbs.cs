@@ -87,8 +87,8 @@ namespace K3CSharp
                 "~" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue)) 
                     ? AttributeHandle(operand) 
                     : LogicalNegate(operand),
-                "_ci" => CiFunction(operand),
-                "_ic" => IcFunction(operand),
+                "_ci" => Ci(operand, new NullValue()),
+                "_ic" => Ci(operand, new NullValue()),
                 _ => throw new Exception($"Unknown unary verb: {verbName}")
             };
         }
