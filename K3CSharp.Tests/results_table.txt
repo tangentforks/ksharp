@@ -44,6 +44,7 @@
 ║ lrs_full_integration_test.k                        │ +[3; 5]              │ 8                    │                      ║
 ║ lrs_function_integration_test.k                    │ {1 + 2 + 3}          │ {1 + 2 + 3}          │                      ║
 ║ lrs_bracket_parser_integration_test.k              │ (1 2 3)[0]           │ 1                    │                      ║
+║ lrs_assignment_integration_test.k                  │ x: 1 + 2 + 3         │                      │ 6                    ║
 ║ attribute_handle_symbol.k                          │ ~`a                  │ `a.                  │                      ║
 ║ attribute_handle_vector.k                          │ ~(`a`b`c)            │ `a.`b.`c.            │                      ║
 ║ character_single.k                                 │ "f"                  │ "f"                  │                      ║
@@ -835,7 +836,7 @@
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 806/831 tests passed (97.0%)                                                                               ║
+║ SUMMARY: 806/832 tests passed (96.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -854,6 +855,11 @@ Test: lrs_adverb_parser_each.k
 Input: (1 2 3) %/ 2
 Expected: 0.5 1.0 1.5
 Actual: 2
+──────────────────────────────────────────────────────────────────────────
+Test: lrs_assignment_integration_test.k
+Input: x: 1 + 2 + 3
+Expected: 6
+Actual: 
 ──────────────────────────────────────────────────────────────────────────
 Test: named_function_over.k
 Input: f:{x*%y};f/10 20 30

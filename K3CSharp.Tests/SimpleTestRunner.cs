@@ -301,6 +301,7 @@ namespace K3CSharp.Tests
                 ("lrs_full_integration_test.k", "8"),
                 ("lrs_function_integration_test.k", "{1 + 2 + 3}"),
                 ("lrs_bracket_parser_integration_test.k", "1"),
+                ("lrs_assignment_integration_test.k", "6"),
 
                 
 
