@@ -607,15 +607,9 @@ namespace K3CSharp
             return new VectorValue(digits.Select(d => (K3Value)new IntegerValue(d)).ToList());
         }
 
-        private K3Value Ci(K3Value left, K3Value right)
+        private K3Value Ci(K3Value left)
         {
-            // _ci (character from integer) function
-            // Left argument is integer(s), right argument is unused (should be null or 0)
-            
-            if (right != null && right.Type != ValueType.Null)
-            {
-                throw new Exception("_ci: right argument should be null or 0");
-            }
+            // _ci (character from integer) function - unary version
             
             if (left is IntegerValue leftInt)
             {
@@ -628,20 +622,20 @@ namespace K3CSharp
                 var results = new List<K3Value>();
                 foreach (var element in leftVec.Elements)
                 {
-                    if (element is IntegerValue intVal)
+                    if (element is IntegerValue innerIntVal)
                     {
-                        results.Add(CiSingle(intVal.Value));
+                        results.Add(CiSingle((int)innerIntVal.Value));
                     }
                     else
                     {
-                        throw new Exception("_ci: all elements in left argument must be integers");
+                        throw new Exception("_ci: all elements must be integers");
                     }
                 }
                 return new VectorValue(results);
             }
             else
             {
-                throw new Exception("_ci: left argument must be integer or integer vector");
+                throw new Exception("_ci: operand must be integer or integer vector");
             }
         }
         
@@ -654,15 +648,9 @@ namespace K3CSharp
             return new CharacterValue(charValue.ToString());
         }
 
-        private K3Value Ic(K3Value left, K3Value right)
+        private K3Value Ic(K3Value left)
         {
-            // _ic (integer from character) function
-            // Left argument is character(s), right argument is unused (should be null or 0)
-            
-            if (right != null && right.Type != ValueType.Null)
-            {
-                throw new Exception("_ic: right argument should be null or 0");
-            }
+            // _ic (integer from character) function - unary version
             
             if (left is CharacterValue leftChar)
             {

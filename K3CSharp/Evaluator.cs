@@ -439,11 +439,11 @@ namespace K3CSharp
             // Handle single-argument operators first
             if (opName == "_ci")
             {
-                return Ci(left, new NullValue());
+                return Ci(left);
             }
             if (opName == "_ic")
             {
-                return Ic(left, new NullValue());
+                return Ic(left);
             }
 
             // Use dictionary lookup for standard binary operators
@@ -602,8 +602,8 @@ namespace K3CSharp
                     "_ltime" => LtimeFunction(operand),
                     "_bd" => BdFunction(operand),
                     "_db" => DbFunction(operand),
-                    "_ci" => Ci(operand, new NullValue()),
-                    "_ic" => Ic(operand, new NullValue()),
+                    "_ci" => Ci(operand),
+                    "_ic" => Ic(operand),
                     "_v" => VarFunction(operand),
                     "_i" => IndexFunction(operand),
                     "_f" => FunctionFunction(operand),
@@ -1781,10 +1781,10 @@ namespace K3CSharp
                     throw new Exception("_tanh requires 1 argument");
                 // Database functions
                 case "_ic":
-                    if (arguments.Count == 1) return Ic(arguments[0], new NullValue());
+                    if (arguments.Count == 1) return Ic(arguments[0]);
                     throw new Exception("_ic requires 1 argument");
                 case "_ci":
-                    if (arguments.Count == 1) return Ci(arguments[0], new NullValue());
+                    if (arguments.Count == 1) return Ci(arguments[0]);
                     throw new Exception("_ci requires 1 argument");
                 case "_val":
                     if (arguments.Count == 1) return ValFunction(arguments[0]);
