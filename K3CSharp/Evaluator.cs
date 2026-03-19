@@ -2596,15 +2596,6 @@ namespace K3CSharp
             // Execute the string expression using dot execute
             // This evaluates the expression in the current variable context
             
-            // Check if this is a REPL command (starts with backslash)
-            if (expression.StartsWith("\\"))
-            {
-                // This is a REPL command, execute it directly and return null
-                // REPL commands are void operations that write to console
-                Program.HandleReplCommand(expression, this);
-                return new NullValue();
-            }
-            
             try
             {
                 var lexer = new Lexer(expression);
@@ -3298,19 +3289,19 @@ namespace K3CSharp
                 return operand;
             }
             else if (operand is VectorValue vv && vv.Elements.Count > 0 && vv.Elements.All(e => e is CharacterValue))
-            {
+            {            
                 // This is a character vector (string) - evaluate as K code
                 var stringValue = string.Join("", vv.Elements.Select(e => ((CharacterValue)e).Value));
+                // Check if this is a REPL command (starts with backslash)
+                if (stringValue.StartsWith("\\"))
+                {
+                    // This is a REPL command, execute it directly and return null
+                    // REPL commands are void operations that write to console
+                    Program.HandleReplCommand(stringValue, this);
+                    return new NullValue();
+                }
                 
-                // Parse the string as K code and evaluate it in the current context
-                var lexer = new Lexer(stringValue);
-                var tokens = lexer.Tokenize();
-                var parser = new Parser(tokens, stringValue);
-                var ast = parser.Parse();
-                
-                var result = Evaluate(ast);
-                
-                return result;
+                return ExecuteStringExpression(stringValue);
             }
             else if (operand is DictionaryValue dv)
             {
