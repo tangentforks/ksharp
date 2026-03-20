@@ -171,10 +171,58 @@ namespace K3CSharp.Parsing
         }
 
         /// <summary>
-        /// Create AST node for adverb operation
+        /// Validate that a verb is compatible with the given adverb
+        /// </summary>
+        /// <param name="verbNode">The verb AST node to validate</param>
+        /// <param name="adverbType">The adverb type to check compatibility for</param>
+        /// <returns>True if the verb is compatible with the adverb</returns>
+        private bool ValidateVerbAdverbCompatibility(ASTNode verbNode, string adverbType)
+        {
+            // Extract verb name from the AST node
+            var verbName = ExtractVerbName(verbNode);
+            if (string.IsNullOrEmpty(verbName))
+                return false;
+            
+            // Use VerbQueryExtensions to check compatibility
+            return VerbQueryExtensions.GetAdverbCompatibleVerbs(adverbType).Contains(verbName);
+        }
+        
+        /// <summary>
+        /// Extract verb name from AST node
+        /// </summary>
+        /// <param name="verbNode">The AST node containing the verb</param>
+        /// <returns>Verb name or null if not found</returns>
+        private string? ExtractVerbName(ASTNode verbNode)
+        {
+            if (verbNode.Value is SymbolValue symbol)
+                return symbol.Value;
+            
+            // For variable nodes, check the node type and extract name differently
+            if (verbNode.Type == ASTNodeType.Variable)
+            {
+                // Variable nodes store the name in a different way
+                // For now, we'll handle this case by returning null
+                // This could be enhanced based on how variable nodes are actually implemented
+                return null;
+            }
+            
+            return null;
+        }
+        
+        /// <summary>
+        /// Create AST node for adverb operation with validation
         /// </summary>
         private ASTNode CreateAdverbNode(Token adverbToken, ASTNode verb, ASTNode? argument = null)
         {
+            var adverbType = VerbRegistry.GetAdverbType(adverbToken.Type);
+            
+            // Validate verb-adverb compatibility using verb-agnostic approach
+            if (!ValidateVerbAdverbCompatibility(verb, adverbType))
+            {
+                var verbName = ExtractVerbName(verb) ?? "unknown";
+                throw new Exception($"Verb '{verbName}' is not compatible with adverb '{adverbToken.Lexeme}' ({adverbType})");
+            }
+            
             var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
             adverbNode.Value = new SymbolValue(GetAdverbSymbol(adverbToken.Type));
             adverbNode.Children.Add(verb);

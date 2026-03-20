@@ -142,10 +142,20 @@ namespace K3CSharp.Parsing
 
         /// <summary>
         /// Parse identifier token (variable)
+        /// Uses verb-agnostic system function detection
         /// </summary>
         private static ASTNode ParseIdentifier(Token token)
         {
-            return ASTNode.MakeVariable(token.Lexeme);
+            var identifier = token.Lexeme;
+            
+            // Check if this identifier is a system function using verb-agnostic approach
+            if (VerbQueryExtensions.IsSystemFunction(identifier))
+            {
+                // Create a system function node instead of a regular variable
+                return ASTNode.MakeFunctionCall(ASTNode.MakeVariable(identifier), new List<ASTNode>());
+            }
+            
+            return ASTNode.MakeVariable(identifier);
         }
 
         /// <summary>

@@ -15,6 +15,9 @@ namespace K3CSharp.Parsing
         private readonly bool enableFallback;
         private readonly bool useLRSParser;
         
+        // Static failure analyzer for tracking all LRS failures
+        private static readonly LRSFailureAnalyzer failureAnalyzer = new LRSFailureAnalyzer();
+        
         public LRSParserWrapper(List<Token> tokens, string sourceText, bool enableFallback = true, bool useLRSParser = true)
         {
             this.tokens = tokens;
@@ -49,6 +52,16 @@ namespace K3CSharp.Parsing
                 {
                     var resultStr = result != null ? "SUCCESS" : "NULL";
                     Console.WriteLine($"[LRSParserWrapper] LRS parsing result: {resultStr}, consumed: {position}/{tokens.Count}");
+                }
+                
+                // Record failure if LRS parsing failed
+                if (result == null)
+                {
+                    var lastTokenType = position > 0 && position <= tokens.Count 
+                        ? tokens[position - 1].Type 
+                        : (TokenType?)null;
+                    
+                    failureAnalyzer.RecordFailure(sourceText, position, tokens.Count, lastTokenType);
                 }
                 
                 // Validate result
@@ -193,6 +206,30 @@ namespace K3CSharp.Parsing
             }
             
             return stats;
+        }
+        
+        /// <summary>
+        /// Get the failure analyzer instance for accessing failure statistics
+        /// </summary>
+        public static LRSFailureAnalyzer GetFailureAnalyzer()
+        {
+            return failureAnalyzer;
+        }
+        
+        /// <summary>
+        /// Generate failure analysis report
+        /// </summary>
+        public static LRSFailureReport GenerateFailureReport()
+        {
+            return failureAnalyzer.GenerateReport();
+        }
+        
+        /// <summary>
+        /// Clear all failure records
+        /// </summary>
+        public static void ClearFailureRecords()
+        {
+            failureAnalyzer.ClearRecords();
         }
     }
     

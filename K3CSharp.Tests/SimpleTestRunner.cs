@@ -1433,6 +1433,14 @@ namespace K3CSharp.Tests
 
                 
 
+                // LRS Parser improvement tests
+
+                ("test_failure_analyzer.k", "1"), // Expected to fall back to legacy parser
+
+                ("test_verb_queries.k", "6"), // Test verb-agnostic parsing
+
+                
+
                 // Amend Item tests - only valid cases with 3+ arguments
 
                 ("amend_item_basic.k", "1 12 3"),
