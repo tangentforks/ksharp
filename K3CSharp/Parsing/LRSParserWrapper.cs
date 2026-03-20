@@ -16,7 +16,25 @@ namespace K3CSharp.Parsing
         private readonly bool useLRSParser;
         
         // Static failure analyzer for tracking all LRS failures
-        private static readonly LRSFailureAnalyzer failureAnalyzer = new LRSFailureAnalyzer();
+        private static readonly object failureAnalyzerLock = new object();
+        private static readonly List<ParserFailureRecord> failureRecords = new();
+        private static string currentTestName = "";
+        
+        /// <summary>
+        /// Set the current test name for failure tracking
+        /// </summary>
+        public static void SetCurrentTestName(string testName)
+        {
+            currentTestName = testName ?? "";
+        }
+        
+        /// <summary>
+        /// Clear the current test name
+        /// </summary>
+        public static void ClearCurrentTestName()
+        {
+            currentTestName = "";
+        }
         
         public LRSParserWrapper(List<Token> tokens, string sourceText, bool enableFallback = true, bool useLRSParser = true)
         {
@@ -48,11 +66,9 @@ namespace K3CSharp.Parsing
                 var position = 0;
                 var result = lrsParser?.ParseExpression(ref position);
                 
-                if (ParserConfig.EnableDebugging)
-                {
-                    var resultStr = result != null ? "SUCCESS" : "NULL";
-                    Console.WriteLine($"[LRSParserWrapper] LRS parsing result: {resultStr}, consumed: {position}/{tokens.Count}");
-                }
+                // Check if debug messages are enabled (disabled by default)
+                // Debug messages are now controlled by parser_config.json
+                // Removed [LRSParserWrapper] messages as requested
                 
                 // Record failure if LRS parsing failed
                 if (result == null)
@@ -61,7 +77,27 @@ namespace K3CSharp.Parsing
                         ? tokens[position - 1].Type 
                         : (TokenType?)null;
                     
-                    failureAnalyzer.RecordFailure(sourceText, position, tokens.Count, lastTokenType);
+                    // Record failure for later analysis
+                    lock (failureAnalyzerLock)
+                    {
+                        var record = new ParserFailureRecord
+                        {
+                            Timestamp = DateTime.Now,
+                            TestName = currentTestName,
+                            SourceText = sourceText,
+                            ConsumedTokens = position,
+                            TotalTokens = tokens.Count,
+                            LastTokenType = lastTokenType,
+                            FailurePoint = DetermineFailurePoint(position, tokens.Count, lastTokenType)
+                        };
+                        failureRecords.Add(record);
+                        
+                        // Limit records to prevent memory issues
+                        if (failureRecords.Count > 10000)
+                        {
+                            failureRecords.RemoveAt(0);
+                        }
+                    }
                 }
                 
                 // Validate result
@@ -209,19 +245,14 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Get the failure analyzer instance for accessing failure statistics
+        /// Get failure records for analysis
         /// </summary>
-        public static LRSFailureAnalyzer GetFailureAnalyzer()
+        public static List<ParserFailureRecord> GetFailureRecords()
         {
-            return failureAnalyzer;
-        }
-        
-        /// <summary>
-        /// Generate failure analysis report
-        /// </summary>
-        public static LRSFailureReport GenerateFailureReport()
-        {
-            return failureAnalyzer.GenerateReport();
+            lock (failureAnalyzerLock)
+            {
+                return new List<ParserFailureRecord>(failureRecords);
+            }
         }
         
         /// <summary>
@@ -229,8 +260,39 @@ namespace K3CSharp.Parsing
         /// </summary>
         public static void ClearFailureRecords()
         {
-            failureAnalyzer.ClearRecords();
+            lock (failureAnalyzerLock)
+            {
+                failureRecords.Clear();
+            }
         }
+        
+        /// <summary>
+        /// Determine failure point description
+        /// </summary>
+        private static string DetermineFailurePoint(int consumedTokens, int totalTokens, TokenType? lastTokenType)
+        {
+            if (consumedTokens == 0)
+                return "Start of expression";
+            if (consumedTokens >= totalTokens)
+                return "End of expression";
+            if (lastTokenType.HasValue)
+                return $"After {lastTokenType.Value} (position {consumedTokens}/{totalTokens})";
+            return $"Position {consumedTokens}/{totalTokens}";
+        }
+    }
+    
+    /// <summary>
+    /// Record of a parser failure (simplified for cross-namespace use)
+    /// </summary>
+    public class ParserFailureRecord
+    {
+        public DateTime Timestamp { get; set; }
+        public string TestName { get; set; } = "";
+        public string SourceText { get; set; } = "";
+        public int ConsumedTokens { get; set; }
+        public int TotalTokens { get; set; }
+        public TokenType? LastTokenType { get; set; }
+        public string FailurePoint { get; set; } = "";
     }
     
     /// <summary>

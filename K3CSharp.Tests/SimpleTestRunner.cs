@@ -179,7 +179,7 @@ namespace K3CSharp.Tests
 
         
 
-        private class TestResult
+        public class TestResult
 
         {
 
@@ -2605,8 +2605,14 @@ namespace K3CSharp.Tests
                             var lexer = new Lexer(accumulatedLine);
                             var tokens = lexer.Tokenize();
                             
+                            // Set current test name for failure tracking
+                            LRSParserWrapper.SetCurrentTestName(fileName);
+                            
                             // Use LRS parser for all tests (now the default)
                             ASTNode? ast = ParserConfig.ParseWithConfig(tokens, accumulatedLine);
+                            
+                            // Clear current test name after parsing
+                            LRSParserWrapper.ClearCurrentTestName();
 
                             lastResult = evaluator.Evaluate(ast);
 
@@ -2673,6 +2679,17 @@ namespace K3CSharp.Tests
             
 
             WriteResultsTable(testResults);
+            
+            // Generate parser analysis report if enabled
+            try
+            {
+                var reportGenerator = new ParserReportGenerator();
+                reportGenerator.GenerateReport(testResults);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Warning: Failed to generate parser report: {ex.Message}");
+            }
 
         }
 

@@ -1,0 +1,17 @@
+{
+  "ParserAnalysis": {
+    "EnableReportGeneration": true,
+    "ReportOutputPath": "T:\\_src\\github.com\\ERufian\\ksharp\\K3CSharp.Tests",
+    "MaxReportEntries": 1000,
+    "IncludeParseTrees": true,
+    "IncludeLegacyParserAST": true,
+    "ReportFormat": "Markdown",
+    "GenerateDetailedFailureAnalysis": false,
+    "GroupFailuresByType": false
+  },
+  "Logging": {
+    "EnableDebugMessages": false,
+    "EnableLRSWrapperMessages": false,
+    "LogLevel": "Info"
+  }
+}
