@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-20 21:47:34
+Generated: 2026-03-21 14:24:40
 
 SUMMARY:
 --------
-Total Tests:     829
-✅ Matched:       769
-❌ Differed:      35
-⚠️  Skipped:       22
-💥 Errors:        3
-Success Rate:    95.3%
+Total Tests:     844
+✅ Matched:       776
+❌ Differed:      41
+⚠️  Skipped:       20
+💥 Errors:        7
+Success Rate:    94.2%
 
 DETAILED RESULTS:
 -----------------
@@ -61,6 +61,9 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   anonymous_function_empty.k                         {}                             {}                                                                               
 ❌ FAIL   anonymous_function_over_adverb.k                                                  0.01666667                                                                       
 ❌ FAIL   anonymous_function_scan_adverb.k                                                  (10;0.5;0.01666667)                                                              
+❌ FAIL   apply_and_assign_debug.k                           1                              3                                                                                
+❌ FAIL   apply_and_assign_multiline.k                       0                              1                                                                                
+❌ FAIL   apply_and_assign_simple.k                          0                              1                                                                                
 ✅ PASS   assignment_lrs_return_value.k                      47 94                          47 94                                                                            
 ✅ PASS   atom_scalar.k                                      1                              1                                                                                
 ✅ PASS   atom_vector.k                                      0                              0                                                                                
@@ -371,6 +374,9 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   in.k                                               1                              1                                                                                
 ✅ PASS   integer_types_int.k                                42                             42                                                                               
 ✅ PASS   integer_types_long.k                               123456789j                     123456789j                                                                       
+✅ PASS   io_append_basic.k                                                                                                                                                  
+💥 ERROR io_append_multiple.k                                                                                             k.exe error only                                  
+✅ PASS   io_append_simple.k                                                                                                                                                 
 ✅ PASS   io_monadic_1_char_vector_index.k                   "h"                            "h"                                                                              
 ✅ PASS   io_monadic_1_char_vector_last_index.k              "d"                            "d"                                                                              
 ✅ PASS   io_monadic_1_char_vector.k                         "hello world"                  "hello world"                                                                    
@@ -382,7 +388,9 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   io_monadic_1_vs_2_char_vector.k                    1                              1                                                                                
 ✅ PASS   io_monadic_1_vs_2_float_vector.k                   1                              1                                                                                
 ✅ PASS   io_monadic_1_vs_2_int_vector.k                     1                              1                                                                                
-✅ PASS   io_read_basic.k                                    ("line1";"line2";"line3")      ("line1";"line2";"line3")      Compact representation                            
+✅ PASS   io_read_basic.k                                    ("line1";"line2";"line3";...   ("line1";"line2";"line3";...   Compact representation                            
+❌ FAIL   io_read_bytes_basic.k                              "\357\273\277hello\r\n"        "hello\r\n"                                                                      
+❌ FAIL   io_read_bytes_empty.k                              "\357\273\277"                 ""                                                                               
 ✅ PASS   io_read_debug.k                                    123456                         123456                                                                           
 ✅ PASS   io_read_float.k                                    0i                             0i                                                                               
 ✅ PASS   io_read_int.k                                      123456                         123456                                                                           
@@ -390,6 +398,9 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   io_read_symbol.k                                   `helllo                        `helllo                                                                          
 ✅ PASS   io_roundtrip.k                                     (1;2.5;"hello")                (1;2.5;"hello")                                                                  
 ✅ PASS   io_write_basic.k                                   ("line1";"line2";"line3")      ("line1";"line2";"line3")      Compact representation                            
+💥 ERROR io_write_bytes_basic.k                                                                                           k.exe error only                                  
+💥 ERROR io_write_bytes_binary.k                                                                                          k.exe error only                                  
+💥 ERROR io_write_bytes_overwrite.k                                                                                       k.exe error only                                  
 ✅ PASS   io_write_int.k                                                                                                                                                     
 ✅ PASS   isolated.k                                         0.6                            0.6                                                                              
 ✅ PASS   join_each_left.k                                   (1 4 5 6;2 4 5 6;3 4 5 6)      (1 4 5 6;2 4 5 6;3 4 5 6)      Compact representation                            
@@ -585,6 +596,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   search_in_notfound.k                               0                              0                                                                                
 ✅ PASS   search_lin_intersection.k                          1 1 1 0 0                      1 1 1 0 0                                                                        
 ✅ PASS   semicolon_simple.k                                 (7;11;-20.45)                  (7;11;-20.45)                                                                    
+✅ PASS   semicolon_vars_test.k                                                                                                                                              
 ✅ PASS   semicolon_vars.k                                   30 200 -10                     30 200 -10                                                                       
 ✅ PASS   semicolon_vector.k                                 (7;3 4;-20.45)                 (7;3 4;-20.45)                 Compact representation                            
 ✅ PASS   serialization_bd_anonymousfunction_random_1.k      "\001\000\000\000\030\000...   "\001\000\000\000\030\000...                                                     
@@ -720,6 +732,11 @@ Status   Test File                                          K3Sharp Output      
 ❌ FAIL   square_bracket_function.k                          2.0                            2                              smart integer division, inverse and exponenti...  
 ✅ PASS   square_bracket_vector_multiple.k                   14 16                          14 16                                                                            
 ✅ PASS   square_bracket_vector_single.k                     14                             14                                                                               
+✅ PASS   statement_assignment_basic.k                                                                                                                                       
+✅ PASS   statement_assignment_inline.k                      43                             43                                                                               
+✅ PASS   statement_conditional_basic.k                      2                              2                                                                                
+❌ FAIL   statement_do_basic.k                               1                              3                                                                                
+✅ PASS   statement_do_simple.k                                                                                                                                              
 ✅ PASS   string_parse.k                                     30                             30                                                                               
 ✅ PASS   string_representation_int.k                        "42"                           "42"                                                                             
 ✅ PASS   string_representation_mixed.k                      "(1;2.5;\"a\")"                "(1;2.5;\"a\")"                                                                  
@@ -746,8 +763,6 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   test_dict_larger.k                                 .((`a;1;);(`b;2;);(`c;3;)...   .((`a;1;);(`b;2;);(`c;3;)...   Compact representation                            
 ✅ PASS   test_dict_simple.k                                 .((`a;1;);(`b;2;);(`c;3;))     .((`a;1;);(`b;2;);(`c;3;))     Compact representation                            
 ✅ PASS   test_dict_with_attr.k                              .((`a;1;);(`b;2;.((`x;2;)...   .((`a;1;);(`b;2;.((`x;2;)...   Compact representation                            
-⚠️  SKIP test_eval_monadic_star_atomic.k                                                                                  k.exe doesn't support _parse/_eval                
-⚠️  SKIP test_eval_monadic_star.k                                                                                         k.exe doesn't support _parse/_eval                
 ⚠️  SKIP test_eval_verb.k                                                                                                 k.exe doesn't support _parse/_eval                
 💥 ERROR test_failure_analyzer.k                                                                                          k.exe error only                                  
 ✅ PASS   test_ic_basic.k                                    65                             65                                                                               
@@ -868,6 +883,18 @@ File: anonymous_function_scan_adverb.k
 K3Sharp: 
 k.exe:   (10;0.5;0.01666667)
 
+File: apply_and_assign_debug.k
+K3Sharp: 1
+k.exe:   3
+
+File: apply_and_assign_multiline.k
+K3Sharp: 0
+k.exe:   1
+
+File: apply_and_assign_simple.k
+K3Sharp: 0
+k.exe:   1
+
 File: complex_function.k
 K3Sharp: 205.0
 k.exe:   205
@@ -916,22 +943,22 @@ File: idioms_01_496_remove_punctuation.k
 K3Sharp: 
 k.exe:   "oh no stop it you will"
 
-File: idioms_01_504_replace_satisfying.k
-K3Sharp: (1;"Assignment requires a variable name on the left side")
-k.exe:   " bcd f  i "
-
-File: idioms_01_535_avoid_parentheses.k
-K3Sharp: 1 5
-k.exe:   5 1
-
-File: idioms_01_556_all_indices.k
-K3Sharp: 
-k.exe:   0 1 2 3
-
-... and 15 more failed tests
+... and 21 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------
+File: io_append_multiple.k
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+File: io_write_bytes_basic.k
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+File: io_write_bytes_binary.k
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+File: io_write_bytes_overwrite.k
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
 File: lrs_integration_bracket.k
 Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
 
@@ -944,6 +971,22 @@ Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 100
 
 K.EXE FAILING TESTS:
 --------------------
+Test: io_append_multiple.k
+Input: `test 5: "hello"; `test 5: "world"; `test 5: 1 2 3
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+Test: io_write_bytes_basic.k
+Input: `test 6:,"ABC"
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+Test: io_write_bytes_binary.k
+Input: `test 6:(0 1 2 255)
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+Test: io_write_bytes_overwrite.k
+Input: `test 6:,"ABC"; `test 6:,"XYZ"
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
 Test: lrs_integration_bracket.k
 Input: [1 + 2]
 Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms

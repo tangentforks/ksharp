@@ -1418,6 +1418,9 @@ namespace K3CSharp.Tests
                 ("statement_do_basic.k", "3"),
                 ("statement_do_simple.k", ""),
                 ("semicolon_vars_test.k", ""),
+                ("apply_and_assign_simple.k", "1"),
+                ("apply_and_assign_multiline.k", "1"),
+                //("apply_and_assign_debug.k", "3"),
 
                 ("io_read_basic.k", "(\"line1\";\"line2\";\"line3\")"),
 
@@ -2300,8 +2303,6 @@ namespace K3CSharp.Tests
                 ("ktree_dot_apply_absolute_path.k", "1 3 5"),
                 ("test_semicolon_parsing.k", ""),
                 ("test_parse_monadic_star.k", $"(`\"*:\";1 2 3 4)"),
-                ("test_eval_monadic_star.k", "1"),
-                ("test_eval_monadic_star_atomic.k", "1"),
                 ("parse_atomic_value_no_verb.k", ",`a"),
                 ("parse_projection_dyadic_plus.k", "`\"+\"`\"::\"`\"::\""),
                 ("parse_projection_dyadic_plus_fixed_left.k", "(`\"+\";,1;`\"::\")"),

@@ -4,16 +4,17 @@ A comprehensive C# implementation of the K3 programming language core, a high-pe
 
 ## 🎯 Current Status
 
-**K3CSharp is now at 96.9% K3 specification compliance** with comprehensive core language implementation, complete serialization system, robust .NET Foreign Function Interface, and mostly complete I/O system.
+**K3CSharp is now at 95.6% K3 specification compliance** with comprehensive core language implementation, complete serialization system, robust .NET Foreign Function Interface, statement parsing support, and mostly complete I/O system.
 
 ### 📈 Latest Test Results
-- **Test Suite**: 805/831 tests passing (96.9% success rate)
-- **K3 Compatibility**: 769/829 tests matched (95.3% compatibility)  
+- **Test Suite**: 811/848 tests passing (95.6% success rate)
+- **K3 Compatibility**: 776/844 tests matched (94.2% compatibility)  
 - **Dictionary Indexing**: ✅ All dictionary indexing tests now pass
 - **Operator Precedence**: ✅ K's Long Right Scope properly implemented
 - **Parser Stability**: ✅ No special cases or workarounds in ParsePrimary
 - **One-Adverb-at-a-Time**: ✅ Clean adverb evaluation without complex chaining
 - **Parse Tree Verbs**: ✅ _parse and _eval verbs fully implemented and functional
+- **Statement Parsing**: ✅ Assignment, conditional evaluation, and control flow statements
 - **I/O System**: ✅ 9/12 file handle operations fully implemented
 
 ## 📚 **Table of Contents**
@@ -195,6 +196,18 @@ cd K3CSharp.Comparison && dotnet run
 - **Each-Pair (`':`)**: `,': 1 2 3 4` → `(2 1;3 2;4 3)` (apply operation to consecutive pairs, reversing left and right)
 - **Initialization**: `1 +/ 2 3 4 5` → `15` (with initial value)
 - **Adverbs for already modified verbs** 🆕:  `((1 2);(3 4)),/:\:((9 8);(7 6))` → `((1 2 9 8;1 2 7 6);(3 4 9 8;3 4 7 6))`
+
+### **Statement Parsing System** ✅
+- **Assignment Statements**: `x: 42` (pure assignment returns null)
+- **Inline Assignment**: `1 + x: 42` (inline assignment returns value)
+- **Conditional Evaluation**: `:[condition;true_expr;false_expr]` - conditional execution
+- **Control Flow Statements**: 
+  - `do[count;expression]` - loop with count iterations
+  - `if[condition;expression]` - conditional execution
+  - `while[condition;expression]` - conditional loop
+- **Apply and Assign**: `x+:1` (increment and assign), `x-:2` (decrement and assign)
+- **Proper Precedence**: Statements have lower precedence than verbs but higher than separators
+- **LRS Compliance**: Full Long Right Scope statement parsing behavior
 
 ### **Core Function System** ✅
 - **Anonymous Functions**: `{[x;y] x + y}`
@@ -597,9 +610,9 @@ dotnet run
 - **Character Vector Identity**: `" "$"abc"` → `"abc"` (proper character vector handling)
 - **Symbol Identity**: `` ` `$symbol `` → `"symbol"` (symbol to string conversion)
 - **Expression Evaluation**: `{"x+y"}[2;3]` → `5` (dynamic expression with variables)
-## **Development Plan Status**: **3.1% functionality remaining** for complete K3 specification compliance
+## **Development Plan Status**: **4.4% functionality remaining** for complete K3 specification compliance
 
-Based on comprehensive analysis of current implementation status, K3CSharp has achieved **96.9% K3 specification compliance** with **3.1% functionality remaining**. The recent addition of parse tree verbs (_parse and _eval) provides essential introspection capabilities, bringing the implementation very close to complete K3 language support.
+Based on comprehensive analysis of current implementation status, K3CSharp has achieved **95.6% K3 specification compliance** with **4.4% functionality remaining**. The recent addition of statement parsing and LRS parser improvements provides essential language features and brings the implementation very close to complete K3 language support.
 
 ### **I/O System Status** ✅ **Mostly Implemented**
 

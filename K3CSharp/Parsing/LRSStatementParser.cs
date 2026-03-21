@@ -88,12 +88,20 @@ namespace K3CSharp.Parsing
             if (assignmentIndex == -1)
                 return null;
                 
+            var assignmentToken = tokens[assignmentIndex];
+            
             // Split into left and right parts
             var leftTokens = tokens.GetRange(0, assignmentIndex);
             var rightTokens = tokens.GetRange(assignmentIndex + 1, tokens.Count - assignmentIndex - 1);
             
             if (leftTokens.Count == 0 || rightTokens.Count == 0)
                 return null;
+            
+            // Check if this is a modified assignment operator (apply and assign)
+            if (assignmentToken.Lexeme.Length > 1 && assignmentToken.Lexeme.EndsWith(":"))
+            {
+                return ParseApplyAndAssignStatement(leftTokens, assignmentToken, rightTokens);
+            }
             
             // Parse left side (variable name)
             var variableNode = ParseVariableName(leftTokens);
@@ -115,6 +123,33 @@ namespace K3CSharp.Parsing
             assignmentNode.IsTerminalAssignment = isTerminalAssignment;
             
             return assignmentNode;
+        }
+        
+        /// <summary>
+        /// Parse apply and assign statement (e.g., i+:1, x:*2, etc.)
+        /// </summary>
+        private ASTNode? ParseApplyAndAssignStatement(List<Token> leftTokens, Token assignmentToken, List<Token> rightTokens)
+        {
+            // Parse left side (variable name)
+            var variableNode = ParseVariableName(leftTokens);
+            if (variableNode == null)
+                return null;
+            
+            // Parse right side (expression)
+            var rightNode = ParseRightSideExpression(rightTokens);
+            if (rightNode == null)
+                return null;
+            
+            // Extract the operator (everything except the colon)
+            string operatorSymbol = assignmentToken.Lexeme.Substring(0, assignmentToken.Lexeme.Length - 1);
+            
+            // Create apply and assign node
+            var applyAndAssignNode = new ASTNode(ASTNodeType.ApplyAndAssign);
+            applyAndAssignNode.Value = variableNode.Value; // Variable name
+            applyAndAssignNode.Children.Add(ASTNode.MakeLiteral(new SymbolValue(operatorSymbol)));
+            applyAndAssignNode.Children.Add(rightNode);
+            
+            return applyAndAssignNode;
         }
         
         /// <summary>
