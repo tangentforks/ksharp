@@ -89,8 +89,10 @@ namespace K3CSharp
                         var value = Evaluate(node.Children[0]);
                         SetVariable(assignName, value); // Use local variables for regular assignments
                         
-                        // LRS behavior: Return value for intermediate assignments, null for terminal assignments
-                        return isIntermediateAssignment ? value : new NullValue();
+                        // LRS behavior: Return value for inline assignments, null for terminal (pure) assignments
+                        // Terminal assignment: no verbs to the left between assignment and separator
+                        // Inline assignment: one or more verbs to the left between assignment and separator
+                        return node.IsTerminalAssignment ? new NullValue() : value;
                     }
 
                 case ASTNodeType.ApplyAndAssign:

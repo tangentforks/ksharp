@@ -29,6 +29,7 @@ namespace K3CSharp
         public List<string> Parameters { get; set; } = new List<string>();
         public int StartPosition { get; set; } = -1;
         public int EndPosition { get; set; } = -1;
+        public bool IsTerminalAssignment { get; set; } = false;
 
         public ASTNode(ASTNodeType type, K3Value? value = null, List<ASTNode>? children = null)
         {

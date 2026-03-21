@@ -1411,7 +1411,13 @@ namespace K3CSharp.Tests
 
                 
 
-                // I/O verb tests
+                // Statement parsing tests
+                ("statement_assignment_basic.k", ""),
+                ("statement_assignment_inline.k", "43"),
+                ("statement_conditional_basic.k", "2"),
+                ("statement_do_basic.k", "3"),
+                ("statement_do_simple.k", ""),
+                ("semicolon_vars_test.k", ""),
 
                 ("io_read_basic.k", "(\"line1\";\"line2\";\"line3\")"),
 

@@ -1,22 +1,22 @@
 # K3CSharp Parser Failures
 
-**Generated:** 2026-03-21 03:22:47
-**Test Results:** 810/839 passed (96.5%)
+**Generated:** 2026-03-21 04:03:47
+**Test Results:** 815/845 passed (96.4%)
 
 ## Executive Summary
 
-**Total Tests:** 839
-**Passed Tests:** 810
-**Failed Tests:** 29
-**Success Rate:** 96.5%
+**Total Tests:** 845
+**Passed Tests:** 815
+**Failed Tests:** 30
+**Success Rate:** 96.4%
 
 **LRS Parser Statistics:**
-- NULL Results: 217
+- NULL Results: 221
 - Incorrect Results: 0
-- LRS Success Rate: 74.1%
+- LRS Success Rate: 73.8%
 
 **Top Failure Patterns:**
-- After INTEGER (position 3/4): 57
+- After INTEGER (position 3/4): 59
 - After CHARACTER_VECTOR (position 3/4): 23
 - After FLOAT (position 3/4): 15
 - After INTEGER (position 6/7): 13
@@ -24,8 +24,8 @@
 - After RIGHT_PAREN (position 9/10): 7
 - After INTEGER (position 7/8): 7
 - After CHARACTER_VECTOR (position 2/3): 7
-- After RIGHT_BRACKET (position 6/7): 6
 - After SYMBOL (position 3/4): 6
+- After RIGHT_BRACKET (position 6/7): 5
 
 ## LRS Parser Failures
 
@@ -539,793 +539,817 @@ _ltime 0
 ```
 After INTEGER (position 2/3)
 -------------------------------------------------
-86. **vector_notation_empty.k**:
+86. **test_monadic_colon.k**:
+```k
+: 42
+```
+After INTEGER (position 2/3)
+-------------------------------------------------
+87. **statement_assignment_basic.k**:
+```k
+a: 42
+```
+After INTEGER (position 3/4)
+-------------------------------------------------
+88. **statement_do_basic.k**:
+```k
+i:0;do[3;i+:1];i
+```
+After INTEGER (position 3/15)
+-------------------------------------------------
+89. **statement_do_simple.k**:
+```k
+i:0;do[3;i+:1]
+```
+After INTEGER (position 3/13)
+-------------------------------------------------
+90. **semicolon_vars_test.k**:
+```k
+a: 10
+```
+After INTEGER (position 3/4)
+-------------------------------------------------
+91. **vector_notation_empty.k**:
 ```k
 ()
 ```
 After RIGHT_PAREN (position 2/3)
 -------------------------------------------------
-87. **vector_notation_functions.k**:
+92. **vector_notation_functions.k**:
 ```k
 (double 5; double 10; double 15)
 ```
 After RIGHT_PAREN (position 10/11)
 -------------------------------------------------
-88. **vector_notation_mixed_types.k**:
+93. **vector_notation_mixed_types.k**:
 ```k
 (42; 3.14; "hello"; `symbol)
 ```
 After RIGHT_PAREN (position 9/10)
 -------------------------------------------------
-89. **vector_notation_single_group.k**:
+94. **vector_notation_single_group.k**:
 ```k
 (42)
 ```
 After RIGHT_PAREN (position 3/4)
 -------------------------------------------------
-90. **vector_notation_space.k**:
+95. **vector_notation_space.k**:
 ```k
 1 2 3 4 5
 ```
 After INTEGER (position 5/6)
 -------------------------------------------------
-91. **vector_notation_variables.k**:
+96. **vector_notation_variables.k**:
 ```k
 a: 10
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-92. **vector_notation_variables.k**:
+97. **vector_notation_variables.k**:
 ```k
 b: 20
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-93. **vector_with_null.k**:
+98. **vector_with_null.k**:
 ```k
 (_n;1;2)
 ```
 After RIGHT_PAREN (position 7/8)
 -------------------------------------------------
-94. **vector_with_null_middle.k**:
+99. **vector_with_null_middle.k**:
 ```k
 (1;_n;3)
 ```
 After RIGHT_PAREN (position 7/8)
 -------------------------------------------------
-95. **do_loop.k**:
+100. **do_loop.k**:
 ```k
 i: 0; do[3; i+: 1]  // Do loop - increment i 3 times
 ```
 After INTEGER (position 3/13)
 -------------------------------------------------
-96. **empty_brackets_dictionary.k**:
+101. **empty_brackets_dictionary.k**:
 ```k
 d[]
 ```
 After RIGHT_BRACKET (position 3/4)
 -------------------------------------------------
-97. **empty_brackets_vector.k**:
+102. **empty_brackets_vector.k**:
 ```k
 v: 1 2 3 4
 ```
 After INTEGER (position 6/7)
 -------------------------------------------------
-98. **empty_brackets_vector.k**:
+103. **empty_brackets_vector.k**:
 ```k
 v[]
 ```
 After RIGHT_BRACKET (position 3/4)
 -------------------------------------------------
-99. **group_operator.k**:
+104. **group_operator.k**:
 ```k
 a: 3 3 8 7 5 7 3 8 4 4 9 2 7 6 0 7 8 7 0 1
 ```
 After INTEGER (position 22/23)
 -------------------------------------------------
-100. **if_simple_test.k**:
-```k
-if[3; 42]  // If function with bracket notation
-```
-After RIGHT_BRACKET (position 6/7)
--------------------------------------------------
-101. **if_true.k**:
+105. **if_true.k**:
 ```k
 a: 10; if[1 < 2; a: 20]  // If statement - condition true
 ```
 After INTEGER (position 3/15)
 -------------------------------------------------
-102. **isolated.k**:
+106. **isolated.k**:
 ```k
 a:1.5
 ```
 After FLOAT (position 3/4)
 -------------------------------------------------
-103. **isolated.k**:
+107. **isolated.k**:
 ```k
 b:2.5
 ```
 After FLOAT (position 3/4)
 -------------------------------------------------
-104. **modulo.k**:
+108. **modulo.k**:
 ```k
 a:1.5
 ```
 After FLOAT (position 3/4)
 -------------------------------------------------
-105. **modulo.k**:
+109. **modulo.k**:
 ```k
 b:2.5
 ```
 After FLOAT (position 3/4)
 -------------------------------------------------
-106. **string_parse.k**:
+110. **string_parse.k**:
 ```k
 a: 10
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-107. **string_parse.k**:
+111. **string_parse.k**:
 ```k
 b: 20
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-108. **k_tree_test_bracket_indexing.k**:
+112. **k_tree_test_bracket_indexing.k**:
 ```k
 d[`b]
 ```
 After RIGHT_BRACKET (position 4/5)
 -------------------------------------------------
-109. **vector_null_index.k**:
+113. **vector_null_index.k**:
 ```k
 v: 1 2 3 4
 ```
 After INTEGER (position 6/7)
 -------------------------------------------------
-110. **while_bracket_test.k**:
+114. **while_bracket_test.k**:
 ```k
 i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation
 ```
 After INTEGER (position 3/15)
 -------------------------------------------------
-111. **while_safe_test.k**:
+115. **while_safe_test.k**:
 ```k
 i: 0
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-112. **test_simple_symbol.k**:
+116. **test_simple_symbol.k**:
 ```k
 `a `"." `b
 ```
 After SYMBOL (position 3/4)
 -------------------------------------------------
-113. **test_symbol_vector_with_quoted.k**:
+117. **test_symbol_vector_with_quoted.k**:
 ```k
 `a `b `"." `c
 ```
 After SYMBOL (position 4/5)
 -------------------------------------------------
-114. **math_mul_basic.k**:
+118. **math_mul_basic.k**:
 ```k
 1 2 3
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-115. **math_not_vector.k**:
+119. **math_not_vector.k**:
 ```k
 1 2 3
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-116. **math_or_vector.k**:
+120. **math_or_vector.k**:
 ```k
 1 2 3
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-117. **math_xor_vector.k**:
+121. **math_xor_vector.k**:
 ```k
 1 2 3
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-118. **ffi_hint_system.k**:
+122. **ffi_hint_system.k**:
 ```k
 42 _sethint `uint
 ```
 After SYMBOL (position 3/4)
 -------------------------------------------------
-119. **ffi_type_marshalling.k**:
+123. **ffi_type_marshalling.k**:
 ```k
 3.14159 _hint `float
 ```
 After SYMBOL (position 3/4)
 -------------------------------------------------
-120. **ffi_type_marshalling.k**:
+124. **ffi_type_marshalling.k**:
 ```k
 "hello" _hint `string
 ```
 After SYMBOL (position 3/4)
 -------------------------------------------------
-121. **ffi_type_marshalling.k**:
+125. **ffi_type_marshalling.k**:
 ```k
 1 2 3 4 5 _hint `list
 ```
 After SYMBOL (position 7/8)
 -------------------------------------------------
-122. **ffi_object_management.k**:
+126. **ffi_object_management.k**:
 ```k
 str: "hello";str _sethint `object; str . ToUpper
 ```
 After CHARACTER_VECTOR (position 3/12)
 -------------------------------------------------
-123. **ffi_constructor.k**:
+127. **ffi_constructor.k**:
 ```k
 complex_new:complex[`constructor]
 ```
 After RIGHT_BRACKET (position 6/7)
 -------------------------------------------------
-124. **ffi_constructor.k**:
+128. **ffi_constructor.k**:
 ```k
 c1:complex_new[2;3]
 ```
 After RIGHT_BRACKET (position 8/9)
 -------------------------------------------------
-125. **ffi_dispose.k**:
+129. **ffi_dispose.k**:
 ```k
 complex_new:complex[`constructor]
 ```
 After RIGHT_BRACKET (position 6/7)
 -------------------------------------------------
-126. **ffi_dispose.k**:
+130. **ffi_dispose.k**:
 ```k
 c1:complex_new[2;3]
 ```
 After RIGHT_BRACKET (position 8/9)
 -------------------------------------------------
-127. **ffi_dispose.k**:
+131. **ffi_dispose.k**:
 ```k
 _dispose c1
 ```
 After IDENTIFIER (position 2/3)
 -------------------------------------------------
-128. **ffi_complete_workflow.k**:
+132. **ffi_complete_workflow.k**:
 ```k
 complex_new:complex[`constructor]
 ```
 After RIGHT_BRACKET (position 6/7)
 -------------------------------------------------
-129. **ffi_complete_workflow.k**:
+133. **ffi_complete_workflow.k**:
 ```k
 c1:complex_new[2;3]
 ```
 After RIGHT_BRACKET (position 8/9)
 -------------------------------------------------
-130. **ffi_complete_workflow.k**:
+134. **ffi_complete_workflow.k**:
 ```k
 magnitude: c1[`Abs][]
 ```
 After RIGHT_BRACKET (position 8/9)
 -------------------------------------------------
-131. **idioms_01_575_kronecker_delta.k**:
+135. **idioms_01_575_kronecker_delta.k**:
 ```k
 x:0 0 1 1
 ```
 After INTEGER (position 6/7)
 -------------------------------------------------
-132. **idioms_01_575_kronecker_delta.k**:
+136. **idioms_01_575_kronecker_delta.k**:
 ```k
 y:0 1 0 1
 ```
 After INTEGER (position 6/7)
 -------------------------------------------------
-133. **idioms_01_571_xbutnoty.k**:
+137. **idioms_01_571_xbutnoty.k**:
 ```k
 x:0 1 0 1
 ```
 After INTEGER (position 6/7)
 -------------------------------------------------
-134. **idioms_01_571_xbutnoty.k**:
+138. **idioms_01_571_xbutnoty.k**:
 ```k
 y:0 0 1 1
 ```
 After INTEGER (position 6/7)
 -------------------------------------------------
-135. **idioms_01_570_implies.k**:
+139. **idioms_01_570_implies.k**:
 ```k
 x:0 1 0 1
 ```
 After INTEGER (position 6/7)
 -------------------------------------------------
-136. **idioms_01_570_implies.k**:
+140. **idioms_01_570_implies.k**:
 ```k
 y:0 0 1 1
 ```
 After INTEGER (position 6/7)
 -------------------------------------------------
-137. **idioms_01_573_exclusive_or.k**:
+141. **idioms_01_573_exclusive_or.k**:
 ```k
 x:0 0 1 1
 ```
 After INTEGER (position 6/7)
 -------------------------------------------------
-138. **idioms_01_573_exclusive_or.k**:
+142. **idioms_01_573_exclusive_or.k**:
 ```k
 y:0 1 0 1
 ```
 After INTEGER (position 6/7)
 -------------------------------------------------
-139. **idioms_01_41_indices_ones.k**:
+143. **idioms_01_41_indices_ones.k**:
 ```k
 x:0 0 1 0 1 0 0 0 1 0
 ```
 After INTEGER (position 12/13)
 -------------------------------------------------
-140. **idioms_01_516_multiply_columns.k**:
+144. **idioms_01_516_multiply_columns.k**:
 ```k
 x:(1 2 3 4 5 6;7 8 9 10 11 12)
 ```
 After RIGHT_PAREN (position 17/18)
 -------------------------------------------------
-141. **idioms_01_516_multiply_columns.k**:
+145. **idioms_01_516_multiply_columns.k**:
 ```k
 y:10 100
 ```
 After INTEGER (position 4/5)
 -------------------------------------------------
-142. **idioms_01_566_zero_boolean.k**:
+146. **idioms_01_566_zero_boolean.k**:
 ```k
 x:0 1 0 1 1 0 0 1 1 1 0
 ```
 After INTEGER (position 13/14)
 -------------------------------------------------
-143. **idioms_01_622_retain_marked.k**:
+147. **idioms_01_622_retain_marked.k**:
 ```k
 x:3 7 15 1 292
 ```
 After INTEGER (position 7/8)
 -------------------------------------------------
-144. **idioms_01_622_retain_marked.k**:
+148. **idioms_01_622_retain_marked.k**:
 ```k
 y:1 0 1 1 0
 ```
 After INTEGER (position 7/8)
 -------------------------------------------------
-145. **idioms_01_357_match.k**:
+149. **idioms_01_357_match.k**:
 ```k
 x:("abc";`sy;1 3 -7)
 ```
 After RIGHT_PAREN (position 11/12)
 -------------------------------------------------
-146. **idioms_01_357_match.k**:
+150. **idioms_01_357_match.k**:
 ```k
 y:("abc";`sy;1 3 -7)
 ```
 After RIGHT_PAREN (position 11/12)
 -------------------------------------------------
-147. **test_parse_verb.k**:
+151. **test_parse_verb.k**:
 ```k
 _parse "1 + 2"
 ```
 After CHARACTER_VECTOR (position 2/3)
 -------------------------------------------------
-148. **test_parse_eval_together.k**:
+152. **test_parse_eval_together.k**:
 ```k
 parse_tree: _parse "1 + 2"; _eval parse_tree
 ```
 After CHARACTER_VECTOR (position 4/8)
 -------------------------------------------------
-149. **idioms_01_388_drop_rows.k**:
+153. **idioms_01_388_drop_rows.k**:
 ```k
 y:2
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-150. **idioms_01_154_range.k**:
+154. **idioms_01_154_range.k**:
 ```k
 x:"wirlsisl"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-151. **idioms_01_70_remove_duplicates.k**:
+155. **idioms_01_70_remove_duplicates.k**:
 ```k
 x:("to";"be";"or";"not";"to";"be")
 ```
 After RIGHT_PAREN (position 15/16)
 -------------------------------------------------
-152. **idioms_01_143_indices_distinct.k**:
+156. **idioms_01_143_indices_distinct.k**:
 ```k
 x:"ajhajhja"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-153. **idioms_01_228_is_row.k**:
+157. **idioms_01_228_is_row.k**:
 ```k
 x:("xxx";"yyy";"zzz";"yyy")
 ```
 After RIGHT_PAREN (position 11/12)
 -------------------------------------------------
-154. **idioms_01_232_is_row_in.k**:
+158. **idioms_01_232_is_row_in.k**:
 ```k
 x:("aaa";"bbb";"ooo";"ppp";"kkk")
 ```
 After RIGHT_PAREN (position 13/14)
 -------------------------------------------------
-155. **idioms_01_232_is_row_in.k**:
+159. **idioms_01_232_is_row_in.k**:
 ```k
 y:"ooo"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-156. **idioms_01_559_first_marker.k**:
+160. **idioms_01_559_first_marker.k**:
 ```k
 x:0 0 1 0 1 0 0 1 1 0
 ```
 After INTEGER (position 12/13)
 -------------------------------------------------
-157. **idioms_01_78_eval_number.k**:
+161. **idioms_01_78_eval_number.k**:
 ```k
 x:"1998 51"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-158. **idioms_01_88_name_variable.k**:
+162. **idioms_01_88_name_variable.k**:
 ```k
 x:"test"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-159. **idioms_01_493_choose_boolean.k**:
+163. **idioms_01_493_choose_boolean.k**:
 ```k
 x:"abcdef"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-160. **idioms_01_493_choose_boolean.k**:
+164. **idioms_01_493_choose_boolean.k**:
 ```k
 y:"xyz"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-161. **idioms_01_493_choose_boolean.k**:
+165. **idioms_01_493_choose_boolean.k**:
 ```k
 g:0
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-162. **idioms_01_434_replace_first.k**:
+166. **idioms_01_434_replace_first.k**:
 ```k
 x:"abbccdefcdab"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-163. **idioms_01_434_replace_first.k**:
+167. **idioms_01_434_replace_first.k**:
 ```k
 y:"t"
 ```
 After CHARACTER (position 3/4)
 -------------------------------------------------
-164. **idioms_01_433_replace_last.k**:
+168. **idioms_01_433_replace_last.k**:
 ```k
 x:"abbccdefcdab"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-165. **idioms_01_433_replace_last.k**:
+169. **idioms_01_433_replace_last.k**:
 ```k
 y:"t"
 ```
 After CHARACTER (position 3/4)
 -------------------------------------------------
-166. **idioms_01_406_add_last.k**:
+170. **idioms_01_406_add_last.k**:
 ```k
 x:1 2 3 4 5
 ```
 After INTEGER (position 7/8)
 -------------------------------------------------
-167. **idioms_01_406_add_last.k**:
+171. **idioms_01_406_add_last.k**:
 ```k
 y:100
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-168. **idioms_01_449_limit_between.k**:
+172. **idioms_01_449_limit_between.k**:
 ```k
 x:(58 9 37 84 39 99;60 30 45 97 77 35;49 87 82 79 8 30;46 61 20 51 12 34;31 51 29 35 17 89) // 5 6 _draw 100
 ```
 After RIGHT_PAREN (position 38/39)
 -------------------------------------------------
-169. **idioms_01_449_limit_between.k**:
+173. **idioms_01_449_limit_between.k**:
 ```k
 l:30
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-170. **idioms_01_449_limit_between.k**:
+174. **idioms_01_449_limit_between.k**:
 ```k
 h:70
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-171. **idioms_01_495_indices_occurrences.k**:
+175. **idioms_01_495_indices_occurrences.k**:
 ```k
 x:"abcdefgab"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-172. **idioms_01_495_indices_occurrences.k**:
+176. **idioms_01_495_indices_occurrences.k**:
 ```k
 y:"afc*"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-173. **idioms_01_504_replace_satisfying.k**:
+177. **idioms_01_504_replace_satisfying.k**:
 ```k
 x:1 0 0 0 1 0 1 1 0 1
 ```
 After INTEGER (position 12/13)
 -------------------------------------------------
-174. **idioms_01_504_replace_satisfying.k**:
+178. **idioms_01_504_replace_satisfying.k**:
 ```k
 y:"abcdefghij"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-175. **idioms_01_504_replace_satisfying.k**:
+179. **idioms_01_504_replace_satisfying.k**:
 ```k
 g:" "
 ```
 After CHARACTER (position 3/4)
 -------------------------------------------------
-176. **idioms_01_569_change_to_one.k**:
+180. **idioms_01_569_change_to_one.k**:
 ```k
 y:10 5 7 12 20
 ```
 After INTEGER (position 7/8)
 -------------------------------------------------
-177. **idioms_01_569_change_to_one.k**:
+181. **idioms_01_569_change_to_one.k**:
 ```k
 x:0 1 0 1 1
 ```
 After INTEGER (position 7/8)
 -------------------------------------------------
-178. **idioms_01_556_all_indices.k**:
+182. **idioms_01_556_all_indices.k**:
 ```k
 x:2 2 2 2
 ```
 After INTEGER (position 6/7)
 -------------------------------------------------
-179. **idioms_01_535_avoid_parentheses.k**:
+183. **idioms_01_535_avoid_parentheses.k**:
 ```k
 x:1 2 3 4 5
 ```
 After INTEGER (position 7/8)
 -------------------------------------------------
-180. **idioms_01_591_reshape_2column.k**:
+184. **idioms_01_591_reshape_2column.k**:
 ```k
 x:"abcdefgh"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-181. **idioms_01_595_one_row_matrix.k**:
+185. **idioms_01_595_one_row_matrix.k**:
 ```k
 x:2 3 5 7 11
 ```
 After INTEGER (position 7/8)
 -------------------------------------------------
-182. **idioms_01_509_remove_y.k**:
+186. **idioms_01_509_remove_y.k**:
 ```k
 x:"abcdeabc"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-183. **idioms_01_509_remove_y.k**:
+187. **idioms_01_509_remove_y.k**:
 ```k
 y:"a"
 ```
 After CHARACTER (position 3/4)
 -------------------------------------------------
-184. **idioms_01_510_remove_blanks.k**:
+188. **idioms_01_510_remove_blanks.k**:
 ```k
 x:" bcde bc"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-185. **idioms_01_496_remove_punctuation.k**:
+189. **idioms_01_496_remove_punctuation.k**:
 ```k
 x:"oh! no, stop it. you will?"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-186. **idioms_01_496_remove_punctuation.k**:
+190. **idioms_01_496_remove_punctuation.k**:
 ```k
 y:",;:.!?"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-187. **idioms_01_177_string_search.k**:
+191. **idioms_01_177_string_search.k**:
 ```k
 x:"st"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-188. **idioms_01_177_string_search.k**:
+192. **idioms_01_177_string_search.k**:
 ```k
 y:"indices of start of string x in string y"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-189. **idioms_01_45_binary_representation.k**:
+193. **idioms_01_45_binary_representation.k**:
 ```k
 x:16
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-190. **idioms_01_84_scalar_boolean.k**:
+194. **idioms_01_84_scalar_boolean.k**:
 ```k
 x:1 0 0 1 1 1 0 1
 ```
 After INTEGER (position 10/11)
 -------------------------------------------------
-191. **idioms_01_129_arctangent.k**:
+195. **idioms_01_129_arctangent.k**:
 ```k
 x:_sqrt[3]
 ```
 After RIGHT_BRACKET (position 6/7)
 -------------------------------------------------
-192. **idioms_01_129_arctangent.k**:
+196. **idioms_01_129_arctangent.k**:
 ```k
 y:1
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-193. **idioms_01_561_numeric_code.k**:
+197. **idioms_01_561_numeric_code.k**:
 ```k
 x:" aA0"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-194. **idioms_01_61_cyclic_counter.k**:
+198. **idioms_01_61_cyclic_counter.k**:
 ```k
 y:8
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-195. **idioms_01_384_drop_1st_postpend.k**:
+199. **idioms_01_384_drop_1st_postpend.k**:
 ```k
 x:3 4 5 6
 ```
 After INTEGER (position 6/7)
 -------------------------------------------------
-196. **idioms_01_385_drop_last_prepend.k**:
+200. **idioms_01_385_drop_last_prepend.k**:
 ```k
 x:3 4 5 6
 ```
 After INTEGER (position 6/7)
 -------------------------------------------------
-197. **idioms_01_178_first_occurrence.k**:
+201. **idioms_01_178_first_occurrence.k**:
 ```k
 x:"st"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-198. **idioms_01_178_first_occurrence.k**:
+202. **idioms_01_178_first_occurrence.k**:
 ```k
 y:"index of first occurrence of string x in string y"
 ```
 After CHARACTER_VECTOR (position 3/4)
 -------------------------------------------------
-199. **idioms_01_447_conditional_drop.k**:
+203. **idioms_01_447_conditional_drop.k**:
 ```k
 y:2
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-200. **idioms_01_447_conditional_drop.k**:
+204. **idioms_01_447_conditional_drop.k**:
 ```k
 g:0
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-201. **idioms_01_448_conditional_drop_last.k**:
+205. **idioms_01_448_conditional_drop_last.k**:
 ```k
 y:0
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-202. **ktree_indexing_relative_name.k**:
+206. **ktree_indexing_relative_name.k**:
 ```k
 d[`keyB]
 ```
 After RIGHT_BRACKET (position 4/5)
 -------------------------------------------------
-203. **ktree_indexing_relative_path.k**:
+207. **ktree_indexing_relative_path.k**:
 ```k
 `d[`keyA]
 ```
 After RIGHT_BRACKET (position 4/5)
 -------------------------------------------------
-204. **ktree_indexing_absolute_path.k**:
+208. **ktree_indexing_absolute_path.k**:
 ```k
 `.k.d[`keyB]
 ```
 After RIGHT_BRACKET (position 4/5)
 -------------------------------------------------
-205. **test_semicolon_parsing.k**:
+209. **test_semicolon_parsing.k**:
 ```k
 x: (1;2;3)
 ```
 After RIGHT_PAREN (position 9/10)
 -------------------------------------------------
-206. **test_parse_monadic_star.k**:
+210. **test_parse_monadic_star.k**:
 ```k
 _parse "*1 2 3 4"
 ```
 After CHARACTER_VECTOR (position 2/3)
 -------------------------------------------------
-207. **test_eval_monadic_star.k**:
+211. **test_eval_monadic_star.k**:
 ```k
 _eval (`"*:";1 2 3 4)
 ```
 After RIGHT_PAREN (position 9/10)
 -------------------------------------------------
-208. **parse_atomic_value_no_verb.k**:
+212. **parse_atomic_value_no_verb.k**:
 ```k
 _parse "`a"
 ```
 After CHARACTER_VECTOR (position 2/3)
 -------------------------------------------------
-209. **parse_projection_dyadic_plus.k**:
+213. **parse_projection_dyadic_plus.k**:
 ```k
 _parse "(+)"
 ```
 After CHARACTER_VECTOR (position 2/3)
 -------------------------------------------------
-210. **parse_projection_dyadic_plus_fixed_left.k**:
+214. **parse_projection_dyadic_plus_fixed_left.k**:
 ```k
 _parse "1+"
 ```
 After CHARACTER_VECTOR (position 2/3)
 -------------------------------------------------
-211. **parse_projection_dyadic_plus_fixed_right.k**:
+215. **parse_projection_dyadic_plus_fixed_right.k**:
 ```k
 _parse "+[;2]"
 ```
 After CHARACTER_VECTOR (position 2/3)
 -------------------------------------------------
-212. **parse_monadic_shape_atomic.k**:
+216. **parse_monadic_shape_atomic.k**:
 ```k
 _parse "^,`a"
 ```
 After CHARACTER_VECTOR (position 2/3)
 -------------------------------------------------
-213. **eval_dyadic_plus.k**:
+217. **eval_dyadic_plus.k**:
 ```k
 _eval (`"+";5 6 7 8;1 2 3 4)
 ```
 After RIGHT_PAREN (position 14/15)
 -------------------------------------------------
-214. **eval_monadic_star_nested.k**:
+218. **eval_monadic_star_nested.k**:
 ```k
 _eval (`"*";2;(`"+";4;7))
 ```
 After RIGHT_PAREN (position 14/15)
 -------------------------------------------------
-215. **eval_dot_execute_path.k**:
+219. **eval_dot_execute_path.k**:
 ```k
 v:`e`f
 ```
 After SYMBOL (position 4/5)
 -------------------------------------------------
-216. **eval_dot_parse_and_eval.k**:
+220. **eval_dot_parse_and_eval.k**:
 ```k
 a:7
 ```
 After INTEGER (position 3/4)
 -------------------------------------------------
-217. **test_eval_monadic_star.k**:
+221. **test_eval_monadic_star.k**:
 ```k
 _eval (`"*:";1 2 3 4)
 ```

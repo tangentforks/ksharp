@@ -15,6 +15,7 @@ namespace K3CSharp.Parsing
         private readonly LRSBinaryParser binaryParser;
         private readonly LRSUnaryParser unaryParser;
         private readonly LRSFunctionParser functionParser;
+        private readonly LRSStatementParser statementParser;
         
         // Parse tree construction mode flag
         public bool BuildParseTree { get; set; }
@@ -26,6 +27,7 @@ namespace K3CSharp.Parsing
             this.binaryParser = new LRSBinaryParser(tokens, this);
             this.unaryParser = new LRSUnaryParser(this);
             this.functionParser = new LRSFunctionParser(tokens);
+            this.statementParser = new LRSStatementParser(tokens, this);
         }
         
         /// <summary>
@@ -60,6 +62,16 @@ namespace K3CSharp.Parsing
                 
             if (expressionTokens.Count == 1)
                 return CreateNodeFromToken(expressionTokens[0]);
+            
+            // Check for statements first (statements have lower precedence than verbs but higher than separators)
+            if (expressionTokens.Count >= 2)
+            {
+                var firstToken = expressionTokens[0];
+                if (LRSStatementParser.CouldBeStatement(firstToken.Type))
+                {
+                    return statementParser.ParseStatement(expressionTokens);
+                }
+            }
             
             // Check for special functions first (_parse, _eval)
             if (expressionTokens.Count >= 2)
@@ -102,6 +114,16 @@ namespace K3CSharp.Parsing
                 
             if (expressionTokens.Count == 1)
                 return CreateNodeFromToken(expressionTokens[0]);
+                
+            // Check for statements first (statements have lower precedence than verbs but higher than separators)
+            if (expressionTokens.Count >= 2)
+            {
+                var firstToken = expressionTokens[0];
+                if (LRSStatementParser.CouldBeStatement(firstToken.Type))
+                {
+                    return statementParser.ParseStatement(expressionTokens);
+                }
+            }
                 
             // Try binary operation first
             var binaryResult = binaryParser.ParseBinaryOperation(expressionTokens);
