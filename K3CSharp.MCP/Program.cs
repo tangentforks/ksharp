@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using K3CSharp.MCP;
+using K3CSharp.Parsing;
 
 // ── Tool definitions for tools/list ──────────────────────────────
 
@@ -162,7 +163,11 @@ string DoEval(JsonNode? args)
 {
     var code = args?["code"]?.GetValue<string>()
         ?? throw new Exception("Missing 'code' argument");
-    return session.Eval(code);
+    
+    // Process escape sequences in the K code
+    var processedCode = JsonEscapeHelper.ProcessJsonEscapes(code);
+    
+    return session.Eval(processedCode);
 }
 
 string DoReset()
@@ -222,7 +227,7 @@ static void Reply(JsonNode? id, JsonNode result)
         ["id"] = id?.DeepClone(),
         ["result"] = result
     };
-    Console.WriteLine(JsonSerializer.Serialize(response));
+    Console.WriteLine(JsonSerializer.Serialize(response, JsonSerializerSettings.Output));
     Console.Out.Flush();
 }
 
@@ -238,7 +243,7 @@ static void ReplyError(JsonNode? id, int code, string message)
             ["message"] = message
         }
     };
-    Console.WriteLine(JsonSerializer.Serialize(response));
+    Console.WriteLine(JsonSerializer.Serialize(response, JsonSerializerSettings.Output));
     Console.Out.Flush();
 }
 

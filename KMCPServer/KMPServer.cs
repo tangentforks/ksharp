@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using K3CSharp;
+using K3CSharp.Parsing;
 
 namespace KMCPServer
 {
@@ -30,13 +31,13 @@ namespace KMCPServer
                 
                 try
                 {
-                    var request = JsonSerializer.Deserialize<JsonRpcRequest>(line);
+                    var request = JsonSerializer.Deserialize<JsonRpcRequest>(line, JsonSerializerSettings.Input);
                     if (request == null) continue;
                     
                     var response = ProcessRequest(request);
                     if (response != null)
                     {
-                        Console.WriteLine(JsonSerializer.Serialize(response));
+                        Console.WriteLine(JsonSerializer.Serialize(response, JsonSerializerSettings.Output));
                         Console.Out.Flush();
                     }
                 }
@@ -47,7 +48,7 @@ namespace KMCPServer
                         id = "",
                         error = new JsonRpcError { code = -32603, message = string.Format("Internal error: {0}", ex.Message) }
                     };
-                    Console.WriteLine(JsonSerializer.Serialize(errorResponse));
+                    Console.WriteLine(JsonSerializer.Serialize(errorResponse, JsonSerializerSettings.Output));
                     Console.Out.Flush();
                 }
             }
@@ -150,11 +151,11 @@ namespace KMCPServer
         {
             try
             {
-                var arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(request.@params?.ToString() ?? "");
+                var arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(request.@params?.ToString() ?? "", JsonSerializerSettings.Input);
                 var toolName = arguments?["name"]?.ToString() ?? "";
                 
                 // Extract the actual tool arguments from the nested structure
-                var toolArgs = JsonSerializer.Deserialize<Dictionary<string, object>>(arguments?["arguments"]?.ToString() ?? "");
+                var toolArgs = JsonSerializer.Deserialize<Dictionary<string, object>>(arguments?["arguments"]?.ToString() ?? "", JsonSerializerSettings.Input);
 
                 string result = toolName switch
                 {
@@ -204,15 +205,22 @@ namespace KMCPServer
         {
             if (string.IsNullOrEmpty(command))
                 throw new Exception("Command argument required");
-            return wrapper.ExecuteScript(command);
+            
+            // Process escape sequences in the command
+            var processedCommand = JsonEscapeHelper.ProcessJsonEscapes(command);
+            
+            return wrapper.ExecuteScript(processedCommand);
         }
 
         private string ExecuteKScript(string? scriptPath)
         {
             if (string.IsNullOrEmpty(scriptPath))
                 throw new Exception("Script path required");
+            
+            // Process escape sequences in the script path
+            var processedPath = JsonEscapeHelper.ProcessJsonEscapes(scriptPath);
                 
-            var scriptContent = File.ReadAllText(scriptPath);
+            var scriptContent = File.ReadAllText(processedPath);
             return wrapper.ExecuteScript(scriptContent);
         }
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using K3CSharp.Parsing;
 
 namespace ApplyTweaks;
 
@@ -74,7 +75,7 @@ class Program
             }
             
             // Handle escape character for double quotes
-            inputString = inputString.Replace('´', '"');
+            inputString = JsonEscapeHelper.ProcessJsonEscapes(inputString);
             
             var knownDifferences = new KnownDifferences();
             knownDifferences.LoadFromFile(filePath);
@@ -246,13 +247,13 @@ public class ApplyTweaksServer
             
             try
             {
-                var request = JsonSerializer.Deserialize<JsonRpcRequest>(line);
+                var request = JsonSerializer.Deserialize<JsonRpcRequest>(line, JsonSerializerSettings.Input);
                 if (request == null) continue;
                 
                 var response = ProcessRequest(request);
                 if (response != null)
                 {
-                    Console.WriteLine(JsonSerializer.Serialize(response));
+                    Console.WriteLine(JsonSerializer.Serialize(response, JsonSerializerSettings.Output));
                     Console.Out.Flush();
                 }
             }
@@ -263,7 +264,7 @@ public class ApplyTweaksServer
                     id = "", 
                     error = new JsonRpcError { code = -32700, message = ex.Message }
                 };
-                Console.WriteLine(JsonSerializer.Serialize(errorResponse));
+                Console.WriteLine(JsonSerializer.Serialize(errorResponse, JsonSerializerSettings.Output));
                 Console.Out.Flush();
             }
         }
@@ -387,11 +388,11 @@ public class ApplyTweaksServer
     
     private JsonRpcResponse HandleToolCall(JsonRpcRequest request)
     {
-        var arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(request.@params?.ToString() ?? "");
+        var arguments = JsonSerializer.Deserialize<Dictionary<string, object>>(request.@params?.ToString() ?? "", JsonSerializerSettings.Input);
         var toolName = arguments?["name"]?.ToString() ?? "";
         
         // Extract the actual tool arguments from the nested structure
-        var toolArgs = JsonSerializer.Deserialize<Dictionary<string, object>>(arguments?["arguments"]?.ToString() ?? "");
+        var toolArgs = JsonSerializer.Deserialize<Dictionary<string, object>>(arguments?["arguments"]?.ToString() ?? "", JsonSerializerSettings.Input);
         
         try
         {
@@ -451,7 +452,7 @@ public class ApplyTweaksServer
         if (input == null) throw new Exception("String parameter required");
         
         // Handle escape character for double quotes
-        input = input.Replace('´', '"');
+        input = JsonEscapeHelper.ProcessJsonEscapes(input);
         
         var result = _knownDifferences.ApplyTweaks(input, id);
         

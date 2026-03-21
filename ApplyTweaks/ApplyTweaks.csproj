@@ -5,4 +5,8 @@
     <Nullable>enable</Nullable>
     <AssemblyName>ApplyTweaks</AssemblyName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\K3CSharp\K3CSharp.csproj" />
+  </ItemGroup>
 </Project>

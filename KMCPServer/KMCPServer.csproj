@@ -12,4 +12,8 @@
     <Compile Include="KMPServer.cs" />
     <Compile Include="KInterpreterWrapper.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\K3CSharp\K3CSharp.csproj" />
+  </ItemGroup>
 </Project>

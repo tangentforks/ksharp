@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using K3CSharp;
+using K3CSharp.Parsing;
 
 namespace KMCPServer
 {
@@ -71,13 +72,13 @@ namespace KMCPServer
                     case "--command":
                         if (i + 1 < args.Length)
                         {
-                            command = args[++i].Replace('´', '"');
+                            command = JsonEscapeHelper.ProcessJsonEscapes(args[++i]);
                         }
                         break;
                     case "--script":
                         if (i + 1 < args.Length)
                         {
-                            script = File.ReadAllText(args[++i].Replace('´', '"'));
+                            script = File.ReadAllText(JsonEscapeHelper.ProcessJsonEscapes(args[++i]));
                         }
                         break;
                     case "--timeout":
