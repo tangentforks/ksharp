@@ -508,10 +508,13 @@ namespace K3CSharp
                 case "/:": return EachRight(new SymbolValue("_dot"), left, right);
                 case "\\:": return EachLeft(new SymbolValue("_dot"), left, right);
                 case "TYPE": return IoVerbDyadic(left, right, 4);
+                case "STRING_REPRESENTATION": return IoVerbMonadic(right, 5);
                 case "IO_VERB_0": return IoVerbDyadic(left, right, 0);
                 case "IO_VERB_1": return IoVerbDyadic(left, right, 1);
                 case "IO_VERB_2": return IoVerbDyadic(left, right, 2);
                 case "IO_VERB_3": return IoVerbDyadic(left, right, 3);
+                case "IO_VERB_4": return IoVerbDyadic(left, right, 4);
+                case "IO_VERB_5": return IoVerbDyadic(left, right, 5);
                 case "IO_VERB_6": return IoVerbDyadic(left, right, 6);
                 case "IO_VERB_7": return IoVerbDyadic(left, right, 7);
                 case "IO_VERB_8": return IoVerbDyadic(left, right, 8);

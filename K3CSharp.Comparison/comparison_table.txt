@@ -1,15 +1,15 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-18 15:42:57
+Generated: 2026-03-20 21:47:34
 
 SUMMARY:
 --------
-Total Tests:     821
-✅ Matched:       777
-❌ Differed:      22
+Total Tests:     829
+✅ Matched:       769
+❌ Differed:      35
 ⚠️  Skipped:       22
-💥 Errors:        0
-Success Rate:    97.2%
+💥 Errors:        3
+Success Rate:    95.3%
 
 DETAILED RESULTS:
 -----------------
@@ -24,7 +24,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   adverb_each_vector_minus.k                         9 18 27                        9 18 27                                                                          
 ✅ PASS   adverb_each_vector_multiply.k                      4 10 18                        4 10 18                                                                          
 ✅ PASS   adverb_each_vector_plus.k                          6 8 10 12                      6 8 10 12                                                                        
-✅ PASS   adverb_over_divide.k                               10                             10                             smart integer division, inverse and exponenti...  
+❌ FAIL   adverb_over_divide.k                               10.0                           10                             smart integer division, inverse and exponenti...  
 ✅ PASS   adverb_over_max.k                                  5                              5                                                                                
 ✅ PASS   adverb_over_min.k                                  1                              1                                                                                
 ✅ PASS   adverb_over_minus.k                                4                              4                                                                                
@@ -33,7 +33,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   adverb_over_power.k                                64                             64                             smart integer division, inverse and exponenti...  
 ✅ PASS   adverb_over_with_initialization_1.k                15                             15                                                                               
 ✅ PASS   adverb_over_with_initialization_2.k                12                             12                                                                               
-✅ PASS   adverb_scan_divide.k                               100 50 10                      100 50 10                      smart integer division, inverse and exponenti...  
+❌ FAIL   adverb_scan_divide.k                               (100;50.0;10.0)                100 50 10                      smart integer division, inverse and exponenti...  
 ✅ PASS   adverb_scan_max.k                                  1 3 3 5 5                      1 3 3 5 5                                                                        
 ✅ PASS   adverb_scan_min.k                                  5 3 3 1 1                      5 3 3 1 1                                                                        
 ✅ PASS   adverb_scan_minus.k                                10 8 5 4                       10 8 5 4                                                                         
@@ -42,7 +42,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   adverb_scan_power.k                                2 8 64                         2 8 64                         smart integer division, inverse and exponenti...  
 ✅ PASS   adverb_scan_with_initialization_1.k                1 3 6 10 15                    1 3 6 10 15                                                                      
 ✅ PASS   adverb_scan_with_initialization_2.k                2 3 5 8 12                     2 3 5 8 12                                                                       
-✅ PASS   adverb_scan_with_initialization_divide.k           (2;2;1;0.3333333;0.08333333)   (2;2;1;0.3333333;0.08333333)   smart integer division, inverse and exponenti...  
+❌ FAIL   adverb_scan_with_initialization_divide.k           (2;2.0;1.0;0.3333333;0.08...   (2;2;1;0.3333333;0.08333333)   smart integer division, inverse and exponenti...  
 ✅ PASS   adverb_scan_with_initialization_minus.k            2 1 -1 -4 -8                   2 1 -1 -4 -8                                                                     
 ✅ PASS   adverb_scan_with_initialization.k                  2 2 4 12                       2 2 4 12                                                                         
 ✅ PASS   adverb_slash_colon_basic.k                         (5 6 7;6 7 8;7 8 9)            (5 6 7;6 7 8;7 8 9)            Compact representation                            
@@ -81,7 +81,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   character_single.k                                 "f"                            "f"                                                                              
 ✅ PASS   character_vector.k                                 "hello"                        "hello"                                                                          
 ✅ PASS   ci_adverb_vector.k                                 "a^P"                          "a^P"                                                                            
-✅ PASS   complex_function.k                                 205                            205                            smart integer division, inverse and exponenti...  
+❌ FAIL   complex_function.k                                 205.0                          205                            smart integer division, inverse and exponenti...  
 ✅ PASS   conditional_bracket_test.k                         "true"                         "true"                                                                           
 ✅ PASS   conditional_false.k                                "false"                        "false"                                                                          
 ✅ PASS   conditional_simple_test.k                          "true"                         "true"                                                                           
@@ -154,11 +154,11 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   divide_integer.k                                   2.5                            2.5                                                                              
 ✅ PASS   division_float_4_2.0.k                             2.0                            2.0                                                                              
 ✅ PASS   division_float_5_2.5.k                             2.0                            2.0                                                                              
-✅ PASS   division_int_4_2.k                                 2                              2                              smart integer division, inverse and exponenti...  
+❌ FAIL   division_int_4_2.k                                 2.0                            2                              smart integer division, inverse and exponenti...  
 ✅ PASS   division_int_5_2.k                                 2.5                            2.5                                                                              
 ✅ PASS   division_rules_10_3.k                              3.333333                       3.333333                                                                         
-✅ PASS   division_rules_12_4.k                              3                              3                              smart integer division, inverse and exponenti...  
-✅ PASS   division_rules_4_2.k                               2                              2                              smart integer division, inverse and exponenti...  
+❌ FAIL   division_rules_12_4.k                              3.0                            3                              smart integer division, inverse and exponenti...  
+❌ FAIL   division_rules_4_2.k                               2.0                            2                              smart integer division, inverse and exponenti...  
 ✅ PASS   division_rules_5_2.k                               2.5                            2.5                                                                              
 ✅ PASS   do_bracket_test.k                                                                                                                                                  
 ✅ PASS   do_loop.k                                                                                                                                                          
@@ -168,9 +168,9 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   dot_execute.k                                      4                              4                                                                                
 ✅ PASS   drop_negative.k                                    0 1 2 3                        0 1 2 3                                                                          
 ✅ PASS   drop_positive.k                                    4 5 6 7                        4 5 6 7                                                                          
-✅ PASS   dyadic_divide_atom_vector.k                        6 4 3                          6 4 3                          smart division                                    
-✅ PASS   dyadic_divide_bracket.k                            5                              5                              Smart division                                    
-✅ PASS   dyadic_divide_dot_apply.k                          5                              5                              Smart division                                    
+❌ FAIL   dyadic_divide_atom_vector.k                        6.0 4.0 3.0                    6 4 3                          smart division                                    
+❌ FAIL   dyadic_divide_bracket.k                            5.0                            5                              Smart division                                    
+❌ FAIL   dyadic_divide_dot_apply.k                          5.0                            5                              Smart division                                    
 ✅ PASS   dyadic_divide_vector_atom.k                        2 3 4                          2 3 4                          smart division                                    
 ✅ PASS   dyadic_divide_vector_vector.k                      3 2 2                          3 2 2                          smart division                                    
 ✅ PASS   dyadic_equal_atom_vector.k                         1 0 0                          1 0 0                                                                            
@@ -221,7 +221,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   equal_operator.k                                   0                              0                                                                                
 ⚠️  SKIP eval_dot_execute_path.k                                                                                          k.exe doesn't support _parse/_eval                
 ✅ PASS   eval_dot_parse_and_eval.k                          11                             11                                                                               
-❌ FAIL   eval_dot_repl_dir.k                                                               ``.k                           Compact representation                            
+✅ PASS   eval_dot_repl_dir.k                                ``.k                           ``.k                           Compact representation                            
 ⚠️  SKIP eval_dyadic_plus.k                                                                                               k.exe doesn't support _parse/_eval                
 ⚠️  SKIP eval_monadic_star_nested.k                                                                                       k.exe doesn't support _parse/_eval                
 ⚠️  SKIP ffi_assembly_load.k                                                                                              k.exe doesn't support FFI                         
@@ -434,6 +434,12 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   list_sv_base2.k                                    9                              9                                                                                
 ✅ PASS   list_sv_mixed.k                                    1995                           1995                                                                             
 ✅ PASS   log.k                                              2.302585                       2.302585                                                                         
+✅ PASS   lrs_adverb_parser_basic.k                          1 2 3 4 5                      1 2 3 4 5                                                                        
+❌ FAIL   lrs_adverb_parser_each.k                           0.5 1.0 1.5                    0.5 1 1.5                                                                        
+✅ PASS   lrs_atomic_parser_basic.k                          1 2 3 4 5                      1 2 3 4 5                                                                        
+✅ PASS   lrs_expression_processor_test.k                    3                              3                                                                                
+💥 ERROR lrs_integration_bracket.k                          3                                                             k.exe error only                                  
+✅ PASS   lrs_parser_validation.k                            3                              3                                                                                
 ✅ PASS   match_simple_vectors.k                             1                              1                                                                                
 ✅ PASS   math_abs.k                                         5                              5                                                                                
 ✅ PASS   math_and_basic.k                                   1                              1                                                                                
@@ -560,7 +566,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   precedence_power1.k                                128                            128                            smart integer division, inverse and exponenti...  
 ✅ PASS   precedence_power2.k                                83                             83                             smart integer division, inverse and exponenti...  
 ✅ PASS   precedence_spec1.k                                 11.57143                       11.57143                                                                         
-✅ PASS   precedence_spec2.k                                 6                              6                              smart integer division, inverse and exponenti...  
+❌ FAIL   precedence_spec2.k                                 6.0                            6                              smart integer division, inverse and exponenti...  
 ✅ PASS   rand_draw_deal.k                                   .((`type;-1;);(`shape;,4;...   .((`type;-1;);(`shape;,4;...   Compact representation                            
 ✅ PASS   rand_draw_probability.k                            .((`type;-2;);(`shape;,10;))   .((`type;-2;);(`shape;,10;))   Compact representation                            
 ✅ PASS   rand_draw_select.k                                 .((`type;-1;);(`shape;,10;))   .((`type;-1;);(`shape;,10;))   Compact representation                            
@@ -677,7 +683,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   shape_operator_vector.k                            ,5                             ,5                                                                               
 ✅ PASS   shape_operator.k                                   ,3                             ,3                                                                               
 ✅ PASS   simple_addition.k                                  3                              3                                                                                
-✅ PASS   simple_division.k                                  4                              4                              smart integer division, inverse and exponenti...  
+❌ FAIL   simple_division.k                                  4.0                            4                              smart integer division, inverse and exponenti...  
 ✅ PASS   simple_multiplication.k                            12                             12                                                                               
 ✅ PASS   simple_nested_test.k                               1 2 3                          1 2 3                                                                            
 ✅ PASS   simple_scalar_div.k                                2.5                            2.5                                                                              
@@ -711,7 +717,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   special_underflow_2.k                              2147483549                     2147483549                                                                       
 ✅ PASS   special_underflow_3.k                              2147482649                     2147482649                                                                       
 ✅ PASS   special_underflow.k                                2147483622                     2147483622                                                                       
-✅ PASS   square_bracket_function.k                          2                              2                              smart integer division, inverse and exponenti...  
+❌ FAIL   square_bracket_function.k                          2.0                            2                              smart integer division, inverse and exponenti...  
 ✅ PASS   square_bracket_vector_multiple.k                   14 16                          14 16                                                                            
 ✅ PASS   square_bracket_vector_single.k                     14                             14                                                                               
 ✅ PASS   string_parse.k                                     30                             30                                                                               
@@ -743,6 +749,7 @@ Status   Test File                                          K3Sharp Output      
 ⚠️  SKIP test_eval_monadic_star_atomic.k                                                                                  k.exe doesn't support _parse/_eval                
 ⚠️  SKIP test_eval_monadic_star.k                                                                                         k.exe doesn't support _parse/_eval                
 ⚠️  SKIP test_eval_verb.k                                                                                                 k.exe doesn't support _parse/_eval                
+💥 ERROR test_failure_analyzer.k                                                                                          k.exe error only                                  
 ✅ PASS   test_ic_basic.k                                    65                             65                                                                               
 ✅ PASS   test_ic_vector.k                                   65 66 67                       65 66 67                                                                         
 ✅ PASS   test_minimal_dict.k                                ,.,(`x;2;)                     ,.,(`x;2;)                     Compact representation                            
@@ -769,6 +776,7 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   test_symbol_parsing.k                              0#`                            0#`                                                                              
 ✅ PASS   test_symbol_take.k                                 0#`                            0#`                                                                              
 ✅ PASS   test_symbol_vector_with_quoted.k                   `a`b`"."`c                     `a`b`"."`c                     Compact representation                            
+💥 ERROR test_verb_queries.k                                1                                                             k.exe error only                                  
 ✅ PASS   test_vs_dyadic.k                                   1 9 9 5                        1 9 9 5                                                                          
 ✅ PASS   time_dj.k                                          20350101                       20350101                                                                         
 ✅ PASS   time_gtime.k                                       20350101 0                     20350101 0                                                                       
@@ -840,6 +848,18 @@ Status   Test File                                          K3Sharp Output      
 
 FAILED TESTS DETAILS:
 --------------------
+File: adverb_over_divide.k
+K3Sharp: 10.0
+k.exe:   10
+
+File: adverb_scan_divide.k
+K3Sharp: (100;50.0;10.0)
+k.exe:   100 50 10
+
+File: adverb_scan_with_initialization_divide.k
+K3Sharp: (2;2.0;1.0;0.3333333;0.08333333)
+k.exe:   (2;2;1;0.3333333;0.08333333)
+
 File: anonymous_function_over_adverb.k
 K3Sharp: 
 k.exe:   0.01666667
@@ -848,9 +868,33 @@ File: anonymous_function_scan_adverb.k
 K3Sharp: 
 k.exe:   (10;0.5;0.01666667)
 
-File: eval_dot_repl_dir.k
-K3Sharp: 
-k.exe:   ``.k
+File: complex_function.k
+K3Sharp: 205.0
+k.exe:   205
+
+File: division_int_4_2.k
+K3Sharp: 2.0
+k.exe:   2
+
+File: division_rules_12_4.k
+K3Sharp: 3.0
+k.exe:   3
+
+File: division_rules_4_2.k
+K3Sharp: 2.0
+k.exe:   2
+
+File: dyadic_divide_atom_vector.k
+K3Sharp: 6.0 4.0 3.0
+k.exe:   6 4 3
+
+File: dyadic_divide_bracket.k
+K3Sharp: 5.0
+k.exe:   5
+
+File: dyadic_divide_dot_apply.k
+K3Sharp: 5.0
+k.exe:   5
 
 File: idioms_01_178_first_occurrence.k
 K3Sharp: 
@@ -884,48 +928,36 @@ File: idioms_01_556_all_indices.k
 K3Sharp: 
 k.exe:   0 1 2 3
 
-File: idioms_01_569_change_to_one.k
-K3Sharp: 10 1 7 1 1
-k.exe:   10 1 7 1 1.0
-
-File: idioms_01_591_reshape_2column.k
-K3Sharp: ()
-k.exe:   ("ab";"cd";"ef";"gh")
-
-File: idioms_01_88_name_variable.k
-K3Sharp: 
-k.exe:   (0 1 2;3 4 5)
-
-File: ktree_enumerate_root.k
-K3Sharp: `k`t
-k.exe:   ,`k
-
-File: math_dot_matrix_each_right.k
-K3Sharp: 
-k.exe:   (47 64 81;52 71 90;57 78 99)
-
-File: monadic_format_dictionary.k
-K3Sharp: ".((`a;1;);(`b;2;);(`c;3;))"
-k.exe:   ".(..)"
-
-File: named_function_over.k
-K3Sharp: 
-k.exe:   0.01666667
-
-File: named_function_scan.k
-K3Sharp: 
-k.exe:   (10;0.5;0.01666667)
-
-File: test_show_dict.k
-K3Sharp: .((`col01;11 12 13 14 15;.((`format;,`n;);(`name;`ID;)));(`col02;`yellow`white`blue`red`black;.((`format;,`c;);(`name;`Color;)));(`col03;("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`c;);(`name;`Retailer;))))
-k.exe:   .((`col01;11 12 13 14 15;.((`format;,`n;);(`name;`ID;)));(`col02;`yellow `white `blue `red `black;.((`format;,`c;);(`name;`Color;)));(`col03;("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`c;);(`name;`Retailer;))))
-
-... and 2 more failed tests
+... and 15 more failed tests
 
 ERROR TESTS DETAILS:
 -------------------
-No error tests found!
+File: lrs_integration_bracket.k
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+File: test_failure_analyzer.k
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+File: test_verb_queries.k
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
 
 K.EXE FAILING TESTS:
 --------------------
-No tests failing in k.exe found!
+Test: lrs_integration_bracket.k
+Input: [1 + 2]
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+Test: test_failure_analyzer.k
+Input: // Test case to trigger LRS parser failure for analysis
+1 + "invalid" + 2
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+
+Test: test_verb_queries.k
+Input: // Test cases to verify verb query extensions work correctly
++ 1 2 3
+/ 1 2 3 4
+' + 1 2 3
+/: * 1 2 3
+Error: k.exe Error: Failed to execute k.exe: k.exe execution timed out after 10000ms
+

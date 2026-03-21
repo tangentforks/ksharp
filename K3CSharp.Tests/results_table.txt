@@ -58,7 +58,7 @@
 ║ dictionary_multiple.k                              │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
 ║ dictionary_null_attributes.k                       │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
 ║ dictionary_single.k                                │ .,(`a;`b)            │ .,(`a;`b;)           │                      ║
-║ dictionary_type.k                                  │ 4:.((`a;1);(`b;2))   │ 5                    │                      ║
+║ dictionary_type.k                                  │ 4:.((`a;1);(`b;2))   │ Error: Unknown ...   │ 5                    ║
 ║ dictionary_with_null_value.k                       │ .((`a;1);(`b;_n);(`c;3)) │ .((`a;1;);(`b;;...   │                      ║
 ║ dictionary_period_index_all_attributes.k           │ d: .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer))));d[.] │ (.((`format;,`n...   │                      ║
 ║ test_minimal_dict.k                                │ d: .,(`a;1;.,(`x;2));d[.] │ ,.,(`x;2;)           │                      ║
@@ -265,10 +265,10 @@
 ║ square_bracket_function.k                          │ div:{[op1;op2] op1%op2} │ 2.0                  │                      ║
 ║ square_bracket_vector_multiple.k                   │ v:10 11 12 13 14 15 16 │ 14 16                │                      ║
 ║ square_bracket_vector_single.k                     │ v:10 11 12 13 14 15 16 │ 14                   │                      ║
-║ string_representation_int.k                        │ 5:42                 │ "42"                 │                      ║
-║ string_representation_mixed.k                      │ 5:(1;2.5;"a")        │ "(1;2.5;\"a\")"      │                      ║
-║ string_representation_symbol.k                     │ 5:`symbol            │ "`symbol"            │                      ║
-║ string_representation_vector.k                     │ 5:(1 2 3)            │ "1 2 3"              │                      ║
+║ string_representation_int.k                        │ 5:42                 │ Error: Unknown ...   │ "42"                 ║
+║ string_representation_mixed.k                      │ 5:(1;2.5;"a")        │ Error: Unknown ...   │ "(1;2.5;\"a\")"      ║
+║ string_representation_symbol.k                     │ 5:`symbol            │ Error: Unknown ...   │ "`symbol"            ║
+║ string_representation_vector.k                     │ 5:(1 2 3)            │ Error: Unknown ...   │ "1 2 3"              ║
 ║ symbol_quoted.k                                    │ `"a symbol"          │ `"a symbol"          │                      ║
 ║ symbol_simple.k                                    │ `foo                 │ `foo                 │                      ║
 ║ symbol_vector_compact.k                            │ `a`b`c               │ `a`b`c               │                      ║
@@ -333,22 +333,22 @@
 ║ special_underflow.k                                │ -0I - 27             │ 2147483622           │                      ║
 ║ special_underflow_2.k                              │ -0I - 100            │ 2147483549           │                      ║
 ║ special_underflow_3.k                              │ -0I - 1000           │ 2147482649           │                      ║
-║ type_char.k                                        │ 4: "a"               │ 3                    │                      ║
-║ type_float.k                                       │ 4: 3.14              │ 2                    │                      ║
-║ type_null.k                                        │ 4: _n                │ 6                    │                      ║
-║ type_space.k                                       │ 4: " "               │ 3                    │                      ║
-║ type_symbol.k                                      │ 4: `symbol           │ 4                    │                      ║
-║ type_vector.k                                      │ 4: (1 2 3)           │ -1                   │                      ║
+║ type_char.k                                        │ 4: "a"               │ Error: Unknown ...   │ 3                    ║
+║ type_float.k                                       │ 4: 3.14              │ Error: Unknown ...   │ 2                    ║
+║ type_null.k                                        │ 4: _n                │ Error: Unknown ...   │ 6                    ║
+║ type_space.k                                       │ 4: " "               │ Error: Unknown ...   │ 3                    ║
+║ type_symbol.k                                      │ 4: `symbol           │ Error: Unknown ...   │ 4                    ║
+║ type_vector.k                                      │ 4: (1 2 3)           │ Error: Unknown ...   │ -1                   ║
 ║ vector.k                                           │ 1 2 3                │ 1 2 3                │                      ║
-║ type_operator_char.k                               │ 4: "a"               │ 3                    │                      ║
-║ type_operator_float.k                              │ 4: 3.14              │ 2                    │                      ║
-║ type_operator_null.k                               │ 4: _n                │ 6                    │                      ║
-║ type_operator_symbol.k                             │ 4: `symbol           │ 4                    │                      ║
-║ type_operator_vector_char.k                        │ 4: ("abc")           │ -3                   │                      ║
-║ type_operator_vector_float.k                       │ 4: (1.0 2.0 3.0)     │ -2                   │                      ║
-║ type_operator_vector_int.k                         │ 4: (1 2 3)           │ -1                   │                      ║
-║ type_operator_vector_mixed.k                       │ 4: (1;2.0;"a")       │ 0                    │                      ║
-║ type_operator_vector_symbol.k                      │ 4: "abc"             │ -3                   │                      ║
+║ type_operator_char.k                               │ 4: "a"               │ Error: Unknown ...   │ 3                    ║
+║ type_operator_float.k                              │ 4: 3.14              │ Error: Unknown ...   │ 2                    ║
+║ type_operator_null.k                               │ 4: _n                │ Error: Unknown ...   │ 6                    ║
+║ type_operator_symbol.k                             │ 4: `symbol           │ Error: Unknown ...   │ 4                    ║
+║ type_operator_vector_char.k                        │ 4: ("abc")           │ Error: Unknown ...   │ -3                   ║
+║ type_operator_vector_float.k                       │ 4: (1.0 2.0 3.0)     │ Error: Unknown ...   │ -2                   ║
+║ type_operator_vector_int.k                         │ 4: (1 2 3)           │ Error: Unknown ...   │ -1                   ║
+║ type_operator_vector_mixed.k                       │ 4: (1;2.0;"a")       │ Error: Unknown ...   │ 0                    ║
+║ type_operator_vector_symbol.k                      │ 4: "abc"             │ Error: Unknown ...   │ -3                   ║
 ║ type_promotion_float_int.k                         │ 1.5 + 2              │ 3.5                  │                      ║
 ║ type_promotion_float_long.k                        │ 1.5 + 1j             │ 2.5                  │                      ║
 ║ type_promotion_int_float.k                         │ 2 + 1.5              │ 3.5                  │                      ║
@@ -416,13 +416,13 @@
 ║ format_braces_function_calls.k                     │ sum:{[a;b] a+b}      │ 5 20 12              │                      ║
 ║ format_braces_nested_function_calls.k              │ sum:{[a;b] a+b}      │ 5 8 25               │                      ║
 ║ log.k                                              │ _log 10              │ 2.302585             │                      ║
-║ time_t.k                                           │ r:_t                 │ .((`type;1;);(`...   │                      ║
-║ rand_draw_select.k                                 │ r:10 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;-1;);(...   │                      ║
-║ rand_draw_deal.k                                   │ r:4 _draw -4; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;-1;);(...   │                      ║
-║ rand_draw_probability.k                            │ r:10 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;-2;);(...   │                      ║
-║ rand_draw_vector_select.k                          │ r:2 3 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
-║ rand_draw_vector_deal.k                            │ r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;0;);(`...   │                      ║
-║ rand_draw_vector_probability.k                     │ r:2 3 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;0;);(`...   │                      ║
+║ time_t.k                                           │ r:_t                 │ Error: Unknown ...   │ .((`type;1;);(`...   ║
+║ rand_draw_select.k                                 │ r:10 _draw 4; .((`type;4:r);(`shape;^r)) │ Error: Unknown ...   │ .((`type;-1;);(...   ║
+║ rand_draw_deal.k                                   │ r:4 _draw -4; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ Error: Unknown ...   │ .((`type;-1;);(...   ║
+║ rand_draw_probability.k                            │ r:10 _draw 0; .((`type;4:r);(`shape;^r)) │ Error: Unknown ...   │ .((`type;-2;);(...   ║
+║ rand_draw_vector_select.k                          │ r:2 3 _draw 4; .((`type;4:r);(`shape;^r)) │ Error: Unknown ...   │ .((`type;0;);(`...   ║
+║ rand_draw_vector_deal.k                            │ r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ Error: Unknown ...   │ .((`type;0;);(`...   ║
+║ rand_draw_vector_probability.k                     │ r:2 3 _draw 0; .((`type;4:r);(`shape;^r)) │ Error: Unknown ...   │ .((`type;0;);(`...   ║
 ║ time_gtime.k                                       │ _gtime 0             │ 20350101 0           │                      ║
 ║ time_lt.k                                          │ _lt 0                │ -18000               │                      ║
 ║ time_jd.k                                          │ _jd 20260206         │ -3251                │                      ║
@@ -449,8 +449,16 @@
 ║ test_sm_basic.k                                    │ `foo _sm `foo        │ 1                    │                      ║
 ║ test_sm_simple.k                                   │ `a _sm `a            │ 1                    │                      ║
 ║ test_ss_basic.k                                    │ "hello world" _ss "world" │ ,6                   │                      ║
-║ io_read_basic.k                                    │ 0:`test              │ ("line1";"line2...   │                      ║
+║ io_read_basic.k                                    │ 0:`test              │ ,"0 1 2 255"         │ ("line1";"line2...   ║
 ║ io_write_basic.k                                   │ `testW 0: ("line1";"line2";"line3");0:`testW │ ("line1";"line2...   │                      ║
+║ io_append_simple.k                                 │ `testfile 5: "hello" │                      │                      ║
+║ io_append_basic.k                                  │ `test 5: "hello"     │                      │                      ║
+║ io_append_multiple.k                               │ `test 5: "hello"; `test 5: "world"; `test 5: 1 2 3 │                      │                      ║
+║ io_read_bytes_basic.k                              │ `test 0:,"hello";6:`test │ "\357\273\277he...   │ hello                ║
+║ io_read_bytes_empty.k                              │ `empty 0:(); 6:`empty │ "\357\273\277"       │ ""                   ║
+║ io_write_bytes_basic.k                             │ `test 6:,"ABC"       │                      │                      ║
+║ io_write_bytes_overwrite.k                         │ `test 6:,"ABC"; `test 6:,"XYZ" │                      │                      ║
+║ io_write_bytes_binary.k                            │ `test 6:(0 1 2 255)  │                      │                      ║
 ║ search_in_basic.k                                  │ 4 _in 1 2 3 4 5      │ 1                    │                      ║
 ║ search_in_notfound.k                               │ 6 _in 1 2 3 4 5      │ 0                    │                      ║
 ║ search_bin_basic.k                                 │ 3 4 5 6 _bin 4       │ 1                    │                      ║
@@ -701,7 +709,7 @@
 ║ test_dict_larger.k                                 │ .((`a;1;);(`b;2;);(`c;3;);(`d;4;)) │ .((`a;1;);(`b;2...   │                      ║
 ║ test_dict_simple.k                                 │ .((`a;1);(`b;2);(`c;3;)) │ .((`a;1;);(`b;2...   │                      ║
 ║ symbol_special_chars.k                             │ `"hello-world!"      │ `"hello-world!"      │                      ║
-║ type_empty_int_vector.k                            │ 4: !0                │ -1                   │                      ║
+║ type_empty_int_vector.k                            │ 4: !0                │ Error: Unknown ...   │ -1                   ║
 ║ bd_empty_list.k                                    │ _bd ()               │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_int.k                             │ _bd ,5               │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_string.k                          │ _bd ,"hello"         │ "\001\000\000\0...   │                      ║
@@ -835,7 +843,7 @@
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 805/831 tests passed (96.9%)                                                                               ║
+║ SUMMARY: 782/839 tests passed (93.2%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -850,6 +858,11 @@ Input: {x*%y}\10 20 30
 Expected: (10;0.5;0.01666667)
 Actual: Error: Function execution not yet implemented: x*%y
 ──────────────────────────────────────────────────────────────────────────
+Test: dictionary_type.k
+Input: 4:.((`a;1);(`b;2))
+Expected: 5
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
 Test: named_function_over.k
 Input: f:{x*%y};f/10 20 30
 Expected: 0.01666667
@@ -860,10 +873,155 @@ Input: f:{x*%y};f\10 20 30
 Expected: (10;0.5;0.01666667)
 Actual: Error: Function execution not yet implemented: x*%y
 ──────────────────────────────────────────────────────────────────────────
+Test: string_representation_int.k
+Input: 5:42
+Expected: "42"
+Actual: Error: Unknown unary operator: IO_VERB_5
+──────────────────────────────────────────────────────────────────────────
+Test: string_representation_mixed.k
+Input: 5:(1;2.5;"a")
+Expected: "(1;2.5;\"a\")"
+Actual: Error: Unknown unary operator: IO_VERB_5
+──────────────────────────────────────────────────────────────────────────
+Test: string_representation_symbol.k
+Input: 5:`symbol
+Expected: "`symbol"
+Actual: Error: Unknown unary operator: IO_VERB_5
+──────────────────────────────────────────────────────────────────────────
+Test: string_representation_vector.k
+Input: 5:(1 2 3)
+Expected: "1 2 3"
+Actual: Error: Unknown unary operator: IO_VERB_5
+──────────────────────────────────────────────────────────────────────────
+Test: type_char.k
+Input: 4: "a"
+Expected: 3
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: type_float.k
+Input: 4: 3.14
+Expected: 2
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: type_null.k
+Input: 4: _n
+Expected: 6
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: type_space.k
+Input: 4: " "
+Expected: 3
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: type_symbol.k
+Input: 4: `symbol
+Expected: 4
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: type_vector.k
+Input: 4: (1 2 3)
+Expected: -1
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: type_operator_char.k
+Input: 4: "a"
+Expected: 3
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: type_operator_float.k
+Input: 4: 3.14
+Expected: 2
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: type_operator_null.k
+Input: 4: _n
+Expected: 6
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: type_operator_symbol.k
+Input: 4: `symbol
+Expected: 4
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: type_operator_vector_char.k
+Input: 4: ("abc")
+Expected: -3
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: type_operator_vector_float.k
+Input: 4: (1.0 2.0 3.0)
+Expected: -2
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: type_operator_vector_int.k
+Input: 4: (1 2 3)
+Expected: -1
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: type_operator_vector_mixed.k
+Input: 4: (1;2.0;"a")
+Expected: 0
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: type_operator_vector_symbol.k
+Input: 4: "abc"
+Expected: -3
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: 100
+──────────────────────────────────────────────────────────────────────────
+Test: time_t.k
+Input: r:_t
+Expected: .((`type;1;);(`shape;!0;))
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_select.k
+Input: r:10 _draw 4; .((`type;4:r);(`shape;^r))
+Expected: .((`type;-1;);(`shape;,10;))
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_deal.k
+Input: r:4 _draw -4; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
+Expected: .((`type;-1;);(`shape;,4;);(`allitemsunique;1;))
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_probability.k
+Input: r:10 _draw 0; .((`type;4:r);(`shape;^r))
+Expected: .((`type;-2;);(`shape;,10;))
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_vector_select.k
+Input: r:2 3 _draw 4; .((`type;4:r);(`shape;^r))
+Expected: .((`type;0;);(`shape;2 3;))
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_vector_deal.k
+Input: r:2 3 _draw -10; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r))
+Expected: .((`type;0;);(`shape;2 3;);(`allitemsunique;1;))
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: rand_draw_vector_probability.k
+Input: r:2 3 _draw 0; .((`type;4:r);(`shape;^r))
+Expected: .((`type;0;);(`shape;2 3;))
+Actual: Error: Unknown unary operator: IO_VERB_4
+──────────────────────────────────────────────────────────────────────────
+Test: io_read_basic.k
+Input: 0:`test
+Expected: ("line1";"line2";"line3")
+Actual: ,"0 1 2 255"
+──────────────────────────────────────────────────────────────────────────
+Test: io_read_bytes_basic.k
+Input: `test 0:,"hello";6:`test
+Expected: hello
+Actual: "\357\273\277hello\r\n"
+──────────────────────────────────────────────────────────────────────────
+Test: io_read_bytes_empty.k
+Input: `empty 0:(); 6:`empty
+Expected: ""
+Actual: "\357\273\277"
 ──────────────────────────────────────────────────────────────────────────
 Test: test_failure_analyzer.k
 Input: // Test case to trigger LRS parser failure for analysis
@@ -874,6 +1032,11 @@ Test: test_verb_queries.k
 Input: // Test cases to verify verb query extensions work correctly
 Expected: 6
 Actual: Error: Cannot add Integer to Symbol
+──────────────────────────────────────────────────────────────────────────
+Test: type_empty_int_vector.k
+Input: 4: !0
+Expected: -1
+Actual: Error: Unknown unary operator: IO_VERB_4
 ──────────────────────────────────────────────────────────────────────────
 Test: math_dot_matrix_each_right.k
 Input: (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12)

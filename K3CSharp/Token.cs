@@ -53,11 +53,13 @@ namespace K3CSharp
         ADVERB_TICK_COLON,    // ': adverb (each-prior)
         NULL,           // _n null value
         TYPE,           // 4: type operator
-        STRING_REPRESENTATION, // 5: string representation operator
+        STRING_REPRESENTATION, // 5: string representation operator (monadic)
         IO_VERB_0,      // 0: I/O verb (read/write text)
         IO_VERB_1,      // 1: I/O verb
         IO_VERB_2,      // 2: I/O verb
         IO_VERB_3,      // 3: I/O verb
+        IO_VERB_4,      // 5: I/O verb (IPC Get - dyadic)
+        IO_VERB_5,      // 5: I/O verb (append data - dyadic)
         IO_VERB_6,      // 6: I/O verb
         IO_VERB_7,      // 7: I/O verb (reserved)
         IO_VERB_8,      // 8: I/O verb (reserved)

@@ -366,7 +366,6 @@ namespace K3CSharp
                 else if (c == ':')
                 {
                     // Check for digit-colon operators (0: through 9:)
-                    // For now, just handle the basic case without precedence rules
                     if (position > 0 && char.IsDigit(input[position - 1]) && tokens.Count > 0 && tokens[tokens.Count - 1].Type == TokenType.INTEGER)
                     {
                         char digitChar = input[position - 1];
@@ -392,10 +391,10 @@ namespace K3CSharp
                                 tokens.Add(new Token(TokenType.IO_VERB_3, "3:", position - 1));
                                 break;
                             case 4:
-                                tokens.Add(new Token(TokenType.TYPE, "4:", position - 1));
+                                tokens.Add(new Token(TokenType.IO_VERB_4, "4:", position - 1));
                                 break;
                             case 5:
-                                tokens.Add(new Token(TokenType.STRING_REPRESENTATION, "5:", position - 1));
+                                tokens.Add(new Token(TokenType.IO_VERB_5, "5:", position - 1));
                                 break;
                             case 6:
                                 tokens.Add(new Token(TokenType.IO_VERB_6, "6:", position - 1));

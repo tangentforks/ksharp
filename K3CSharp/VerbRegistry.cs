@@ -324,6 +324,8 @@ namespace K3CSharp
             RegisterVerb("IO_VERB_1", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("IO_VERB_2", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("IO_VERB_3", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("IO_VERB_4", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("IO_VERB_5", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("IO_VERB_6", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("IO_VERB_7", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("IO_VERB_8", VerbType.Operator, new[] { 1, 2 }, null);
@@ -854,6 +856,8 @@ namespace K3CSharp
                 TokenType.IO_VERB_1 => 1,
                 TokenType.IO_VERB_2 => 2,
                 TokenType.IO_VERB_3 => 3,
+                TokenType.IO_VERB_4 => 4,
+                TokenType.IO_VERB_5 => 5,
                 TokenType.IO_VERB_6 => 6,
                 TokenType.IO_VERB_7 => 7,
                 TokenType.IO_VERB_8 => 8,

@@ -1417,6 +1417,24 @@ namespace K3CSharp.Tests
 
                 ("io_write_basic.k", "(\"line1\";\"line2\";\"line3\")"),
 
+                // New I/O verb tests for 5: and 6: operations
+
+                ("io_append_simple.k", ""),
+
+                ("io_append_basic.k", ""),
+
+                ("io_append_multiple.k", ""),
+
+                ("io_read_bytes_basic.k", "hello"),
+
+                ("io_read_bytes_empty.k", "\"\""),
+
+                ("io_write_bytes_basic.k", ""),
+
+                ("io_write_bytes_overwrite.k", ""),
+
+                ("io_write_bytes_binary.k", ""),
+
                                 
 
                 // New search function tests

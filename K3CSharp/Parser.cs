@@ -481,10 +481,16 @@ namespace K3CSharp
                     CurrentToken().Type == TokenType.DV || CurrentToken().Type == TokenType.DI ||
                     CurrentToken().Type == TokenType.SETENV || CurrentToken().Type == TokenType.SM ||
                     CurrentToken().Type == TokenType.DIV || CurrentToken().Type == TokenType.DRAW ||
-                    CurrentToken().Type == TokenType.IO_VERB_0 || CurrentToken().Type == TokenType.IO_VERB_1 ||
-                    CurrentToken().Type == TokenType.IO_VERB_2 || CurrentToken().Type == TokenType.IO_VERB_3 ||
-                    CurrentToken().Type == TokenType.IO_VERB_6 || CurrentToken().Type == TokenType.IO_VERB_7 ||
-                    CurrentToken().Type == TokenType.IO_VERB_8 || CurrentToken().Type == TokenType.IO_VERB_9)
+                    CurrentToken().Type == TokenType.IO_VERB_0 || 
+                    CurrentToken().Type == TokenType.IO_VERB_1 ||
+                    CurrentToken().Type == TokenType.IO_VERB_2 || 
+                    CurrentToken().Type == TokenType.IO_VERB_3 || 
+                    CurrentToken().Type == TokenType.IO_VERB_4 ||
+                    CurrentToken().Type == TokenType.IO_VERB_5 || 
+                    CurrentToken().Type == TokenType.IO_VERB_6 ||
+                    CurrentToken().Type == TokenType.IO_VERB_7 || 
+                    CurrentToken().Type == TokenType.IO_VERB_8 ||
+                    CurrentToken().Type == TokenType.IO_VERB_9)
                 {
                     break;
                 }
@@ -1291,8 +1297,8 @@ namespace K3CSharp
             TokenType.SETENV, TokenType.SIZE, TokenType.POWER, TokenType.MODULUS, TokenType.JOIN, 
             TokenType.COLON, TokenType.HASH, TokenType.UNDERSCORE, TokenType.QUESTION, TokenType.DOLLAR, 
             TokenType.DRAW, TokenType.TYPE, TokenType.STRING_REPRESENTATION, TokenType.IO_VERB_0, 
-            TokenType.IO_VERB_1, TokenType.IO_VERB_2, TokenType.IO_VERB_3, TokenType.IO_VERB_6, 
-            TokenType.IO_VERB_7, TokenType.IO_VERB_8, TokenType.IO_VERB_9, TokenType.LSQ, TokenType.APPLY, 
+            TokenType.IO_VERB_1, TokenType.IO_VERB_2, TokenType.IO_VERB_3, TokenType.IO_VERB_4,TokenType.IO_VERB_5, 
+            TokenType.IO_VERB_6, TokenType.IO_VERB_7, TokenType.IO_VERB_8, TokenType.IO_VERB_9, TokenType.LSQ, TokenType.APPLY, 
             TokenType.DOT_APPLY, TokenType.DO, TokenType.WHILE, TokenType.IF_FUNC
         };
 

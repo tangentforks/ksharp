@@ -1415,8 +1415,8 @@ namespace K3CSharp
                 if (operand != null) node.Children.Add(operand);
                 return node;
             }
-            else if (Match(TokenType.IO_VERB_0) || Match(TokenType.IO_VERB_1) || Match(TokenType.IO_VERB_2) || Match(TokenType.IO_VERB_3) || 
-                     Match(TokenType.IO_VERB_6) || Match(TokenType.IO_VERB_7) || Match(TokenType.IO_VERB_8) || Match(TokenType.IO_VERB_9))
+            else if (Match(TokenType.IO_VERB_0) || Match(TokenType.IO_VERB_1) || Match(TokenType.IO_VERB_2) || Match(TokenType.IO_VERB_3) || Match(TokenType.IO_VERB_4) ||
+                     Match(TokenType.IO_VERB_5) || Match(TokenType.IO_VERB_6) || Match(TokenType.IO_VERB_7) || Match(TokenType.IO_VERB_8) || Match(TokenType.IO_VERB_9))
             {
                 // General digit-colon operator - could be monadic or dyadic
                 // We need to determine arity by context in the evaluator

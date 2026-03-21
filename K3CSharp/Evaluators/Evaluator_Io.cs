@@ -318,7 +318,57 @@ public partial class Evaluator
     
     private K3Value ReadBytes(K3Value operand)
     {
-        throw new NotImplementedException("6: READ BYTES not yet implemented");
+        try
+        {
+            string path;
+            
+            // Handle operand: symbol, character vector, or list with path and separator
+            if (operand is SymbolValue || (operand is CharacterValue))
+            {
+                path = GetPathFromValue(operand);
+            }
+            else if (operand is VectorValue vec && vec.Elements.Count >= 2)
+            {
+                // List format: [path, separator] - ignore separator for 6: (raw bytes)
+                path = GetPathFromValue(vec.Elements[0]);
+            }
+            else
+            {
+                throw new Exception("6: argument must be symbol, character vector, or list with path and separator");
+            }
+            
+            // Handle standard input (not applicable for raw bytes - return empty)
+            if (string.IsNullOrEmpty(path))
+            {
+                return new VectorValue(new List<K3Value>(), -3); // Empty character vector
+            }
+            
+            // Read all bytes from file using raw byte access
+            byte[] allBytes;
+            using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    fileStream.CopyTo(memoryStream);
+                    allBytes = memoryStream.ToArray();
+                }
+            }
+            
+            // Convert each byte to a character (raw byte-to-char mapping)
+            var charElements = new List<K3Value>();
+            foreach (byte b in allBytes)
+            {
+                // Direct byte-to-char mapping without encoding interpretation
+                charElements.Add(new CharacterValue(((char)b).ToString()));
+            }
+            
+            return new VectorValue(charElements, -3); // -3 indicates character vector type
+        }
+        catch (Exception ex)
+        {
+            // Convert exceptions to K signals with same format as other I/O verbs
+            throw new Exception($"6: {ex.Message}");
+        }
     }
     
     private K3Value WriteText(K3Value left, K3Value right)
@@ -636,12 +686,146 @@ public partial class Evaluator
     
     private K3Value AppendData(K3Value left, K3Value right)
     {
-        throw new NotImplementedException("5: APPEND DATA not yet implemented");
+        try
+        {
+            string path;
+            
+            // Handle left argument (path): symbol or character vector
+            path = left switch
+            {
+                SymbolValue sym => sym.Value,
+                CharacterValue charVal => charVal.Value.ToString(),
+                _ => throw new Exception("5: output path must be symbol or character vector")
+            };
+            
+            // Handle standard output (not applicable for append - redirect to WriteText)
+            if (string.IsNullOrEmpty(path))
+            {
+                // For append to standard output, just write to standard output
+                WriteToStandardOutput(right);
+                return new NullValue(); // Return null as specified
+            }
+            
+            // Append to file with UTF-8 encoding and platform-specific line endings
+            using var fileStream = new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.None);
+            using var streamWriter = new StreamWriter(fileStream, System.Text.Encoding.UTF8);
+            
+            string lineEnding = Environment.NewLine; // Platform-specific line endings
+            
+            // Handle right argument (data to append) - same logic as WriteText
+            if (right is VectorValue vec)
+            {
+                // Check if this is a list of lists (structured data with separator)
+                // Only treat as structured data if elements are actual nested vectors (not character vectors)
+                if (vec.Elements.Count > 0 && vec.Elements[0] is VectorValue nestedVec && nestedVec.VectorType != -3)
+                {
+                    // This is structured data - write as fields with separators
+                    WriteStructuredData(streamWriter, vec, lineEnding);
+                }
+                else
+                {
+                    // This is a simple list - write each item on its own line
+                    WriteSimpleList(streamWriter, vec, lineEnding);
+                }
+            }
+            else
+            {
+                // Single item - write it and add line ending
+                streamWriter.Write(right.ToString());
+                streamWriter.Write(lineEnding);
+            }
+            
+            streamWriter.Flush();
+            return new NullValue(); // Return null as specified
+        }
+        catch (Exception ex)
+        {
+            // Convert exceptions to K signals with same format as other I/O verbs
+            throw new Exception($"5: {ex.Message}");
+        }
     }
     
     private K3Value WriteBytes(K3Value left, K3Value right)
     {
-        throw new NotImplementedException("6: WRITE BYTES not yet implemented");
+        try
+        {
+            string path;
+            
+            // Handle left argument (path): symbol or character vector
+            path = left switch
+            {
+                SymbolValue sym => sym.Value,
+                CharacterValue charVal => charVal.Value.ToString(),
+                _ => throw new Exception("6: output path must be symbol or character vector")
+            };
+            
+            // Handle standard output (not applicable for raw bytes - write to console as characters)
+            if (string.IsNullOrEmpty(path))
+            {
+                // For raw bytes to standard output, write characters directly
+                if (right is VectorValue && ((VectorValue)right).VectorType == -3)
+                {
+                    // Character vector - write each character
+                    var charVector = (VectorValue)right;
+                    foreach (var element in charVector.Elements.OfType<CharacterValue>())
+                    {
+                        Console.Write(element.Value);
+                    }
+                }
+                else
+                {
+                    // Convert to string and write
+                    Console.Write(right.ToString());
+                }
+                return new NullValue(); // Return null as specified
+            }
+            
+            // Write raw bytes to file without encoding
+            using (var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                // Handle right argument (data to write as raw bytes)
+                if (right is VectorValue && ((VectorValue)right).VectorType == -3)
+                {
+                    // Character vector - convert each character to byte and write
+                    var charVector = (VectorValue)right;
+                    foreach (var element in charVector.Elements.OfType<CharacterValue>())
+                    {
+                        if (element.Value.Length > 0)
+                        {
+                            byte byteValue = (byte)element.Value[0]; // Raw char-to-byte mapping
+                            fileStream.WriteByte(byteValue);
+                        }
+                    }
+                }
+                else if (right is CharacterValue charVal)
+                {
+                    // Single character - write as byte
+                    if (charVal.Value.Length > 0)
+                    {
+                        byte byteValue = (byte)charVal.Value[0];
+                        fileStream.WriteByte(byteValue);
+                    }
+                }
+                else
+                {
+                    // Convert to string and write each character as byte
+                    string text = right.ToString();
+                    foreach (char c in text)
+                    {
+                        byte byteValue = (byte)c;
+                        fileStream.WriteByte(byteValue);
+                    }
+                }
+                
+                fileStream.Flush();
+            }
+            return new NullValue(); // Return null as specified
+        }
+        catch (Exception ex)
+        {
+            // Convert exceptions to K signals with same format as other I/O verbs
+            throw new Exception($"6: {ex.Message}");
+        }
     }
     
     /// <summary>

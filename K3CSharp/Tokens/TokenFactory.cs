@@ -128,6 +128,12 @@ namespace K3CSharp
                 TokenType.IO_VERB_1 => new IOOperatorToken(tokenType, lexeme, position, line, column),
                 TokenType.IO_VERB_2 => new IOOperatorToken(tokenType, lexeme, position, line, column),
                 TokenType.IO_VERB_3 => new IOOperatorToken(tokenType, lexeme, position, line, column),
+                TokenType.IO_VERB_4 => new IOOperatorToken(tokenType, lexeme, position, line, column),
+                TokenType.IO_VERB_5 => new IOOperatorToken(tokenType, lexeme, position, line, column),
+                TokenType.IO_VERB_6 => new IOOperatorToken(tokenType, lexeme, position, line, column),
+                TokenType.IO_VERB_7 => new IOOperatorToken(tokenType, lexeme, position, line, column),
+                TokenType.IO_VERB_8 => new IOOperatorToken(tokenType, lexeme, position, line, column),
+                TokenType.IO_VERB_9 => new IOOperatorToken(tokenType, lexeme, position, line, column),
                 TokenType.TYPE => new IOOperatorToken(tokenType, lexeme, position, line, column),
                 TokenType.STRING_REPRESENTATION => new IOOperatorToken(tokenType, lexeme, position, line, column),
 
@@ -176,7 +182,8 @@ namespace K3CSharp
                 TokenType.VS or TokenType.CI or TokenType.IC or
                 TokenType.GTIME or TokenType.LTIME or TokenType.LT or TokenType.JD or TokenType.DJ or
                 // I/O operators that can be unary
-                TokenType.IO_VERB_0 or TokenType.TYPE or TokenType.STRING_REPRESENTATION =>
+                TokenType.IO_VERB_0 or TokenType.IO_VERB_1 or TokenType.IO_VERB_2 or TokenType.IO_VERB_3 or TokenType.TYPE or TokenType.STRING_REPRESENTATION or
+                TokenType.IO_VERB_6 =>
                     true,
                 _ => false
             };
