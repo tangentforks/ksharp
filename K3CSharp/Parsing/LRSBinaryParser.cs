@@ -80,7 +80,36 @@ namespace K3CSharp.Parsing
                    tokenType == TokenType.APPLY ||
                    tokenType == TokenType.DOT_APPLY ||
                    tokenType == TokenType.TYPE ||
-                   tokenType == TokenType.STRING_REPRESENTATION;
+                   tokenType == TokenType.STRING_REPRESENTATION ||
+                   // Mathematical functions (dyadic)
+                   tokenType == TokenType.DIV ||
+                   tokenType == TokenType.DOT_PRODUCT ||
+                   tokenType == TokenType.MUL ||
+                   tokenType == TokenType.AND ||
+                   tokenType == TokenType.OR ||
+                   tokenType == TokenType.XOR ||
+                   tokenType == TokenType.ROT ||
+                   tokenType == TokenType.SHIFT ||
+                   tokenType == TokenType.LSQ ||
+                   tokenType == TokenType.LIN ||
+                   tokenType == TokenType.BIN ||
+                   tokenType == TokenType.BINL ||
+                   tokenType == TokenType.DV ||
+                   tokenType == TokenType.DI ||
+                   tokenType == TokenType.VS ||
+                   tokenType == TokenType.SV ||
+                   tokenType == TokenType.SS ||
+                   tokenType == TokenType.SM ||
+                   tokenType == TokenType.CI ||
+                   tokenType == TokenType.IC ||
+                   tokenType == TokenType.BD ||
+                   tokenType == TokenType.DB ||
+                   // System functions (dyadic)
+                   tokenType == TokenType.IN ||
+                   tokenType == TokenType.DRAW ||
+                   tokenType == TokenType.GETENV ||
+                   tokenType == TokenType.SETENV ||
+                   tokenType == TokenType.SIZE;
         }
         
         /// <summary>

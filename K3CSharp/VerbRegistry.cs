@@ -227,14 +227,20 @@ namespace K3CSharp
             RegisterVerb("DOT_MULTIPLY", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("_dot", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("MUL", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("_mul", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("INV", VerbType.Operator, new[] { 1 }, null);
 
             // System verbs (underscore functions)
             RegisterVerb("BIN", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("_bin", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("BINL", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("_binl", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("LIN", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("_lin", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("DV", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("_dv", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("DI", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("_di", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("VS", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("SV", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("SS", VerbType.Operator, new[] { 1, 2 }, null);
@@ -267,7 +273,6 @@ namespace K3CSharp
             RegisterVerb("hint", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("NULL", VerbType.Operator, new[] { 0 }, null);
             RegisterVerb("GTIME", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("LTIME", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("LT", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("JD", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("DJ", VerbType.Operator, new[] { 1 }, null);
@@ -275,6 +280,10 @@ namespace K3CSharp
             RegisterVerb("TIME", VerbType.Operator, new[] { 0 }, null);
 
             // Mathematical functions - register both symbol and token type names
+            RegisterVerb("_log", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("LOG", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_exp", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("EXP", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("_abs", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("ABS", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("_sqr", VerbType.Operator, new[] { 1 }, null);
@@ -303,6 +312,25 @@ namespace K3CSharp
             RegisterVerb("TANH", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("NOT", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("NEGATE", VerbType.Operator, new[] { 1 }, null);
+
+            // Additional monadic system verbs
+            RegisterVerb("_lt", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("LT", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_jd", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("JD", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_dj", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("DJ", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_T", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_in", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("IN", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_bd", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("BD", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_db", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("DB", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_not", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("NOT", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_exit", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("EXIT", VerbType.Operator, new[] { 1 }, null);
 
             // Adverbs
             RegisterVerb("ADVERB_SLASH", VerbType.Operator, new[] { 2 }, null);
