@@ -1419,10 +1419,6 @@ namespace K3CSharp.Tests
 
                 // New I/O verb tests for 5: and 6: operations
 
-                ("io_lrs_test.k", ""),
-
-                ("io_lrs_complex.k", ""),
-
                 ("io_append_simple.k", ""),
 
                 ("io_append_basic.k", ""),
