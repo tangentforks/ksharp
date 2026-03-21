@@ -61,7 +61,26 @@ namespace K3CSharp.Parsing
                    tokenType == TokenType.MATCH ||
                    tokenType == TokenType.NEGATE ||
                    tokenType == TokenType.DOLLAR ||
-                   tokenType == TokenType.QUESTION;
+                   tokenType == TokenType.QUESTION ||
+                   // I/O verbs (digit-colon operators)
+                   tokenType == TokenType.IO_VERB_0 ||
+                   tokenType == TokenType.IO_VERB_1 ||
+                   tokenType == TokenType.IO_VERB_2 ||
+                   tokenType == TokenType.IO_VERB_3 ||
+                   tokenType == TokenType.IO_VERB_4 ||
+                   tokenType == TokenType.IO_VERB_5 ||
+                   tokenType == TokenType.IO_VERB_6 ||
+                   tokenType == TokenType.IO_VERB_7 ||
+                   tokenType == TokenType.IO_VERB_8 ||
+                   tokenType == TokenType.IO_VERB_9 ||
+                   // Additional operators
+                   tokenType == TokenType.JOIN ||
+                   tokenType == TokenType.HASH ||
+                   tokenType == TokenType.UNDERSCORE ||
+                   tokenType == TokenType.APPLY ||
+                   tokenType == TokenType.DOT_APPLY ||
+                   tokenType == TokenType.TYPE ||
+                   tokenType == TokenType.STRING_REPRESENTATION;
         }
         
         /// <summary>
