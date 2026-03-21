@@ -675,7 +675,7 @@ In addition to Michal Wallace's direct contributions, the following people have 
 - **Arthur Whitney** - Creator of the K and Q languages
 - **Adam Jacobs** - His comments and insight over the years regarding the K interpreter have provided invaluable inspiration and information.
 - **Joel Kaplan** - He gave me the chance to learn K. His warning over a decade ago "Once you learn K it will change your mind and you will never think about programming the same way" has proven to be remarkably accurate.
-- **Stevan Apter** - His K parser at nsl.com has been a really helpful source of inspiration and reference.
+- **Stevan Apter** - His K parser at nsl.com has been a really helpful source of inspiration and reference. Stevan, together with **Sasha Katsman** and **Michael Rosenberg**, greatly helped in my understanding of traditional "idiomatic K".
 - **John Earnest** - His oK (K5 interpreter) proved to me that a single person can build a fully functional K interpreter. His regular questioning of AI assisted development has been an outstanding motivation for pushing the limits and exploring what's possible.
 
 ## Note regarding project name
