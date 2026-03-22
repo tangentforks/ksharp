@@ -3654,6 +3654,12 @@ namespace K3CSharp
                     return ApplyOverAdverb(arguments[1], arguments);
                 }
                 
+                // Special handling for scan adverb - apply directly to arguments without base verb first
+                if (verbWithAdverbs.Adverbs.Contains("ADVERB_BACKSLASH"))
+                {
+                    return ApplyScanAdverb(arguments[1], arguments);
+                }
+                
                 // Start with the base verb and arguments
                 K3Value result = ApplyBaseVerb(verbWithAdverbs.BaseVerb, arguments);
                 
