@@ -17,7 +17,7 @@ namespace K3CSharp.Parsing
         /// <summary>
         /// Enable fallback to legacy parser when LRS fails
         /// </summary>
-        public static bool EnableFallback { get; set; } = true;
+        public static bool EnableFallback { get; set; } = false;
         
         /// <summary>
         /// Enable debugging output for parsing operations

@@ -751,9 +751,45 @@ namespace K3CSharp
                     return EvaluateBinaryOperatorWithRegistry(op.Value.ToString(), left, right);
                 }
             }
+            else if (node.Children.Count == 2 && 
+                    (op.Value.ToString() == "ADVERB_TICK" || op.Value.ToString() == "ADVERB_SLASH" || op.Value.ToString() == "ADVERB_BACKSLASH" ||
+                     op.Value.ToString() == "ADVERB_SLASH_COLON" || op.Value.ToString() == "ADVERB_BACKSLASH_COLON" || op.Value.ToString() == "ADVERB_TICK_COLON"))
+            {
+                // Handle 2-argument adverb structure from LRS parser: ADVERB(verb, argument)
+                var verbNode = node.Children[0];
+                var argument = Evaluate(node.Children[1]);
+                
+                // Parse the verb with adverbs
+                var verbWithAdverbs = VerbAdverbParser.ParseVerbWithAdverbs(verbNode);
+                if (verbWithAdverbs != null)
+                {
+                    // Add the current adverb to the list
+                    var adverbs = new List<string>(verbWithAdverbs.Adverbs) { op.Value.ToString() };
+                    var enhancedVerbWithAdverbs = new VerbWithAdverbs(verbWithAdverbs.BaseVerb, adverbs, verbNode.StartPosition);
+                    
+                    // For 2-argument adverb structures, we need to handle it differently
+                    // The argument contains both left and right operands that need to be extracted
+                    return adverbAwareEvaluator.HandleTwoArgumentAdverb(enhancedVerbWithAdverbs, argument);
+                }
+                else
+                {
+                    // Fallback to legacy evaluation for simple cases
+                    var verbValue = Evaluate(verbNode);
+                    return op.Value.ToString() switch
+                    {
+                        "ADVERB_SLASH" => ApplyAdverbSlash(verbValue, argument, argument),
+                        "ADVERB_BACKSLASH" => ApplyAdverbBackslash(verbValue, argument, argument),
+                        "ADVERB_TICK" => HandleAdverbTick(verbValue, argument, argument),
+                        "ADVERB_SLASH_COLON" => ApplyAdverbSlashColon(verbValue, argument, argument),
+                        "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(verbValue, argument, argument),
+                        "ADVERB_TICK_COLON" => ApplyAdverbTickColon(verbValue, argument, argument),
+                        _ => throw new Exception($"Unknown adverb: {op.Value}")
+                    };
+                }
+            }
             else if (node.Children.Count == 3 && 
-                    (op.Value.ToString() == "/" || op.Value.ToString() == "\\" || op.Value.ToString() == "'" ||
-                     op.Value.ToString() == "/:" || op.Value.ToString() == "\\:" || op.Value.ToString() == "':"))
+                    (op.Value.ToString() == "ADVERB_TICK" || op.Value.ToString() == "ADVERB_SLASH" || op.Value.ToString() == "ADVERB_BACKSLASH" ||
+                     op.Value.ToString() == "ADVERB_SLASH_COLON" || op.Value.ToString() == "ADVERB_BACKSLASH_COLON" || op.Value.ToString() == "ADVERB_TICK_COLON"))
             {
                 // Handle 3-argument adverb structure using adverb-aware evaluation
                 var verbNode = node.Children[0];
@@ -777,12 +813,12 @@ namespace K3CSharp
                     var verbValue = Evaluate(verbNode);
                     return op.Value.ToString() switch
                     {
-                        "/" => ApplyAdverbSlash(verbValue, leftArg, rightArg),
-                        "\\" => ApplyAdverbBackslash(verbValue, leftArg, rightArg),
-                        "'" => HandleAdverbTick(verbValue, leftArg, rightArg),
-                        "/:" => ApplyAdverbSlashColon(verbValue, leftArg, rightArg),
-                        "\\:" => ApplyAdverbBackslashColon(verbValue, leftArg, rightArg),
-                        "':" => ApplyAdverbTickColon(verbValue, leftArg, rightArg),
+                        "ADVERB_SLASH" => ApplyAdverbSlash(verbValue, leftArg, rightArg),
+                        "ADVERB_BACKSLASH" => ApplyAdverbBackslash(verbValue, leftArg, rightArg),
+                        "ADVERB_TICK" => HandleAdverbTick(verbValue, leftArg, rightArg),
+                        "ADVERB_SLASH_COLON" => ApplyAdverbSlashColon(verbValue, leftArg, rightArg),
+                        "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(verbValue, leftArg, rightArg),
+                        "ADVERB_TICK_COLON" => ApplyAdverbTickColon(verbValue, leftArg, rightArg),
                         _ => throw new Exception($"Unknown adverb: {op.Value}")
                     };
                 }
@@ -3653,16 +3689,52 @@ namespace K3CSharp
                 };
             }
 
+            public K3Value HandleTwoArgumentAdverb(VerbWithAdverbs verbWithAdverbs, K3Value argument)
+            {
+                // For 2-argument adverb structures, the argument contains the right operand
+                // We need to extract the left operand from the context or handle it differently
+                // This is a simplified implementation for the each adverb case
+                
+                if (verbWithAdverbs.Adverbs.Contains("ADVERB_TICK"))
+                {
+                    // Handle each adverb with vector arguments
+                    // For now, assume the argument is a vector and we need to apply the verb element-wise
+                    return ApplyEachAdverb(verbWithAdverbs.BaseVerb, argument);
+                }
+                
+                // Fallback to treating it as a single argument adverb
+                return EvaluateVerbWithAdverbs(verbWithAdverbs, argument);
+            }
+            
+            private K3Value ApplyEachAdverb(string verb, K3Value argument)
+            {
+                // For the each adverb, apply the verb to each element of the argument
+                if (argument is VectorValue vector)
+                {
+                    var results = new List<K3Value>();
+                    foreach (var element in vector.Elements)
+                    {
+                        // Apply the verb to each element (as a single argument)
+                        var result = ApplyBaseVerb(verb, new K3Value[] { element });
+                        results.Add(result);
+                    }
+                    return new VectorValue(results);
+                }
+                
+                // If not a vector, just apply the verb normally
+                return ApplyBaseVerb(verb, new K3Value[] { argument });
+            }
+
             private K3Value ApplyAdverb(string adverb, K3Value verbResult, K3Value[] originalArguments)
             {
                 return adverb switch
                 {
-                    "/" => ApplyOverAdverb(verbResult, originalArguments),
-                    "\\" => ApplyScanAdverb(verbResult, originalArguments),
-                    "'" => ApplyEachAdverb(verbResult, originalArguments),
-                    "/:" => ApplyEachRightAdverb(verbResult, originalArguments),
-                    "\\:" => ApplyEachLeftAdverb(verbResult, originalArguments),
-                    "':" => ApplyEachPriorAdverb(verbResult, originalArguments),
+                    "ADVERB_SLASH" => ApplyOverAdverb(verbResult, originalArguments),
+                    "ADVERB_BACKSLASH" => ApplyScanAdverb(verbResult, originalArguments),
+                    "ADVERB_TICK" => ApplyEachAdverb(verbResult, originalArguments),
+                    "ADVERB_SLASH_COLON" => ApplyEachRightAdverb(verbResult, originalArguments),
+                    "ADVERB_BACKSLASH_COLON" => ApplyEachLeftAdverb(verbResult, originalArguments),
+                    "ADVERB_TICK_COLON" => ApplyEachPriorAdverb(verbResult, originalArguments),
                     _ => throw new Exception($"Unknown adverb: {adverb}")
                 };
             }
@@ -3705,9 +3777,23 @@ namespace K3CSharp
 
             private K3Value ApplyEachAdverb(K3Value verbResult, K3Value[] originalArguments)
             {
-                // Each adverb (') - apply verb to each element individually
-                if (verbResult is VectorValue vector)
+                // Each adverb (') - apply verb element-wise between vectors
+                if (originalArguments.Length == 2 && originalArguments[0] is VectorValue leftVec && originalArguments[1] is VectorValue rightVec)
                 {
+                    // Apply verb element-wise between corresponding elements
+                    var results = new List<K3Value>();
+                    var minLength = Math.Min(leftVec.Elements.Count, rightVec.Elements.Count);
+                    
+                    for (int i = 0; i < minLength; i++)
+                    {
+                        var result = ApplyBaseVerb(GetVerbFromContext(originalArguments), new[] { leftVec.Elements[i], rightVec.Elements[i] });
+                        results.Add(result);
+                    }
+                    return new VectorValue(results);
+                }
+                else if (verbResult is VectorValue vector)
+                {
+                    // Fallback for single vector case
                     var results = new List<K3Value>();
                     foreach (var element in vector.Elements)
                     {
@@ -3889,6 +3975,17 @@ namespace K3CSharp
         /// <returns>VerbWithAdverbs object or null if not a verb with adverbs</returns>
         public static VerbWithAdverbs? ParseVerbWithAdverbs(ASTNode node)
         {
+            // Handle simple literal verbs (like +, -, *, etc.)
+            if (node.Type == ASTNodeType.Literal && node.Value is SymbolValue symbolValue)
+            {
+                var verbSymbol = symbolValue.Value.ToString();
+                if (IsVerb(verbSymbol))
+                {
+                    return new VerbWithAdverbs(verbSymbol, new List<string>(), node.StartPosition);
+                }
+                return null;
+            }
+            
             if (node.Type != ASTNodeType.BinaryOp || node.Value == null)
                 return null;
 
@@ -3905,10 +4002,10 @@ namespace K3CSharp
                     var adverbs = new List<string>(leftResult.Adverbs) { opSymbol };
                     return new VerbWithAdverbs(leftResult.BaseVerb, adverbs, node.StartPosition);
                 }
-                else if (node.Children[0].Type == ASTNodeType.Literal && node.Children[0].Value is SymbolValue symbolValue)
+                else if (node.Children[0].Type == ASTNodeType.Literal && node.Children[0].Value is SymbolValue leftSymbolValue)
                 {
                     // Base verb found
-                    var baseVerb = symbolValue.Value.ToString();
+                    var baseVerb = leftSymbolValue.Value.ToString();
                     return new VerbWithAdverbs(baseVerb, new List<string> { opSymbol }, node.StartPosition);
                 }
             }

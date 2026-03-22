@@ -3,41 +3,41 @@
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║ Test File                                          │ Input                │ Actual Output        │ Expected             ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ adverb_each_vector_minus.k                         │ (10 20 30) -' (1 2 3)  // Test each adverb with equal length vectors (now implemented) - Each should apply the operation element-wise between corresponding vectors │ Error: Binary o...   │ 9 18 27              ║
-║ adverb_each_vector_multiply.k                      │ (1 2 3) *' (4 5 6)  // Test each adverb with equal length vectors (now implemented) - Each should apply the operation element-wise between corresponding vectors │ Error: Binary o...   │ 4 10 18              ║
-║ adverb_each_vector_plus.k                          │ (1 2 3 4) +' (5 6 7 8)  // Test each adverb with equal length vectors (now implemented) - Each should apply the operation element-wise between corresponding vectors │ Error: Binary o...   │ 6 8 10 12            ║
-║ adverb_over_divide.k                               │ %/ 100 2 5           │ Error: Binary o...   │ 10.0                 ║
-║ adverb_over_max.k                                  │ |/ 1 3 2 5 4         │ Error: Binary o...   │ 5                    ║
-║ adverb_over_min.k                                  │ &/ 5 3 4 1 2         │ Error: Binary o...   │ 1                    ║
-║ adverb_over_minus.k                                │ -/ 10 2 3 1          │ Error: Binary o...   │ 4                    ║
-║ adverb_over_multiply.k                             │ */ 1 2 3 4           │ Error: Binary o...   │ 24                   ║
-║ adverb_over_plus.k                                 │ +/ 1 2 3 4 5         │ Error: Binary o...   │ 15                   ║
-║ plus_over_empty.k                                  │ +/!0                 │ Error: Binary o...   │ 0                    ║
-║ multiply_over_empty.k                              │ */!0                 │ Error: Binary o...   │ 1                    ║
-║ adverb_over_power.k                                │ ^/ 2 3 2             │ Error: Binary o...   │ 64                   ║
-║ adverb_over_with_initialization_1.k                │ 1 +/ 2 3 4 5         │ Error: Binary o...   │ 15                   ║
-║ adverb_over_with_initialization_2.k                │ 2 +/ 1 2 3 4         │ Error: Binary o...   │ 12                   ║
-║ adverb_scan_divide.k                               │ %\ 100 2 5           │ Error: Binary o...   │ (100;50.0;10.0)      ║
-║ adverb_scan_max.k                                  │ |\ 1 3 2 5 4         │ Error: Binary o...   │ 1 3 3 5 5            ║
-║ adverb_scan_min.k                                  │ &\ 5 3 4 1 2         │ Error: Binary o...   │ 5 3 3 1 1            ║
-║ adverb_scan_minus.k                                │ -\ 10 2 3 1          │ Error: Binary o...   │ 10 8 5 4             ║
-║ adverb_scan_multiply.k                             │ *\ 1 2 3 4           │ Error: Binary o...   │ 1 2 6 24             ║
-║ adverb_scan_plus.k                                 │ +\ 1 2 3 4 5         │ Error: Binary o...   │ 1 3 6 10 15          ║
-║ adverb_scan_power.k                                │ ^\ 2 3 2             │ Error: Binary o...   │ 2 8 64               ║
-║ adverb_scan_with_initialization_1.k                │ 1 +\ 2 3 4 5         │ Error: Binary o...   │ 1 3 6 10 15          ║
-║ adverb_scan_with_initialization_2.k                │ 2 +\ 1 2 3 4         │ Error: Binary o...   │ 2 3 5 8 12           ║
-║ adverb_scan_with_initialization_divide.k           │ 2 %\ 1 2 3 4         │ Error: Binary o...   │ (2;2.0;1.0;0.33...   ║
-║ adverb_scan_with_initialization_minus.k            │ 2 -\ 1 2 3 4         │ Error: Binary o...   │ 2 1 -1 -4 -8         ║
-║ adverb_scan_with_initialization.k                  │ 2 *\ 1 2 3           │ Error: Binary o...   │ 2 2 4 12             ║
+║ adverb_each_vector_minus.k                         │ (10 20 30) -' (1 2 3)  // Test each adverb with equal length vectors (now implemented) - Each should apply the operation element-wise between corresponding vectors │ 9 18 27              │                      ║
+║ adverb_each_vector_multiply.k                      │ (1 2 3) *' (4 5 6)  // Test each adverb with equal length vectors (now implemented) - Each should apply the operation element-wise between corresponding vectors │ 4 10 18              │                      ║
+║ adverb_each_vector_plus.k                          │ (1 2 3 4) +' (5 6 7 8)  // Test each adverb with equal length vectors (now implemented) - Each should apply the operation element-wise between corresponding vectors │ 6 8 10 12            │                      ║
+║ adverb_over_divide.k                               │ %/ 100 2 5           │ Error: % operat...   │ 10.0                 ║
+║ adverb_over_max.k                                  │ |/ 1 3 2 5 4         │ 1 3 2 5 4            │ 5                    ║
+║ adverb_over_min.k                                  │ &/ 5 3 4 1 2         │ (();();();();())     │ 1                    ║
+║ adverb_over_minus.k                                │ -/ 10 2 3 1          │ 10 2 3 1             │ 4                    ║
+║ adverb_over_multiply.k                             │ */ 1 2 3 4           │ 0 0 0 0              │ 24                   ║
+║ adverb_over_plus.k                                 │ +/ 1 2 3 4 5         │ 1 2 3 4 5            │ 15                   ║
+║ plus_over_empty.k                                  │ +/!0                 │ ()                   │ 0                    ║
+║ multiply_over_empty.k                              │ */!0                 │ ()                   │ 1                    ║
+║ adverb_over_power.k                                │ ^/ 2 3 2             │ 0 0 0                │ 64                   ║
+║ adverb_over_with_initialization_1.k                │ 1 +/ 2 3 4 5         │ 3 4 5 6              │ 15                   ║
+║ adverb_over_with_initialization_2.k                │ 2 +/ 1 2 3 4         │ 3 4 5 6              │ 12                   ║
+║ adverb_scan_divide.k                               │ %\ 100 2 5           │ Error: Division...   │ (100;50.0;10.0)      ║
+║ adverb_scan_max.k                                  │ |\ 1 3 2 5 4         │ 1 3 3 5 5            │                      ║
+║ adverb_scan_min.k                                  │ &\ 5 3 4 1 2         │ 0 0 0 0 0            │ 5 3 3 1 1            ║
+║ adverb_scan_minus.k                                │ -\ 10 2 3 1          │ -10 -8 -5 -4         │ 10 8 5 4             ║
+║ adverb_scan_multiply.k                             │ *\ 1 2 3 4           │ 0 0 0 0              │ 1 2 6 24             ║
+║ adverb_scan_plus.k                                 │ +\ 1 2 3 4 5         │ 1 3 6 10 15          │                      ║
+║ adverb_scan_power.k                                │ ^\ 2 3 2             │ 0 1 1                │ 2 8 64               ║
+║ adverb_scan_with_initialization_1.k                │ 1 +\ 2 3 4 5         │ 3 7 12 18            │ 1 3 6 10 15          ║
+║ adverb_scan_with_initialization_2.k                │ 2 +\ 1 2 3 4         │ 3 7 12 18            │ 2 3 5 8 12           ║
+║ adverb_scan_with_initialization_divide.k           │ 2 %\ 1 2 3 4         │ 2.0 2.0 3.0 6.0      │ (2;2.0;1.0;0.33...   ║
+║ adverb_scan_with_initialization_minus.k            │ 2 -\ 1 2 3 4         │ 1 1 2 4              │ 2 1 -1 -4 -8         ║
+║ adverb_scan_with_initialization.k                  │ 2 *\ 1 2 3           │ 2 8 48               │ 2 2 4 12             ║
 ║ anonymous_function_double_param.k                  │ {[op1;op2] op1 * op2} │ {[op1;op2] op1 ...   │                      ║
 ║ anonymous_function_empty.k                         │ {}                   │ {}                   │                      ║
-║ anonymous_function_over_adverb.k                   │ {x*%y}/10 20 30      │ Error: Binary o...   │ 0.01666667           ║
-║ anonymous_function_scan_adverb.k                   │ {x*%y}\10 20 30      │ Error: Binary o...   │ (10;0.5;0.01666...   ║
+║ anonymous_function_over_adverb.k                   │ {x*%y}/10 20 30      │ Error: Function...   │ 0.01666667           ║
+║ anonymous_function_scan_adverb.k                   │ {x*%y}\10 20 30      │ Error: Function...   │ (10;0.5;0.01666...   ║
 ║ test_projected_function.k                          │ %  // This should create a projected function │ %                    │                      ║
 ║ atom_scalar.k                                      │ @42                  │ 1                    │                      ║
 ║ atom_vector.k                                      │ @1 2 3               │ 0                    │                      ║
 ║ lrs_atomic_parser_basic.k                          │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
-║ lrs_adverb_parser_each.k                           │ (1 2 3) %/ 2         │ Error: Binary o...   │ 0.5 1.0 1.5          ║
+║ lrs_adverb_parser_each.k                           │ (1 2 3) %/ 2         │ Error: % operat...   │ 0.5 1.0 1.5          ║
 ║ lrs_adverb_parser_basic.k                          │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
 ║ lrs_expression_processor_test.k                    │ 1 + 2                │ 3                    │                      ║
 ║ lrs_integration_bracket.k                          │ [1 + 2]              │ 3                    │                      ║
@@ -112,8 +112,8 @@
 ║ lambda_string_assign.k                             │ {a:"hello";a}[]      │ "hello"              │                      ║
 ║ lambda_string_literal.k                            │ {"hello"}[]          │ "hello"              │                      ║
 ║ lambda_symbol_literal.k                            │ {`abc}[]             │ `abc                 │                      ║
-║ named_function_over.k                              │ f:{x*%y};f/10 20 30  │ Error: Binary o...   │ 0.01666667           ║
-║ named_function_scan.k                              │ f:{x*%y};f\10 20 30  │ Error: Binary o...   │ (10;0.5;0.01666...   ║
+║ named_function_over.k                              │ f:{x*%y};f/10 20 30  │ Error: Function...   │ 0.01666667           ║
+║ named_function_scan.k                              │ f:{x*%y};f\10 20 30  │ Error: Function...   │ (10;0.5;0.01666...   ║
 ║ where_generate_scalar.k                            │ &4                   │ 0 0 0 0              │                      ║
 ║ grade_down_operator.k                              │ > (3 11 9 9 4)       │ 1 2 3 4 0            │                      ║
 ║ grade_up_operator.k                                │ < (3 11 9 9 4)       │ 0 4 2 3 1            │                      ║
@@ -245,7 +245,7 @@
 ║ simple_nested_test.k                               │ (1 2 3)              │ 1 2 3                │                      ║
 ║ minus_integer.k                                    │ a:5                  │ 2                    │                      ║
 ║ test_triadic_dot.k                                 │ .[1 2 3;1;-:]        │ Error: Both LRS...   │ 1 -2 3               ║
-║ test_adverb_aware_evaluation.k                     │ +/ 1 2 3             │ Error: Binary o...   │ 6                    ║
+║ test_adverb_aware_evaluation.k                     │ +/ 1 2 3             │ 1 2 3                │ 6                    ║
 ║ special_float_neg_inf.k                            │ -0i                  │ -0i                  │                      ║
 ║ special_float_null.k                               │ 0n                   │ 0n                   │                      ║
 ║ special_float_pos_inf.k                            │ 0i                   │ 0i                   │                      ║
@@ -386,8 +386,8 @@
 ║ monadic_format_float.k                             │ $3.14                │ "3.14"               │                      ║
 ║ monadic_format_vector_simple.k                     │ $1 2 3               │ (,"1";,"2";,"3")     │                      ║
 ║ format_integer.k                                   │ 0$1                  │ ""                   │                      ║
-║ ci_adverb_vector.k                                 │ _ci' 97 94 80        │ Error: Binary o...   │ "a^P"                ║
-║ adverb_each_count.k                                │ #:' (1 2 3;1 2 3 4 5; 1 2) │ Error: Binary o...   │ 3 5 2                ║
+║ ci_adverb_vector.k                                 │ _ci' 97 94 80        │ Error: Unknown ...   │ "a^P"                ║
+║ adverb_each_count.k                                │ #:' (1 2 3;1 2 3 4 5; 1 2) │ ()                   │ 3 5 2                ║
 ║ format_float_numeric.k                             │ 0.0$1                │ ,"1"                 │                      ║
 ║ form_long.k                                        │ 0j$"42"              │ 42j                  │                      ║
 ║ format_numeric.k                                   │ 5$1                  │ "    1"              │                      ║
@@ -508,9 +508,9 @@
 ║ where_operator.k                                   │ & (1 0 1 1 0)        │ 0 2 3                │                      ║
 ║ where_vector_counts.k                              │ & (3 2 1)            │ 0 0 0 1 1 2          │                      ║
 ║ floor_operator.k                                   │ _3.7                 │ 3                    │                      ║
-║ adverb_backslash_colon_basic.k                     │ 1 2 3 +\: 4 5 6      │ Error: Binary o...   │ (5 6 7;6 7 8;7 ...   ║
-║ adverb_slash_colon_basic.k                         │ 1 2 3 +/: 4 5 6      │ Error: Binary o...   │ (5 6 7;6 7 8;7 ...   ║
-║ adverb_tick_colon_basic.k                          │ -': 4 8 9 12 20      │ Error: Binary o...   │ 4 1 3 8              ║
+║ adverb_backslash_colon_basic.k                     │ 1 2 3 +\: 4 5 6      │ (5 6 7;6 7 8;7 ...   │                      ║
+║ adverb_slash_colon_basic.k                         │ 1 2 3 +/: 4 5 6      │ (5 6 7;6 7 8;7 ...   │                      ║
+║ adverb_tick_colon_basic.k                          │ -': 4 8 9 12 20      │ -4 -4 -1 -3 -8       │ 4 1 3 8              ║
 ║ amend_apply.k                                      │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10) │ (1 2 13 4 5;6 7...   │                      ║
 ║ amend_dot_test.k                                   │ .[1 2 3; 1; +; 10]   │ 1 12 3               │                      ║
 ║ amend_parenthesized.k                              │ (.) . (1 2 3; 0; +; 10) │ 11 2 3               │                      ║
@@ -560,7 +560,7 @@
 ║ isolated.k                                         │ a:1.5                │ 0.6                  │                      ║
 ║ modulo.k                                           │ a:1.5                │ 0.6                  │                      ║
 ║ monadic_format_mixed_vector.k                      │ $(1;2.5;"hello";`symbol) │ (,"1";"2.5";"he...   │                      ║
-║ over_plus_empty.k                                  │ +/!0                 │ Error: Binary o...   │ 0                    ║
+║ over_plus_empty.k                                  │ +/!0                 │ ()                   │ 0                    ║
 ║ simple_division.k                                  │ 8 % 2                │ 4.0                  │                      ║
 ║ simple_subtraction.k                               │ 5 - 3                │ 2                    │                      ║
 ║ string_parse.k                                     │ a: 10                │ 30                   │                      ║
@@ -737,14 +737,14 @@
 ║ math_dot_basic.k                                   │ 1 2 3 _dot 4 5 6     │ 32                   │                      ║
 ║ math_dot_matrix_matrix.k                           │ (1 2 3;4 5 6) _dot (7 8 9;10 11 12) │ 47 71 99             │                      ║
 ║ math_dot_matrix_2x2.k                              │ (1 2;3 4) _dot (5 6;7 8) │ 26 44                │                      ║
-║ math_dot_matrix_each_right.k                       │ (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12) │ Error: Binary o...   │ (47 64 81;52 71...   ║
-║ math_dot_vector_each_left.k                        │ (1 2) _dot\: (3 4;5 6) │ Error: Binary o...   │ (8 10;16 20)         ║
-║ adverb_complex_vector_each_right.k                 │ 10 11 12 +/: ((1 2 3);(4 5 6);(7 8 9)) │ Error: Binary o...   │ (11 13 15;14 16...   ║
-║ adverb_complex_matrix_each_right.k                 │ ((1 2 3);(4 5 6);(7 8 9)) +/: 10 11 12 │ Error: Binary o...   │ ((11 12 13;14 1...   ║
-║ adverb_chaining_join_each_left.k                   │ ((1 2 3);(4 5 6);(7 8 9)),/:\:((9 8 7);(6 5 4);(3 2 1)) │ Error: Binary o...   │ ((1 2 3 9 8 7;1...   ║
-║ adverb_complex_string_each_left.k                  │ (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),/:\:"  " │ Error: Binary o...   │ ((("hello";"wor...   ║
-║ join_each_left.k                                   │ (1 2 3),\: (4 5 6)   │ Error: Binary o...   │ (1 4 5 6;2 4 5 ...   ║
-║ test_nested_adverb.k                               │ 1 2 3 ,/:\: 4 5 6    │ Error: Binary o...   │ ((1 4;1 5;1 6);...   ║
+║ math_dot_matrix_each_right.k                       │ (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12) │ Error: Unknown ...   │ (47 64 81;52 71...   ║
+║ math_dot_vector_each_left.k                        │ (1 2) _dot\: (3 4;5 6) │ Error: Unknown ...   │ (8 10;16 20)         ║
+║ adverb_complex_vector_each_right.k                 │ 10 11 12 +/: ((1 2 3);(4 5 6);(7 8 9)) │ Error: Cannot a...   │ (11 13 15;14 16...   ║
+║ adverb_complex_matrix_each_right.k                 │ ((1 2 3);(4 5 6);(7 8 9)) +/: 10 11 12 │ (11 13 15;14 16...   │ ((11 12 13;14 1...   ║
+║ adverb_chaining_join_each_left.k                   │ ((1 2 3);(4 5 6);(7 8 9)),/:\:((9 8 7);(6 5 4);(3 2 1)) │ ((1 2 3 9 8 7;1...   │                      ║
+║ adverb_complex_string_each_left.k                  │ (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),/:\:"  " │ ((("hello";"wor...   │                      ║
+║ join_each_left.k                                   │ (1 2 3),\: (4 5 6)   │ (1 2 3 4;1 2 3 ...   │ (1 4 5 6;2 4 5 ...   ║
+║ test_nested_adverb.k                               │ 1 2 3 ,/:\: 4 5 6    │ ((1 4;1 5;1 6);...   │                      ║
 ║ math_lsq_non_square.k                              │ // Non-square matrix: 2x3 matrix (more columns than rows) │ -1.0 2.0             │                      ║
 ║ math_lsq_high_rank.k                               │ // Rectangular matrix: 2x4 matrix (more columns than rows) │ -8.0 9.0             │                      ║
 ║ math_lsq_complex.k                                 │ // Complex non-square case with mixed values │ 0.1232877 1.506849   │                      ║
@@ -851,165 +851,140 @@
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 773/847 tests passed (91.3%)                                                                               ║
+║ SUMMARY: 783/847 tests passed (92.4%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
-Test: adverb_each_vector_minus.k
-Input: (10 20 30) -' (1 2 3)  // Test each adverb with equal length vectors (now implemented) - Each should apply the operation element-wise between corresponding vectors
-Expected: 9 18 27
-Actual: Error: Binary operator must have exactly 2 children, got 3
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_each_vector_multiply.k
-Input: (1 2 3) *' (4 5 6)  // Test each adverb with equal length vectors (now implemented) - Each should apply the operation element-wise between corresponding vectors
-Expected: 4 10 18
-Actual: Error: Binary operator must have exactly 2 children, got 3
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_each_vector_plus.k
-Input: (1 2 3 4) +' (5 6 7 8)  // Test each adverb with equal length vectors (now implemented) - Each should apply the operation element-wise between corresponding vectors
-Expected: 6 8 10 12
-Actual: Error: Binary operator must have exactly 2 children, got 3
-──────────────────────────────────────────────────────────────────────────
 Test: adverb_over_divide.k
 Input: %/ 100 2 5
 Expected: 10.0
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: Error: % operator requires 2 arguments
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_over_max.k
 Input: |/ 1 3 2 5 4
 Expected: 5
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: 1 3 2 5 4
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_over_min.k
 Input: &/ 5 3 4 1 2
 Expected: 1
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: (();();();();())
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_over_minus.k
 Input: -/ 10 2 3 1
 Expected: 4
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: 10 2 3 1
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_over_multiply.k
 Input: */ 1 2 3 4
 Expected: 24
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: 0 0 0 0
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_over_plus.k
 Input: +/ 1 2 3 4 5
 Expected: 15
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: 1 2 3 4 5
 ──────────────────────────────────────────────────────────────────────────
 Test: plus_over_empty.k
 Input: +/!0
 Expected: 0
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: ()
 ──────────────────────────────────────────────────────────────────────────
 Test: multiply_over_empty.k
 Input: */!0
 Expected: 1
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: ()
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_over_power.k
 Input: ^/ 2 3 2
 Expected: 64
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: 0 0 0
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_over_with_initialization_1.k
 Input: 1 +/ 2 3 4 5
 Expected: 15
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: 3 4 5 6
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_over_with_initialization_2.k
 Input: 2 +/ 1 2 3 4
 Expected: 12
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: 3 4 5 6
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_scan_divide.k
 Input: %\ 100 2 5
 Expected: (100;50.0;10.0)
-Actual: Error: Binary operator must have exactly 2 children, got 3
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_scan_max.k
-Input: |\ 1 3 2 5 4
-Expected: 1 3 3 5 5
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: Error: Division by zero
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_scan_min.k
 Input: &\ 5 3 4 1 2
 Expected: 5 3 3 1 1
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: 0 0 0 0 0
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_scan_minus.k
 Input: -\ 10 2 3 1
 Expected: 10 8 5 4
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: -10 -8 -5 -4
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_scan_multiply.k
 Input: *\ 1 2 3 4
 Expected: 1 2 6 24
-Actual: Error: Binary operator must have exactly 2 children, got 3
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_scan_plus.k
-Input: +\ 1 2 3 4 5
-Expected: 1 3 6 10 15
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: 0 0 0 0
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_scan_power.k
 Input: ^\ 2 3 2
 Expected: 2 8 64
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: 0 1 1
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_scan_with_initialization_1.k
 Input: 1 +\ 2 3 4 5
 Expected: 1 3 6 10 15
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: 3 7 12 18
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_scan_with_initialization_2.k
 Input: 2 +\ 1 2 3 4
 Expected: 2 3 5 8 12
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: 3 7 12 18
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_scan_with_initialization_divide.k
 Input: 2 %\ 1 2 3 4
 Expected: (2;2.0;1.0;0.3333333;0.08333333)
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: 2.0 2.0 3.0 6.0
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_scan_with_initialization_minus.k
 Input: 2 -\ 1 2 3 4
 Expected: 2 1 -1 -4 -8
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: 1 1 2 4
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_scan_with_initialization.k
 Input: 2 *\ 1 2 3
 Expected: 2 2 4 12
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: 2 8 48
 ──────────────────────────────────────────────────────────────────────────
 Test: anonymous_function_over_adverb.k
 Input: {x*%y}/10 20 30
 Expected: 0.01666667
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: Error: Function execution not yet implemented: x*%y
 ──────────────────────────────────────────────────────────────────────────
 Test: anonymous_function_scan_adverb.k
 Input: {x*%y}\10 20 30
 Expected: (10;0.5;0.01666667)
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: Error: Function execution not yet implemented: x*%y
 ──────────────────────────────────────────────────────────────────────────
 Test: lrs_adverb_parser_each.k
 Input: (1 2 3) %/ 2
 Expected: 0.5 1.0 1.5
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: Error: % operator requires 2 arguments
 ──────────────────────────────────────────────────────────────────────────
 Test: named_function_over.k
 Input: f:{x*%y};f/10 20 30
 Expected: 0.01666667
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: Error: Function execution not yet implemented: x*%y
 ──────────────────────────────────────────────────────────────────────────
 Test: named_function_scan.k
 Input: f:{x*%y};f\10 20 30
 Expected: (10;0.5;0.01666667)
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: Error: Function execution not yet implemented: x*%y
 ──────────────────────────────────────────────────────────────────────────
 Test: test_triadic_dot.k
 Input: .[1 2 3;1;-:]
@@ -1019,7 +994,7 @@ Actual: Error: Both LRS and legacy parsers failed for: .[1 2 3;1;-:]. Legacy err
 Test: test_adverb_aware_evaluation.k
 Input: +/ 1 2 3
 Expected: 6
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: 1 2 3
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
@@ -1029,12 +1004,12 @@ Actual: 100
 Test: ci_adverb_vector.k
 Input: _ci' 97 94 80
 Expected: "a^P"
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: Error: Unknown verb: _ci
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_each_count.k
 Input: #:' (1 2 3;1 2 3 4 5; 1 2)
 Expected: 3 5 2
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: ()
 ──────────────────────────────────────────────────────────────────────────
 Test: statement_do_basic.k
 Input: i:0;do[3;i+:1];i
@@ -1076,65 +1051,40 @@ Input: // Test cases to verify verb query extensions work correctly
 Expected: 6
 Actual: Error: Cannot add Integer to Symbol
 ──────────────────────────────────────────────────────────────────────────
-Test: adverb_backslash_colon_basic.k
-Input: 1 2 3 +\: 4 5 6
-Expected: (5 6 7;6 7 8;7 8 9)
-Actual: Error: Binary operator must have exactly 2 children, got 3
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_slash_colon_basic.k
-Input: 1 2 3 +/: 4 5 6
-Expected: (5 6 7;6 7 8;7 8 9)
-Actual: Error: Binary operator must have exactly 2 children, got 3
-──────────────────────────────────────────────────────────────────────────
 Test: adverb_tick_colon_basic.k
 Input: -': 4 8 9 12 20
 Expected: 4 1 3 8
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: -4 -4 -1 -3 -8
 ──────────────────────────────────────────────────────────────────────────
 Test: over_plus_empty.k
 Input: +/!0
 Expected: 0
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: ()
 ──────────────────────────────────────────────────────────────────────────
 Test: math_dot_matrix_each_right.k
 Input: (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12)
 Expected: (47 64 81;52 71 90;57 78 99)
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: Error: Unknown verb: /:
 ──────────────────────────────────────────────────────────────────────────
 Test: math_dot_vector_each_left.k
 Input: (1 2) _dot\: (3 4;5 6)
 Expected: (8 10;16 20)
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: Error: Unknown verb: \:
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_complex_vector_each_right.k
 Input: 10 11 12 +/: ((1 2 3);(4 5 6);(7 8 9))
 Expected: (11 13 15;14 16 18;17 19 21)
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: Error: Cannot add Integer to Vector
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_complex_matrix_each_right.k
 Input: ((1 2 3);(4 5 6);(7 8 9)) +/: 10 11 12
 Expected: ((11 12 13;14 15 16;17 18 19);(12 13 14;15 16 17;18 19 20);(13 14 15;16 17 18;19 20 21))
-Actual: Error: Binary operator must have exactly 2 children, got 3
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_chaining_join_each_left.k
-Input: ((1 2 3);(4 5 6);(7 8 9)),/:\:((9 8 7);(6 5 4);(3 2 1))
-Expected: ((1 2 3 9 8 7;1 2 3 6 5 4;1 2 3 3 2 1);(4 5 6 9 8 7;4 5 6 6 5 4;4 5 6 3 2 1);(7 8 9 9 8 7;7 8 9 6 5 4;7 8 9 3 2 1))
-Actual: Error: Binary operator must have exactly 2 children, got 3
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_complex_string_each_left.k
-Input: (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),/:\:"  "
-Expected: ((("hello";"world.";" ");("hello";"world.";" "));(("It's";"me";"ksharp.";" ");("It's";"me";"ksharp.";" "));(("Have";"fun";"with";"me!";" ");("Have";"fun";"with";"me!";" ")))
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: (11 13 15;14 16 18;17 19 21)
 ──────────────────────────────────────────────────────────────────────────
 Test: join_each_left.k
 Input: (1 2 3),\: (4 5 6)
 Expected: (1 4 5 6;2 4 5 6;3 4 5 6)
-Actual: Error: Binary operator must have exactly 2 children, got 3
-──────────────────────────────────────────────────────────────────────────
-Test: test_nested_adverb.k
-Input: 1 2 3 ,/:\: 4 5 6
-Expected: ((1 4;1 5;1 6);(2 4;2 5;2 6);(3 4;3 5;3 6))
-Actual: Error: Binary operator must have exactly 2 children, got 3
+Actual: (1 2 3 4;1 2 3 5;1 2 3 6)
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_object_management.k
 Input: str: "hello";str _sethint `object; str . ToUpper
