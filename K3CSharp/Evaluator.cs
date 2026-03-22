@@ -830,6 +830,15 @@ namespace K3CSharp
             }
             else
             {
+                // Debug output to understand the structure
+                Console.WriteLine($"[DEBUG] BinaryOp with {node.Children.Count} children, op='{op.Value}', opType={op.Value?.GetType().Name}");
+                if (node.Children.Count > 0)
+                    Console.WriteLine($"[DEBUG] Child 0: {node.Children[0].Type}, value='{node.Children[0].Value}'");
+                if (node.Children.Count > 1)
+                    Console.WriteLine($"[DEBUG] Child 1: {node.Children[1].Type}, value='{node.Children[1].Value}'");
+                if (node.Children.Count > 2)
+                    Console.WriteLine($"[DEBUG] Child 2: {node.Children[2].Type}, value='{node.Children[2].Value}'");
+                
                 throw new Exception($"Binary operator must have exactly 2 children, got {node.Children.Count}");
             }
         }
@@ -3651,13 +3660,33 @@ namespace K3CSharp
                 // Special handling for over adverb - apply directly to arguments without base verb first
                 if (verbWithAdverbs.Adverbs.Contains("ADVERB_SLASH"))
                 {
-                    return ApplyOverAdverb(arguments[1], arguments);
+                    // Check if we have initialization (left argument is not dummy 0)
+                    if (arguments.Length == 2 && arguments[0] is IntegerValue leftInt && leftInt.Value != 0)
+                    {
+                        // Use provided initialization
+                        return ApplyOverAdverbWithInit(arguments[0], arguments[1], arguments);
+                    }
+                    else
+                    {
+                        // Use dummy initialization (0)
+                        return ApplyOverAdverb(arguments[1], arguments);
+                    }
                 }
                 
                 // Special handling for scan adverb - apply directly to arguments without base verb first
                 if (verbWithAdverbs.Adverbs.Contains("ADVERB_BACKSLASH"))
                 {
-                    return ApplyScanAdverb(arguments[1], arguments);
+                    // Check if we have initialization (left argument is not dummy 0)
+                    if (arguments.Length == 2 && arguments[0] is IntegerValue leftInt && leftInt.Value != 0)
+                    {
+                        // Use provided initialization
+                        return ApplyScanAdverbWithInit(arguments[0], arguments[1], arguments);
+                    }
+                    else
+                    {
+                        // Use dummy initialization (first element)
+                        return ApplyScanAdverb(arguments[1], arguments);
+                    }
                 }
                 
                 // Start with the base verb and arguments
@@ -3807,6 +3836,29 @@ namespace K3CSharp
                 }
                 return verbResult;
             }
+            
+            private K3Value ApplyOverAdverbWithInit(K3Value initialization, K3Value verbResult, K3Value[] originalArguments)
+            {
+                // Over adverb (/) with initialization - reduce/fold operation with provided init
+                if (verbResult is VectorValue vector)
+                {
+                    if (vector.Elements.Count == 0)
+                    {
+                        return initialization; // Empty vector, return initialization
+                    }
+                    else
+                    {
+                        // Reduce operation: start with initialization, apply verb cumulatively
+                        K3Value result = initialization;
+                        foreach (var element in vector.Elements)
+                        {
+                            result = ApplyBaseVerb(GetVerbFromContext(originalArguments), new[] { result, element });
+                        }
+                        return result;
+                    }
+                }
+                return verbResult;
+            }
 
             private K3Value ApplyScanAdverb(K3Value verbResult, K3Value[] originalArguments)
             {
@@ -3820,6 +3872,25 @@ namespace K3CSharp
                     for (int i = 1; i < vector.Elements.Count; i++)
                     {
                         cumulative = ApplyBaseVerb(GetVerbFromContext(originalArguments), new[] { cumulative, vector.Elements[i] });
+                        results.Add(cumulative);
+                    }
+                    return new VectorValue(results);
+                }
+                return verbResult;
+            }
+            
+            private K3Value ApplyScanAdverbWithInit(K3Value initialization, K3Value verbResult, K3Value[] originalArguments)
+            {
+                // Scan adverb (\) with initialization - cumulative application with provided init
+                if (verbResult is VectorValue vector)
+                {
+                    var results = new List<K3Value>();
+                    K3Value cumulative = initialization;
+                    results.Add(cumulative);
+                    
+                    foreach (var element in vector.Elements)
+                    {
+                        cumulative = ApplyBaseVerb(GetVerbFromContext(originalArguments), new[] { cumulative, element });
                         results.Add(cumulative);
                     }
                     return new VectorValue(results);
