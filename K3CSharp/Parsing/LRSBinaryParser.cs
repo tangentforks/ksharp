@@ -113,6 +113,16 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
+        /// Public method to check if token type is a binary operator
+        /// </summary>
+        /// <param name="tokenType">Token type to check</param>
+        /// <returns>True if binary operator</returns>
+        public bool IsBinaryOperator(TokenType tokenType)
+        {
+            return IsBinaryOperatorDirect(tokenType);
+        }
+        
+        /// <summary>
         /// Parse binary operation using LRS right-associative strategy
         /// </summary>
         /// <param name="tokens">Tokens to parse</param>

@@ -66,6 +66,167 @@ namespace K3CSharp.Parsing
         }
 
         /// <summary>
+        /// Parse simple two-glyph adverb operation
+        /// </summary>
+        /// <param name="position">Reference to current position, updated to end of adverb expression</param>
+        /// <returns>AST node representing two-glyph adverb operation</returns>
+        public ASTNode? ParseSimpleTwoGlyphAdverb(ref int position)
+        {
+            if (position >= tokens.Count)
+                return null;
+
+            var adverbToken = tokens[position];
+            
+            // Check if this is a simple two-glyph adverb
+            if (!IsSimpleTwoGlyphAdverb(adverbToken.Type))
+                return null;
+
+            position++; // Consume adverb token
+
+            // Parse the right argument for the adverb
+            var rightArg = ParseAdverbArgument(ref position);
+            if (rightArg == null)
+                throw new Exception($"Expected expression after adverb {adverbToken.Lexeme}");
+
+            // Parse the left argument (verb) - for two-glyph adverbs, the verb must be immediately to the left
+            var leftArg = ParseVerbImmediateLeft(ref position);
+            if (leftArg == null)
+                throw new Exception($"Expected verb before adverb {adverbToken.Lexeme}");
+
+            // Create two-glyph adverb node
+            return CreateTwoGlyphAdverbNode(adverbToken, leftArg, rightArg);
+        }
+        
+        /// <summary>
+        /// Parse verb-immediate-left adverb pattern (verb on left side only)
+        /// </summary>
+        /// <param name="position">Reference to current position, updated to end of adverb expression</param>
+        /// <returns>AST node representing verb-immediate-left adverb operation</returns>
+        public ASTNode? ParseVerbImmediateLeftAdverb(ref int position)
+        {
+            if (position >= tokens.Count)
+                return null;
+
+            var adverbToken = tokens[position];
+            
+            // Check if this is a single-glyph adverb that can have verb-immediate-left pattern
+            if (!IsVerbImmediateLeftAdverb(adverbToken.Type))
+                return null;
+
+            position++; // Consume adverb token
+
+            // Parse the right argument for the adverb
+            var rightArg = ParseAdverbArgument(ref position);
+            if (rightArg == null)
+                throw new Exception($"Expected expression after adverb {adverbToken.Lexeme}");
+
+            // Parse the left argument (verb) - must be immediately to the left
+            var leftArg = ParseVerbImmediateLeft(ref position);
+            if (leftArg == null)
+                throw new Exception($"Expected verb before adverb {adverbToken.Lexeme}");
+
+            // Create verb-immediate-left adverb node
+            return CreateVerbImmediateLeftAdverbNode(adverbToken, leftArg, rightArg);
+        }
+        
+        /// <summary>
+        /// Check if token type is a simple two-glyph adverb
+        /// </summary>
+        private bool IsSimpleTwoGlyphAdverb(TokenType tokenType)
+        {
+            return tokenType == TokenType.ADVERB_SLASH_COLON ||
+                   tokenType == TokenType.ADVERB_BACKSLASH_COLON ||
+                   tokenType == TokenType.ADVERB_TICK_COLON;
+        }
+        
+        /// <summary>
+        /// Check if token type supports verb-immediate-left pattern
+        /// </summary>
+        private bool IsVerbImmediateLeftAdverb(TokenType tokenType)
+        {
+            return tokenType == TokenType.ADVERB_SLASH ||
+                   tokenType == TokenType.ADVERB_BACKSLASH ||
+                   tokenType == TokenType.ADVERB_TICK;
+        }
+        
+        /// <summary>
+        /// Parse verb that must be immediately to the left of adverb
+        /// </summary>
+        private ASTNode? ParseVerbImmediateLeft(ref int position)
+        {
+            if (position >= tokens.Count)
+                return null;
+
+            var verbToken = tokens[position];
+            
+            // Look backwards to find the verb immediately to the left
+            // This is a simplified implementation - in practice, we'd need to scan backwards
+            // For now, we'll handle the case where the verb is right before the adverb position
+            
+            // Handle atomic verbs (identifiers, symbols)
+            if (LRSAtomicParser.IsAtomicToken(verbToken.Type))
+            {
+                position++;
+                return LRSAtomicParser.ParseAtomicToken(verbToken);
+            }
+            
+            // Handle operator verbs
+            if (IsBinaryOperator(verbToken.Type))
+            {
+                position++;
+                return CreateOperatorNode(verbToken);
+            }
+            
+            return null;
+        }
+        
+        /// <summary>
+        /// Check if token type is a binary operator
+        /// </summary>
+        private bool IsBinaryOperator(TokenType tokenType)
+        {
+            // Simplified check - in practice, this should use the same logic as LRSBinaryParser
+            return tokenType == TokenType.PLUS ||
+                   tokenType == TokenType.MINUS ||
+                   tokenType == TokenType.MULTIPLY ||
+                   tokenType == TokenType.DIVIDE ||
+                   tokenType == TokenType.MODULUS ||
+                   tokenType == TokenType.POWER ||
+                   tokenType == TokenType.LESS ||
+                   tokenType == TokenType.GREATER ||
+                   tokenType == TokenType.EQUAL ||
+                   tokenType == TokenType.MATCH ||
+                   tokenType == TokenType.JOIN ||
+                   tokenType == TokenType.HASH;
+        }
+        
+        /// <summary>
+        /// Create operator node from token
+        /// </summary>
+        private ASTNode CreateOperatorNode(Token token)
+        {
+            return new ASTNode(ASTNodeType.BinaryOp, new SymbolValue(token.Lexeme), new List<ASTNode>());
+        }
+        
+        /// <summary>
+        /// Create two-glyph adverb node
+        /// </summary>
+        private ASTNode CreateTwoGlyphAdverbNode(Token adverbToken, ASTNode leftArg, ASTNode rightArg)
+        {
+            var children = new List<ASTNode> { leftArg, rightArg };
+            return new ASTNode(ASTNodeType.BinaryOp, new SymbolValue(adverbToken.Lexeme), children);
+        }
+        
+        /// <summary>
+        /// Create verb-immediate-left adverb node
+        /// </summary>
+        private ASTNode CreateVerbImmediateLeftAdverbNode(Token adverbToken, ASTNode leftArg, ASTNode rightArg)
+        {
+            var children = new List<ASTNode> { leftArg, rightArg };
+            return new ASTNode(ASTNodeType.BinaryOp, new SymbolValue(adverbToken.Lexeme), children);
+        }
+        
+        /// <summary>
         /// Parse adverb verb (left side of adverb)
         /// </summary>
         private ASTNode? ParseAdverbVerb(ref int position)

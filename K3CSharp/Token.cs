@@ -51,6 +51,16 @@ namespace K3CSharp
         ADVERB_SLASH_COLON,   // /: adverb (each-right)
         ADVERB_BACKSLASH_COLON, // \: adverb (each-left)
         ADVERB_TICK_COLON,    // ': adverb (each-prior)
+        
+        // Variadic adverbs with brackets
+        VARIADIC_ADVERB_OVER,    // /[...] adverb pattern  
+        VARIADIC_ADVERB_SCAN,    // \[...] adverb pattern
+        VARIADIC_ADVERB_EACH,    // '[...] adverb pattern
+        
+        // Multi-arity operators
+        TRIADIC_OPERATOR,         // For 3-argument operations
+        TETRADIC_OPERATOR,        // For 4-argument operations
+        ERROR_TRAP_TOKEN,         // For : as error trap marker
         NULL,           // _n null value
         TYPE,           // 4: type operator
         STRING_REPRESENTATION, // 5: string representation operator (monadic)

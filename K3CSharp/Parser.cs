@@ -18,7 +18,11 @@ namespace K3CSharp
         FormSpecifier,
         ProjectedFunction,
         ApplyAndAssign,
-        ConditionalStatement
+        ConditionalStatement,
+        TriadicOp,               // 3-argument operations
+        TetradicOp,              // 4-argument operations  
+        VariadicOp,              // Variadic operations
+        NotImplemented           // For "not yet implemented" operations
     }
 
     public class ASTNode

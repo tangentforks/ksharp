@@ -24,6 +24,27 @@ namespace K3CSharp
         // Track whether current assignment is intermediate (used by another operator) or terminal
         private bool isIntermediateAssignment = false;
 
+        // Adverb-aware evaluator for enhanced verb/adverb handling
+        private readonly AdverbAwareEvaluator adverbAwareEvaluator;
+
+        /// <summary>
+        /// Constructor for Evaluator
+        /// </summary>
+        public Evaluator()
+        {
+            adverbAwareEvaluator = new AdverbAwareEvaluator(this);
+        }
+
+        /// <summary>
+        /// Constructor for Evaluator with parent (for nested function calls)
+        /// </summary>
+        /// <param name="parent">Parent evaluator for global scope access</param>
+        public Evaluator(Evaluator parent)
+        {
+            parentEvaluator = parent;
+            adverbAwareEvaluator = new AdverbAwareEvaluator(this);
+        }
+
                 
         public void SetCurrentBranch(string branchPath)
         {
@@ -187,6 +208,19 @@ namespace K3CSharp
 
                 case ASTNodeType.ProjectedFunction:
                     return EvaluateProjectedFunction(node);
+
+                case ASTNodeType.TriadicOp:
+                    return EvaluateTriadicOp(node);
+
+                case ASTNodeType.TetradicOp:
+                    return EvaluateTetradicOp(node);
+
+                case ASTNodeType.VariadicOp:
+                    return EvaluateVariadicOp(node);
+
+                case ASTNodeType.NotImplemented:
+                    var message = node.Value is CharacterValue charVal ? charVal.Value : node.Value?.ToString() ?? "Not implemented";
+                    throw new Exception($"Not yet implemented: {message}");
 
                 default:
                     throw new Exception($"Unknown AST node type: {node.Type}");
@@ -679,68 +713,79 @@ namespace K3CSharp
                     }
                 }
                 
-                // For other binary operators, evaluate left side first, then right side as intermediate
-                var left = Evaluate(node.Children[0]);
-                
-                bool previousIntermediate2 = isIntermediateAssignment;
-                isIntermediateAssignment = true; // Mark as intermediate for right side evaluation
-                var right = Evaluate(node.Children[1]);
-                isIntermediateAssignment = previousIntermediate2; // Restore previous context
-
-                return EvaluateBinaryOperatorWithRegistry(op.Value.ToString(), left, right);
-            }
-            // Handle 3-argument adverb structure: ADVERB(verb, left, right)
-            else if (node.Children.Count == 3 && 
-                    (op.Value.ToString() == "ADVERB_SLASH" || op.Value.ToString() == "ADVERB_BACKSLASH" || op.Value.ToString() == "ADVERB_TICK" ||
-                     op.Value.ToString() == "ADVERB_SLASH_COLON" || op.Value.ToString() == "ADVERB_BACKSLASH_COLON" || op.Value.ToString() == "ADVERB_TICK_COLON"))
-            {
-                // For ADVERB_TICK, don't evaluate the verb if it's a monadic verb symbol
-                K3Value verb;
-                if (op.Value.ToString() == "ADVERB_TICK")
+                // For other binary operators, check for adverbs first
+                var verbWithAdverbs = VerbAdverbParser.ParseVerbWithAdverbs(node);
+                if (verbWithAdverbs != null)
                 {
-                    // Check if the verb is a monadic verb symbol
-                    var verbNode = node.Children[0];
-                    if (verbNode.Type == ASTNodeType.Literal && verbNode.Value is SymbolValue)
+                    // This is a verb with adverbs - use enhanced evaluation
+                    var left = Evaluate(node.Children[0]);
+                    var right = Evaluate(node.Children[1]);
+                    
+                    // Determine the effective arity and apply adverbs sequentially
+                    var effectiveArity = verbWithAdverbs.GetEffectiveArity();
+                    if (effectiveArity == 1)
                     {
-                        var verbSymbol = (verbNode.Value as SymbolValue)?.Value;
-                        if (verbSymbol == "#" || verbSymbol == "_ci" || verbSymbol == "_ic" || verbSymbol == "_sv" || 
-                            verbSymbol == "_vs" || verbSymbol == "_ss" || verbSymbol == "_sm" || verbSymbol == "_dv" || verbSymbol == "_di")
-                        {
-                            // This is a monadic verb - don't evaluate it, pass as symbol
-                            verb = new SymbolValue(verbSymbol);
-                        }
-                        else
-                        {
-                            // Not a monadic verb - evaluate it
-                            verb = Evaluate(verbNode);
-                        }
+                        // Monadic with adverbs
+                        return adverbAwareEvaluator.EvaluateVerbWithAdverbs(verbWithAdverbs, left);
+                    }
+                    else if (effectiveArity == 2)
+                    {
+                        // Dyadic with adverbs
+                        return adverbAwareEvaluator.EvaluateVerbWithAdverbs(verbWithAdverbs, left, right);
                     }
                     else
                     {
-                        // Not a symbol - evaluate it
-                        verb = Evaluate(verbNode);
+                        throw new Exception($"Unsupported arity {effectiveArity} for verb with adverbs");
                     }
                 }
                 else
                 {
-                    // For other adverbs, evaluate the verb normally
-                    verb = Evaluate(node.Children[0]);
-                }
-                
-                // For natural nested adverb evaluation, just evaluate all arguments normally
-                var left = Evaluate(node.Children[1]);
-                var right = Evaluate(node.Children[2]);
+                    // Regular binary operation - use existing logic
+                    var left = Evaluate(node.Children[0]);
+                    
+                    bool previousIntermediate2 = isIntermediateAssignment;
+                    isIntermediateAssignment = true; // Mark as intermediate for right side evaluation
+                    var right = Evaluate(node.Children[1]);
+                    isIntermediateAssignment = previousIntermediate2; // Restore previous context
 
-                return op.Value.ToString() switch
+                    return EvaluateBinaryOperatorWithRegistry(op.Value.ToString(), left, right);
+                }
+            }
+            else if (node.Children.Count == 3 && 
+                    (op.Value.ToString() == "/" || op.Value.ToString() == "\\" || op.Value.ToString() == "'" ||
+                     op.Value.ToString() == "/:" || op.Value.ToString() == "\\:" || op.Value.ToString() == "':"))
+            {
+                // Handle 3-argument adverb structure using adverb-aware evaluation
+                var verbNode = node.Children[0];
+                var leftArg = Evaluate(node.Children[1]);
+                var rightArg = Evaluate(node.Children[2]);
+                
+                // Parse the verb with adverbs
+                var verbWithAdverbs = VerbAdverbParser.ParseVerbWithAdverbs(verbNode);
+                if (verbWithAdverbs != null)
                 {
-                    "ADVERB_SLASH" => ApplyAdverbSlash(verb, left, right),
-                    "ADVERB_BACKSLASH" => ApplyAdverbBackslash(verb, left, right),
-                    "ADVERB_TICK" => HandleAdverbTick(verb, left, right),
-                    "ADVERB_SLASH_COLON" => ApplyAdverbSlashColon(verb, left, right),
-                    "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(verb, left, right),
-                    "ADVERB_TICK_COLON" => ApplyAdverbTickColon(verb, left, right),
-                    _ => throw new Exception($"Unknown adverb: {op.Value}")
-                };
+                    // Add the current adverb to the list
+                    var adverbs = new List<string>(verbWithAdverbs.Adverbs) { op.Value.ToString() };
+                    var enhancedVerbWithAdverbs = new VerbWithAdverbs(verbWithAdverbs.BaseVerb, adverbs, verbNode.StartPosition);
+                    
+                    // Evaluate using adverb-aware evaluator
+                    return adverbAwareEvaluator.EvaluateVerbWithAdverbs(enhancedVerbWithAdverbs, leftArg, rightArg);
+                }
+                else
+                {
+                    // Fallback to legacy evaluation for simple cases
+                    var verbValue = Evaluate(verbNode);
+                    return op.Value.ToString() switch
+                    {
+                        "/" => ApplyAdverbSlash(verbValue, leftArg, rightArg),
+                        "\\" => ApplyAdverbBackslash(verbValue, leftArg, rightArg),
+                        "'" => HandleAdverbTick(verbValue, leftArg, rightArg),
+                        "/:" => ApplyAdverbSlashColon(verbValue, leftArg, rightArg),
+                        "\\:" => ApplyAdverbBackslashColon(verbValue, leftArg, rightArg),
+                        "':" => ApplyAdverbTickColon(verbValue, leftArg, rightArg),
+                        _ => throw new Exception($"Unknown adverb: {op.Value}")
+                    };
+                }
             }
             else if (node.Children.Count == 0)
             {
@@ -3452,8 +3497,288 @@ namespace K3CSharp
                 RightArgument = projectionInfo
             };
         }
+
+        private K3Value EvaluateTriadicOp(ASTNode node)
+        {
+            if (node.Value is not SymbolValue op) throw new Exception("Triadic operator must have a symbol value");
+            if (node.Children.Count < 3) throw new Exception("Triadic operator requires 3 arguments");
+            
+            var arg1 = Evaluate(node.Children[0]);
+            var arg2 = Evaluate(node.Children[1]);
+            var arg3 = Evaluate(node.Children[2]);
+            
+            var opName = op.Value;
+            
+            // For now, dispatch to existing evaluators for triadic dot and at operations
+            // According to the plan, these should dispatch to existing evaluators
+            if (opName == ".")
+            {
+                // Triadic dot: dispatch to existing evaluator
+                return EvaluateTriadicDot(arg1, arg2, arg3);
+            }
+            else if (opName == "@")
+            {
+                // Triadic at: dispatch to existing evaluator
+                return EvaluateTriadicAt(arg1, arg2, arg3);
+            }
+            else
+            {
+                throw new Exception($"Triadic operator '{opName}' not yet implemented");
+            }
+        }
+
+        private K3Value EvaluateTetradicOp(ASTNode node)
+        {
+            if (node.Value is not SymbolValue op) throw new Exception("Tetradic operator must have a symbol value");
+            if (node.Children.Count < 4) throw new Exception("Tetradic operator requires 4 arguments");
+            
+            var arg1 = Evaluate(node.Children[0]);
+            var arg2 = Evaluate(node.Children[1]);
+            var arg3 = Evaluate(node.Children[2]);
+            var arg4 = Evaluate(node.Children[3]);
+            
+            var opName = op.Value;
+            
+            // For now, dispatch to existing evaluators for tetradic dot and at operations
+            if (opName == ".")
+            {
+                // Tetradic dot: dispatch to existing evaluator
+                return EvaluateTetradicDot(arg1, arg2, arg3, arg4);
+            }
+            else if (opName == "@")
+            {
+                // Tetradic at: dispatch to existing evaluator
+                return EvaluateTetradicAt(arg1, arg2, arg3, arg4);
+            }
+            else
+            {
+                throw new Exception($"Tetradic operator '{opName}' not yet implemented");
+            }
+        }
+
+        private K3Value EvaluateVariadicOp(ASTNode node)
+        {
+            if (node.Value is not SymbolValue op) throw new Exception("Variadic operator must have a symbol value");
+            if (node.Children.Count < 2) throw new Exception("Variadic operator requires at least 2 arguments");
+            
+            var opName = op.Value;
+            
+            // According to the plan, variadic adverbs should parse but signal "not yet implemented"
+            throw new Exception($"Variadic adverb '{opName}' not yet implemented");
+        }
+
+        // Placeholder methods for triadic operations (to be implemented)
+        private K3Value EvaluateTriadicDot(K3Value arg1, K3Value arg2, K3Value arg3)
+        {
+            throw new Exception("Triadic dot operation not yet implemented");
+        }
+
+        private K3Value EvaluateTriadicAt(K3Value arg1, K3Value arg2, K3Value arg3)
+        {
+            throw new Exception("Triadic at operation not yet implemented");
+        }
+
+        private K3Value EvaluateTetradicDot(K3Value arg1, K3Value arg2, K3Value arg3, K3Value arg4)
+        {
+            throw new Exception("Tetradic dot operation not yet implemented");
+        }
+
+        private K3Value EvaluateTetradicAt(K3Value arg1, K3Value arg2, K3Value arg3, K3Value arg4)
+        {
+            throw new Exception("Tetradic at operation not yet implemented");
+        }
+
+        /// <summary>
+        /// Enhanced evaluator for verbs with adverbs (nested class for access to private methods)
+        /// </summary>
+        private class AdverbAwareEvaluator
+        {
+            private readonly Evaluator evaluator;
+            private string currentVerb = "+"; // Track current verb context
+
+            public AdverbAwareEvaluator(Evaluator evaluator)
+            {
+                this.evaluator = evaluator;
+            }
+
+            /// <summary>
+            /// Evaluate a verb with adverbs applied sequentially from outermost to innermost
+            /// </summary>
+            /// <param name="verbWithAdverbs">The verb with adverbs to evaluate</param>
+            /// <param name="arguments">Arguments to pass to the verb</param>
+            /// <returns>Result of applying verb with adverbs</returns>
+            public K3Value EvaluateVerbWithAdverbs(VerbWithAdverbs verbWithAdverbs, params K3Value[] arguments)
+            {
+                // Set current verb context
+                currentVerb = verbWithAdverbs.BaseVerb;
+                
+                // Start with the base verb and arguments
+                K3Value result = ApplyBaseVerb(verbWithAdverbs.BaseVerb, arguments);
+                
+                // Apply adverbs from innermost to outermost (reverse order of parsing)
+                var adverbsReversed = verbWithAdverbs.Adverbs.AsEnumerable().Reverse().ToList();
+                
+                foreach (var adverb in adverbsReversed)
+                {
+                    result = ApplyAdverb(adverb, result, arguments);
+                }
+                
+                return result;
+            }
+
+            private K3Value ApplyBaseVerb(string verb, K3Value[] arguments)
+            {
+                return verb switch
+                {
+                    "+" => arguments.Length == 1 ? evaluator.Transpose(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("+", arguments[0], arguments[1]),
+                    "-" => arguments.Length == 1 ? evaluator.UnaryMinus(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("-", arguments[0], arguments[1]),
+                    "*" => arguments.Length == 1 ? evaluator.First(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("*", arguments[0], arguments[1]),
+                    "%" => arguments.Length == 1 ? throw new Exception("% operator requires 2 arguments") : evaluator.EvaluateBinaryOperatorWithRegistry("%", arguments[0], arguments[1]),
+                    "^" => arguments.Length == 1 ? evaluator.Power(arguments[0], new IntegerValue(1)) : evaluator.EvaluateBinaryOperatorWithRegistry("^", arguments[0], arguments[1]),
+                    "<" => arguments.Length == 1 ? evaluator.LessThan(arguments[0], new IntegerValue(0)) : evaluator.EvaluateBinaryOperatorWithRegistry("<", arguments[0], arguments[1]),
+                    ">" => arguments.Length == 1 ? evaluator.GreaterThan(arguments[0], new IntegerValue(0)) : evaluator.EvaluateBinaryOperatorWithRegistry(">", arguments[0], arguments[1]),
+                    "=" => arguments.Length == 1 ? K3Value.Equals(arguments[0], new IntegerValue(0)) ? new IntegerValue(1) : new IntegerValue(0) : evaluator.EvaluateBinaryOperatorWithRegistry("=", arguments[0], arguments[1]),
+                    "!" => arguments.Length == 1 ? evaluator.Match(arguments[0], new IntegerValue(0)) : evaluator.EvaluateBinaryOperatorWithRegistry("!", arguments[0], arguments[1]),
+                    "&" => arguments.Length == 1 ? evaluator.Where(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("&", arguments[0], arguments[1]),
+                    "|" => arguments.Length == 1 ? evaluator.Reverse(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("|", arguments[0], arguments[1]),
+                    "~" => arguments.Length == 1 ? evaluator.Match(arguments[0], new IntegerValue(0)) : evaluator.EvaluateBinaryOperatorWithRegistry("~", arguments[0], arguments[1]),
+                    "," => evaluator.Join(arguments[0], arguments[1]),
+                    "." => evaluator.DotApply(arguments[0], arguments[1]),
+                    "@" => evaluator.AtIndex(arguments[0], arguments[1]),
+                    "#" => arguments.Length == 1 ? evaluator.Count(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("#", arguments[0], arguments[1]),
+                    "_" => arguments.Length == 1 ? evaluator.Floor(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("_", arguments[0], arguments[1]),
+                    "?" => arguments.Length == 1 ? evaluator.Unique(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("?", arguments[0], arguments[1]),
+                    "$" => arguments.Length == 1 ? evaluator.Format(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("$", arguments[0], arguments[1]),
+                    _ => throw new Exception($"Unknown verb: {verb}")
+                };
+            }
+
+            private K3Value ApplyAdverb(string adverb, K3Value verbResult, K3Value[] originalArguments)
+            {
+                return adverb switch
+                {
+                    "/" => ApplyOverAdverb(verbResult, originalArguments),
+                    "\\" => ApplyScanAdverb(verbResult, originalArguments),
+                    "'" => ApplyEachAdverb(verbResult, originalArguments),
+                    "/:" => ApplyEachRightAdverb(verbResult, originalArguments),
+                    "\\:" => ApplyEachLeftAdverb(verbResult, originalArguments),
+                    "':" => ApplyEachPriorAdverb(verbResult, originalArguments),
+                    _ => throw new Exception($"Unknown adverb: {adverb}")
+                };
+            }
+
+            private K3Value ApplyOverAdverb(K3Value verbResult, K3Value[] originalArguments)
+            {
+                // Over adverb (/) - apply verb to each element
+                if (verbResult is VectorValue vector)
+                {
+                    var results = new List<K3Value>();
+                    foreach (var element in vector.Elements)
+                    {
+                        // Apply the base verb to each element
+                        var singleResult = ApplyBaseVerb(GetVerbFromContext(originalArguments), new[] { element });
+                        results.Add(singleResult);
+                    }
+                    return new VectorValue(results);
+                }
+                return verbResult;
+            }
+
+            private K3Value ApplyScanAdverb(K3Value verbResult, K3Value[] originalArguments)
+            {
+                // Scan adverb (\) - cumulative application
+                if (verbResult is VectorValue vector)
+                {
+                    var results = new List<K3Value>();
+                    K3Value cumulative = vector.Elements[0];
+                    results.Add(cumulative);
+                    
+                    for (int i = 1; i < vector.Elements.Count; i++)
+                    {
+                        cumulative = ApplyBaseVerb(GetVerbFromContext(originalArguments), new[] { cumulative, vector.Elements[i] });
+                        results.Add(cumulative);
+                    }
+                    return new VectorValue(results);
+                }
+                return verbResult;
+            }
+
+            private K3Value ApplyEachAdverb(K3Value verbResult, K3Value[] originalArguments)
+            {
+                // Each adverb (') - apply verb to each element individually
+                if (verbResult is VectorValue vector)
+                {
+                    var results = new List<K3Value>();
+                    foreach (var element in vector.Elements)
+                    {
+                        // For each, apply the verb with the same arity as original
+                        var singleResult = ApplyBaseVerb(GetVerbFromContext(originalArguments), 
+                            originalArguments.Length == 1 ? new[] { element } : new[] { element, originalArguments[1] });
+                        results.Add(singleResult);
+                    }
+                    return new VectorValue(results);
+                }
+                return verbResult;
+            }
+
+            private K3Value ApplyEachRightAdverb(K3Value verbResult, K3Value[] originalArguments)
+            {
+                // Each-right adverb (/:) - apply verb with right argument to each element of left
+                if (originalArguments.Length >= 2 && originalArguments[0] is VectorValue leftVector)
+                {
+                    var results = new List<K3Value>();
+                    foreach (var element in leftVector.Elements)
+                    {
+                        var singleResult = ApplyBaseVerb(GetVerbFromContext(originalArguments), new[] { element, originalArguments[1] });
+                        results.Add(singleResult);
+                    }
+                    return new VectorValue(results);
+                }
+                return verbResult;
+            }
+
+            private K3Value ApplyEachLeftAdverb(K3Value verbResult, K3Value[] originalArguments)
+            {
+                // Each-left adverb (\:) - apply verb with left argument to each element of right
+                if (originalArguments.Length >= 2 && originalArguments[1] is VectorValue rightVector)
+                {
+                    var results = new List<K3Value>();
+                    foreach (var element in rightVector.Elements)
+                    {
+                        var singleResult = ApplyBaseVerb(GetVerbFromContext(originalArguments), new[] { originalArguments[0], element });
+                        results.Add(singleResult);
+                    }
+                    return new VectorValue(results);
+                }
+                return verbResult;
+            }
+
+            private K3Value ApplyEachPriorAdverb(K3Value verbResult, K3Value[] originalArguments)
+            {
+                // Each-prior adverb (':) - apply verb with previous element
+                if (verbResult is VectorValue vector)
+                {
+                    var results = new List<K3Value>();
+                    results.Add(vector.Elements[0]); // First element stays the same
+                    
+                    for (int i = 1; i < vector.Elements.Count; i++)
+                    {
+                        var singleResult = ApplyBaseVerb(GetVerbFromContext(originalArguments), new[] { vector.Elements[i], vector.Elements[i-1] });
+                        results.Add(singleResult);
+                    }
+                    return new VectorValue(results);
+                }
+                return verbResult;
+            }
+
+            private string GetVerbFromContext(K3Value[] arguments)
+            {
+                // Return the current verb context being tracked
+                return currentVerb;
+            }
+        }
     }
-    
+
     // Custom comparer for K3Value to use in HashSet operations
     public class K3ValueComparer : IEqualityComparer<K3Value>
     {
@@ -3489,6 +3814,124 @@ namespace K3CSharp
                 ValueType.Vector => obj is VectorValue vv ? vv.Elements.Count.GetHashCode() : 0,
                 _ => obj.ToString().GetHashCode()
             };
+        }
+    }
+
+    /// <summary>
+    /// Represents a verb with its attached adverbs for proper evaluation
+    /// </summary>
+    public class VerbWithAdverbs
+    {
+        public string BaseVerb { get; }
+        public List<string> Adverbs { get; }
+        public int Position { get; }
+
+        public VerbWithAdverbs(string baseVerb, List<string> adverbs, int position = -1)
+        {
+            BaseVerb = baseVerb;
+            Adverbs = adverbs ?? new List<string>();
+            Position = position;
+        }
+
+        /// <summary>
+        /// Get the effective arity of the verb with adverbs applied
+        /// </summary>
+        public int GetEffectiveArity()
+        {
+            // Base arity depends on the verb
+            int baseArity = GetBaseVerbArity(BaseVerb);
+            
+            // Apply adverb arity modifications
+            foreach (var adverb in Adverbs)
+            {
+                baseArity = ApplyAdverbArityModification(baseArity, adverb);
+            }
+            
+            return baseArity;
+        }
+
+        private int GetBaseVerbArity(string verb)
+        {
+            // Determine base verb arity using VerbRegistry
+            var verbInfo = VerbRegistry.GetVerb(verb);
+            if (verbInfo != null && verbInfo.SupportedArities.Length > 0)
+            {
+                // Return the minimum supported arity as the base arity
+                return verbInfo.SupportedArities.Min();
+            }
+            return 1; // Default to monadic
+        }
+
+        private int ApplyAdverbArityModification(int currentArity, string adverb)
+        {
+            return adverb switch
+            {
+                "/" => currentArity, // Over: same arity
+                "\\" => currentArity, // Scan: same arity  
+                "'" => currentArity, // Each: same arity
+                "/:" => Math.Max(currentArity, 2), // Each-right: at least dyadic
+                "\\:" => Math.Max(currentArity, 2), // Each-left: at least dyadic
+                "':" => Math.Max(currentArity, 2), // Each-prior: at least dyadic
+                _ => currentArity
+            };
+        }
+    }
+
+    /// <summary>
+    /// Parser for extracting verbs and their attached adverbs from AST nodes
+    /// </summary>
+    public class VerbAdverbParser
+    {
+        /// <summary>
+        /// Parse a verb with adverbs from an AST node
+        /// </summary>
+        /// <param name="node">AST node to parse</param>
+        /// <returns>VerbWithAdverbs object or null if not a verb with adverbs</returns>
+        public static VerbWithAdverbs? ParseVerbWithAdverbs(ASTNode node)
+        {
+            if (node.Type != ASTNodeType.BinaryOp || node.Value == null)
+                return null;
+
+            var opSymbol = node.Value.ToString();
+            
+            // Check if this is an adverb
+            if (IsAdverb(opSymbol))
+            {
+                // Parse the left side to find the base verb and any nested adverbs
+                var leftResult = ParseVerbWithAdverbs(node.Children[0]);
+                if (leftResult != null)
+                {
+                    // Add this adverb to the list
+                    var adverbs = new List<string>(leftResult.Adverbs) { opSymbol };
+                    return new VerbWithAdverbs(leftResult.BaseVerb, adverbs, node.StartPosition);
+                }
+                else if (node.Children[0].Type == ASTNodeType.Literal && node.Children[0].Value is SymbolValue symbolValue)
+                {
+                    // Base verb found
+                    var baseVerb = symbolValue.Value.ToString();
+                    return new VerbWithAdverbs(baseVerb, new List<string> { opSymbol }, node.StartPosition);
+                }
+            }
+            
+            // Check if this is a base verb
+            if (IsVerb(opSymbol))
+            {
+                return new VerbWithAdverbs(opSymbol, new List<string>(), node.StartPosition);
+            }
+
+            return null;
+        }
+
+        private static bool IsAdverb(string symbol)
+        {
+            return symbol == "/" || symbol == "\\" || symbol == "'" || 
+                   symbol == "/:" || symbol == "\\:" || symbol == "':";
+        }
+
+        private static bool IsVerb(string symbol)
+        {
+            // Check if this is a known verb symbol
+            return VerbRegistry.IsVerb(symbol);
         }
     }
 }

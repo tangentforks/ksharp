@@ -861,6 +861,12 @@ namespace K3CSharp.Tests
 
                 
 
+                // Multi-arity and advanced adverb tests
+                ("test_triadic_dot.k", "1 -2 3"),
+                ("test_adverb_aware_evaluation.k", "6"),
+
+                
+
                 // Special values tests
 
                 ("special_float_neg_inf.k", "-0i"),
