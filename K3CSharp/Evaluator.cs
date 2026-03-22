@@ -3817,7 +3817,8 @@ namespace K3CSharp
                 {
                     if (vector.Elements.Count == 0)
                     {
-                        return new IntegerValue(0); // Identity for empty vector
+                        // Return identity element based on the base verb
+                        return GetIdentityElementForVerb(currentVerb);
                     }
                     else if (vector.Elements.Count == 1)
                     {
@@ -3984,6 +3985,22 @@ namespace K3CSharp
             {
                 // Return the current verb context being tracked
                 return currentVerb;
+            }
+            
+            private K3Value GetIdentityElementForVerb(string verb)
+            {
+                // Return the appropriate identity element for the given verb
+                return verb switch
+                {
+                    "*" => new IntegerValue(1),        // Multiplication identity
+                    "+" => new IntegerValue(0),        // Addition identity
+                    "&" => new IntegerValue(int.MaxValue), // Min identity (for now, use max int)
+                    "|" => new IntegerValue(int.MinValue), // Max identity (for now, use min int)
+                    "^" => new IntegerValue(1),        // Power identity
+                    "%" => new IntegerValue(1),        // Divide identity
+                    "-" => new IntegerValue(0),        // Subtract identity (monadic case)
+                    _ => new IntegerValue(0)           // Default identity
+                };
             }
         }
     }

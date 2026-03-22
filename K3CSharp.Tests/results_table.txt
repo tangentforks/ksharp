@@ -13,7 +13,7 @@
 ║ adverb_over_multiply.k                             │ */ 1 2 3 4           │ 24                   │                      ║
 ║ adverb_over_plus.k                                 │ +/ 1 2 3 4 5         │ 15                   │                      ║
 ║ plus_over_empty.k                                  │ +/!0                 │ 0                    │                      ║
-║ multiply_over_empty.k                              │ */!0                 │ 0                    │ 1                    ║
+║ multiply_over_empty.k                              │ */!0                 │ 1                    │                      ║
 ║ adverb_over_power.k                                │ ^/ 2 3 2             │ 64                   │                      ║
 ║ adverb_over_with_initialization_1.k                │ 1 +/ 2 3 4 5         │ 15                   │                      ║
 ║ adverb_over_with_initialization_2.k                │ 2 +/ 1 2 3 4         │ 12                   │                      ║
@@ -851,16 +851,11 @@
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 805/847 tests passed (95.0%)                                                                               ║
+║ SUMMARY: 806/847 tests passed (95.2%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
-Test: multiply_over_empty.k
-Input: */!0
-Expected: 1
-Actual: 0
-──────────────────────────────────────────────────────────────────────────
 Test: anonymous_function_over_adverb.k
 Input: {x*%y}/10 20 30
 Expected: 0.01666667
