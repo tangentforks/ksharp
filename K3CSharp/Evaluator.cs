@@ -3648,6 +3648,12 @@ namespace K3CSharp
                 // Set current verb context
                 currentVerb = verbWithAdverbs.BaseVerb;
                 
+                // Special handling for over adverb - apply directly to arguments without base verb first
+                if (verbWithAdverbs.Adverbs.Contains("ADVERB_SLASH"))
+                {
+                    return ApplyOverAdverb(arguments[1], arguments);
+                }
+                
                 // Start with the base verb and arguments
                 K3Value result = ApplyBaseVerb(verbWithAdverbs.BaseVerb, arguments);
                 
@@ -3691,38 +3697,68 @@ namespace K3CSharp
 
             public K3Value HandleTwoArgumentAdverb(VerbWithAdverbs verbWithAdverbs, K3Value argument)
             {
-                // For 2-argument adverb structures, the argument contains the right operand
-                // We need to extract the left operand from the context or handle it differently
-                // This is a simplified implementation for the each adverb case
-                
-                if (verbWithAdverbs.Adverbs.Contains("ADVERB_TICK"))
+                // For 2-argument adverb structures, handle over/scan/each adverbs correctly
+                if (verbWithAdverbs.Adverbs.Contains("ADVERB_SLASH"))
                 {
-                    // Handle each adverb with vector arguments
-                    // For now, assume the argument is a vector and we need to apply the verb element-wise
-                    return ApplyEachAdverb(verbWithAdverbs.BaseVerb, argument);
+                    // Over adverb (/) - use existing implementation
+                    return evaluator.ApplyAdverbSlash(CreateVerbValue(verbWithAdverbs.BaseVerb), new IntegerValue(0), argument);
+                }
+                else if (verbWithAdverbs.Adverbs.Contains("ADVERB_BACKSLASH"))
+                {
+                    // Scan adverb (\) - use existing implementation
+                    return evaluator.ApplyAdverbBackslash(CreateVerbValue(verbWithAdverbs.BaseVerb), new IntegerValue(0), argument);
+                }
+                else if (verbWithAdverbs.Adverbs.Contains("ADVERB_TICK"))
+                {
+                    // Each adverb (') - use existing implementation
+                    return evaluator.HandleAdverbTick(CreateVerbValue(verbWithAdverbs.BaseVerb), new IntegerValue(0), argument);
+                }
+                else if (verbWithAdverbs.Adverbs.Contains("ADVERB_SLASH_COLON"))
+                {
+                    // Each-right adverb (/:) - use existing implementation
+                    return evaluator.ApplyAdverbSlashColon(CreateVerbValue(verbWithAdverbs.BaseVerb), new IntegerValue(0), argument);
+                }
+                else if (verbWithAdverbs.Adverbs.Contains("ADVERB_BACKSLASH_COLON"))
+                {
+                    // Each-left adverb (\:) - use existing implementation
+                    return evaluator.ApplyAdverbBackslashColon(CreateVerbValue(verbWithAdverbs.BaseVerb), new IntegerValue(0), argument);
+                }
+                else if (verbWithAdverbs.Adverbs.Contains("ADVERB_TICK_COLON"))
+                {
+                    // Each-prior adverb (':) - use existing implementation
+                    return evaluator.ApplyAdverbTickColon(CreateVerbValue(verbWithAdverbs.BaseVerb), new IntegerValue(0), argument);
                 }
                 
                 // Fallback to treating it as a single argument adverb
                 return EvaluateVerbWithAdverbs(verbWithAdverbs, argument);
             }
             
-            private K3Value ApplyEachAdverb(string verb, K3Value argument)
+            private K3Value CreateVerbValue(string verbSymbol)
             {
-                // For the each adverb, apply the verb to each element of the argument
-                if (argument is VectorValue vector)
+                // Create a verb value from the verb symbol
+                return verbSymbol switch
                 {
-                    var results = new List<K3Value>();
-                    foreach (var element in vector.Elements)
-                    {
-                        // Apply the verb to each element (as a single argument)
-                        var result = ApplyBaseVerb(verb, new K3Value[] { element });
-                        results.Add(result);
-                    }
-                    return new VectorValue(results);
-                }
-                
-                // If not a vector, just apply the verb normally
-                return ApplyBaseVerb(verb, new K3Value[] { argument });
+                    "+" => new SymbolValue("+"),
+                    "-" => new SymbolValue("-"),
+                    "*" => new SymbolValue("*"),
+                    "%" => new SymbolValue("%"),
+                    "^" => new SymbolValue("^"),
+                    "<" => new SymbolValue("<"),
+                    ">" => new SymbolValue(">"),
+                    "=" => new SymbolValue("="),
+                    "!" => new SymbolValue("!"),
+                    "&" => new SymbolValue("&"),
+                    "|" => new SymbolValue("|"),
+                    "~" => new SymbolValue("~"),
+                    "," => new SymbolValue(","),
+                    "." => new SymbolValue("."),
+                    "@" => new SymbolValue("@"),
+                    "#" => new SymbolValue("#"),
+                    "_" => new SymbolValue("_"),
+                    "?" => new SymbolValue("?"),
+                    "$" => new SymbolValue("$"),
+                    _ => throw new Exception($"Unknown verb symbol: {verbSymbol}")
+                };
             }
 
             private K3Value ApplyAdverb(string adverb, K3Value verbResult, K3Value[] originalArguments)
@@ -3741,17 +3777,27 @@ namespace K3CSharp
 
             private K3Value ApplyOverAdverb(K3Value verbResult, K3Value[] originalArguments)
             {
-                // Over adverb (/) - apply verb to each element
+                // Over adverb (/) - reduce/fold operation
                 if (verbResult is VectorValue vector)
                 {
-                    var results = new List<K3Value>();
-                    foreach (var element in vector.Elements)
+                    if (vector.Elements.Count == 0)
                     {
-                        // Apply the base verb to each element
-                        var singleResult = ApplyBaseVerb(GetVerbFromContext(originalArguments), new[] { element });
-                        results.Add(singleResult);
+                        return new IntegerValue(0); // Identity for empty vector
                     }
-                    return new VectorValue(results);
+                    else if (vector.Elements.Count == 1)
+                    {
+                        return vector.Elements[0]; // Single element, return as-is
+                    }
+                    else
+                    {
+                        // Reduce operation: apply verb cumulatively
+                        K3Value result = vector.Elements[0];
+                        for (int i = 1; i < vector.Elements.Count; i++)
+                        {
+                            result = ApplyBaseVerb(GetVerbFromContext(originalArguments), new[] { result, vector.Elements[i] });
+                        }
+                        return result;
+                    }
                 }
                 return verbResult;
             }

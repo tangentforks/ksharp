@@ -6,17 +6,17 @@
 ║ adverb_each_vector_minus.k                         │ (10 20 30) -' (1 2 3)  // Test each adverb with equal length vectors (now implemented) - Each should apply the operation element-wise between corresponding vectors │ 9 18 27              │                      ║
 ║ adverb_each_vector_multiply.k                      │ (1 2 3) *' (4 5 6)  // Test each adverb with equal length vectors (now implemented) - Each should apply the operation element-wise between corresponding vectors │ 4 10 18              │                      ║
 ║ adverb_each_vector_plus.k                          │ (1 2 3 4) +' (5 6 7 8)  // Test each adverb with equal length vectors (now implemented) - Each should apply the operation element-wise between corresponding vectors │ 6 8 10 12            │                      ║
-║ adverb_over_divide.k                               │ %/ 100 2 5           │ Error: % operat...   │ 10.0                 ║
-║ adverb_over_max.k                                  │ |/ 1 3 2 5 4         │ 1 3 2 5 4            │ 5                    ║
-║ adverb_over_min.k                                  │ &/ 5 3 4 1 2         │ (();();();();())     │ 1                    ║
-║ adverb_over_minus.k                                │ -/ 10 2 3 1          │ 10 2 3 1             │ 4                    ║
-║ adverb_over_multiply.k                             │ */ 1 2 3 4           │ 0 0 0 0              │ 24                   ║
-║ adverb_over_plus.k                                 │ +/ 1 2 3 4 5         │ 1 2 3 4 5            │ 15                   ║
-║ plus_over_empty.k                                  │ +/!0                 │ ()                   │ 0                    ║
-║ multiply_over_empty.k                              │ */!0                 │ ()                   │ 1                    ║
-║ adverb_over_power.k                                │ ^/ 2 3 2             │ 0 0 0                │ 64                   ║
-║ adverb_over_with_initialization_1.k                │ 1 +/ 2 3 4 5         │ 3 4 5 6              │ 15                   ║
-║ adverb_over_with_initialization_2.k                │ 2 +/ 1 2 3 4         │ 3 4 5 6              │ 12                   ║
+║ adverb_over_divide.k                               │ %/ 100 2 5           │ 10.0                 │                      ║
+║ adverb_over_max.k                                  │ |/ 1 3 2 5 4         │ 5                    │                      ║
+║ adverb_over_min.k                                  │ &/ 5 3 4 1 2         │ 1                    │                      ║
+║ adverb_over_minus.k                                │ -/ 10 2 3 1          │ 4                    │                      ║
+║ adverb_over_multiply.k                             │ */ 1 2 3 4           │ 24                   │                      ║
+║ adverb_over_plus.k                                 │ +/ 1 2 3 4 5         │ 15                   │                      ║
+║ plus_over_empty.k                                  │ +/!0                 │ 0                    │                      ║
+║ multiply_over_empty.k                              │ */!0                 │ 0                    │ 1                    ║
+║ adverb_over_power.k                                │ ^/ 2 3 2             │ 64                   │                      ║
+║ adverb_over_with_initialization_1.k                │ 1 +/ 2 3 4 5         │ 14                   │ 15                   ║
+║ adverb_over_with_initialization_2.k                │ 2 +/ 1 2 3 4         │ 10                   │ 12                   ║
 ║ adverb_scan_divide.k                               │ %\ 100 2 5           │ Error: Division...   │ (100;50.0;10.0)      ║
 ║ adverb_scan_max.k                                  │ |\ 1 3 2 5 4         │ 1 3 3 5 5            │                      ║
 ║ adverb_scan_min.k                                  │ &\ 5 3 4 1 2         │ 0 0 0 0 0            │ 5 3 3 1 1            ║
@@ -37,7 +37,7 @@
 ║ atom_scalar.k                                      │ @42                  │ 1                    │                      ║
 ║ atom_vector.k                                      │ @1 2 3               │ 0                    │                      ║
 ║ lrs_atomic_parser_basic.k                          │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
-║ lrs_adverb_parser_each.k                           │ (1 2 3) %/ 2         │ Error: % operat...   │ 0.5 1.0 1.5          ║
+║ lrs_adverb_parser_each.k                           │ (1 2 3) %/ 2         │ 2                    │ 0.5 1.0 1.5          ║
 ║ lrs_adverb_parser_basic.k                          │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
 ║ lrs_expression_processor_test.k                    │ 1 + 2                │ 3                    │                      ║
 ║ lrs_integration_bracket.k                          │ [1 + 2]              │ 3                    │                      ║
@@ -245,7 +245,7 @@
 ║ simple_nested_test.k                               │ (1 2 3)              │ 1 2 3                │                      ║
 ║ minus_integer.k                                    │ a:5                  │ 2                    │                      ║
 ║ test_triadic_dot.k                                 │ .[1 2 3;1;-:]        │ Error: Both LRS...   │ 1 -2 3               ║
-║ test_adverb_aware_evaluation.k                     │ +/ 1 2 3             │ 1 2 3                │ 6                    ║
+║ test_adverb_aware_evaluation.k                     │ +/ 1 2 3             │ 6                    │                      ║
 ║ special_float_neg_inf.k                            │ -0i                  │ -0i                  │                      ║
 ║ special_float_null.k                               │ 0n                   │ 0n                   │                      ║
 ║ special_float_pos_inf.k                            │ 0i                   │ 0i                   │                      ║
@@ -560,7 +560,7 @@
 ║ isolated.k                                         │ a:1.5                │ 0.6                  │                      ║
 ║ modulo.k                                           │ a:1.5                │ 0.6                  │                      ║
 ║ monadic_format_mixed_vector.k                      │ $(1;2.5;"hello";`symbol) │ (,"1";"2.5";"he...   │                      ║
-║ over_plus_empty.k                                  │ +/!0                 │ ()                   │ 0                    ║
+║ over_plus_empty.k                                  │ +/!0                 │ 0                    │                      ║
 ║ simple_division.k                                  │ 8 % 2                │ 4.0                  │                      ║
 ║ simple_subtraction.k                               │ 5 - 3                │ 2                    │                      ║
 ║ string_parse.k                                     │ a: 10                │ 30                   │                      ║
@@ -851,65 +851,25 @@
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 783/847 tests passed (92.4%)                                                                               ║
+║ SUMMARY: 793/847 tests passed (93.6%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
-Test: adverb_over_divide.k
-Input: %/ 100 2 5
-Expected: 10.0
-Actual: Error: % operator requires 2 arguments
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_over_max.k
-Input: |/ 1 3 2 5 4
-Expected: 5
-Actual: 1 3 2 5 4
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_over_min.k
-Input: &/ 5 3 4 1 2
-Expected: 1
-Actual: (();();();();())
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_over_minus.k
-Input: -/ 10 2 3 1
-Expected: 4
-Actual: 10 2 3 1
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_over_multiply.k
-Input: */ 1 2 3 4
-Expected: 24
-Actual: 0 0 0 0
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_over_plus.k
-Input: +/ 1 2 3 4 5
-Expected: 15
-Actual: 1 2 3 4 5
-──────────────────────────────────────────────────────────────────────────
-Test: plus_over_empty.k
-Input: +/!0
-Expected: 0
-Actual: ()
-──────────────────────────────────────────────────────────────────────────
 Test: multiply_over_empty.k
 Input: */!0
 Expected: 1
-Actual: ()
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_over_power.k
-Input: ^/ 2 3 2
-Expected: 64
-Actual: 0 0 0
+Actual: 0
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_over_with_initialization_1.k
 Input: 1 +/ 2 3 4 5
 Expected: 15
-Actual: 3 4 5 6
+Actual: 14
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_over_with_initialization_2.k
 Input: 2 +/ 1 2 3 4
 Expected: 12
-Actual: 3 4 5 6
+Actual: 10
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_scan_divide.k
 Input: %\ 100 2 5
@@ -974,7 +934,7 @@ Actual: Error: Function execution not yet implemented: x*%y
 Test: lrs_adverb_parser_each.k
 Input: (1 2 3) %/ 2
 Expected: 0.5 1.0 1.5
-Actual: Error: % operator requires 2 arguments
+Actual: 2
 ──────────────────────────────────────────────────────────────────────────
 Test: named_function_over.k
 Input: f:{x*%y};f/10 20 30
@@ -990,11 +950,6 @@ Test: test_triadic_dot.k
 Input: .[1 2 3;1;-:]
 Expected: 1 -2 3
 Actual: Error: Both LRS and legacy parsers failed for: .[1 2 3;1;-:]. Legacy error: Unexpected token: ASSIGNMENT(-:)
-──────────────────────────────────────────────────────────────────────────
-Test: test_adverb_aware_evaluation.k
-Input: +/ 1 2 3
-Expected: 6
-Actual: 1 2 3
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
@@ -1055,11 +1010,6 @@ Test: adverb_tick_colon_basic.k
 Input: -': 4 8 9 12 20
 Expected: 4 1 3 8
 Actual: -4 -4 -1 -3 -8
-──────────────────────────────────────────────────────────────────────────
-Test: over_plus_empty.k
-Input: +/!0
-Expected: 0
-Actual: ()
 ──────────────────────────────────────────────────────────────────────────
 Test: math_dot_matrix_each_right.k
 Input: (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12)
