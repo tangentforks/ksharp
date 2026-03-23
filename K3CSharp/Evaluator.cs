@@ -745,9 +745,7 @@ namespace K3CSharp
                 // Get the arguments vector (third child)
                 var argsVector = Evaluate(node.Children[2]);
                 
-                Console.WriteLine($"[DEBUG] Two-glyph adverb: {op.Value}, verb: {verbValue}, leftArg: {leftArg}, argsVector: {argsVector}");
-                Console.WriteLine($"[DEBUG] Verb type: {verbValue?.GetType().Name}, verb value: {verbValue}");
-                
+                                
                 // Handle the adverb based on its type
                 if (verbValue == null)
                 {

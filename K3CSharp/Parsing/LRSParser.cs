@@ -571,16 +571,7 @@ namespace K3CSharp.Parsing
         /// <returns>AST node representing the adverb operation, or null if no adverb found</returns>
         private ASTNode? ParseAdverbExpression(List<Token> expressionTokens)
         {
-            // Debug: Check if we have any two-glyph adverbs in the expression
-            bool hasTwoGlyphAdverb = expressionTokens.Any(t => t.Type == TokenType.ADVERB_SLASH_COLON ||
-                                                           t.Type == TokenType.ADVERB_BACKSLASH_COLON ||
-                                                           t.Type == TokenType.ADVERB_TICK_COLON);
-            if (hasTwoGlyphAdverb)
-            {
-                Console.WriteLine($"[DEBUG] ParseAdverbExpression called with {expressionTokens.Count} tokens containing two-glyph adverb");
-                Console.WriteLine($"[DEBUG] Tokens: {string.Join(", ", expressionTokens.Select(t => $"{t.Type}({t.Lexeme})"))}");
-            }
-            
+                        
             // CONSERVATIVE APPROACH: Only handle very specific, simple cases
             // Start with the most basic adverb patterns to avoid breaking the system
             
@@ -591,22 +582,12 @@ namespace K3CSharp.Parsing
             // Pattern: verb/: arguments, verb\: arguments, etc.
             if (expressionTokens.Count >= 3)
             {
-                // Debug: Check if we have a two-glyph adverb
-                if (expressionTokens[1].Type == TokenType.ADVERB_SLASH_COLON ||
-                    expressionTokens[1].Type == TokenType.ADVERB_BACKSLASH_COLON ||
-                    expressionTokens[1].Type == TokenType.ADVERB_TICK_COLON)
-                {
-                    Console.WriteLine($"[DEBUG] Found two-glyph adverb: {expressionTokens[1].Lexeme}, verb: {expressionTokens[0].Lexeme}");
-                }
-                
                 // Check for verb + two-glyph adverb at the beginning
                 if (IsVerbToken(expressionTokens[0].Type) &&
                     (expressionTokens[1].Type == TokenType.ADVERB_SLASH_COLON ||
                      expressionTokens[1].Type == TokenType.ADVERB_BACKSLASH_COLON ||
                      expressionTokens[1].Type == TokenType.ADVERB_TICK_COLON))
                 {
-                    Console.WriteLine($"[DEBUG] Verb + two-glyph adverb pattern detected: {expressionTokens[0].Lexeme}{expressionTokens[1].Lexeme}");
-                    
                     // Check that remaining tokens are valid arguments
                     bool hasValidArgs = true;
                     for (int i = 2; i < expressionTokens.Count; i++)
@@ -623,12 +604,7 @@ namespace K3CSharp.Parsing
                     
                     if (hasValidArgs)
                     {
-                        Console.WriteLine($"[DEBUG] Arguments are valid, calling ParseVerbTwoGlyphAdverb");
                         return ParseVerbTwoGlyphAdverb(expressionTokens);
-                    }
-                    else
-                    {
-                        Console.WriteLine($"[DEBUG] Arguments are not valid");
                     }
                 }
             }

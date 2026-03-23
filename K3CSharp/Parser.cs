@@ -193,9 +193,10 @@ namespace K3CSharp
         public Parser(List<Token> tokens, string sourceText)
         {
             this.tokens = tokens;
-            this.current = 0;
             this.sourceText = sourceText;
-        }
+            this.current = 0;
+            
+                    }
 
         public bool IsExpressionComplete()
         {
@@ -722,6 +723,7 @@ namespace K3CSharp
         
         private ASTNode? ParseExpressionWithoutSemicolons()
         {
+                        
             // Special handling for verb + two-glyph adverb patterns - targeted fix for LRS fallback
             if (!IsAtEnd() && IsVerbToken(CurrentToken().Type) && 
                 current + 1 < tokens.Count && 
@@ -1116,7 +1118,6 @@ namespace K3CSharp
             // In K, there's no precedence among operators - they're all right-associative
             while (MatchBinaryOperator(out var op))
             {
-                
                 // Check if this is followed by an adverb (infix adverb)
                 if (VerbRegistry.IsAdverbToken(CurrentToken().Type))
                 {
@@ -1172,6 +1173,7 @@ namespace K3CSharp
                             "STRING_REPRESENTATION" => "$",
                             "APPLY" => "@",
                             "DOT" => "_dot",
+                            "DOT_PRODUCT" => "_dot",
                             _ => PreviousToken().Lexeme
                         };
                         var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
@@ -1331,6 +1333,7 @@ namespace K3CSharp
                             "STRING_REPRESENTATION" => "$",
                             "APPLY" => "@",
                             "DOT" => "_dot",
+                            "DOT_PRODUCT" => "_dot",
                             _ => PreviousToken().Lexeme
                         };
                         var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));

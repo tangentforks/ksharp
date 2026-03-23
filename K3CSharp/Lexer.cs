@@ -127,12 +127,106 @@ namespace K3CSharp
                     tokens.Add(new Token(TokenType.DIVIDE, "%", position));
                     Advance();
                 }
+                else if (c == '_')
+                {
+                    // Check if underscore is part of a name (identifier or symbol)
+                    // Look ahead to see if this could be part of a name
+                    if (position > 0 && 
+                        (char.IsLetterOrDigit(input[position - 1]) || input[position - 1] == '_' || input[position - 1] == '.') &&
+                        position + 1 < input.Length && 
+                        (char.IsLetterOrDigit(input[position + 1]) || input[position + 1] == '_'))
+                    {
+                        // Underscore is part of an identifier
+                        tokens.Add(ReadIdentifier());
+                    }
+                    else
+                    {
+                        // Check for _gethint first (greedy precedence)
+                        if (position + 7 < input.Length && input.Substring(position, 8) == "_gethint")
+                        {
+                            tokens.Add(new Token(TokenType.GETHINT, "_gethint", position));
+                            Advance(); // Skip _
+                            for (int i = 0; i < 7; i++) Advance(); // Skip "gethint"
+                        }
+                        // Check for _sethint next (greedy precedence)
+                        else if (position + 7 < input.Length && input.Substring(position, 8) == "_sethint")
+                        {
+                            tokens.Add(new Token(TokenType.SETHINT, "_sethint", position));
+                            Advance(); // Skip _
+                            for (int i = 0; i < 7; i++) Advance(); // Skip "sethint"
+                        }
+                        // Check for _hint first (greedy precedence over _h)
+                        else if (position + 4 < input.Length && input.Substring(position, 5) == "_hint")
+                        {
+                            tokens.Add(new Token(TokenType.HINT, "_hint", position));
+                            Advance(); // Skip _
+                            Advance(); // Skip h
+                            Advance(); // Skip i
+                            Advance(); // Skip n
+                            Advance(); // Skip t
+                        }
+                        // Check for _parse next (greedy precedence)
+                        else if (position + 5 < input.Length && input.Substring(position, 6) == "_parse")
+                        {
+                            tokens.Add(new Token(TokenType.PARSE, "_parse", position));
+                            Advance(); // Skip _
+                            for (int i = 0; i < 5; i++) Advance(); // Skip "parse"
+                        }
+                        // Check for _eval next (greedy precedence)
+                        else if (position + 4 < input.Length && input.Substring(position, 5) == "_eval")
+                        {
+                            tokens.Add(new Token(TokenType.EVAL, "_eval", position));
+                            Advance(); // Skip _
+                            for (int i = 0; i < 4; i++) Advance(); // Skip "eval"
+                        }
+                        // Check for _n null value (only if not followed by letters)
+                        else if (position + 1 < input.Length && input[position + 1] == 'n')
+                        {
+                            // Check if this is just _n (not followed by more letters)
+                            bool isJustN = (position + 2 >= input.Length) || !char.IsLetter(input[position + 2]);
+                            
+                            if (isJustN)
+                            {
+                                tokens.Add(new Token(TokenType.NULL, "_n", position));
+                                Advance(); // Skip _
+                                Advance(); // Skip n
+                            }
+                            else
+                            {
+                                // This is _n followed by letters, let ReadMathOperation handle it
+                                var mathOp = ReadMathOperation();
+                                if (mathOp != null)
+                                {
+                                    tokens.Add(mathOp);
+                                }
+                                else
+                                {
+                                    tokens.Add(new Token(TokenType.UNDERSCORE, "_", position));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Check for mathematical operations
+                            var mathOp = ReadMathOperation();
+                            if (mathOp != null)
+                            {
+                                                                tokens.Add(mathOp);
+                            }
+                            else
+                            {
+                                tokens.Add(new Token(TokenType.UNDERSCORE, "_", position));
+                                Advance();
+                            }
+                        }
+                    }
+                }
                 else if (c == '/')
                 {
                     // Check if this is a comment (// or / at start of line or after space)
                     if (position + 1 < input.Length && input[position + 1] == '/')
                     {
-                        // // comment - skip to end of line
+                        // comment - skip to end of line
                         position += 2; // Skip both slashes
                         while (position < input.Length && currentChar != '\n')
                         {
@@ -247,100 +341,6 @@ namespace K3CSharp
                 else if (char.IsLetter(c))
                 {
                     tokens.Add(ReadIdentifier());
-                }
-                else if (c == '_')
-                {
-                    // Check if underscore is part of a name (identifier or symbol)
-                    // Look ahead to see if this could be part of a name
-                    if (position > 0 && 
-                        (char.IsLetterOrDigit(input[position - 1]) || input[position - 1] == '_' || input[position - 1] == '.') &&
-                        position + 1 < input.Length && 
-                        (char.IsLetterOrDigit(input[position + 1]) || input[position + 1] == '_'))
-                    {
-                        // Underscore is part of an identifier
-                        tokens.Add(ReadIdentifier());
-                    }
-                    else
-                    {
-                        // Check for _gethint first (greedy precedence)
-                        if (position + 7 < input.Length && input.Substring(position, 8) == "_gethint")
-                        {
-                            tokens.Add(new Token(TokenType.GETHINT, "_gethint", position));
-                            Advance(); // Skip _
-                            for (int i = 0; i < 7; i++) Advance(); // Skip "gethint"
-                        }
-                        // Check for _sethint next (greedy precedence)
-                        else if (position + 7 < input.Length && input.Substring(position, 8) == "_sethint")
-                        {
-                            tokens.Add(new Token(TokenType.SETHINT, "_sethint", position));
-                            Advance(); // Skip _
-                            for (int i = 0; i < 7; i++) Advance(); // Skip "sethint"
-                        }
-                        // Check for _hint first (greedy precedence over _h)
-                        else if (position + 4 < input.Length && input.Substring(position, 5) == "_hint")
-                        {
-                            tokens.Add(new Token(TokenType.HINT, "_hint", position));
-                            Advance(); // Skip _
-                            Advance(); // Skip h
-                            Advance(); // Skip i
-                            Advance(); // Skip n
-                            Advance(); // Skip t
-                        }
-                        // Check for _parse next (greedy precedence)
-                        else if (position + 5 < input.Length && input.Substring(position, 6) == "_parse")
-                        {
-                            tokens.Add(new Token(TokenType.PARSE, "_parse", position));
-                            Advance(); // Skip _
-                            for (int i = 0; i < 5; i++) Advance(); // Skip "parse"
-                        }
-                        // Check for _eval next (greedy precedence)
-                        else if (position + 4 < input.Length && input.Substring(position, 5) == "_eval")
-                        {
-                            tokens.Add(new Token(TokenType.EVAL, "_eval", position));
-                            Advance(); // Skip _
-                            for (int i = 0; i < 4; i++) Advance(); // Skip "eval"
-                        }
-                        // Check for _n null value (only if not followed by letters)
-                        else if (position + 1 < input.Length && input[position + 1] == 'n')
-                        {
-                            // Check if this is just _n (not followed by more letters)
-                            bool isJustN = (position + 2 >= input.Length) || !char.IsLetter(input[position + 2]);
-                            
-                            if (isJustN)
-                            {
-                                tokens.Add(new Token(TokenType.NULL, "_n", position));
-                                Advance(); // Skip _
-                                Advance(); // Skip n
-                            }
-                            else
-                            {
-                                // This is _n followed by letters, let ReadMathOperation handle it
-                                var mathOp = ReadMathOperation();
-                                if (mathOp != null)
-                                {
-                                    tokens.Add(mathOp);
-                                }
-                                else
-                                {
-                                    tokens.Add(new Token(TokenType.UNDERSCORE, "_", position));
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // Check for mathematical operations
-                            var mathOp = ReadMathOperation();
-                            if (mathOp != null)
-                            {
-                                tokens.Add(mathOp);
-                            }
-                            else
-                            {
-                                tokens.Add(new Token(TokenType.UNDERSCORE, "_", position));
-                                Advance();
-                            }
-                        }
-                    }
                 }
                 else if (c == '?')
                 {
