@@ -34,13 +34,13 @@ namespace K3CSharp
                 return null;
             }
 
-            // Handle binary operators but be careful about semicolons in nested structures
+            // Handle dyadic operators but be careful about semicolons in nested structures
             while (!context.IsAtEnd() && 
                    context.CurrentToken().Type != TokenType.SEMICOLON && 
                    context.CurrentToken().Type != TokenType.RIGHT_PAREN &&
                    context.CurrentToken().Type != TokenType.RIGHT_BRACE &&
                    context.CurrentToken().Type != TokenType.RIGHT_BRACKET &&
-                   IsBinaryOperator(context.CurrentToken().Type))
+                   IsDyadicOperator(context.CurrentToken().Type))
             {
                 var op = MatchAndGetOperator(context);
                 if (op == null) break;
@@ -48,7 +48,7 @@ namespace K3CSharp
                 var right = ParseTerm(context);
                 if (right == null) break;
                 
-                left = ASTNode.MakeBinaryOp(op.Type, left, right);
+                left = ASTNode.MakeDyadicOp(op.Type, left, right);
             }
 
             return left;
@@ -204,8 +204,8 @@ namespace K3CSharp
 
             var token = context.CurrentToken();
             
-            // Check if this is a binary operator
-            if (IsBinaryOperator(token.Type))
+            // Check if this is a dyadic operator
+            if (IsDyadicOperator(token.Type))
             {
                 context.Advance();
                 return token;
@@ -214,9 +214,9 @@ namespace K3CSharp
             return null;
         }
 
-        private static bool IsBinaryOperator(TokenType tokenType)
+        private static bool IsDyadicOperator(TokenType tokenType)
         {
-            return VerbRegistry.IsBinaryOperator(tokenType);
+            return VerbRegistry.IsDyadicOperator(tokenType);
         }
     }
 }

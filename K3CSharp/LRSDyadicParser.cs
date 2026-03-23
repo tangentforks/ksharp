@@ -5,27 +5,27 @@ using System.Linq;
 namespace K3CSharp.Parsing
 {
     /// <summary>
-    /// Binary operator parsing for LRS parser
+    /// Dyadic operator parsing for LRS parser
     /// Handles dyadic operations with right-associative LRS semantics
     /// </summary>
-    public class LRSBinaryParser
+    public class LRSDyadicParser
     {
         private readonly List<Token> tokens;
         private readonly LRSParser? parentParser;
         
-        public LRSBinaryParser(List<Token> tokens, LRSParser? parentParser = null)
+        public LRSDyadicParser(List<Token> tokens, LRSParser? parentParser = null)
         {
             this.tokens = tokens;
             this.parentParser = parentParser;
         }
         
         /// <summary>
-        /// Find the rightmost (or leftmost in Pure LRS) binary operator in token list
+        /// Find the rightmost (or leftmost in Pure LRS) dyadic operator in token list
         /// Safe LRS mode: Find rightmost operator (original behavior for fallback compatibility)
         /// Pure LRS mode: Find leftmost operator with grouping depth tracking (improved behavior)
         /// </summary>
         /// <param name="tokens">Tokens to search</param>
-        /// <returns>Index of binary operator, or -1 if none found</returns>
+        /// <returns>Index of dyadic operator, or -1 if none found</returns>
         public int FindRightmostOperator(List<Token> tokens)
         {
             bool pureLRSMode = parentParser?.PureLRSMode ?? false;
@@ -60,7 +60,7 @@ namespace K3CSharp.Parsing
                     }
                     
                     // Only consider operators at depth 0 (not inside grouping constructs)
-                    if (depth == 0 && IsBinaryOperatorDirect(currentToken.Type))
+                    if (depth == 0 && IsDyadicOperatorDirect(currentToken.Type))
                     {
                         // NEW: Check if next token is an adverb (verb+adverb pattern)
                         if (i + 1 < tokens.Count && IsAdverbToken(tokens[i + 1].Type))
@@ -70,7 +70,7 @@ namespace K3CSharp.Parsing
                             continue;
                         }
                         
-                        // This is a standalone binary operator at depth 0 - return it
+                        // This is a standalone dyadic operator at depth 0 - return it
                         return i;
                     }
                 }
@@ -83,7 +83,7 @@ namespace K3CSharp.Parsing
                 // This ensures compatibility with legacy parser fallback
                 for (int i = tokens.Count - 1; i >= 0; i--)
                 {
-                    if (IsBinaryOperatorDirect(tokens[i].Type))
+                    if (IsDyadicOperatorDirect(tokens[i].Type))
                     {
                         return i;
                     }
@@ -94,9 +94,9 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Direct binary operator detection without VerbRegistry (temporary fix)
+        /// Direct dyadic operator detection without VerbRegistry (temporary fix)
         /// </summary>
-        private static bool IsBinaryOperatorDirect(TokenType tokenType)
+        private static bool IsDyadicOperatorDirect(TokenType tokenType)
         {
             return tokenType == TokenType.PLUS ||
                    tokenType == TokenType.MINUS ||
@@ -166,21 +166,21 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Public method to check if token type is a binary operator
+        /// Public method to check if token type is a dyadic operator
         /// </summary>
         /// <param name="tokenType">Token type to check</param>
-        /// <returns>True if binary operator</returns>
-        public bool IsBinaryOperator(TokenType tokenType)
+        /// <returns>True if dyadic operator</returns>
+        public bool IsDyadicOperator(TokenType tokenType)
         {
-            return IsBinaryOperatorDirect(tokenType);
+            return IsDyadicOperatorDirect(tokenType);
         }
         
         /// <summary>
-        /// Parse binary operation using LRS right-associative strategy
+        /// Parse dyadic operation using LRS right-associative strategy
         /// </summary>
         /// <param name="tokens">Tokens to parse</param>
-        /// <returns>AST node representing binary operation</returns>
-        public ASTNode? ParseBinaryOperation(List<Token> tokens)
+        /// <returns>AST node representing dyadic operation</returns>
+        public ASTNode? ParseDyadicOperation(List<Token> tokens)
         {
             if (tokens.Count < 3) return null; // Need at least: left op right
             
@@ -205,7 +205,7 @@ namespace K3CSharp.Parsing
                 if (rightNode == null)
                     rightNode = ASTNode.MakeLiteral(new NullValue());
                 
-                return CreateBinaryNode(opToken, leftNode, rightNode);
+                return CreateDyadicNode(opToken, leftNode, rightNode);
             }
             else
             {
@@ -219,7 +219,7 @@ namespace K3CSharp.Parsing
                 if (rightNode == null)
                     rightNode = ASTNode.MakeLiteral(new NullValue());
                 
-                return CreateBinaryNode(opToken, leftNode, rightNode);
+                return CreateDyadicNode(opToken, leftNode, rightNode);
             }
         }
         
@@ -237,15 +237,15 @@ namespace K3CSharp.Parsing
                 return nodeResult;
             }
             
-            // Try binary operation first (unary parsing is handled at main LRS level)
-            var result = ParseBinaryOperation(tokens);
+            // Try dyadic operation first (unary parsing is handled at main LRS level)
+            var result = ParseDyadicOperation(tokens);
             if (result == null)
                 return null;
             return result;
         }
         
         /// <summary>
-        /// Parse sub-expression (could be unary, binary, or atomic)
+        /// Parse sub-expression (could be unary, dyadic, or atomic)
         /// </summary>
         private ASTNode? ParseSubExpression(List<Token> tokens)
         {
@@ -256,16 +256,16 @@ namespace K3CSharp.Parsing
                 return nodeResult;
             }
             
-            // Try binary operation (unary parsing is handled at main LRS level)
-            return ParseBinaryOperation(tokens);
+            // Try dyadic operation (unary parsing is handled at main LRS level)
+            return ParseDyadicOperation(tokens);
         }
         
         /// <summary>
-        /// Create AST node for binary operation
+        /// Create AST node for dyadic operation
         /// </summary>
-        private ASTNode CreateBinaryNode(Token opToken, ASTNode left, ASTNode right)
+        private ASTNode CreateDyadicNode(Token opToken, ASTNode left, ASTNode right)
         {
-            return ASTNode.MakeBinaryOp(opToken.Type, left, right);
+            return ASTNode.MakeDyadicOp(opToken.Type, left, right);
         }
         
         /// <summary>
@@ -283,11 +283,11 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Check if token could be a binary operator
+        /// Check if token could be a dyadic operator
         /// </summary>
-        public static bool CouldBeBinaryOperator(TokenType tokenType)
+        public static bool CouldBeDyadicOperator(TokenType tokenType)
         {
-            return IsBinaryOperatorDirect(tokenType);
+            return IsDyadicOperatorDirect(tokenType);
         }
         
         /// <summary>

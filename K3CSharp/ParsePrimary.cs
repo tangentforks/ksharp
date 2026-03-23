@@ -7,7 +7,7 @@ namespace K3CSharp
         /// </summary>
         private static ASTNode MakeUnaryOperatorNode(string symbol, ASTNode? operand)
         {
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue(symbol);
             if (operand != null) 
                 node.Children.Add(operand);
@@ -122,11 +122,6 @@ namespace K3CSharp
                 // The lexer already validates symbol names, so no additional validation needed here
                 result = ASTNode.MakeLiteral(new SymbolValue(symbol));
             }
-            else if (Match(TokenType.HINT))
-            {
-                // Handle _hint as a variable reference to the built-in function
-                result = ASTNode.MakeVariable("_hint");
-            }
             else if (Match(TokenType.GETHINT))
             {
                 // Handle _gethint as a variable reference to the built-in function
@@ -195,7 +190,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Binary plus symbol
+                    // Dyadic plus symbol
                     result = ASTNode.MakeLiteral(new SymbolValue("+"));
                 }
             }
@@ -225,7 +220,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Binary minus symbol
+                    // Dyadic minus symbol
                     result = ASTNode.MakeLiteral(new SymbolValue("-"));
                 }
             }
@@ -252,13 +247,13 @@ namespace K3CSharp
                         var operand = ParsePrimary();
                         if (operand == null)
                         {
-                            // Create a projected function instead of an empty binary op
+                            // Create a projected function instead of an empty dyadic op
                             var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
                             projectedNode.Value = new SymbolValue("%");
                             projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(1))); // Needs 1 more argument
                             return projectedNode;
                         }
-                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        var node = new ASTNode(ASTNodeType.DyadicOp);
                         node.Value = new SymbolValue("%");
                         node.Children.Add(operand);
                         return node;
@@ -266,7 +261,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Binary division symbol
+                    // Dyadic division symbol
                     result = ASTNode.MakeLiteral(new SymbolValue("%"));
                 }
             }
@@ -328,7 +323,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Binary multiplication symbol
+                    // Dyadic multiplication symbol
                     result = ASTNode.MakeLiteral(new SymbolValue("*"));
                 }
             }
@@ -352,7 +347,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Binary min symbol
+                    // Dyadic min symbol
                     result = ASTNode.MakeLiteral(new SymbolValue("&"));
                 }
             }
@@ -376,7 +371,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Binary max symbol
+                    // Dyadic max symbol
                     result = ASTNode.MakeLiteral(new SymbolValue("|"));
                 }
             }
@@ -395,7 +390,7 @@ namespace K3CSharp
                     {
                         // This is unary grade up
                         var operand = ParseTerm(parseUntilEnd: true);
-                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        var node = new ASTNode(ASTNodeType.DyadicOp);
                         node.Value = new SymbolValue("<");
                         if (operand != null) node.Children.Add(operand);
                         return node;
@@ -403,7 +398,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Binary less symbol
+                    // Dyadic less symbol
                     result = ASTNode.MakeLiteral(new SymbolValue("<"));
                 }
             }
@@ -427,7 +422,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Binary greater symbol
+                    // Dyadic greater symbol
                     result = ASTNode.MakeLiteral(new SymbolValue(">"));
                 }
             }
@@ -451,7 +446,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Binary power symbol
+                    // Dyadic power symbol
                     result = ASTNode.MakeLiteral(new SymbolValue("^"));
                 }
             }
@@ -470,7 +465,7 @@ namespace K3CSharp
                     {
                         // This is unary enlist
                         var operand = ParseTerm();
-                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        var node = new ASTNode(ASTNodeType.DyadicOp);
                         node.Value = new SymbolValue(",");
                         if (operand != null) node.Children.Add(operand);
                         return node;
@@ -478,7 +473,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Binary join symbol
+                    // Dyadic join symbol
                     result = ASTNode.MakeLiteral(new SymbolValue(","));
                 }
             }
@@ -506,14 +501,14 @@ namespace K3CSharp
                 {
                     // Monadic colon - return operator
                     var operand = ParseExpression();
-                    var node = new ASTNode(ASTNodeType.BinaryOp);
+                    var node = new ASTNode(ASTNodeType.DyadicOp);
                     node.Value = new SymbolValue(":");
                     if (operand != null) node.Children.Add(operand);
                     return node;
                 }
                 else
                 {
-                    // This will be handled as binary operator (assignment)
+                    // This will be handled as dyadic operator (assignment)
                     result = ASTNode.MakeLiteral(new SymbolValue(":"));
                 }
             }
@@ -636,7 +631,7 @@ namespace K3CSharp
                     var arg = ParseExpressionWithoutSemicolons();
                     if (arg != null)
                     {
-                        result = ASTNode.MakeBinaryOp(TokenType.DOT_APPLY, result, arg);
+                        result = ASTNode.MakeDyadicOp(TokenType.DOT_APPLY, result, arg);
                     }
                 }
             }
@@ -655,7 +650,7 @@ namespace K3CSharp
                     {
                         // This is unary match (logical negate or attribute handle)
                         var operand = ParseExpression();
-                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        var node = new ASTNode(ASTNodeType.DyadicOp);
                         node.Value = new SymbolValue("~");
                         if (operand != null) node.Children.Add(operand);
                         return node;
@@ -663,11 +658,11 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Binary match operator - create proper binary operation
+                    // Dyadic match operator - create proper dyadic operation
                     var right = ParseTerm();
                     if (right != null)
                     {
-                        result = ASTNode.MakeBinaryOp(TokenType.MATCH, result, right);
+                        result = ASTNode.MakeDyadicOp(TokenType.MATCH, result, right);
                     }
                 }
             }
@@ -686,7 +681,7 @@ namespace K3CSharp
                     {
                         // This is unary format
                         var operand = ParseExpression();
-                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        var node = new ASTNode(ASTNodeType.DyadicOp);
                         node.Value = new SymbolValue("$");
                         if (operand != null) node.Children.Add(operand);
                         return node;
@@ -694,7 +689,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Binary format symbol
+                    // Dyadic format symbol
                     result = ASTNode.MakeLiteral(new SymbolValue("$"));
                 }
             }
@@ -720,7 +715,7 @@ namespace K3CSharp
                     {
                         // This is unary count
                         var operand = ParseTerm();
-                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        var node = new ASTNode(ASTNodeType.DyadicOp);
                         node.Value = new SymbolValue("#");
                         if (operand != null) node.Children.Add(operand);
                         return node;
@@ -728,7 +723,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Binary hash symbol
+                    // Dyadic hash symbol
                     result = ASTNode.MakeLiteral(new SymbolValue("#"));
                 }
             }
@@ -747,7 +742,7 @@ namespace K3CSharp
                     {
                         // This is unary floor
                         var operand = ParsePrimary();
-                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        var node = new ASTNode(ASTNodeType.DyadicOp);
                         node.Value = new SymbolValue("_");
                         if (operand != null) node.Children.Add(operand);
                         return node;
@@ -755,7 +750,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Binary underscore will be handled in ParseExpression, so treat as symbol here
+                    // Dyadic underscore will be handled in ParseExpression, so treat as symbol here
                     result = ASTNode.MakeLiteral(new SymbolValue("_"));
                 }
             }
@@ -774,7 +769,7 @@ namespace K3CSharp
                     {
                         // This is unary unique
                         var operand = ParsePrimary();
-                        var node = new ASTNode(ASTNodeType.BinaryOp);
+                        var node = new ASTNode(ASTNodeType.DyadicOp);
                         node.Value = new SymbolValue("?");
                         if (operand != null) node.Children.Add(operand);
                         return node;
@@ -782,7 +777,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Binary question symbol
+                    // Dyadic question symbol
                     result = ASTNode.MakeLiteral(new SymbolValue("?"));
                 }
             }
@@ -793,14 +788,14 @@ namespace K3CSharp
                 {
                     // This is unary enumerate
                     var operand = ParsePrimary();
-                    var node = new ASTNode(ASTNodeType.BinaryOp);
+                    var node = new ASTNode(ASTNodeType.DyadicOp);
                     node.Value = new SymbolValue("!");
                     if (operand != null) node.Children.Add(operand);
                     return node;
                 }
                 else
                 {
-                    // Binary modulus symbol
+                    // Dyadic modulus symbol
                     result = ASTNode.MakeLiteral(new SymbolValue("!"));
                 }
             }
@@ -825,7 +820,7 @@ namespace K3CSharp
             {
                 // Mathematical logarithm operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_log");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -834,7 +829,7 @@ namespace K3CSharp
             {
                 // Mathematical exponential operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_exp");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -843,7 +838,7 @@ namespace K3CSharp
             {
                 // Mathematical absolute value operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_abs");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -852,7 +847,7 @@ namespace K3CSharp
             {
                 // Mathematical square operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_sqr");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -861,7 +856,7 @@ namespace K3CSharp
             {
                 // Mathematical square root operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_sqrt");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -870,7 +865,7 @@ namespace K3CSharp
             {
                 // Mathematical floor operation (always returns float)
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_floor");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -879,7 +874,7 @@ namespace K3CSharp
             {
                 // Bitwise NOT operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_not");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -888,7 +883,7 @@ namespace K3CSharp
             {
                 // Mathematical ceiling operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_ceil");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -897,7 +892,7 @@ namespace K3CSharp
             {
                 // Linear algebra dot product operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_dot");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -906,7 +901,7 @@ namespace K3CSharp
             {
                 // Linear algebra matrix multiplication operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_mul");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -915,7 +910,7 @@ namespace K3CSharp
             {
                 // Linear algebra matrix inverse operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_inv");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -924,7 +919,7 @@ namespace K3CSharp
             {
                 // Mathematical sine operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_sin");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -933,7 +928,7 @@ namespace K3CSharp
             {
                 // Mathematical cosine operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_cos");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -942,7 +937,7 @@ namespace K3CSharp
             {
                 // Mathematical tangent operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_tan");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -951,7 +946,7 @@ namespace K3CSharp
             {
                 // Mathematical arcsine operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_asin");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -960,7 +955,7 @@ namespace K3CSharp
             {
                 // Mathematical arccosine operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_acos");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -969,7 +964,7 @@ namespace K3CSharp
             {
                 // Mathematical arctangent operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_atan");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -978,7 +973,7 @@ namespace K3CSharp
             {
                 // Mathematical hyperbolic sine operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_sinh");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -987,7 +982,7 @@ namespace K3CSharp
             {
                 // Mathematical hyperbolic cosine operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_cosh");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -996,7 +991,7 @@ namespace K3CSharp
             {
                 // Mathematical hyperbolic tangent operation
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_tanh");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -1017,7 +1012,7 @@ namespace K3CSharp
             {
                 // BD function - unary, create function call
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_bd");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -1026,7 +1021,7 @@ namespace K3CSharp
             {
                 // DB function - unary, create function call
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_db");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -1035,7 +1030,7 @@ namespace K3CSharp
             {
                 // GMT time conversion function
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_gtime");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -1044,7 +1039,7 @@ namespace K3CSharp
             {
                 // Local time conversion function
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_ltime");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -1053,7 +1048,7 @@ namespace K3CSharp
             {
                 // Local time offset function
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_lt");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -1062,7 +1057,7 @@ namespace K3CSharp
             {
                 // Julian date conversion function
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_jd");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -1071,7 +1066,7 @@ namespace K3CSharp
             {
                 // Date from Julian conversion function
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_dj");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -1115,7 +1110,7 @@ namespace K3CSharp
                 if (!Match(TokenType.SEMICOLON))
                     throw new Exception("_ss: Expected semicolon after left operand");
                 var rightOperand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_ss");
                 if (leftOperand != null) node.Children.Add(leftOperand);
                 if (rightOperand != null) node.Children.Add(rightOperand);
@@ -1135,7 +1130,7 @@ namespace K3CSharp
                 {
                     // Regular monadic verb with operand
                     var operand = ParseExpression();
-                    var node = new ASTNode(ASTNodeType.BinaryOp);
+                    var node = new ASTNode(ASTNodeType.DyadicOp);
                     node.Value = new SymbolValue("_ci");
                     if (operand != null) node.Children.Add(operand);
                     return node;
@@ -1155,7 +1150,7 @@ namespace K3CSharp
                 {
                     // Regular monadic verb with operand
                     var operand = ParseExpression();
-                    var node = new ASTNode(ASTNodeType.BinaryOp);
+                    var node = new ASTNode(ASTNodeType.DyadicOp);
                     node.Value = new SymbolValue("_ic");
                     if (operand != null) node.Children.Add(operand);
                     return node;
@@ -1166,7 +1161,7 @@ namespace K3CSharp
                 // Exit function
                 // Control flow function
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_exit");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -1401,7 +1396,7 @@ namespace K3CSharp
             {
                 // 4: operator is unary - parse the operand with full expression parsing
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("TYPE");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -1410,7 +1405,7 @@ namespace K3CSharp
             {
                 // 5: operator is unary - parse the operand with full expression parsing
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("STRING_REPRESENTATION");
                 if (operand != null) node.Children.Add(operand);
                 return node;
@@ -1422,7 +1417,7 @@ namespace K3CSharp
                 // We need to determine arity by context in the evaluator
                 var matchedToken = PreviousToken(); // Get the I/O verb token before parsing operand
                 var operand = ParseExpression();
-                var node = new ASTNode(ASTNodeType.BinaryOp);
+                var node = new ASTNode(ASTNodeType.DyadicOp);
                 
                 // Store the digit for later use in evaluator
                 int digit = VerbRegistry.GetIOVerbDigit(matchedToken.Type);
@@ -1440,7 +1435,7 @@ namespace K3CSharp
                     var bracketContents = ParseBracketContentsAsCommaEnlisted();
                     
                     // Create dot-apply node: (.) .,(x)
-                    var dotApplyNode = new ASTNode(ASTNodeType.BinaryOp);
+                    var dotApplyNode = new ASTNode(ASTNodeType.DyadicOp);
                     dotApplyNode.Value = new SymbolValue(".");
                     
                     // Left side is the dot operator itself
@@ -1448,7 +1443,7 @@ namespace K3CSharp
                     dotApplyNode.Children.Add(dotNode);
                     
                     // Create comma node for the ,(x) part
-                    var commaNode = new ASTNode(ASTNodeType.BinaryOp);
+                    var commaNode = new ASTNode(ASTNodeType.DyadicOp);
                     commaNode.Value = new SymbolValue(",");
                     commaNode.Children.Add(bracketContents);
                     
@@ -1502,7 +1497,7 @@ namespace K3CSharp
                     {
                         // This is unary MAKE (.) operator
                         var operand = ParsePrimary();
-                        var makeNode = new ASTNode(ASTNodeType.BinaryOp);
+                        var makeNode = new ASTNode(ASTNodeType.DyadicOp);
                         makeNode.Value = new SymbolValue(".");
                         if (operand != null) makeNode.Children.Add(operand);
                         return makeNode;
@@ -1518,7 +1513,7 @@ namespace K3CSharp
                     var bracketContents = ParseBracketContentsAsCommaEnlisted();
                     
                     // Create dot-apply node: (@) .,(x)
-                    var dotApplyNode = new ASTNode(ASTNodeType.BinaryOp);
+                    var dotApplyNode = new ASTNode(ASTNodeType.DyadicOp);
                     dotApplyNode.Value = new SymbolValue(".");
                     
                     // Left side is the at operator itself
@@ -1526,7 +1521,7 @@ namespace K3CSharp
                     dotApplyNode.Children.Add(atNode);
                     
                     // Create comma node for the ,(x) part
-                    var commaNode = new ASTNode(ASTNodeType.BinaryOp);
+                    var commaNode = new ASTNode(ASTNodeType.DyadicOp);
                     commaNode.Value = new SymbolValue(",");
                     commaNode.Children.Add(bracketContents);
                     
@@ -1537,7 +1532,7 @@ namespace K3CSharp
                 {
                     // This is unary ATOM (@) operator
                     var operand = ParseTerm();
-                    var atomNode = new ASTNode(ASTNodeType.BinaryOp);
+                    var atomNode = new ASTNode(ASTNodeType.DyadicOp);
                     atomNode.Value = new SymbolValue("@");
                     if (operand != null) atomNode.Children.Add(operand);
                     return atomNode;
@@ -1547,7 +1542,7 @@ namespace K3CSharp
             {
                 // This is unary PARSE (_parse) operator
                 var operand = ParsePrimary();
-                var parseNode = new ASTNode(ASTNodeType.BinaryOp);
+                var parseNode = new ASTNode(ASTNodeType.DyadicOp);
                 parseNode.Value = new SymbolValue("_parse");
                 if (operand != null) parseNode.Children.Add(operand);
                 return parseNode;
@@ -1556,7 +1551,7 @@ namespace K3CSharp
             {
                 // This is unary EVAL (_eval) operator
                 var operand = ParsePrimary();
-                var evalNode = new ASTNode(ASTNodeType.BinaryOp);
+                var evalNode = new ASTNode(ASTNodeType.DyadicOp);
                 evalNode.Value = new SymbolValue("_eval");
                 if (operand != null) evalNode.Children.Add(operand);
                 return evalNode;

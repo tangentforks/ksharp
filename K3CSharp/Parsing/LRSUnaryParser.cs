@@ -72,7 +72,7 @@ namespace K3CSharp.Parsing
             var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
             
             // Convert token type to operator symbol using VerbRegistry
-            var operatorSymbol = VerbRegistry.GetBinaryOperatorSymbol(operatorToken.Type);
+            var operatorSymbol = VerbRegistry.GetDyadicOperatorSymbol(operatorToken.Type);
             
             projectedNode.Value = new SymbolValue(operatorSymbol);
             
@@ -109,7 +109,7 @@ namespace K3CSharp.Parsing
                 return nestedResult;
             }
             
-            // Otherwise, use parent parser for binary operations
+            // Otherwise, use parent parser for dyadic operations
             var position2 = 0;
             return parentParser.ParseSubExpressionForUnary(tokens, ref position2);
         }
@@ -132,7 +132,7 @@ namespace K3CSharp.Parsing
         /// </summary>
         private bool IsOperatorToken(TokenType tokenType)
         {
-            return OperatorDetector.IsBinaryOperator(tokenType) || 
+            return OperatorDetector.IsDyadicOperator(tokenType) || 
                    LRSUnaryParser.CouldBeMonadicOperator(tokenType);
         }
         
@@ -159,7 +159,7 @@ namespace K3CSharp.Parsing
         /// </summary>
         private ASTNode CreateMonadicNode(Token operatorToken, ASTNode operand)
         {
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue(GetOperatorSymbol(operatorToken.Type));
             node.Children.Add(operand);
             return node;
@@ -171,7 +171,7 @@ namespace K3CSharp.Parsing
         private string GetOperatorSymbol(TokenType tokenType)
         {
             // For monadic operations, we use the operator symbol
-            return VerbRegistry.GetBinaryOperatorSymbol(tokenType);
+            return VerbRegistry.GetDyadicOperatorSymbol(tokenType);
         }
         
         /// <summary>

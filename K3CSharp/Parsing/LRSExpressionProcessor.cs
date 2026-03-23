@@ -77,10 +77,10 @@ namespace K3CSharp.Parsing
                         return ProcessFunctionExpression(ref position);
                     }
                     
-                    // Handle binary operators (should be handled at higher level)
-                    if (OperatorDetector.IsBinaryOperator(token.Type))
+                    // Handle dyadic operators (should be handled at higher level)
+                    if (OperatorDetector.IsDyadicOperator(token.Type))
                     {
-                        return null; // Let caller handle binary operations
+                        return null; // Let caller handle dyadic operations
                     }
                     
                     throw new Exception($"Unexpected token in expression: {token.Type}({token.Lexeme})");
@@ -144,13 +144,13 @@ namespace K3CSharp.Parsing
             unaryTokens.Add(tokens[position]);
             position++;
             
-            // Add operand tokens until we hit a binary operator or delimiter
+            // Add operand tokens until we hit a dyadic operator or delimiter
             while (position < tokens.Count)
             {
                 var currentToken = tokens[position];
                 
-                // Stop if we hit a binary operator or expression delimiter
-                if (OperatorDetector.IsBinaryOperator(currentToken.Type) ||
+                // Stop if we hit a dyadic operator or expression delimiter
+                if (OperatorDetector.IsDyadicOperator(currentToken.Type) ||
                     currentToken.Type == TokenType.SEMICOLON ||
                     currentToken.Type == TokenType.NEWLINE ||
                     currentToken.Type == TokenType.RIGHT_PAREN ||

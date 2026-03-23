@@ -62,11 +62,11 @@ namespace K3CSharp.Parsing
             if (tokens.Count == 1)
                 return CreatePrecedenceNode(tokens[0]);
             
-            // Find the rightmost binary operator (LRS strategy)
-            var rightmostOpIndex = FindRightmostBinaryOperator(tokens);
+            // Find the rightmost dyadic operator (LRS strategy)
+            var rightmostOpIndex = FindRightmostDyadicOperator(tokens);
             if (rightmostOpIndex == -1)
             {
-                // No binary operators - check for unary operators
+                // No dyadic operators - check for unary operators
                 return BuildUnaryTree(tokens);
             }
             
@@ -79,18 +79,18 @@ namespace K3CSharp.Parsing
             var leftNode = BuildPrecedenceAwareTree(leftTokens);
             var rightNode = BuildPrecedenceAwareTree(rightTokens);
             
-            // Create binary operation node with precedence info
-            return CreateBinaryNodeWithPrecedence(opToken, leftNode, rightNode);
+            // Create dyadic operation node with precedence info
+            return CreateDyadicNodeWithPrecedence(opToken, leftNode, rightNode);
         }
 
         /// <summary>
-        /// Find rightmost binary operator in token list
+        /// Find rightmost dyadic operator in token list
         /// </summary>
-        private int FindRightmostBinaryOperator(List<Token> tokens)
+        private int FindRightmostDyadicOperator(List<Token> tokens)
         {
             for (int i = tokens.Count - 1; i >= 0; i--)
             {
-                if (OperatorDetector.IsBinaryOperator(tokens[i].Type))
+                if (OperatorDetector.IsDyadicOperator(tokens[i].Type))
                 {
                     return i;
                 }
@@ -122,26 +122,26 @@ namespace K3CSharp.Parsing
         }
 
         /// <summary>
-        /// Create precedence-aware binary node
+        /// Create precedence-aware dyadic node
         /// </summary>
-        private ASTNode CreateBinaryNodeWithPrecedence(Token opToken, ASTNode? left, ASTNode? right)
+        private ASTNode CreateDyadicNodeWithPrecedence(Token opToken, ASTNode? left, ASTNode? right)
         {
-            var node = ASTNode.MakeBinaryOp(opToken.Type, 
+            var node = ASTNode.MakeDyadicOp(opToken.Type, 
                 left ?? ASTNode.MakeLiteral(new NullValue()), 
                 right ?? ASTNode.MakeLiteral(new NullValue()));
             
             // Add precedence metadata as a special attribute
             var precedenceInfo = new Dictionary<string, object>
             {
-                ["precedence"] = "binary",
+                ["precedence"] = "dyadic",
                 ["associativity"] = "right",
-                ["operator"] = VerbRegistry.GetBinaryOperatorSymbol(opToken.Type)
+                ["operator"] = VerbRegistry.GetDyadicOperatorSymbol(opToken.Type)
             };
             
             // Store precedence info in node value (for inspection)
             if (node.Value is SymbolValue symbol)
             {
-                var enhancedValue = $"{symbol.Value}[precedence:binary,associativity:right]";
+                var enhancedValue = $"{symbol.Value}[precedence:dyadic,associativity:right]";
                 node.Value = new SymbolValue(enhancedValue);
             }
             
@@ -153,7 +153,7 @@ namespace K3CSharp.Parsing
         /// </summary>
         private ASTNode CreateUnaryNodeWithPrecedence(Token opToken, ASTNode? operand)
         {
-            var node = ASTNode.MakeBinaryOp(opToken.Type, 
+            var node = ASTNode.MakeDyadicOp(opToken.Type, 
                 operand ?? ASTNode.MakeLiteral(new NullValue()), 
                 ASTNode.MakeLiteral(new NullValue()));
             
@@ -162,7 +162,7 @@ namespace K3CSharp.Parsing
             {
                 ["precedence"] = "unary",
                 ["associativity"] = "right",
-                ["operator"] = VerbRegistry.GetBinaryOperatorSymbol(opToken.Type)
+                ["operator"] = VerbRegistry.GetDyadicOperatorSymbol(opToken.Type)
             };
             
             // Store precedence info in node value
@@ -220,7 +220,7 @@ namespace K3CSharp.Parsing
             {
                 ASTNodeType.Literal => $"Literal({node.Value})",
                 ASTNodeType.Variable => $"Variable({node.Value})",
-                ASTNodeType.BinaryOp => $"BinaryOp({node.Value})",
+                ASTNodeType.DyadicOp => $"DyadicOp({node.Value})",
                 ASTNodeType.Vector => $"Vector({node.Children.Count} items)",
                 ASTNodeType.Function => $"Function({node.Value})",
                 ASTNodeType.FunctionCall => $"FunctionCall({node.Value})",
@@ -271,7 +271,7 @@ namespace K3CSharp.Parsing
             {
                 ["nodeCount"] = 0,
                 ["maxDepth"] = 0,
-                ["binaryOpCount"] = 0,
+                ["dyadicOpCount"] = 0,
                 ["unaryOpCount"] = 0,
                 ["vectorCount"] = 0
             };
@@ -293,8 +293,8 @@ namespace K3CSharp.Parsing
             
             switch (node.Type)
             {
-                case ASTNodeType.BinaryOp:
-                    stats["binaryOpCount"] = (int)stats["binaryOpCount"] + 1;
+                case ASTNodeType.DyadicOp:
+                    stats["dyadicOpCount"] = (int)stats["dyadicOpCount"] + 1;
                     break;
                 case ASTNodeType.Vector:
                     stats["vectorCount"] = (int)stats["vectorCount"] + 1;

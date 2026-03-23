@@ -129,13 +129,13 @@ namespace K3CSharp
                             var opName = operatorSymbol.Value;
                             
                             // Apply operator to current value and right argument
-                            var opNode = new ASTNode(ASTNodeType.BinaryOp);
+                            var opNode = new ASTNode(ASTNodeType.DyadicOp);
                             opNode.Value = new SymbolValue(opName);
                             opNode.Children.Add(ASTNode.MakeLiteral(currentValue));
                             opNode.Children.Add(ASTNode.MakeLiteral(rightArgument));
                             
                             // Evaluate the operation
-                            var result = EvaluateBinaryOp(opNode);
+                            var result = EvaluateDyadicOp(opNode);
                             
                             // Assign result back to variable
                             SetVariable(variableName, result);
@@ -179,8 +179,8 @@ namespace K3CSharp
                         return globalValue; // Return the assigned value
                     }
 
-                case ASTNodeType.BinaryOp:
-                    return EvaluateBinaryOp(node);
+                case ASTNodeType.DyadicOp:
+                    return EvaluateDyadicOp(node);
 
                 case ASTNodeType.Vector:
                     return EvaluateVector(node);
@@ -204,7 +204,7 @@ namespace K3CSharp
                     return EvaluateBlock(node);
 
                 case ASTNodeType.FormSpecifier:
-                    // {} form specifier - return a special value that will be handled in binary form operations
+                    // {} form specifier - return a special value that will be handled in dyadic form operations
                     return new SymbolValue("{}");
 
                 case ASTNodeType.ProjectedFunction:
@@ -465,7 +465,7 @@ namespace K3CSharp
         }
 
         
-        private K3Value EvaluateBinaryOperatorWithRegistry(string opName, K3Value left, K3Value right)
+        private K3Value EvaluateDyadicOperatorWithRegistry(string opName, K3Value left, K3Value right)
         {
             // Handle IDENTIFIER case - this should not happen with preserved verb names
             if (opName == "IDENTIFIER")
@@ -483,8 +483,8 @@ namespace K3CSharp
                 return Ic(left);
             }
 
-            // Use dictionary lookup for standard binary operators
-            var binaryOps = new Dictionary<string, Func<K3Value, K3Value, K3Value>>
+            // Use dictionary lookup for standard dyadic operators
+            var dyadicOps = new Dictionary<string, Func<K3Value, K3Value, K3Value>>
             {
                 { "+", Plus },
                 { "-", Minus },
@@ -533,9 +533,9 @@ namespace K3CSharp
                 { "?", Find }
             };
 
-            if (binaryOps.TryGetValue(opName, out var binaryOp))
+            if (dyadicOps.TryGetValue(opName, out var dyadicOp))
             {
-                return binaryOp(left, right);
+                return dyadicOp(left, right);
             }
 
             // Handle special cases with lambda expressions
@@ -565,17 +565,17 @@ namespace K3CSharp
             if (verb != null)
             {
                 // For registered verbs not explicitly handled, throw an error instead of infinite recursion
-                throw new Exception($"Verb '{opName}' found in registry but not implemented in EvaluateBinaryOperatorWithRegistry");
+                throw new Exception($"Verb '{opName}' found in registry but not implemented in EvaluateDyadicOperatorWithRegistry");
             }
-            throw new Exception($"Unknown binary operator: {opName}");
+            throw new Exception($"Unknown dyadic operator: {opName}");
         }
 
-        private K3Value EvaluateBinaryOp(ASTNode node)
+        private K3Value EvaluateDyadicOp(ASTNode node)
         {
-            if (node.Value is not SymbolValue op) throw new Exception("Binary operator must have a symbol value");
+            if (node.Value is not SymbolValue op) throw new Exception("Dyadic operator must have a symbol value");
             
             
-            // Handle unary operators (which are implemented as binary ops with one child)
+            // Handle unary operators (which are implemented as dyadic ops with one child)
             if (node.Children.Count == 1)
             {
                 var operand = Evaluate(node.Children[0]);
@@ -761,7 +761,7 @@ namespace K3CSharp
                 };
             }
             
-            // Handle binary operators
+            // Handle dyadic operators
             if (node.Children.Count == 2)
             {
                 // Special handling for colon operator to avoid evaluating left side as variable lookup
@@ -789,7 +789,7 @@ namespace K3CSharp
                     }
                 }
                 
-                // For other binary operators, check for adverbs first
+                // For other dyadic operators, check for adverbs first
                 var verbWithAdverbs = VerbAdverbParser.ParseVerbWithAdverbs(node);
                 if (verbWithAdverbs != null)
                 {
@@ -816,7 +816,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Regular binary operation - use existing logic
+                    // Regular dyadic operation - use existing logic
                     var left = Evaluate(node.Children[0]);
                     
                     bool previousIntermediate2 = isIntermediateAssignment;
@@ -824,7 +824,7 @@ namespace K3CSharp
                     var right = Evaluate(node.Children[1]);
                     isIntermediateAssignment = previousIntermediate2; // Restore previous context
 
-                    return EvaluateBinaryOperatorWithRegistry(op.Value.ToString(), left, right);
+                    return EvaluateDyadicOperatorWithRegistry(op.Value.ToString(), left, right);
                 }
             }
             else if (node.Children.Count == 2 && 
@@ -902,13 +902,13 @@ namespace K3CSharp
             else if (node.Children.Count == 0)
             {
                 // Handle niladic operators
-                throw new Exception($"Binary operator must have exactly 2 children, got {node.Children.Count}");
+                throw new Exception($"Dyadic operator must have exactly 2 children, got {node.Children.Count}");
             }
             else
             {
                 
                 // Debug output to understand the structure
-                Console.WriteLine($"[DEBUG] BinaryOp with {node.Children.Count} children, op='{op.Value}', opType={op.Value?.GetType().Name}");
+                Console.WriteLine($"[DEBUG] DyadicOp with {node.Children.Count} children, op='{op.Value}', opType={op.Value?.GetType().Name}");
                 if (node.Children.Count > 0)
                     Console.WriteLine($"[DEBUG] Child 0: {node.Children[0].Type}, value='{node.Children[0].Value}'");
                 if (node.Children.Count > 1)
@@ -916,7 +916,7 @@ namespace K3CSharp
                 if (node.Children.Count > 2)
                     Console.WriteLine($"[DEBUG] Child 2: {node.Children[2].Type}, value='{node.Children[2].Value}'");
                 
-                throw new Exception($"Binary operator must have exactly 2 children, got {node.Children.Count}");
+                throw new Exception($"Dyadic operator must have exactly 2 children, got {node.Children.Count}");
             }
         }
         
@@ -1612,7 +1612,7 @@ namespace K3CSharp
             var token = tokens[current];
             
             // Handle literals
-            if (token.Type == TokenType.INTEGER || token.Type == TokenType.FLOAT || token.Type == TokenType.SYMBOL || token.Type == TokenType.HINT)
+            if (token.Type == TokenType.INTEGER || token.Type == TokenType.FLOAT || token.Type == TokenType.SYMBOL)
             {
                 current++;
                 return ASTNode.MakeLiteral(CreateK3Value(token));
@@ -1670,7 +1670,7 @@ namespace K3CSharp
         private bool IsArgumentToken(Token token)
         {
             return token.Type == TokenType.INTEGER || token.Type == TokenType.FLOAT || 
-                   token.Type == TokenType.SYMBOL || token.Type == TokenType.HINT;
+                   token.Type == TokenType.SYMBOL;
         }
         
         private K3Value CreateK3Value(Token token)
@@ -1683,8 +1683,6 @@ namespace K3CSharp
                     return new FloatValue(double.Parse(token.Lexeme));
                 case TokenType.SYMBOL:
                     return new SymbolValue(token.Lexeme);
-                case TokenType.HINT:
-                    return new SymbolValue("_hint");
                 default:
                     return new NullValue();
             }
@@ -3809,25 +3807,25 @@ namespace K3CSharp
             {
                 return verb switch
                 {
-                    "+" => arguments.Length == 1 ? evaluator.Transpose(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("+", arguments[0], arguments[1]),
-                    "-" => arguments.Length == 1 ? evaluator.UnaryMinus(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("-", arguments[0], arguments[1]),
-                    "*" => arguments.Length == 1 ? evaluator.First(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("*", arguments[0], arguments[1]),
-                    "%" => arguments.Length == 1 ? throw new Exception("% operator requires 2 arguments") : evaluator.EvaluateBinaryOperatorWithRegistry("%", arguments[0], arguments[1]),
-                    "^" => arguments.Length == 1 ? evaluator.Power(arguments[0], new IntegerValue(1)) : evaluator.EvaluateBinaryOperatorWithRegistry("^", arguments[0], arguments[1]),
-                    "<" => arguments.Length == 1 ? evaluator.LessThan(arguments[0], new IntegerValue(0)) : evaluator.EvaluateBinaryOperatorWithRegistry("<", arguments[0], arguments[1]),
-                    ">" => arguments.Length == 1 ? evaluator.GreaterThan(arguments[0], new IntegerValue(0)) : evaluator.EvaluateBinaryOperatorWithRegistry(">", arguments[0], arguments[1]),
-                    "=" => arguments.Length == 1 ? K3Value.Equals(arguments[0], new IntegerValue(0)) ? new IntegerValue(1) : new IntegerValue(0) : evaluator.EvaluateBinaryOperatorWithRegistry("=", arguments[0], arguments[1]),
-                    "!" => arguments.Length == 1 ? evaluator.Match(arguments[0], new IntegerValue(0)) : evaluator.EvaluateBinaryOperatorWithRegistry("!", arguments[0], arguments[1]),
-                    "&" => arguments.Length == 1 ? evaluator.Where(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("&", arguments[0], arguments[1]),
-                    "|" => arguments.Length == 1 ? evaluator.Reverse(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("|", arguments[0], arguments[1]),
-                    "~" => arguments.Length == 1 ? evaluator.Match(arguments[0], new IntegerValue(0)) : evaluator.EvaluateBinaryOperatorWithRegistry("~", arguments[0], arguments[1]),
+                    "+" => arguments.Length == 1 ? evaluator.Transpose(arguments[0]) : evaluator.EvaluateDyadicOperatorWithRegistry("+", arguments[0], arguments[1]),
+                    "-" => arguments.Length == 1 ? evaluator.UnaryMinus(arguments[0]) : evaluator.EvaluateDyadicOperatorWithRegistry("-", arguments[0], arguments[1]),
+                    "*" => arguments.Length == 1 ? evaluator.First(arguments[0]) : evaluator.EvaluateDyadicOperatorWithRegistry("*", arguments[0], arguments[1]),
+                    "%" => arguments.Length == 1 ? throw new Exception("% operator requires 2 arguments") : evaluator.EvaluateDyadicOperatorWithRegistry("%", arguments[0], arguments[1]),
+                    "^" => arguments.Length == 1 ? evaluator.Power(arguments[0], new IntegerValue(1)) : evaluator.EvaluateDyadicOperatorWithRegistry("^", arguments[0], arguments[1]),
+                    "<" => arguments.Length == 1 ? evaluator.LessThan(arguments[0], new IntegerValue(0)) : evaluator.EvaluateDyadicOperatorWithRegistry("<", arguments[0], arguments[1]),
+                    ">" => arguments.Length == 1 ? evaluator.GreaterThan(arguments[0], new IntegerValue(0)) : evaluator.EvaluateDyadicOperatorWithRegistry(">", arguments[0], arguments[1]),
+                    "=" => arguments.Length == 1 ? K3Value.Equals(arguments[0], new IntegerValue(0)) ? new IntegerValue(1) : new IntegerValue(0) : evaluator.EvaluateDyadicOperatorWithRegistry("=", arguments[0], arguments[1]),
+                    "!" => arguments.Length == 1 ? evaluator.Match(arguments[0], new IntegerValue(0)) : evaluator.EvaluateDyadicOperatorWithRegistry("!", arguments[0], arguments[1]),
+                    "&" => arguments.Length == 1 ? evaluator.Where(arguments[0]) : evaluator.EvaluateDyadicOperatorWithRegistry("&", arguments[0], arguments[1]),
+                    "|" => arguments.Length == 1 ? evaluator.Reverse(arguments[0]) : evaluator.EvaluateDyadicOperatorWithRegistry("|", arguments[0], arguments[1]),
+                    "~" => arguments.Length == 1 ? evaluator.Match(arguments[0], new IntegerValue(0)) : evaluator.EvaluateDyadicOperatorWithRegistry("~", arguments[0], arguments[1]),
                     "," => evaluator.Join(arguments[0], arguments[1]),
                     "." => evaluator.DotApply(arguments[0], arguments[1]),
                     "@" => evaluator.AtIndex(arguments[0], arguments[1]),
-                    "#" => arguments.Length == 1 ? evaluator.Count(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("#", arguments[0], arguments[1]),
-                    "_" => arguments.Length == 1 ? evaluator.Floor(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("_", arguments[0], arguments[1]),
-                    "?" => arguments.Length == 1 ? evaluator.Unique(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("?", arguments[0], arguments[1]),
-                    "$" => arguments.Length == 1 ? evaluator.Format(arguments[0]) : evaluator.EvaluateBinaryOperatorWithRegistry("$", arguments[0], arguments[1]),
+                    "#" => arguments.Length == 1 ? evaluator.Count(arguments[0]) : evaluator.EvaluateDyadicOperatorWithRegistry("#", arguments[0], arguments[1]),
+                    "_" => arguments.Length == 1 ? evaluator.Floor(arguments[0]) : evaluator.EvaluateDyadicOperatorWithRegistry("_", arguments[0], arguments[1]),
+                    "?" => arguments.Length == 1 ? evaluator.Unique(arguments[0]) : evaluator.EvaluateDyadicOperatorWithRegistry("?", arguments[0], arguments[1]),
+                    "$" => arguments.Length == 1 ? evaluator.Format(arguments[0]) : evaluator.EvaluateDyadicOperatorWithRegistry("$", arguments[0], arguments[1]),
                     _ => throw new Exception($"Unknown verb: {verb}")
                 };
             }
@@ -4228,7 +4226,7 @@ namespace K3CSharp
                 return null;
             }
             
-            if (node.Type != ASTNodeType.BinaryOp || node.Value == null)
+            if (node.Type != ASTNodeType.DyadicOp || node.Value == null)
                 return null;
 
             var opSymbol = node.Value.ToString();

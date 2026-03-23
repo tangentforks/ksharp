@@ -412,7 +412,7 @@ namespace K3CSharp
         /// </summary>
         private ASTNode CreateUnaryOperatorNode(TokenType operatorType, ASTNode operand)
         {
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue(operatorType.ToString().ToLower());
             node.Children.Add(operand);
             return node;
@@ -544,7 +544,7 @@ namespace K3CSharp
                 throw new Exception($"Expected expression after unary operator {token.Lexeme}");
             }
             
-            return ASTNode.MakeBinaryOp(token.Type, operand, ASTNode.MakeLiteral(new NullValue()));
+            return ASTNode.MakeDyadicOp(token.Type, operand, ASTNode.MakeLiteral(new NullValue()));
         }
 
         private ASTNode ParseBraces(ParseContext context)
@@ -835,7 +835,7 @@ namespace K3CSharp
             
             // Regular unary plus without brackets
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("+");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -845,7 +845,7 @@ namespace K3CSharp
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("-");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -857,14 +857,14 @@ namespace K3CSharp
             var operand = ParseBracketArgument(context);
             if (operand == null)
             {
-                // Create a projected function instead of an empty binary op
+                // Create a projected function instead of an empty dyadic op
                 var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
                 projectedNode.Value = new SymbolValue("%");
                 projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(1))); // Needs 1 more argument
                 return projectedNode;
             }
             
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("%");
             node.Children.Add(operand);
             return node;
@@ -874,7 +874,7 @@ namespace K3CSharp
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("^");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -884,7 +884,7 @@ namespace K3CSharp
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue(",");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -917,7 +917,7 @@ namespace K3CSharp
                 }
             }
             
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("*");
             
             if (elements.Count == 1)
@@ -954,7 +954,7 @@ namespace K3CSharp
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("&");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -964,7 +964,7 @@ namespace K3CSharp
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("|");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -974,7 +974,7 @@ namespace K3CSharp
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("~");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -984,7 +984,7 @@ namespace K3CSharp
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("~");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -994,7 +994,7 @@ namespace K3CSharp
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("#");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -1004,7 +1004,7 @@ namespace K3CSharp
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("_");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -1014,7 +1014,7 @@ namespace K3CSharp
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("?");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -1024,7 +1024,7 @@ namespace K3CSharp
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("$");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -1034,7 +1034,7 @@ namespace K3CSharp
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("@");
             if (operand != null) node.Children.Add(operand);
             return node;

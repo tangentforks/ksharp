@@ -3,31 +3,31 @@ using System;
 namespace K3CSharp
 {
     /// <summary>
-    /// Specialized parser for creating binary operation AST nodes
-    /// Handles converting token types to operator symbols and creating binary operation nodes
+    /// Specialized parser for creating dyadic operation AST nodes
+    /// Handles converting token types to operator symbols and creating dyadic operation nodes
     /// </summary>
-    public class BinaryOpFactory : IParserModule
+    public class DyadicOpFactory : IParserModule
     {
         public bool CanHandle(TokenType currentToken)
         {
-            // This parser is used specifically for creating binary operation nodes
+            // This parser is used specifically for creating dyadic operation nodes
             // It's not directly called by token type, but by the parser when needed
             return false;
         }
 
         public ASTNode? Parse(ParseContext context)
         {
-            // This method is not used directly - MakeBinaryOp is the main entry point
-            throw new NotImplementedException("Use MakeBinaryOp method instead");
+            // This method is not used directly - MakeDyadicOp is the main entry point
+            throw new NotImplementedException("Use MakeDyadicOp method instead");
         }
 
         /// <summary>
-        /// Create a binary operation AST node with the given operator and operands
+        /// Create a dyadic operation AST node with the given operator and operands
         /// Converts token type to traditional operator symbol for the AST node value
         /// </summary>
-        public static ASTNode MakeBinaryOp(TokenType op, ASTNode left, ASTNode right)
+        public static ASTNode MakeDyadicOp(TokenType op, ASTNode left, ASTNode right)
         {
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             if (left != null) node.Children.Add(left);
             if (right != null) node.Children.Add(right);
             

@@ -92,8 +92,8 @@ namespace K3CSharp
                 return null;
             }
 
-            // Handle binary operators with Long Right Scope (right-associative, equal precedence)
-            while (!context.IsAtEnd() && IsBinaryOperator(context.CurrentToken().Type))
+            // Handle dyadic operators with Long Right Scope (right-associative, equal precedence)
+            while (!context.IsAtEnd() && IsDyadicOperator(context.CurrentToken().Type))
             {
                 var opToken = context.CurrentToken();
                 context.Advance();
@@ -159,8 +159,8 @@ namespace K3CSharp
                     return projectedNode;
                 }
 
-                // Create binary operation node
-                left = ASTNode.MakeBinaryOp(opToken.Type, left, right);
+                // Create dyadic operation node
+                left = ASTNode.MakeDyadicOp(opToken.Type, left, right);
             }
 
             return left;
@@ -204,7 +204,7 @@ namespace K3CSharp
                 var rightArg = ParseTerm(context, parseUntilEnd);
                 
                 // Create adverb node: ADVERB(adverbType, verb, rightArg)
-                var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
                 adverbNode.Value = new SymbolValue(adverbType.ToString());
                 adverbNode.Children.Add(result!); // verb
                 adverbNode.Children.Add(rightArg!); // right argument
@@ -227,9 +227,9 @@ namespace K3CSharp
             throw new Exception($"Unexpected token: {context.CurrentToken().Type}({context.CurrentToken().Lexeme})");
         }
 
-        private bool IsBinaryOperator(TokenType tokenType)
+        private bool IsDyadicOperator(TokenType tokenType)
         {
-            return VerbRegistry.IsBinaryOperator(tokenType);
+            return VerbRegistry.IsDyadicOperator(tokenType);
         }
 
         }

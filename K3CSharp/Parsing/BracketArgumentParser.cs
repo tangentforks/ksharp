@@ -31,7 +31,7 @@ namespace K3CSharp
         {
             // Check for standalone operator as function reference (e.g., + in @[x; i; +; y])
             // or operator followed by adverb (e.g., +/ in @[+/; args; :])
-            if (!context.IsAtEnd() && IsBinaryOperator(context.CurrentToken().Type))
+            if (!context.IsAtEnd() && IsDyadicOperator(context.CurrentToken().Type))
             {
                 var nextIdx = context.Current + 1;
                 var nextType = nextIdx < context.Tokens.Count ? context.Tokens[nextIdx].Type : TokenType.EOF;
@@ -94,7 +94,7 @@ namespace K3CSharp
                         throw new Exception("parse error");
                     }
                     
-                    return ASTNode.MakeBinaryOp(TokenType.ASSIGNMENT, left, right);
+                    return ASTNode.MakeDyadicOp(TokenType.ASSIGNMENT, left, right);
                 }
                 else
                 {
@@ -122,7 +122,7 @@ namespace K3CSharp
                         throw new Exception("parse error");
                     }
                     
-                    return ASTNode.MakeBinaryOp(TokenType.GLOBAL_ASSIGNMENT, left, right);
+                    return ASTNode.MakeDyadicOp(TokenType.GLOBAL_ASSIGNMENT, left, right);
                 }
                 else
                 {
@@ -160,7 +160,7 @@ namespace K3CSharp
                         }
                         
                         var opSymbol = GetOperatorSymbol(opToken.Type, opToken.Lexeme);
-                        return ASTNode.MakeBinaryOp(TokenType.ASSIGNMENT, left, rightArgument);
+                        return ASTNode.MakeDyadicOp(TokenType.ASSIGNMENT, left, rightArgument);
                     }
                     else
                     {
@@ -169,14 +169,14 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Regular binary operation with right-associativity
+                    // Regular dyadic operation with right-associativity
                     var right = ParseBracketArgument(context);
                     if (right == null)
                     {
                         throw new Exception($"Expected right operand after {opToken.Type}");
                     }
                     
-                    return ASTNode.MakeBinaryOp(opToken.Type, left, right);
+                    return ASTNode.MakeDyadicOp(opToken.Type, left, right);
                 }
             }
 
@@ -355,9 +355,9 @@ namespace K3CSharp
             return VerbRegistry.GetAdverbType(tokenType);
         }
 
-        private static bool IsBinaryOperator(TokenType tokenType)
+        private static bool IsDyadicOperator(TokenType tokenType)
         {
-            return VerbRegistry.IsBinaryOperator(tokenType);
+            return VerbRegistry.IsDyadicOperator(tokenType);
         }
 
         private static bool IsApplyAndAssignOperator(TokenType tokenType)

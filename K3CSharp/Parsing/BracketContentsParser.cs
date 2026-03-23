@@ -77,7 +77,7 @@ namespace K3CSharp
             // This is similar to ParseExpression but doesn't stop at semicolons
 
             // Check for standalone operator as function reference
-            if (!context.IsAtEnd() && IsBinaryOperator(context.CurrentToken().Type))
+            if (!context.IsAtEnd() && IsDyadicOperator(context.CurrentToken().Type))
             {
                 var nextIdx = context.Current + 1;
                 if (nextIdx < context.Tokens.Count)
@@ -105,7 +105,7 @@ namespace K3CSharp
         private static ASTNode? ParseBracketExpression(ParseContext context)
         {
             // For now, use a simple approach - parse a primary expression
-            // In a full implementation, this would handle binary operators properly
+            // In a full implementation, this would handle dyadic operators properly
             
             if (context.IsAtEnd())
             {
@@ -226,9 +226,9 @@ namespace K3CSharp
             return result ?? throw new Exception("Expected expression inside braces");
         }
 
-        private static bool IsBinaryOperator(TokenType tokenType)
+        private static bool IsDyadicOperator(TokenType tokenType)
         {
-            return VerbRegistry.IsBinaryOperator(tokenType);
+            return VerbRegistry.IsDyadicOperator(tokenType);
         }
     }
 }

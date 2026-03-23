@@ -155,16 +155,6 @@ namespace K3CSharp
                             Advance(); // Skip _
                             for (int i = 0; i < 7; i++) Advance(); // Skip "sethint"
                         }
-                        // Check for _hint first (greedy precedence over _h)
-                        else if (position + 4 < input.Length && input.Substring(position, 5) == "_hint")
-                        {
-                            tokens.Add(new Token(TokenType.HINT, "_hint", position));
-                            Advance(); // Skip _
-                            Advance(); // Skip h
-                            Advance(); // Skip i
-                            Advance(); // Skip n
-                            Advance(); // Skip t
-                        }
                         // Check for _parse next (greedy precedence)
                         else if (position + 5 < input.Length && input.Substring(position, 6) == "_parse")
                         {

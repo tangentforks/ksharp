@@ -13,7 +13,7 @@ namespace K3CSharp.Parsing
     {
         private readonly List<Token> tokens;
         private readonly LRSExpressionParser expressionParser;
-        private readonly LRSBinaryParser binaryParser;
+        private readonly LRSDyadicParser dyadicParser;
         private readonly LRSUnaryParser unaryParser;
         private readonly LRSFunctionParser functionParser;
         private readonly LRSStatementParser statementParser;
@@ -31,7 +31,7 @@ namespace K3CSharp.Parsing
             this.BuildParseTree = buildParseTree;
             this.PureLRSMode = false; // Default to Safe LRS mode
             this.expressionParser = new LRSExpressionParser(tokens);
-            this.binaryParser = new LRSBinaryParser(tokens, this);
+            this.dyadicParser = new LRSDyadicParser(tokens, this);
             this.unaryParser = new LRSUnaryParser(this);
             this.functionParser = new LRSFunctionParser(tokens);
             this.statementParser = new LRSStatementParser(tokens, this);
@@ -91,7 +91,7 @@ namespace K3CSharp.Parsing
                 }
             }
             
-            // Check for monadic operations first (K LRS: monadic has lower precedence than binary)
+            // Check for monadic operations first (K LRS: monadic has lower precedence than dyadic)
             if (expressionTokens.Count >= 2)
             {
                 var firstToken = expressionTokens[0];
@@ -112,12 +112,12 @@ namespace K3CSharp.Parsing
                 return adverbResult;
             }
             
-            // Handle binary operations
-            var binaryResult = binaryParser.ParseBinaryOperation(expressionTokens);
-            if (binaryResult != null)
-                return binaryResult;
+            // Handle dyadic operations
+            var dyadicResult = dyadicParser.ParseDyadicOperation(expressionTokens);
+            if (dyadicResult != null)
+                return dyadicResult;
                 
-            // If binary parsing fails, try monadic
+            // If dyadic parsing fails, try monadic
             return unaryParser.ParseMonadicOperator(expressionTokens);
         }
         
@@ -149,12 +149,12 @@ namespace K3CSharp.Parsing
             if (multiAryResult != null)
                 return multiAryResult;
                 
-            // Try binary operation
-            var binaryResult = binaryParser.ParseBinaryOperation(expressionTokens);
-            if (binaryResult != null)
-                return binaryResult;
+            // Try dyadic operation
+            var dyadicResult = dyadicParser.ParseDyadicOperation(expressionTokens);
+            if (dyadicResult != null)
+                return dyadicResult;
                 
-            // If binary parsing fails, try monadic
+            // If dyadic parsing fails, try monadic
             return unaryParser.ParseMonadicOperator(expressionTokens);
         }
         
@@ -169,8 +169,8 @@ namespace K3CSharp.Parsing
             if (tokens.Count == 0) return null;
             if (tokens.Count == 1) return CreateNodeFromToken(tokens[0]);
             
-            // Try binary operation first (unary parsing is handled at main LRS level)
-            return binaryParser.ParseBinaryOperation(tokens);
+            // Try dyadic operation first (unary parsing is handled at main LRS level)
+            return dyadicParser.ParseDyadicOperation(tokens);
         }
         
         /// <summary>
@@ -249,8 +249,8 @@ namespace K3CSharp.Parsing
                 }
             }
             
-            // Default to dyadic for binary operators
-            if (IsBinaryOperator(opToken.Type))
+            // Default to dyadic for dyadic operators
+            if (IsDyadicOperator(opToken.Type))
                 return 2;
             
             // Default to monadic
@@ -320,11 +320,11 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Check if token type is a binary operator
+        /// Check if token type is a dyadic operator
         /// </summary>
-        private bool IsBinaryOperator(TokenType tokenType)
+        private bool IsDyadicOperator(TokenType tokenType)
         {
-            return binaryParser.IsBinaryOperator(tokenType);
+            return dyadicParser.IsDyadicOperator(tokenType);
         }
         
         /// <summary>
@@ -561,7 +561,7 @@ namespace K3CSharp.Parsing
             
             // Fallback: create a simple node for basic adverb handling
             var children = new List<ASTNode>();
-            return new ASTNode(ASTNodeType.BinaryOp, new SymbolValue(adverbToken.Lexeme), children);
+            return new ASTNode(ASTNodeType.DyadicOp, new SymbolValue(adverbToken.Lexeme), children);
         }
         
         /// <summary>
@@ -657,7 +657,7 @@ namespace K3CSharp.Parsing
         /// </summary>
         private bool IsVerbToken(TokenType tokenType)
         {
-            return VerbRegistry.IsBinaryOperator(tokenType) || 
+            return VerbRegistry.IsDyadicOperator(tokenType) || 
                    IsUnaryOperator(tokenType) ||
                    tokenType == TokenType.DOT_PRODUCT; // _dot
         }
@@ -702,7 +702,7 @@ namespace K3CSharp.Parsing
             }
             
             // Create adverb node: ADVERB(verb, 0, args)
-            var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+            var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
             adverbNode.Value = new SymbolValue(GetAdverbName(adverbToken.Type));
             adverbNode.Children.Add(verbNode);
             adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0))); // left argument (dummy)
@@ -792,7 +792,7 @@ namespace K3CSharp.Parsing
             children.Add(rightNode);
             
             // Create node with %\: symbol
-            return new ASTNode(ASTNodeType.BinaryOp, new SymbolValue("%\\:"), children);
+            return new ASTNode(ASTNodeType.DyadicOp, new SymbolValue("%\\:"), children);
         }
         
         /// <summary>
@@ -802,7 +802,7 @@ namespace K3CSharp.Parsing
         /// <returns>AST node for the adverb operation</returns>
         private ASTNode ParseSimpleSingleGlyphAdverb(List<Token> expressionTokens)
         {
-            // Create a BinaryOp node with the ' adverb
+            // Create a DyadicOp node with the ' adverb
             // The evaluator will handle this as a special case for adverb evaluation
             var children = new List<ASTNode>();
             
@@ -819,8 +819,8 @@ namespace K3CSharp.Parsing
                 }
             }
             
-            // Create BinaryOp with ' symbol - evaluator will handle this specially
-            return new ASTNode(ASTNodeType.BinaryOp, new SymbolValue("'"), children);
+            // Create DyadicOp with ' symbol - evaluator will handle this specially
+            return new ASTNode(ASTNodeType.DyadicOp, new SymbolValue("'"), children);
         }
     }
 }

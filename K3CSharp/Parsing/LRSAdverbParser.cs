@@ -182,7 +182,7 @@ namespace K3CSharp.Parsing
             }
             
             // Handle operator verbs as fallback
-            if (IsBinaryOperator(verbToken.Type))
+            if (IsDyadicOperator(verbToken.Type))
             {
                 position++;
                 return CreateOperatorNode(verbToken);
@@ -234,11 +234,11 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Check if token type is a binary operator
+        /// Check if token type is a dyadic operator
         /// </summary>
-        private bool IsBinaryOperator(TokenType tokenType)
+        private bool IsDyadicOperator(TokenType tokenType)
         {
-            // Simplified check - in practice, this should use the same logic as LRSBinaryParser
+            // Simplified check - in practice, this should use the same logic as LRSDyadicParser
             return tokenType == TokenType.PLUS ||
                    tokenType == TokenType.MINUS ||
                    tokenType == TokenType.MULTIPLY ||
@@ -258,7 +258,7 @@ namespace K3CSharp.Parsing
         /// </summary>
         private ASTNode CreateOperatorNode(Token token)
         {
-            return new ASTNode(ASTNodeType.BinaryOp, new SymbolValue(token.Lexeme), new List<ASTNode>());
+            return new ASTNode(ASTNodeType.DyadicOp, new SymbolValue(token.Lexeme), new List<ASTNode>());
         }
         
         /// <summary>
@@ -267,7 +267,7 @@ namespace K3CSharp.Parsing
         private ASTNode CreateTwoGlyphAdverbNode(Token adverbToken, ASTNode leftArg, ASTNode rightArg)
         {
             var children = new List<ASTNode> { leftArg, rightArg };
-            return new ASTNode(ASTNodeType.BinaryOp, new SymbolValue(adverbToken.Lexeme), children);
+            return new ASTNode(ASTNodeType.DyadicOp, new SymbolValue(adverbToken.Lexeme), children);
         }
         
         /// <summary>
@@ -276,7 +276,7 @@ namespace K3CSharp.Parsing
         private ASTNode CreateVerbImmediateLeftAdverbNode(Token adverbToken, ASTNode leftArg, ASTNode rightArg)
         {
             var children = new List<ASTNode> { leftArg, rightArg };
-            return new ASTNode(ASTNodeType.BinaryOp, new SymbolValue(adverbToken.Lexeme), children);
+            return new ASTNode(ASTNodeType.DyadicOp, new SymbolValue(adverbToken.Lexeme), children);
         }
         
         /// <summary>
@@ -323,7 +323,7 @@ namespace K3CSharp.Parsing
                         if (position + 1 < tokens.Count)
                         {
                             var nextToken = tokens[position + 1];
-                            if (!OperatorDetector.IsBinaryOperator(nextToken.Type) &&
+                            if (!OperatorDetector.IsDyadicOperator(nextToken.Type) &&
                                 !VerbRegistry.IsAdverbToken(nextToken.Type))
                             {
                                 // Include the operand
@@ -437,7 +437,7 @@ namespace K3CSharp.Parsing
                 throw new Exception($"Verb '{verbName}' is not compatible with adverb '{adverbToken.Lexeme}' ({adverbType})");
             }
             
-            var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+            var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
             adverbNode.Value = new SymbolValue(GetAdverbSymbol(adverbToken.Type));
             adverbNode.Children.Add(verb);
             if (argument != null)

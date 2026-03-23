@@ -92,7 +92,7 @@ namespace K3CSharp
             }
             
             // Regular unary plus
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("+");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -109,7 +109,7 @@ namespace K3CSharp
         private static ASTNode ParseUnaryMinus(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("-");
             
             // Ensure we always have at least one child for unary operators
@@ -129,7 +129,7 @@ namespace K3CSharp
         private static ASTNode ParseUnaryFirst(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("*");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -140,14 +140,14 @@ namespace K3CSharp
             var operand = ParseBracketArgument(context);
             if (operand == null)
             {
-                // Create a projected function instead of an empty binary op
+                // Create a projected function instead of an empty dyadic op
                 var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
                 projectedNode.Value = new SymbolValue("%");
                 projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(1))); // Needs 1 more argument
                 return projectedNode;
             }
             
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("%");
             node.Children.Add(operand);
             return node;
@@ -156,7 +156,7 @@ namespace K3CSharp
         private static ASTNode ParseUnaryPower(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("^");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -165,7 +165,7 @@ namespace K3CSharp
         private static ASTNode ParseUnaryMin(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("&");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -174,7 +174,7 @@ namespace K3CSharp
         private static ASTNode ParseUnaryMax(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("|");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -183,7 +183,7 @@ namespace K3CSharp
         private static ASTNode ParseUnaryMatch(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("~");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -192,7 +192,7 @@ namespace K3CSharp
         private static ASTNode ParseUnaryNot(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("~");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -201,7 +201,7 @@ namespace K3CSharp
         private static ASTNode ParseUnaryCount(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("#");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -210,7 +210,7 @@ namespace K3CSharp
         private static ASTNode ParseUnaryFloor(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("_");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -219,7 +219,7 @@ namespace K3CSharp
         private static ASTNode ParseUnaryUnique(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("?");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -228,7 +228,7 @@ namespace K3CSharp
         private static ASTNode ParseUnaryFormat(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("$");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -237,7 +237,7 @@ namespace K3CSharp
         private static ASTNode ParseUnaryApply(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("@");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -246,7 +246,7 @@ namespace K3CSharp
         private static ASTNode ParseUnaryParse(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("_parse");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -255,7 +255,7 @@ namespace K3CSharp
         private static ASTNode ParseUnaryEval(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("_eval");
             if (operand != null) node.Children.Add(operand);
             return node;

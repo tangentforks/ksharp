@@ -24,7 +24,7 @@ namespace K3CSharp.Parsing
             {
                 ASTNodeType.Literal => ToEnlistedVector(node.Value ?? new NullValue()),
                 ASTNodeType.Variable => ToEnlistedVector(ToSymbolPath((node.Value as SymbolValue)?.Value ?? "")),
-                ASTNodeType.BinaryOp => ConvertBinaryOp(node),
+                ASTNodeType.DyadicOp => ConvertDyadicOp(node),
                 ASTNodeType.FunctionCall => ConvertFunctionCall(node),
                 ASTNodeType.Vector => ConvertVector(node),
                 ASTNodeType.Assignment => ConvertAssignment(node),
@@ -88,12 +88,12 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Convert binary operation to K list representation
+        /// Convert dyadic operation to K list representation
         /// </summary>
-        private static K3Value ConvertBinaryOp(ASTNode node)
+        private static K3Value ConvertDyadicOp(ASTNode node)
         {
             if (node.Children.Count == 0)
-                throw new Exception($"Binary operation requires at least 1 child, got {node.Children.Count}");
+                throw new Exception($"Dyadic operation requires at least 1 child, got {node.Children.Count}");
                 
             var opSymbol = node.Value as SymbolValue ?? new SymbolValue(node.Value?.ToString() ?? "+");
             var elements = new List<K3Value>();
@@ -111,8 +111,8 @@ namespace K3CSharp.Parsing
                 
                 // Convert operand based on its type
                 K3Value convertedOperand;
-                if (operand.Type == ASTNodeType.BinaryOp)
-                    convertedOperand = ConvertBinaryOp(operand);
+                if (operand.Type == ASTNodeType.DyadicOp)
+                    convertedOperand = ConvertDyadicOp(operand);
                 else if (operand.Type == ASTNodeType.Vector || operand.Type == ASTNodeType.Block)
                     convertedOperand = ConvertVector(operand);
                 else
@@ -251,24 +251,24 @@ namespace K3CSharp.Parsing
             else
                 verbSymbol = elements[0].ToString();
             
-            // Check if this is an operator that should be BinaryOp
+            // Check if this is an operator that should be DyadicOp
             // Handle both dyadic operators (>=3 elements) and monadic operators with disambiguating colon (>=2 elements)
             bool isMonadicWithColon = verbSymbol.EndsWith(":");
             bool isOperator = IsOperatorVerb(verbSymbol);
             
             if (isOperator && (elements.Count >= 3 || (isMonadicWithColon && elements.Count >= 2)))
             {
-                // Create binary operation node
-                var binaryOp = new ASTNode(ASTNodeType.BinaryOp);
-                binaryOp.Value = new SymbolValue(verbSymbol);
+                // Create dyadic operation node
+                var dyadicOp = new ASTNode(ASTNodeType.DyadicOp);
+                dyadicOp.Value = new SymbolValue(verbSymbol);
                 
                 // Convert arguments
                 for (int i = 1; i < elements.Count; i++)
                 {
-                    binaryOp.Children.Add(ConvertKListElementToAST(elements[i]));
+                    dyadicOp.Children.Add(ConvertKListElementToAST(elements[i]));
                 }
                 
-                return binaryOp;
+                return dyadicOp;
             }
             else
             {

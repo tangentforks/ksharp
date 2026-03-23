@@ -155,11 +155,11 @@ namespace K3CSharp
         }
 
         /// <summary>
-        /// Check if a TokenType represents a binary operator
+        /// Check if a TokenType represents a dyadic operator
         /// </summary>
-        public static bool IsBinaryOperator(TokenType tokenType)
+        public static bool IsDyadicOperator(TokenType tokenType)
         {
-            return VerbRegistry.IsBinaryOperator(tokenType);
+            return VerbRegistry.IsDyadicOperator(tokenType);
         }
 
         /// <summary>

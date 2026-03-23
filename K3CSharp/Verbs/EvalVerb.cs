@@ -272,12 +272,12 @@ namespace K3CSharp.Verbs
                 return new SymbolValue($"Function: {astNode.Value?.ToString() ?? ""}");
             }
             
-            if (astNode.Type == ASTNodeType.BinaryOp)
+            if (astNode.Type == ASTNodeType.DyadicOp)
             {
-                // BinaryOp: use generic Verb Registry approach
+                // DyadicOp: use generic Verb Registry approach
                 if (astNode.Children.Count >= 1)
                 {
-                    // Get the operator symbol from the BinaryOp node
+                    // Get the operator symbol from the DyadicOp node
                     var operatorSymbol = astNode.Value?.ToString() ?? "";
                     
                     if (IsCallableVerb(operatorSymbol))
@@ -299,7 +299,7 @@ namespace K3CSharp.Verbs
                 }
                 else
                 {
-                    throw new Exception($"BinaryOp requires at least 1 child, got {astNode.Children.Count}");
+                    throw new Exception($"DyadicOp requires at least 1 child, got {astNode.Children.Count}");
                 }
             }
             

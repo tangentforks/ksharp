@@ -141,7 +141,6 @@ namespace K3CSharp
         IF_FUNC,        // _if control flow
         EXIT,           // _exit control flow
         DISPOSE,        // _dispose object disposal
-        HINT,           // _hint hint system
         GETHINT,        // _gethint get hint
         SETHINT,        // _sethint set hint
         PARSE,          // _parse verb token

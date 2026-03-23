@@ -17,7 +17,7 @@ namespace K3CSharp
             }
             
             // For all other verbs, use AST approach with preserved verb name
-            var verbNode = new ASTNode(ASTNodeType.BinaryOp, new SymbolValue(verbName));
+            var verbNode = new ASTNode(ASTNodeType.DyadicOp, new SymbolValue(verbName));
             verbNode.Children.Add(ASTNode.MakeLiteral(left));
             verbNode.Children.Add(ASTNode.MakeLiteral(right));
             
@@ -571,7 +571,7 @@ namespace K3CSharp
                 // Handle vector + scalar case (e.g., (1 2 3) %/ 2)
                 if (left is VectorValue leftVec && IsScalar(right))
                 {
-                    // Apply binary operation element-wise with scalar right
+                    // Apply dyadic operation element-wise with scalar right
                     var result = new List<K3Value>();
                     foreach (var leftElement in leftVec.Elements)
                     {
@@ -591,7 +591,7 @@ namespace K3CSharp
                         throw new Exception($"length error: {leftVec2.Elements.Count} != {rightVec.Elements.Count}");
                     }
                     
-                    // Apply binary operation element-wise (same as default operator behavior)
+                    // Apply dyadic operation element-wise (same as default operator behavior)
                     var result = new List<K3Value>();
                     for (int i = 0; i < leftVec2.Elements.Count; i++)
                     {
@@ -822,7 +822,7 @@ namespace K3CSharp
                     throw new Exception($"length error: {verbVec.Elements.Count} != {dataVec.Elements.Count}");
                 }
                 
-                // Apply binary operation element-wise
+                // Apply dyadic operation element-wise
                 var result = new List<K3Value>();
                 for (int i = 0; i < verbVec.Elements.Count; i++)
                 {

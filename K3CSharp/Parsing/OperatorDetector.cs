@@ -9,11 +9,11 @@ namespace K3CSharp.Parsing
     public class OperatorDetector
     {
         /// <summary>
-        /// Check if token type is a binary operator using VerbRegistry
+        /// Check if token type is a dyadic operator using VerbRegistry
         /// </summary>
-        public static bool IsBinaryOperator(TokenType tokenType)
+        public static bool IsDyadicOperator(TokenType tokenType)
         {
-            return VerbRegistry.IsBinaryOperatorToken(tokenType);
+            return VerbRegistry.IsDyadicOperatorToken(tokenType);
         }
         
         /// <summary>

@@ -28,8 +28,8 @@ namespace K3CSharp
                 // Parse a single expression for next element (without semicolon handling)
                 var next = ParseTerm();
                 
-                // Handle binary operators with Long Right Scope for this element
-                while (VerbRegistry.IsBinaryOperator(CurrentToken().Type))
+                // Handle dyadic operators with Long Right Scope for this element
+                while (VerbRegistry.IsDyadicOperator(CurrentToken().Type))
                 {
                     var op = CurrentToken().Type;
                     Match(op); // Consume the operator
@@ -41,15 +41,15 @@ namespace K3CSharp
                         Advance(); // Consume the adverb token
                         var adverbType = adverbToken.Type.ToString().Replace("TokenType.", "");
                         
-                        // Convert the binary operator to a verb symbol
-                        var verbName = VerbRegistry.GetBinaryOperatorSymbol(op);
+                        // Convert the dyadic operator to a verb symbol
+                        var verbName = VerbRegistry.GetDyadicOperatorSymbol(op);
                         var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
                         
                         // Parse the right side of the adverb with LRS
                         var rightSide = ParseTerm();
                         
                         // Create the correct adverb structure: ADVERB(verb, left, right)
-                        var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
                         adverbNode.Value = new SymbolValue(adverbType);
                         if (verbNode != null) adverbNode.Children.Add(verbNode);
                         if (next != null) adverbNode.Children.Add(next);
@@ -59,10 +59,10 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // Regular binary operation with Long Right Scope
+                        // Regular dyadic operation with Long Right Scope
                         var right = ParseTerm();
                         if (next != null && right != null)
-                            next = ASTNode.MakeBinaryOp(op, next, right);
+                            next = ASTNode.MakeDyadicOp(op, next, right);
                     }
                 }
                 

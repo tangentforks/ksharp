@@ -8,7 +8,7 @@ namespace K3CSharp
     {
         Literal,
         Vector,
-        BinaryOp,
+        DyadicOp,
         Assignment,
         GlobalAssignment,
         Variable,
@@ -52,9 +52,9 @@ namespace K3CSharp
             return new ASTNode(ASTNodeType.Vector, null, elements);
         }
 
-        public static ASTNode MakeBinaryOp(TokenType op, ASTNode left, ASTNode right)
+        public static ASTNode MakeDyadicOp(TokenType op, ASTNode left, ASTNode right)
         {
-            var node = new ASTNode(ASTNodeType.BinaryOp);
+            var node = new ASTNode(ASTNodeType.DyadicOp);
             if (left != null) node.Children.Add(left);
             if (right != null) node.Children.Add(right);
             
@@ -396,7 +396,7 @@ namespace K3CSharp
                 var rightArg = ParseTerm(parseUntilEnd);
                 
                 // Create adverb node: ADVERB(adverbType, verb, rightArg)
-                var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
                 adverbNode.Value = new SymbolValue(adverbType.ToString());
                 adverbNode.Children.Add(result); // verb
                 adverbNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(0))); // left argument (default for dyadic adverbs)
@@ -416,7 +416,7 @@ namespace K3CSharp
 
                 // Special case: if the result is a unary operator (like _sqrt), treat brackets as grouping
                 // So _sqrt[3] becomes _sqrt 3, not _sqrt @ [3]
-                if (result != null && result.Type == ASTNodeType.BinaryOp && result.Value is SymbolValue opSymbol && 
+                if (result != null && result.Type == ASTNodeType.DyadicOp && result.Value is SymbolValue opSymbol && 
                     opSymbol.Value.StartsWith("_") && result.Children.Count == 1)
                 {
                     // This is a unary operator with brackets - treat as grouping
@@ -435,7 +435,7 @@ namespace K3CSharp
                     literalSymbol.Value.StartsWith("_"))
                 {
                     // This is a literal underscore function with brackets - convert to unary operator
-                    var unaryNode = new ASTNode(ASTNodeType.BinaryOp);
+                    var unaryNode = new ASTNode(ASTNodeType.DyadicOp);
                     unaryNode.Value = literalSymbol;
                     if (argsExpression != null)
                     {
@@ -465,18 +465,18 @@ namespace K3CSharp
                     else
                     {
                         // Convert to apply operation: expression @ index
-                        result = argsExpression != null && result != null ? ASTNode.MakeBinaryOp(TokenType.APPLY, result, argsExpression) : result;
+                        result = argsExpression != null && result != null ? ASTNode.MakeDyadicOp(TokenType.APPLY, result, argsExpression) : result;
                     }
                 }
                 else
                 {
                     // Convert to apply operation: expression @ index
-                    result = argsExpression != null && result != null ? ASTNode.MakeBinaryOp(TokenType.APPLY, result, argsExpression) : result;
+                    result = argsExpression != null && result != null ? ASTNode.MakeDyadicOp(TokenType.APPLY, result, argsExpression) : result;
                 }
             }
 
             // If we processed bracket notation, return the result (don't continue with vector parsing)
-            if (result != null && result.Type == ASTNodeType.BinaryOp && result.Value is SymbolValue symbolValue && symbolValue.Value == ".")
+            if (result != null && result.Type == ASTNodeType.DyadicOp && result.Value is SymbolValue symbolValue && symbolValue.Value == ".")
             {
                 return result;
             }
@@ -493,7 +493,7 @@ namespace K3CSharp
                 // Check if this would create a mixed-type vector
                 // If current token is an operator, it would create a mixed-type vector
                 // So stop parsing and let ParseExpression handle it
-                if (IsBinaryOperator(CurrentToken().Type) ||
+                if (IsDyadicOperator(CurrentToken().Type) ||
                     CurrentToken().Type == TokenType.DV || CurrentToken().Type == TokenType.DI ||
                     CurrentToken().Type == TokenType.SETENV || CurrentToken().Type == TokenType.SM ||
                     CurrentToken().Type == TokenType.DIV || CurrentToken().Type == TokenType.DRAW ||
@@ -516,11 +516,11 @@ namespace K3CSharp
                     var symbol = CurrentToken().Lexeme;
                     Match(TokenType.SYMBOL);
                     var rightArg = ParseTerm(parseUntilEnd);
-                    var binaryOp = new ASTNode(ASTNodeType.BinaryOp);
-                    binaryOp.Value = new SymbolValue(symbol);
-                    if (result != null) binaryOp.Children.Add(result);
-                    if (rightArg != null) binaryOp.Children.Add(rightArg);
-                    result = binaryOp;
+                    var dyadicOp = new ASTNode(ASTNodeType.DyadicOp);
+                    dyadicOp.Value = new SymbolValue(symbol);
+                    if (result != null) dyadicOp.Children.Add(result);
+                    if (rightArg != null) dyadicOp.Children.Add(rightArg);
+                    result = dyadicOp;
                     break;
                 }
                 
@@ -623,9 +623,9 @@ namespace K3CSharp
             return tokens[targetIndex];
         }
 
-        private bool IsBinaryOperator(TokenType type)
+        private bool IsDyadicOperator(TokenType type)
         {
-            return VerbRegistry.IsBinaryOperator(type);
+            return VerbRegistry.IsDyadicOperator(type);
         }
 
         public ASTNode? ParseExpression()
@@ -686,7 +686,7 @@ namespace K3CSharp
         /// </summary>
         private bool IsVerbToken(TokenType tokenType)
         {
-            return VerbRegistry.IsBinaryOperator(tokenType) || 
+            return VerbRegistry.IsDyadicOperator(tokenType) || 
                    IsUnaryOperator(tokenType) ||
                    tokenType == TokenType.DOT_PRODUCT; // _dot
         }
@@ -755,7 +755,7 @@ namespace K3CSharp
                 }
                 
                 // Create adverb node: ADVERB(verb, 0, args)
-                var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
                 adverbNode.Value = new SymbolValue(GetAdverbName(adverbToken.Type));
                 adverbNode.Children.Add(verbNode);
                 adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0))); // left argument (dummy)
@@ -827,7 +827,7 @@ namespace K3CSharp
                 }
                 
                 // Create adverb node: ADVERB(verb, 0, args)
-                var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
                 adverbNode.Value = new SymbolValue(GetAdverbName(adverbType));
                 adverbNode.Children.Add(verbNode);
                 adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0))); // left argument (dummy)
@@ -886,7 +886,7 @@ namespace K3CSharp
                 }
                 
                 // Create adverb node: '( _ci arg1 arg2 arg3)
-                var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
                 adverbNode.Value = new SymbolValue("'");
                 adverbNode.Children.Add(verbNode); // _ci verb
                 
@@ -923,7 +923,7 @@ namespace K3CSharp
             ASTNode? left = null;
             
             // Check for operator[...] pattern at expression start
-            if (isAtExpressionStart && !IsAtEnd() && IsBinaryOperator(CurrentToken().Type))
+            if (isAtExpressionStart && !IsAtEnd() && IsDyadicOperator(CurrentToken().Type))
             {
                 // Check if operator is followed by bracket notation
                 if (current + 1 < tokens.Count && tokens[current + 1].Type == TokenType.LEFT_BRACKET)
@@ -931,7 +931,7 @@ namespace K3CSharp
                     // This is operator[...] - treat as verb with bracket notation
                     // Create the operator variable directly instead of calling ParseTerm
                     var opToken = CurrentToken();
-                    var opSymbol = VerbRegistry.GetBinaryOperatorSymbol(opToken.Type);
+                    var opSymbol = VerbRegistry.GetDyadicOperatorSymbol(opToken.Type);
                     left = ASTNode.MakeLiteral(new SymbolValue(opSymbol));
                     Match(opToken.Type); // Consume the operator token
                     
@@ -945,7 +945,7 @@ namespace K3CSharp
                         var argsExpression = ParseBracketContentsAsCommaEnlisted();
 
                         // Create dot-apply node: operator .,(args)
-                        left = ASTNode.MakeBinaryOp(TokenType.DOT_APPLY, left, argsExpression);
+                        left = ASTNode.MakeDyadicOp(TokenType.DOT_APPLY, left, argsExpression);
 
                         return left;
                     }
@@ -1023,7 +1023,7 @@ namespace K3CSharp
                         }
                         else
                         {
-                            var unaryNode = new ASTNode(ASTNodeType.BinaryOp);
+                            var unaryNode = new ASTNode(ASTNodeType.DyadicOp);
                             var symbolValue = opToken.Type switch
                             {
                                 TokenType.PLUS => "+",
@@ -1109,14 +1109,14 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Fallback: create binary op for ::
-                    return ASTNode.MakeBinaryOp(TokenType.GLOBAL_ASSIGNMENT, left, right);
+                    // Fallback: create dyadic op for ::
+                    return ASTNode.MakeDyadicOp(TokenType.GLOBAL_ASSIGNMENT, left, right);
                 }
             }
 
-            // Handle binary operators with Long Right Scope (LRS)
+            // Handle dyadic operators with Long Right Scope (LRS)
             // In K, there's no precedence among operators - they're all right-associative
-            while (MatchBinaryOperator(out var op))
+            while (MatchDyadicOperator(out var op))
             {
                 // Check if this is followed by an adverb (infix adverb)
                 if (VerbRegistry.IsAdverbToken(CurrentToken().Type))
@@ -1134,7 +1134,7 @@ namespace K3CSharp
                         Advance(); // Consume the second adverb token
                         var secondAdverbType = secondAdverbToken.Type.ToString().Replace("TokenType.", "");
                         
-                        // Convert the binary operator to a verb symbol
+                        // Convert the dyadic operator to a verb symbol
                         var verbName = op.ToString() switch
                         {
                             "PLUS" => "+",
@@ -1278,12 +1278,12 @@ namespace K3CSharp
                         // Then create ADVERB_BACKSLASH_COLON(ADVERB_SLASH_COLON(,), left, right)
                         
                         // Create the inner adverb structure (composite verb)
-                        var innerAdverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        var innerAdverbNode = new ASTNode(ASTNodeType.DyadicOp);
                         innerAdverbNode.Value = new SymbolValue(adverbType); // First adverb (e.g., ADVERB_SLASH_COLON)
                         innerAdverbNode.Children.Add(verbNode); // The verb (,)
                         
                         // Create the outer adverb structure
-                        var nestedAdverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        var nestedAdverbNode = new ASTNode(ASTNodeType.DyadicOp);
                         nestedAdverbNode.Value = new SymbolValue(secondAdverbType); // Second adverb (e.g., ADVERB_BACKSLASH_COLON)
                         nestedAdverbNode.Children.Add(innerAdverbNode); // The composite verb
                         nestedAdverbNode.Children.Add(left); // Left side (1 2 3)
@@ -1294,7 +1294,7 @@ namespace K3CSharp
                     else
                     {
                         // Single adverb case
-                        // Convert the binary operator to a verb symbol
+                        // Convert the dyadic operator to a verb symbol
                         var verbName = op.ToString() switch
                         {
                             "PLUS" => "+",
@@ -1342,7 +1342,7 @@ namespace K3CSharp
                         var rightSide = ParseExpressionWithoutSemicolons();
                         
                         // Create the correct adverb structure: ADVERB(verb, left, right)
-                        var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
                         adverbNode.Value = new SymbolValue(adverbType);
                         adverbNode.Children.Add(verbNode);
                         adverbNode.Children.Add(left);
@@ -1353,11 +1353,11 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Regular binary operation with Long Right Scope
+                    // Regular dyadic operation with Long Right Scope
                     // In K, the right argument is everything to the right (right-associative)
                     var right = ParseExpressionWithoutSemicolons();
                     if (right != null)
-                        return ASTNode.MakeBinaryOp(op, left, right);
+                        return ASTNode.MakeDyadicOp(op, left, right);
                 }
             }
             
@@ -1385,7 +1385,7 @@ namespace K3CSharp
                 
                 // Create the proper adverb structure: ADVERB(verb, 0, arguments)
                 // Use 0 as initialization to signal "consume first element" for monadic derived verbs
-                var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
                 adverbNode.Value = new SymbolValue(adverbType.ToString().Replace("TokenType.", ""));
                 if (verb != null) adverbNode.Children.Add(verb);
                 adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0))); // Use 0 for monadic derived verbs
@@ -1412,7 +1412,7 @@ namespace K3CSharp
                 
                 // Create the proper adverb structure: ADVERB(verb, null, arguments)
                 // Use 0 as initialization to signal "consume first element" for monadic derived verbs
-                var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
                 adverbNode.Value = new SymbolValue(adverbType);
                 if (derivedVerb != null) adverbNode.Children.Add(derivedVerb);
                 adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0))); // Use 0 for monadic derived verbs
@@ -1519,7 +1519,7 @@ namespace K3CSharp
             return parameters;
         }
         
-        private static readonly HashSet<TokenType> BinaryOperatorTokens = new()
+        private static readonly HashSet<TokenType> DyadicOperatorTokens = new()
         {
             TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.DIV, 
             TokenType.DOT_PRODUCT, TokenType.DOT_APPLY, TokenType.MUL, TokenType.AND, TokenType.OR, 
@@ -1535,9 +1535,9 @@ namespace K3CSharp
             TokenType.DOT_APPLY, TokenType.DO, TokenType.WHILE, TokenType.IF_FUNC
         };
 
-        private bool MatchBinaryOperator(out TokenType matchedType)
+        private bool MatchDyadicOperator(out TokenType matchedType)
         {
-            if (!IsAtEnd() && BinaryOperatorTokens.Contains(CurrentToken().Type))
+            if (!IsAtEnd() && DyadicOperatorTokens.Contains(CurrentToken().Type))
             {
                 matchedType = CurrentToken().Type;
                 Advance();

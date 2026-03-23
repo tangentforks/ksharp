@@ -42,7 +42,7 @@ namespace K3CSharp
                 context.Advance(); // Consume variable name
                 
                 // Check for apply-and-assign pattern: variable:op expression
-                if (IsBinaryOperator(context.CurrentToken().Type))
+                if (IsDyadicOperator(context.CurrentToken().Type))
                 {
                     return ParseApplyAndAssignVariable(variableName, context);
                 }
@@ -105,9 +105,9 @@ namespace K3CSharp
 
         private ASTNode ParseApplyAndAssignVariable(string variableName, ParseContext context)
         {
-            if (!IsBinaryOperator(context.CurrentToken().Type))
+            if (!IsDyadicOperator(context.CurrentToken().Type))
             {
-                throw new Exception("Expected binary operator after variable name in apply-and-assign");
+                throw new Exception("Expected dyadic operator after variable name in apply-and-assign");
             }
             
             var opToken = context.CurrentToken();
@@ -175,9 +175,9 @@ namespace K3CSharp
         {
             context.Advance(); // Consume ':'
             
-            if (!IsBinaryOperator(context.CurrentToken().Type))
+            if (!IsDyadicOperator(context.CurrentToken().Type))
             {
-                throw new Exception("Expected binary operator after variable name in apply-and-assign");
+                throw new Exception("Expected dyadic operator after variable name in apply-and-assign");
             }
             
             var opToken = context.CurrentToken();
@@ -216,9 +216,9 @@ namespace K3CSharp
             return null;
         }
 
-        private bool IsBinaryOperator(TokenType tokenType)
+        private bool IsDyadicOperator(TokenType tokenType)
         {
-            return VerbRegistry.IsBinaryOperator(tokenType);
+            return VerbRegistry.IsDyadicOperator(tokenType);
         }
 
         /// <summary>

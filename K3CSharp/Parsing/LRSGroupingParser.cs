@@ -388,7 +388,7 @@ namespace K3CSharp.Parsing
                 var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
                 
                 // Convert token type to operator symbol
-                var operatorSymbol = VerbRegistry.GetBinaryOperatorSymbol(token.Type);
+                var operatorSymbol = VerbRegistry.GetDyadicOperatorSymbol(token.Type);
                 
                 projectedNode.Value = new SymbolValue(operatorSymbol);
                 
@@ -406,7 +406,7 @@ namespace K3CSharp.Parsing
                 throw new Exception($"Expected expression after unary operator {token.Lexeme}");
             }
             
-            return ASTNode.MakeBinaryOp(token.Type, operand, ASTNode.MakeLiteral(new NullValue()));
+            return ASTNode.MakeDyadicOp(token.Type, operand, ASTNode.MakeLiteral(new NullValue()));
         }
     }
 }

@@ -31,7 +31,7 @@ namespace K3CSharp
             var rightArg = ParseAdverbRightArgument(context);
             
             // Create adverb node: ADVERB(adverbType, verb, rightArg)
-            var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+            var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
             adverbNode.Value = new SymbolValue(adverbType.ToString());
             adverbNode.Children.Add(leftArg); // verb
             if (rightArg != null) adverbNode.Children.Add(rightArg); // right argument

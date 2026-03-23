@@ -730,9 +730,9 @@ namespace K3CSharp
         }
 
         /// <summary>
-        /// Check if a token type is a binary operator
+        /// Check if a token type is a dyadic operator
         /// </summary>
-        public static bool IsBinaryOperatorToken(TokenType tokenType)
+        public static bool IsDyadicOperatorToken(TokenType tokenType)
         {
             var verb = GetVerb(tokenType.ToString());
             return verb != null && verb.Type == VerbType.Operator;
@@ -771,9 +771,9 @@ namespace K3CSharp
         }
 
         /// <summary>
-        /// Get all binary operator token types
+        /// Get all dyadic operator token types
         /// </summary>
-        public static readonly TokenType[] BinaryOperatorTokens = {
+        public static readonly TokenType[] DyadicOperatorTokens = {
             TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.DOT_PRODUCT, TokenType.MUL, 
             TokenType.MIN, TokenType.MAX, TokenType.LESS, TokenType.GREATER, TokenType.EQUAL, TokenType.IN, 
             TokenType.POWER, TokenType.MODULUS, TokenType.JOIN, TokenType.COLON, TokenType.HASH, 
@@ -783,9 +783,9 @@ namespace K3CSharp
         };
 
         /// <summary>
-        /// Get string symbol for binary operator token
+        /// Get string symbol for dyadic operator token
         /// </summary>
-        public static string GetBinaryOperatorSymbol(TokenType tokenType)
+        public static string GetDyadicOperatorSymbol(TokenType tokenType)
         {
             return tokenType switch
             {
@@ -832,11 +832,11 @@ namespace K3CSharp
         }
 
         /// <summary>
-        /// Check if token type is a binary operator (comprehensive)
+        /// Check if token type is a dyadic operator (comprehensive)
         /// </summary>
-        public static bool IsBinaryOperator(TokenType tokenType)
+        public static bool IsDyadicOperator(TokenType tokenType)
         {
-            return BinaryOperatorTokens.Contains(tokenType);
+            return DyadicOperatorTokens.Contains(tokenType);
         }
 
         /// <summary>

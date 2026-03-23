@@ -109,7 +109,7 @@ namespace K3CSharp.Tests
             foreach (var tokenType in testTokens)
             {
                 Console.WriteLine($"\n{tokenType}:");
-                Console.WriteLine($"  IsBinaryOperator: {OperatorDetector.IsBinaryOperator(tokenType)}");
+                Console.WriteLine($"  IsDyadicOperator: {OperatorDetector.IsDyadicOperator(tokenType)}");
                 Console.WriteLine($"  SupportsMonadic: {OperatorDetector.SupportsMonadic(tokenType)}");
                 Console.WriteLine($"  SupportsDyadic: {OperatorDetector.SupportsDyadic(tokenType)}");
                 Console.WriteLine($"  IsFunction: {OperatorDetector.IsFunction(tokenType)}");
@@ -138,10 +138,10 @@ namespace K3CSharp.Tests
             Console.WriteLine("Validating AST structure for ^,`a");
             
             // Expected structure: ^ (, `a)
-            // Should be BinaryOp("^") with child BinaryOp(",") with child Literal(`a)
+            // Should be DyadicOp("^") with child DyadicOp(",") with child Literal(`a)
             
-            if (node.Type != ASTNodeType.BinaryOp)
-                throw new Exception($"Expected BinaryOp, got {node.Type}");
+            if (node.Type != ASTNodeType.DyadicOp)
+                throw new Exception($"Expected DyadicOp, got {node.Type}");
                 
             if (node.Value?.ToString() != "^")
                 throw new Exception($"Expected ^ operator, got {node.Value}");
@@ -150,8 +150,8 @@ namespace K3CSharp.Tests
                 throw new Exception($"Expected 1 child for monadic ^, got {node.Children.Count}");
             
             var child = node.Children[0];
-            if (child.Type != ASTNodeType.BinaryOp)
-                throw new Exception($"Expected BinaryOp child, got {child.Type}");
+            if (child.Type != ASTNodeType.DyadicOp)
+                throw new Exception($"Expected DyadicOp child, got {child.Type}");
                 
             if (child.Value?.ToString() != ",")
                 throw new Exception($"Expected , operator child, got {child.Value}");

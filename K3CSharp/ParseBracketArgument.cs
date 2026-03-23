@@ -59,7 +59,7 @@ namespace K3CSharp
 
             // Check for standalone operator as function reference (e.g., + in @[x; i; +; y])
             // or operator followed by adverb (e.g., +/ in @[+/; args; :])
-            if (!IsAtEnd() && IsBinaryOperator(CurrentToken().Type))
+            if (!IsAtEnd() && IsDyadicOperator(CurrentToken().Type))
             {
                 var nextIdx = current + 1;
                 var nextType = nextIdx < tokens.Count ? tokens[nextIdx].Type : TokenType.EOF;
@@ -68,7 +68,7 @@ namespace K3CSharp
                 {
                     // Standalone operator - treat as symbol
                     var opToken = CurrentToken();
-                    var opSymbol = VerbRegistry.GetBinaryOperatorSymbol(opToken.Type);
+                    var opSymbol = VerbRegistry.GetDyadicOperatorSymbol(opToken.Type);
                     Match(opToken.Type);
                     return ASTNode.MakeLiteral(new SymbolValue(opSymbol));
                 }
@@ -78,7 +78,7 @@ namespace K3CSharp
                     var opToken = CurrentToken();
                     var adverbToken = tokens[nextIdx];
                     
-                    var opSymbol = VerbRegistry.GetBinaryOperatorSymbol(opToken.Type);
+                    var opSymbol = VerbRegistry.GetDyadicOperatorSymbol(opToken.Type);
                     
                     var adverbType = VerbRegistry.GetAdverbType(adverbToken.Type);
                     
@@ -137,12 +137,12 @@ namespace K3CSharp
                         };
                         // x+: y => x: x + y
                         var currentVal = ASTNode.MakeVariable(variableName);
-                        var modifiedValue = ASTNode.MakeBinaryOp(opType, currentVal, right);
+                        var modifiedValue = ASTNode.MakeDyadicOp(opType, currentVal, right);
                         return ASTNode.MakeAssignment(variableName, modifiedValue);
                     }
                     return ASTNode.MakeAssignment(variableName, right);
                 }
-                return ASTNode.MakeBinaryOp(TokenType.COLON, left, right);
+                return ASTNode.MakeDyadicOp(TokenType.COLON, left, right);
             }
 
             // Handle global assignment operator (::)
@@ -159,19 +159,19 @@ namespace K3CSharp
                     var variableName = left.Value is SymbolValue sym ? sym.Value : left.Value?.ToString() ?? "";
                     return ASTNode.MakeGlobalAssignment(variableName, right);
                 }
-                return ASTNode.MakeBinaryOp(TokenType.GLOBAL_ASSIGNMENT, left, right);
+                return ASTNode.MakeDyadicOp(TokenType.GLOBAL_ASSIGNMENT, left, right);
             }
 
             // Check for "apply and assign" pattern: variable+: value
             // This happens when we have: variable operator: value
-            // This must be checked BEFORE binary operator parsing to avoid consuming the operator token
+            // This must be checked BEFORE dyadic operator parsing to avoid consuming the operator token
             if (!IsAtEnd() && left.Type == ASTNodeType.Variable)
             {
                 // Check if we have the pattern: variable+: value
                 // Look ahead to see if there's an operator followed by colon
                 var nextToken = PeekNext();
                 
-                if (nextToken != null && IsBinaryOperator(nextToken.Type))
+                if (nextToken != null && IsDyadicOperator(nextToken.Type))
                 {
                     // Check if the token after the operator is a colon
                     var tokenAfterOperator = PeekToken(2); // Look two tokens ahead
@@ -199,8 +199,8 @@ namespace K3CSharp
                 }
             }
 
-            // Handle binary operators but stop at semicolon or right bracket
-            while (VerbRegistry.IsBinaryOperator(CurrentToken().Type))
+            // Handle dyadic operators but stop at semicolon or right bracket
+            while (VerbRegistry.IsDyadicOperator(CurrentToken().Type))
             {
                 var op = CurrentToken().Type;
                 Match(op); // Consume the operator
@@ -212,8 +212,8 @@ namespace K3CSharp
                     Advance(); // Consume adverb token
                     var firstAdverbType = adverbToken.Type.ToString().Replace("TokenType.", "");
                     
-                    // Convert the binary operator to a verb symbol
-                    var verbName = VerbRegistry.GetBinaryOperatorSymbol(op);
+                    // Convert the dyadic operator to a verb symbol
+                    var verbName = VerbRegistry.GetDyadicOperatorSymbol(op);
                     var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
                     
                     // Parse the right side of the adverb
@@ -240,7 +240,7 @@ namespace K3CSharp
                     else
                     {
                         // Create the correct adverb structure: ADVERB(verb, left, right)
-                        var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                        var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
                         adverbNode.Value = new SymbolValue(firstAdverbType);
                         if (verbNode != null) adverbNode.Children.Add(verbNode);
                         if (left != null) adverbNode.Children.Add(left);
@@ -251,13 +251,13 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Regular binary operation with right-associativity
+                    // Regular dyadic operation with right-associativity
                     var right = ParseBracketArgument();
                     if (right == null)
                     {
                         throw new Exception($"Expected right operand after {op}");
                     }
-                    return left != null ? ASTNode.MakeBinaryOp(op, left, right) : ASTNode.MakeBinaryOp(op, new ASTNode(ASTNodeType.Literal, new NullValue()), right);
+                    return left != null ? ASTNode.MakeDyadicOp(op, left, right) : ASTNode.MakeDyadicOp(op, new ASTNode(ASTNodeType.Literal, new NullValue()), right);
                 }
             }
 
