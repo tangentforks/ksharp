@@ -809,7 +809,7 @@ namespace K3CSharp
                 TokenType.UNDERSCORE => "_",
                 TokenType.QUESTION => "?",
                 TokenType.MATCH => "~",
-                TokenType.NEGATE => "!",
+                TokenType.NEGATE => "~",
                 TokenType.DOLLAR => "$",
                 TokenType.LSQ => "_lsq",
                 TokenType.AND => "&",

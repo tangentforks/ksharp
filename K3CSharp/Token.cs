@@ -122,12 +122,12 @@ namespace K3CSharp
         LT,             // _lt local time
         JD,             // _jd Julian date
         DJ,             // _dj date from Julian
-        VS,             // _vs database function
-        SV,             // _sv database function
-        SS,             // _ss database function
-        SM,             // _sm database function
-        CI,             // _ci database function
-        IC,             // _ic database function
+        VS,             // _vs vector from string
+        SV,             // _sv string from vector
+        SS,             // _ss string search
+        SM,             // _sm string match
+        CI,             // _ci character from integer
+        IC,             // _ic integer from character
         DV,             // _dv delete by value
         DI,             // _di delete by index
         GETENV,         // _getenv get environment variable
