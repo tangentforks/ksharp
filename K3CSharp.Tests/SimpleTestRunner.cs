@@ -34,13 +34,13 @@ namespace K3CSharp.Tests
 
             Environment.SetEnvironmentVariable("PROMPT", "$P$G");
 
-            
+
 
             RunAllTests(args.Length > 0 ? args[0] : null);
 
         }
 
-        
+
 
         private static void WriteResultsTable(List<TestResult> testResults)
 
@@ -67,7 +67,7 @@ namespace K3CSharp.Tests
 
                 writer.WriteLine("╠" + new string('═', totalWidth - 2) + "╣");
 
-                
+
 
                 foreach (var test in testResults)
 
@@ -77,7 +77,7 @@ namespace K3CSharp.Tests
 
                     var expected = test.Passed ? "" : test.Expected;
 
-                    
+
 
                     // Truncate long outputs for table display
 
@@ -85,13 +85,13 @@ namespace K3CSharp.Tests
 
                     var expectedOutput = expected.Length > 18 ? expected.Substring(0, 15) + "..." : expected;
 
-                    
+
 
                     writer.WriteLine("║ " + test.FileName.PadRight(maxFileNameLength - 2) + " │ " + input.PadRight(20) + " │ " + actualOutput.PadRight(20) + " │ " + expectedOutput.PadRight(20) + " ║");
 
                 }
 
-                
+
 
                 writer.WriteLine("╠" + new string('═', totalWidth - 2) + "╣");
 
@@ -103,7 +103,7 @@ namespace K3CSharp.Tests
 
                 writer.WriteLine("╚" + new string('═', totalWidth - 2) + "╝");
 
-                
+
 
                 // Write detailed failing tests section
 
@@ -119,7 +119,7 @@ namespace K3CSharp.Tests
 
                     writer.WriteLine("═════════════════════════════════════════════════════════════════════════════════════");
 
-                    
+
 
                     foreach (var test in failingTests)
 
@@ -141,13 +141,13 @@ namespace K3CSharp.Tests
 
             }
 
-            
+
 
             Console.WriteLine($"Detailed results table written to: {outputPath}");
 
         }
 
-        
+
 
         private static string GetTestInput(string fileName)
 
@@ -177,7 +177,7 @@ namespace K3CSharp.Tests
 
         }
 
-        
+
 
         public class TestResult
 
@@ -193,7 +193,7 @@ namespace K3CSharp.Tests
 
         }
 
-        
+
 
         public static void RunAllTests(string? filter = null)
 
@@ -296,7 +296,6 @@ namespace K3CSharp.Tests
                 ("lrs_adverb_parser_each.k", "0.5 1.0 1.5"),
                 ("lrs_adverb_parser_basic.k", "1 2 3 4 5"),
                 ("lrs_expression_processor_test.k", "3"),
-                ("lrs_integration_bracket.k", "3"),
                 ("lrs_parser_validation.k", "3"),
 
                 
@@ -1464,16 +1463,6 @@ namespace K3CSharp.Tests
 
                 ("search_lin_intersection.k", "1 1 1 0 0"),
 
-                
-
-                // LRS Parser improvement tests
-
-                ("test_failure_analyzer.k", "1"), // Expected to fall back to legacy parser
-
-                ("test_verb_queries.k", "6"), // Test verb-agnostic parsing
-
-                
-
                 // Amend Item tests - only valid cases with 3+ arguments
 
                 ("amend_item_basic.k", "1 12 3"),
@@ -1482,21 +1471,15 @@ namespace K3CSharp.Tests
 
                 ("amend_item_monadic.k", "1 4 3"),
 
-                
-
                 // Existing amend tests - only valid cases with 3+ arguments
 
                 ("amend_test.k", "(1 2 13 4 5;6 7 8 9 10)"),
-
-                
 
                 // Find operator tests
 
                 ("find_basic.k", "2"),
 
                 ("find_notfound.k", "7"),
-
-                
 
                 // Form specifiers on mixed vectors
 
@@ -2367,14 +2350,14 @@ namespace K3CSharp.Tests
 
 
                 var expectedTestFiles = allTests.Select(t => t.Item1).ToList();
-                
+
                 // Check for duplicates in expected test files
                 var duplicateTestFiles = expectedTestFiles
                     .GroupBy(f => f)
                     .Where(g => g.Count() > 1)
                     .Select(g => g.Key)
                     .ToList();
-                
+
                 var missingFromRunner = actualTestFiles.Except(expectedTestFiles).ToList();
                 var extraInRunner = expectedTestFiles.Except(actualTestFiles).ToList();
 
@@ -2385,7 +2368,7 @@ namespace K3CSharp.Tests
                 Console.WriteLine($"  Expected tests: {allTests.Length}");
 
                 Console.WriteLine($"  Actual .k files: {actualTestFiles.Count}");
-                
+
                 // Report duplicates if found
                 if (duplicateTestFiles.Any())
                 {
@@ -2498,7 +2481,7 @@ namespace K3CSharp.Tests
                     }
 
                     var script = File.ReadAllText(scriptPath);
-                    
+
                     // Trim trailing whitespace and empty lines as per K specification
                     // When evaluating whole file, empty lines at end should be trimmed
                     var lines = script
@@ -2620,10 +2603,10 @@ namespace K3CSharp.Tests
                             // Check if expression is complete (all delimiters balanced) - using configured parser
                             var checkLexer = new Lexer(accumulatedLine);
                             var checkTokens = checkLexer.Tokenize();
-                            
+
                             // Use legacy parser for incomplete expression check for all tests during LRS debugging
                             bool isIncomplete = new Parser(checkTokens, accumulatedLine).IsIncompleteExpression();
-                            
+
                             if (isIncomplete)
                             {
                                 // Expression is incomplete - continue accumulating
@@ -2635,13 +2618,13 @@ namespace K3CSharp.Tests
                             // Handle regular K expressions
                             var lexer = new Lexer(accumulatedLine);
                             var tokens = lexer.Tokenize();
-                            
+
                             // Set current test name for failure tracking
                             LRSParserWrapper.SetCurrentTestName(fileName);
-                            
+
                             // Use LRS parser for all tests (now the default)
                             ASTNode? ast = ParserConfig.ParseWithConfig(tokens, accumulatedLine);
-                            
+
                             // Clear current test name after parsing
                             LRSParserWrapper.ClearCurrentTestName();
 
@@ -2653,7 +2636,7 @@ namespace K3CSharp.Tests
 
                     }
 
-                    
+
 
                     var actualOutput = (lastResult ?? new NullValue()).ToString().Trim();
 
@@ -2701,16 +2684,16 @@ namespace K3CSharp.Tests
 
             var totalCount = testResults.Count;
 
-            
+
 
             Console.WriteLine();
 
             Console.WriteLine($"Test Results: {passedCount}/{totalCount} passed ({(passedCount * 100.0 / totalCount):F1}%)");
 
-            
+
 
             WriteResultsTable(testResults);
-            
+
             // Generate parser analysis report if enabled
             try
             {

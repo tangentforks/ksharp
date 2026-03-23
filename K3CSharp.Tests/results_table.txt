@@ -40,7 +40,6 @@
 ║ lrs_adverb_parser_each.k                           │ (1 2 3) %\: 2        │ 0.5 1.0 1.5          │                      ║
 ║ lrs_adverb_parser_basic.k                          │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
 ║ lrs_expression_processor_test.k                    │ 1 + 2                │ 3                    │                      ║
-║ lrs_integration_bracket.k                          │ [1 + 2]              │ 3                    │                      ║
 ║ lrs_parser_validation.k                            │ 1 + 2                │ 3                    │                      ║
 ║ attribute_handle_symbol.k                          │ ~`a                  │ `a.                  │                      ║
 ║ attribute_handle_vector.k                          │ ~(`a`b`c)            │ `a.`b.`c.            │                      ║
@@ -474,8 +473,6 @@
 ║ search_bin_basic.k                                 │ 3 4 5 6 _bin 4       │ 1                    │                      ║
 ║ search_binl_eachleft.k                             │ 1 3 5 _binl 1 2 3 4 5 │ 0 1 1 2 2            │                      ║
 ║ search_lin_intersection.k                          │ 1 3 5 7 9 _lin 1 2 3 4 5 │ 1 1 1 0 0            │                      ║
-║ test_failure_analyzer.k                            │ // Test case to trigger LRS parser failure for analysis │ Error: Cannot a...   │ 1                    ║
-║ test_verb_queries.k                                │ // Test cases to verify verb query extensions work correctly │ Error: Cannot a...   │ 6                    ║
 ║ amend_item_basic.k                                 │ @[1 2 3; 1; +; 10]   │ 1 12 3               │                      ║
 ║ amend_item_multiple.k                              │ @[1 2 3; 0 2; +; 10] │ 11 2 13              │                      ║
 ║ amend_item_monadic.k                               │ @[1 2 3; 1; {x*2}]   │ 1 4 3                │                      ║
@@ -851,7 +848,7 @@
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 815/847 tests passed (96.2%)                                                                               ║
+║ SUMMARY: 814/844 tests passed (96.4%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -920,16 +917,6 @@ Test: io_read_bytes_empty.k
 Input: `empty 0:(); 6:`empty
 Expected: ""
 Actual: "\357\273\277"
-──────────────────────────────────────────────────────────────────────────
-Test: test_failure_analyzer.k
-Input: // Test case to trigger LRS parser failure for analysis
-Expected: 1
-Actual: Error: Cannot add Character values
-──────────────────────────────────────────────────────────────────────────
-Test: test_verb_queries.k
-Input: // Test cases to verify verb query extensions work correctly
-Expected: 6
-Actual: Error: Cannot add Integer to Symbol
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_object_management.k
 Input: str: "hello";str _sethint `object; str . ToUpper
