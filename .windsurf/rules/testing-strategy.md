@@ -18,16 +18,12 @@ trigger: always_on
 - **Ideal format**: One line of code whenever possible. If the purpose is clear in the name there is no need to add comments.
 - **Inline comments**: If comments are appropriate, they should be added at the end of the line.
 - **Avoid unnecessary comments**: If the purpose is clear in the file name there is no need to add comments.
-```k
-4 _in 1 7 2 4 6 3
-```
 
 #### **Test Script Design Principles**
 
 ##### **One Test Per File**
 - **Single focus**: Each test script should test exactly one aspect of functionality
 - **One output**: Each test script should expect only one output value
-- **Multiple lines only**: When variable assignments are required before the test (this including assigning anonymous functions to give them a name)
 
 #### **Setting Test Expectations**
 1. **If the test is related to FFI and uses the 2: verb, or the test uses the _eval verb, or the test uses the _parse verb then set expectation based on the spec/speclet or on User's comments and skip the remaining steps**
@@ -53,13 +49,6 @@ in_comprehensive.k:
 10 _in 1 7 2 4 6 3 // Test 3
 ```
 
-##### **Why This Approach?**
-1. **Clear failure attribution**: Each test failure points to specific functionality
-2. **Isolated debugging**: Can debug individual test cases without interference
-3. **Focused test names**: File names clearly indicate what's being tested
-4. **Simplified maintenance**: Easy to update or remove specific test cases
-5. **Better test organization**: Clear separation of different test scenarios
-
 ##### **Naming Convention for Focused Tests**
 - Use descriptive names without redundant prefixes:
   - `in_basic.k` - basic functionality
@@ -68,33 +57,13 @@ in_comprehensive.k:
   - `in_symbols.k` - symbol vector testing
   - `in_strings.k` - string vector testing
 
-### **Test Development Workflow**
-
-#### **Test-First Development**
-1. **Write failing test**: Create test that demonstrates the issue. 
-2. **Canonical results**: Use the k MCP Server and ApplyTweaks MCP Server to generate the expected output 
-3. **Implement minimal fix**: Get test passing with simplest solution
-4. **Refactor**: Clean up implementation while keeping test passing
-5. **Add edge cases**: Test boundary conditions and error cases
-
-#### **Test Coverage Guidelines**
-- **Core operations**: 100% coverage required
-- **Edge cases**: Test all boundary conditions
-- **Error paths**: Avoid creating tests that make the the k MCP Server to return an error or timeout
-- **Integration**: Test complex expressions combining operations
-
-### **Test Maintenance**
-
 #### **Keeping Tests Current**
-- Remove tests for deprecated functionality
-- Update tests when behavior changes (obtain results again from the k MCP Server and ApplyTweaks MCP Server)
-- Add tests for new features immediately
 - Run the test suite to update T:\_src\github.com\ERufian\ksharp\K3CSharp.Tests\results_table.txt after each step of development is completed
 
 #### **Test Data Management**
 - Use meaningful test data that covers real scenarios
 
-## **🧪 Test Expectation Modification Notice**
+## **🧪 Test Expectation Modification **
 
 **Before modifying any test expectations in `SimpleTestRunner.cs` or test files, you must get the expected result from the k MCP Server and process them through the ApplyTweaks MCP Server. If the modified expectation differs from k.exe's actual output, you must ask for explicit confirmation before proceeding.**
 
@@ -128,11 +97,6 @@ symbol_vector_compact :: regex:\s+: :: Compact representation
 - Document all expected differences in `known_differences.txt`
 - Categorize differences by purpose (e.g., compact representation, smart integer conversion), not by operation performed (removing spaces, removing nulls, etc.)
 - Review differences regularly for potential fixes
-
-#### **Regression Prevention**
-- Never reduce k.exe compatibility without explicit reason
-- Test that fixes don't break existing functionality
-- Maintain comprehensive test coverage
 
 #### **Continuous Validation**
 - Automated comparison runs on major changes

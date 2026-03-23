@@ -18,10 +18,10 @@ namespace K3CSharp.Tests
 
         static SimpleTestRunner()
         {
-            // Enable LRS parser for debug tests only
+            // Enable Pure LRS mode without fallback to identify all issues
             ParserConfig.EnableLRSSafely();
             ParserConfig.EnableDebugging = true;
-            ParserConfig.LogConfigChange("TestRunner initialization - LRS enabled for debug tests only");
+            ParserConfig.LogConfigChange("TestRunner initialization - Pure LRS mode enabled");
         }
 
 

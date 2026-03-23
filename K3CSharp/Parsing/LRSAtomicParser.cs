@@ -41,6 +41,10 @@ namespace K3CSharp.Parsing
             if (lexeme == "0I" || lexeme == "-0I")
                 return ASTNode.MakeLiteral(new IntegerValue(lexeme));
             
+            // Handle null integer literals (0N, -0N)
+            if (lexeme == "0N" || lexeme == "-0N")
+                return ASTNode.MakeLiteral(new IntegerValue(lexeme));
+            
             if (int.TryParse(lexeme, out int intValue))
             {
                 // Convert extreme values to special values per spec

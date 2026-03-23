@@ -20,24 +20,69 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Find the rightmost binary operator in token list (LRS strategy)
+        /// Find the rightmost (or leftmost in Pure LRS) binary operator in token list
+        /// Safe LRS mode: Find rightmost operator (original behavior for fallback compatibility)
+        /// Pure LRS mode: Find leftmost operator with grouping depth tracking (improved behavior)
         /// </summary>
         /// <param name="tokens">Tokens to search</param>
-        /// <returns>Index of rightmost binary operator, or -1 if none found</returns>
+        /// <returns>Index of binary operator, or -1 if none found</returns>
         public int FindRightmostOperator(List<Token> tokens)
         {
-            // In K LRS, all binary operators have the same precedence and are right-associative
-            // Simply find the rightmost binary operator
-            for (int i = tokens.Count - 1; i >= 0; i--)
-            {
-                // Temporarily bypass VerbRegistry to avoid MaxInteger error
-                if (IsBinaryOperatorDirect(tokens[i].Type))
-                {
-                    return i;
-                }
-            }
+            bool pureLRSMode = parentParser?.PureLRSMode ?? false;
             
-            return -1;
+            if (pureLRSMode)
+            {
+                // PURE LRS MODE: Find LEFTMOST operator with grouping depth tracking
+                // K uses right-to-left evaluation, so we split at the leftmost operator
+                // to ensure the right side is evaluated first.
+                // For example: 1 + 2 * 3 splits at + (leftmost), giving 1 + (2*3) = 1 + 6 = 7
+                
+                int depth = 0;
+                
+                for (int i = 0; i < tokens.Count; i++)
+                {
+                    var currentToken = tokens[i];
+                    
+                    // Track grouping depth
+                    if (currentToken.Type == TokenType.LEFT_PAREN || 
+                        currentToken.Type == TokenType.LEFT_BRACKET || 
+                        currentToken.Type == TokenType.LEFT_BRACE)
+                    {
+                        depth++;
+                        continue;
+                    }
+                    else if (currentToken.Type == TokenType.RIGHT_PAREN || 
+                             currentToken.Type == TokenType.RIGHT_BRACKET || 
+                             currentToken.Type == TokenType.RIGHT_BRACE)
+                    {
+                        depth--;
+                        continue;
+                    }
+                    
+                    // Only consider operators at depth 0 (not inside grouping constructs)
+                    if (depth == 0 && IsBinaryOperatorDirect(currentToken.Type))
+                    {
+                        // This is a standalone binary operator at depth 0 - return it
+                        return i;
+                    }
+                }
+                
+                return -1;
+            }
+            else
+            {
+                // SAFE LRS MODE (with fallback): Find RIGHTMOST operator (original behavior)
+                // This ensures compatibility with legacy parser fallback
+                for (int i = tokens.Count - 1; i >= 0; i--)
+                {
+                    if (IsBinaryOperatorDirect(tokens[i].Type))
+                    {
+                        return i;
+                    }
+                }
+                
+                return -1;
+            }
         }
         
         /// <summary>

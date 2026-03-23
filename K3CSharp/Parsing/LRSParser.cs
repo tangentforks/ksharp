@@ -16,18 +16,25 @@ namespace K3CSharp.Parsing
         private readonly LRSUnaryParser unaryParser;
         private readonly LRSFunctionParser functionParser;
         private readonly LRSStatementParser statementParser;
+        private readonly LRSGroupingParser groupingParser;
         
         // Parse tree construction mode flag
         public bool BuildParseTree { get; set; }
         
+        // Pure LRS mode flag (enables improved parsing logic when no fallback)
+        public bool PureLRSMode { get; set; }
+        
         public LRSParser(List<Token> tokens, bool buildParseTree = false)
         {
             this.tokens = tokens;
+            this.BuildParseTree = buildParseTree;
+            this.PureLRSMode = false; // Default to Safe LRS mode
             this.expressionParser = new LRSExpressionParser(tokens);
             this.binaryParser = new LRSBinaryParser(tokens, this);
             this.unaryParser = new LRSUnaryParser(this);
             this.functionParser = new LRSFunctionParser(tokens);
             this.statementParser = new LRSStatementParser(tokens, this);
+            this.groupingParser = new LRSGroupingParser(tokens, buildParseTree);
         }
         
         /// <summary>

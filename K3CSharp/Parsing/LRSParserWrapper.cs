@@ -46,6 +46,11 @@ namespace K3CSharp.Parsing
             if (useLRSParser)
             {
                 this.lrsParser = new LRSParser(tokens);
+                // Enable Pure LRS mode when fallback is disabled
+                if (this.lrsParser != null)
+                {
+                    this.lrsParser.PureLRSMode = !enableFallback;
+                }
             }
         }
         
@@ -65,10 +70,6 @@ namespace K3CSharp.Parsing
                 // Try LRS parsing first
                 var position = 0;
                 var result = lrsParser?.ParseExpression(ref position);
-                
-                // Check if debug messages are enabled (disabled by default)
-                // Debug messages are now controlled by parser_config.json
-                // Removed [LRSParserWrapper] messages as requested
                 
                 // Record failure if LRS parsing failed
                 if (result == null)
@@ -194,14 +195,28 @@ namespace K3CSharp.Parsing
             }
             
             var position = 0;
-            var result = lrsParser.ParseExpression(ref position);
+            ASTNode? lastResult = null;
             
-            if (result == null || position < tokens.Count)
+            // Parse all expressions in the script sequentially
+            while (position < tokens.Count)
             {
-                throw new Exception($"LRS parser failed to parse complete expression: {sourceText}");
+                var expr = lrsParser.ParseExpression(ref position);
+                
+                if (expr != null)
+                {
+                    lastResult = expr;
+                }
+                
+                // Skip any remaining newlines or semicolons
+                while (position < tokens.Count && 
+                       (tokens[position].Type == TokenType.NEWLINE || 
+                        tokens[position].Type == TokenType.SEMICOLON))
+                {
+                    position++;
+                }
             }
             
-            return result;
+            return lastResult;
         }
         
         /// <summary>

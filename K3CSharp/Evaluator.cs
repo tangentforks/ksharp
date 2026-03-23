@@ -163,6 +163,7 @@ namespace K3CSharp
                         
                         return statementType switch
                         {
+                            ":" => EvaluateConditionalExpression(evaluatedArgs),
                             "do" => EvaluateDoStatement(evaluatedArgs),
                             "if" => EvaluateIfStatement(evaluatedArgs),
                             "while" => EvaluateWhileStatement(evaluatedArgs),
@@ -527,6 +528,8 @@ namespace K3CSharp
                 { "_vs", Vs },
                 { "_ss", SsFunction },
                 { "_setenv", SetenvFunction },
+                { "_bd", (left, right) => BdFunction(right) },  // _bd is monadic, ignore left
+                { "_db", (left, right) => DbFunction(right) },  // _db is monadic, ignore left
                 { "?", Find }
             };
 
@@ -561,8 +564,8 @@ namespace K3CSharp
             var verb = VerbRegistry.GetVerb(opName);
             if (verb != null)
             {
-                // For registered verbs not explicitly handled, try ApplySymbolVerb
-                return ApplySymbolVerb(opName, left, right);
+                // For registered verbs not explicitly handled, throw an error instead of infinite recursion
+                throw new Exception($"Verb '{opName}' found in registry but not implemented in EvaluateBinaryOperatorWithRegistry");
             }
             throw new Exception($"Unknown binary operator: {opName}");
         }
@@ -2742,6 +2745,31 @@ namespace K3CSharp
             
             // Do statements always return null (type 6) per spec
             return new NullValue();
+        }
+        
+        private K3Value EvaluateConditionalExpression(List<K3Value> args)
+        {
+            // Conditional expression: :[condition;true_expr;false_expr]
+            // Returns the value of true_expr if condition is non-zero, otherwise false_expr
+            // This is different from if[] which returns null
+            
+            if (args.Count < 2)
+            {
+                throw new Exception("Conditional expression requires at least 2 arguments: condition and true expression");
+            }
+            
+            var condition = ToInteger(args[0]);
+            
+            if (condition != 0)
+            {
+                // Condition is true, return true expression
+                return args[1];
+            }
+            else
+            {
+                // Condition is false, return false expression if provided, otherwise null
+                return args.Count >= 3 ? args[2] : new NullValue();
+            }
         }
         
         private K3Value EvaluateIfStatement(List<K3Value> args)
