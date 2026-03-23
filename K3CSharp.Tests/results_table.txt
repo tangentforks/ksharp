@@ -37,7 +37,7 @@
 ║ atom_scalar.k                                      │ @42                  │ 1                    │                      ║
 ║ atom_vector.k                                      │ @1 2 3               │ 0                    │                      ║
 ║ lrs_atomic_parser_basic.k                          │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
-║ lrs_adverb_parser_each.k                           │ (1 2 3) %/ 2         │ 2                    │ 0.5 1.0 1.5          ║
+║ lrs_adverb_parser_each.k                           │ (1 2 3) %\: 2        │ 0.5 1.0 1.5          │                      ║
 ║ lrs_adverb_parser_basic.k                          │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
 ║ lrs_expression_processor_test.k                    │ 1 + 2                │ 3                    │                      ║
 ║ lrs_integration_bracket.k                          │ [1 + 2]              │ 3                    │                      ║
@@ -386,7 +386,7 @@
 ║ monadic_format_float.k                             │ $3.14                │ "3.14"               │                      ║
 ║ monadic_format_vector_simple.k                     │ $1 2 3               │ (,"1";,"2";,"3")     │                      ║
 ║ format_integer.k                                   │ 0$1                  │ ""                   │                      ║
-║ ci_adverb_vector.k                                 │ _ci' 97 94 80        │ Error: Unknown ...   │ "a^P"                ║
+║ ci_adverb_vector.k                                 │ _ci' 97 94 80        │ "a^P"                │                      ║
 ║ adverb_each_count.k                                │ #:' (1 2 3;1 2 3 4 5; 1 2) │ ()                   │ 3 5 2                ║
 ║ format_float_numeric.k                             │ 0.0$1                │ ,"1"                 │                      ║
 ║ form_long.k                                        │ 0j$"42"              │ 42j                  │                      ║
@@ -510,7 +510,7 @@
 ║ floor_operator.k                                   │ _3.7                 │ 3                    │                      ║
 ║ adverb_backslash_colon_basic.k                     │ 1 2 3 +\: 4 5 6      │ (5 6 7;6 7 8;7 ...   │                      ║
 ║ adverb_slash_colon_basic.k                         │ 1 2 3 +/: 4 5 6      │ (5 6 7;6 7 8;7 ...   │                      ║
-║ adverb_tick_colon_basic.k                          │ -': 4 8 9 12 20      │ -4 -4 -1 -3 -8       │ 4 1 3 8              ║
+║ adverb_tick_colon_basic.k                          │ -': 4 8 9 12 20      │ 4 1 3 8              │                      ║
 ║ amend_apply.k                                      │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10) │ (1 2 13 4 5;6 7...   │                      ║
 ║ amend_dot_test.k                                   │ .[1 2 3; 1; +; 10]   │ 1 12 3               │                      ║
 ║ amend_parenthesized.k                              │ (.) . (1 2 3; 0; +; 10) │ 11 2 3               │                      ║
@@ -737,13 +737,13 @@
 ║ math_dot_basic.k                                   │ 1 2 3 _dot 4 5 6     │ 32                   │                      ║
 ║ math_dot_matrix_matrix.k                           │ (1 2 3;4 5 6) _dot (7 8 9;10 11 12) │ 47 71 99             │                      ║
 ║ math_dot_matrix_2x2.k                              │ (1 2;3 4) _dot (5 6;7 8) │ 26 44                │                      ║
-║ math_dot_matrix_each_right.k                       │ (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12) │ Error: Unknown ...   │ (47 64 81;52 71...   ║
-║ math_dot_vector_each_left.k                        │ (1 2) _dot\: (3 4;5 6) │ Error: Unknown ...   │ (8 10;16 20)         ║
-║ adverb_complex_vector_each_right.k                 │ 10 11 12 +/: ((1 2 3);(4 5 6);(7 8 9)) │ Error: Cannot a...   │ (11 13 15;14 16...   ║
-║ adverb_complex_matrix_each_right.k                 │ ((1 2 3);(4 5 6);(7 8 9)) +/: 10 11 12 │ (11 13 15;14 16...   │ ((11 12 13;14 1...   ║
+║ math_dot_matrix_each_right.k                       │ (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12) │ Error: Numeric ...   │ (47 64 81;52 71...   ║
+║ math_dot_vector_each_left.k                        │ (1 2) _dot\: (3 4;5 6) │ (8 10;16 20)         │                      ║
+║ adverb_complex_vector_each_right.k                 │ 10 11 12 +/: ((1 2 3);(4 5 6);(7 8 9)) │ (11 13 15;14 16...   │                      ║
+║ adverb_complex_matrix_each_right.k                 │ ((1 2 3);(4 5 6);(7 8 9)) +/: 10 11 12 │ ((11 12 13;14 1...   │                      ║
 ║ adverb_chaining_join_each_left.k                   │ ((1 2 3);(4 5 6);(7 8 9)),/:\:((9 8 7);(6 5 4);(3 2 1)) │ ((1 2 3 9 8 7;1...   │                      ║
 ║ adverb_complex_string_each_left.k                  │ (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),/:\:"  " │ ((("hello";"wor...   │                      ║
-║ join_each_left.k                                   │ (1 2 3),\: (4 5 6)   │ (1 2 3 4;1 2 3 ...   │ (1 4 5 6;2 4 5 ...   ║
+║ join_each_left.k                                   │ (1 2 3),\: (4 5 6)   │ (1 4 5 6;2 4 5 ...   │                      ║
 ║ test_nested_adverb.k                               │ 1 2 3 ,/:\: 4 5 6    │ ((1 4;1 5;1 6);...   │                      ║
 ║ math_lsq_non_square.k                              │ // Non-square matrix: 2x3 matrix (more columns than rows) │ -1.0 2.0             │                      ║
 ║ math_lsq_high_rank.k                               │ // Rectangular matrix: 2x4 matrix (more columns than rows) │ -8.0 9.0             │                      ║
@@ -851,7 +851,7 @@
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 807/847 tests passed (95.3%)                                                                               ║
+║ SUMMARY: 814/847 tests passed (96.1%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -865,11 +865,6 @@ Test: anonymous_function_scan_adverb.k
 Input: {x*%y}\10 20 30
 Expected: (10;0.5;0.01666667)
 Actual: Error: Function execution not yet implemented: x*%y
-──────────────────────────────────────────────────────────────────────────
-Test: lrs_adverb_parser_each.k
-Input: (1 2 3) %/ 2
-Expected: 0.5 1.0 1.5
-Actual: 2
 ──────────────────────────────────────────────────────────────────────────
 Test: named_function_over.k
 Input: f:{x*%y};f/10 20 30
@@ -890,11 +885,6 @@ Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: 100
-──────────────────────────────────────────────────────────────────────────
-Test: ci_adverb_vector.k
-Input: _ci' 97 94 80
-Expected: "a^P"
-Actual: Error: Unknown verb: _ci
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_each_count.k
 Input: #:' (1 2 3;1 2 3 4 5; 1 2)
@@ -941,35 +931,10 @@ Input: // Test cases to verify verb query extensions work correctly
 Expected: 6
 Actual: Error: Cannot add Integer to Symbol
 ──────────────────────────────────────────────────────────────────────────
-Test: adverb_tick_colon_basic.k
-Input: -': 4 8 9 12 20
-Expected: 4 1 3 8
-Actual: -4 -4 -1 -3 -8
-──────────────────────────────────────────────────────────────────────────
 Test: math_dot_matrix_each_right.k
 Input: (1 2 3;4 5 6) _dot/: +(7 8 9;10 11 12)
 Expected: (47 64 81;52 71 90;57 78 99)
-Actual: Error: Unknown verb: /:
-──────────────────────────────────────────────────────────────────────────
-Test: math_dot_vector_each_left.k
-Input: (1 2) _dot\: (3 4;5 6)
-Expected: (8 10;16 20)
-Actual: Error: Unknown verb: \:
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_complex_vector_each_right.k
-Input: 10 11 12 +/: ((1 2 3);(4 5 6);(7 8 9))
-Expected: (11 13 15;14 16 18;17 19 21)
-Actual: Error: Cannot add Integer to Vector
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_complex_matrix_each_right.k
-Input: ((1 2 3);(4 5 6);(7 8 9)) +/: 10 11 12
-Expected: ((11 12 13;14 15 16;17 18 19);(12 13 14;15 16 17;18 19 20);(13 14 15;16 17 18;19 20 21))
-Actual: (11 13 15;14 16 18;17 19 21)
-──────────────────────────────────────────────────────────────────────────
-Test: join_each_left.k
-Input: (1 2 3),\: (4 5 6)
-Expected: (1 4 5 6;2 4 5 6;3 4 5 6)
-Actual: (1 2 3 4;1 2 3 5;1 2 3 6)
+Actual: Error: Numeric value required
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_object_management.k
 Input: str: "hello";str _sethint `object; str . ToUpper

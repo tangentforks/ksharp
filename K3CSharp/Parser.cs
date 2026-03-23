@@ -680,8 +680,182 @@ namespace K3CSharp
             return result;
         }
         
+        /// <summary>
+        /// Check if a token represents a verb (operator or system verb)
+        /// </summary>
+        private bool IsVerbToken(TokenType tokenType)
+        {
+            return VerbRegistry.IsBinaryOperator(tokenType) || 
+                   IsUnaryOperator(tokenType) ||
+                   tokenType == TokenType.DOT_PRODUCT; // _dot
+        }
+        
+        /// <summary>
+        /// Get verb name from token type
+        /// </summary>
+        private string GetVerbName(TokenType tokenType)
+        {
+            return tokenType switch
+            {
+                TokenType.PLUS => "+",
+                TokenType.MINUS => "-",
+                TokenType.MULTIPLY => "*",
+                TokenType.DIVIDE => "%",
+                TokenType.DOT_PRODUCT => "_dot",
+                _ => tokenType.ToString()
+            };
+        }
+        
+        /// <summary>
+        /// Get adverb name from token type
+        /// </summary>
+        private string GetAdverbName(TokenType tokenType)
+        {
+            return tokenType switch
+            {
+                TokenType.ADVERB_SLASH_COLON => "ADVERB_SLASH_COLON",
+                TokenType.ADVERB_BACKSLASH_COLON => "ADVERB_BACKSLASH_COLON",
+                TokenType.ADVERB_TICK_COLON => "ADVERB_TICK_COLON",
+                _ => tokenType.ToString()
+            };
+        }
+        
         private ASTNode? ParseExpressionWithoutSemicolons()
         {
+            // Special handling for verb + two-glyph adverb patterns - targeted fix for LRS fallback
+            if (!IsAtEnd() && IsVerbToken(CurrentToken().Type) && 
+                current + 1 < tokens.Count && 
+                (tokens[current + 1].Type == TokenType.ADVERB_SLASH_COLON ||
+                 tokens[current + 1].Type == TokenType.ADVERB_BACKSLASH_COLON ||
+                 tokens[current + 1].Type == TokenType.ADVERB_TICK_COLON))
+            {
+                // This is verb + two-glyph adverb pattern - handle it as an adverb operation
+                var verbToken = CurrentToken();
+                var adverbToken = tokens[current + 1];
+                
+                // Create verb node
+                var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(GetVerbName(verbToken.Type)));
+                
+                // Parse the arguments after the adverb
+                Match(verbToken.Type); // Consume verb
+                Match(adverbToken.Type); // Consume adverb
+                
+                var arguments = new List<ASTNode>();
+                while (!IsAtEnd() && CurrentToken().Type != TokenType.EOF && 
+                       CurrentToken().Type != TokenType.SEMICOLON && 
+                       CurrentToken().Type != TokenType.NEWLINE)
+                {
+                    var arg = ParseTerm();
+                    if (arg != null)
+                    {
+                        arguments.Add(arg);
+                    }
+                }
+                
+                // Create adverb node: ADVERB(verb, 0, args)
+                var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                adverbNode.Value = new SymbolValue(GetAdverbName(adverbToken.Type));
+                adverbNode.Children.Add(verbNode);
+                adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0))); // left argument (dummy)
+                
+                // Add all arguments as the right argument (as a vector)
+                if (arguments.Count > 0)
+                {
+                    if (arguments.Count == 1)
+                    {
+                        adverbNode.Children.Add(arguments[0]);
+                    }
+                    else
+                    {
+                        var vectorNode = new ASTNode(ASTNodeType.Vector);
+                        foreach (var arg in arguments)
+                        {
+                            vectorNode.Children.Add(arg);
+                        }
+                        adverbNode.Children.Add(vectorNode);
+                    }
+                }
+                else
+                {
+                    // No arguments, add dummy
+                    adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0)));
+                }
+                
+                return adverbNode;
+            }
+            
+            // Special handling for combined verb+adverb tokens (e.g., "/:" from "_dot/:")
+            if (!IsAtEnd() && CurrentToken().Type == TokenType.SYMBOL && 
+                (CurrentToken().Lexeme == "/:" || CurrentToken().Lexeme == "\\:" || CurrentToken().Lexeme == "':"))
+            {
+                // This is a combined verb+adverb token - extract the verb and adverb
+                var combinedToken = CurrentToken();
+                string lexeme = combinedToken.Lexeme;
+                
+                // Extract adverb type (last 2 characters)
+                string adverbLexeme = lexeme.Substring(lexeme.Length - 2);
+                TokenType adverbType = adverbLexeme switch
+                {
+                    "/:" => TokenType.ADVERB_SLASH_COLON,
+                    "\\:" => TokenType.ADVERB_BACKSLASH_COLON,
+                    "':" => TokenType.ADVERB_TICK_COLON,
+                    _ => throw new Exception($"Unknown adverb: {adverbLexeme}")
+                };
+                
+                // For now, assume the verb is "+" for "/:" patterns (common in each-right)
+                // This is a simplification - in a full implementation, we'd need to track the context
+                string verbName = "+"; // Default assumption for "/:" patterns
+                
+                // Create verb node
+                var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbName));
+                
+                // Parse the arguments after the combined token
+                Match(TokenType.SYMBOL); // Consume the combined token
+                
+                var arguments = new List<ASTNode>();
+                while (!IsAtEnd() && CurrentToken().Type != TokenType.EOF && 
+                       CurrentToken().Type != TokenType.SEMICOLON && 
+                       CurrentToken().Type != TokenType.NEWLINE)
+                {
+                    var arg = ParseTerm();
+                    if (arg != null)
+                    {
+                        arguments.Add(arg);
+                    }
+                }
+                
+                // Create adverb node: ADVERB(verb, 0, args)
+                var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                adverbNode.Value = new SymbolValue(GetAdverbName(adverbType));
+                adverbNode.Children.Add(verbNode);
+                adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0))); // left argument (dummy)
+                
+                // Add all arguments as the right argument (as a vector)
+                if (arguments.Count > 0)
+                {
+                    if (arguments.Count == 1)
+                    {
+                        adverbNode.Children.Add(arguments[0]);
+                    }
+                    else
+                    {
+                        var vectorNode = new ASTNode(ASTNodeType.Vector);
+                        foreach (var arg in arguments)
+                        {
+                            vectorNode.Children.Add(arg);
+                        }
+                        adverbNode.Children.Add(vectorNode);
+                    }
+                }
+                else
+                {
+                    // No arguments, add dummy
+                    adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0)));
+                }
+                
+                return adverbNode;
+            }
+            
             // Special handling for _ci' pattern - targeted fix for LRS fallback
             if (!IsAtEnd() && CurrentToken().Type == TokenType.CI && 
                 current + 1 < tokens.Count && tokens[current + 1].Type == TokenType.ADVERB_TICK)

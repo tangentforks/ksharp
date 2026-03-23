@@ -728,6 +728,41 @@ namespace K3CSharp
                 return HandleAdverbTick(verbValue, new IntegerValue(0), argsVector);
             }
             
+            // Special handling for two-glyph adverbs with multiple children (adverb evaluation)
+            if ((op.Value.ToString() == "ADVERB_SLASH_COLON" || 
+                 op.Value.ToString() == "ADVERB_BACKSLASH_COLON" || 
+                 op.Value.ToString() == "ADVERB_TICK_COLON") && node.Children.Count == 3)
+            {
+                // This is an adverb operation: ADVERB(verb, 0, args)
+                // Handle this using the adverb evaluation pipeline
+                
+                // Get the verb (first child)
+                var verbValue = Evaluate(node.Children[0]);
+                
+                // Get the dummy left argument (second child)
+                var leftArg = Evaluate(node.Children[1]);
+                
+                // Get the arguments vector (third child)
+                var argsVector = Evaluate(node.Children[2]);
+                
+                Console.WriteLine($"[DEBUG] Two-glyph adverb: {op.Value}, verb: {verbValue}, leftArg: {leftArg}, argsVector: {argsVector}");
+                Console.WriteLine($"[DEBUG] Verb type: {verbValue?.GetType().Name}, verb value: {verbValue}");
+                
+                // Handle the adverb based on its type
+                if (verbValue == null)
+                {
+                    throw new Exception($"Verb value is null for adverb {op.Value}");
+                }
+                
+                return op.Value.ToString() switch
+                {
+                    "ADVERB_SLASH_COLON" => ApplyAdverbSlashColon(verbValue, leftArg, argsVector),
+                    "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(verbValue, leftArg, argsVector),
+                    "ADVERB_TICK_COLON" => ApplyAdverbTickColon(verbValue, leftArg, argsVector),
+                    _ => throw new Exception($"Unknown adverb: {op.Value}")
+                };
+            }
+            
             // Handle binary operators
             if (node.Children.Count == 2)
             {

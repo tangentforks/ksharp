@@ -571,13 +571,69 @@ namespace K3CSharp.Parsing
         /// <returns>AST node representing the adverb operation, or null if no adverb found</returns>
         private ASTNode? ParseAdverbExpression(List<Token> expressionTokens)
         {
-            // CONSERVATIVE APPROACH: Only handle very specific, simple cases
-            // Start with the most basic adverb patterns to avoid breaking the system
+            // Debug: Check if we have any two-glyph adverbs in the expression
+            bool hasTwoGlyphAdverb = expressionTokens.Any(t => t.Type == TokenType.ADVERB_SLASH_COLON ||
+                                                           t.Type == TokenType.ADVERB_BACKSLASH_COLON ||
+                                                           t.Type == TokenType.ADVERB_TICK_COLON);
+            if (hasTwoGlyphAdverb)
+            {
+                Console.WriteLine($"[DEBUG] ParseAdverbExpression called with {expressionTokens.Count} tokens containing two-glyph adverb");
+                Console.WriteLine($"[DEBUG] Tokens: {string.Join(", ", expressionTokens.Select(t => $"{t.Type}({t.Lexeme})"))}");
+            }
             
             // CONSERVATIVE APPROACH: Only handle very specific, simple cases
             // Start with the most basic adverb patterns to avoid breaking the system
             
-            // Case 1: Simple two-glyph adverb with simple left and right sides
+            // CONSERVATIVE APPROACH: Only handle very specific, simple cases
+            // Start with the most basic adverb patterns to avoid breaking the system
+            
+            // Case 1: Verb + two-glyph adverb patterns
+            // Pattern: verb/: arguments, verb\: arguments, etc.
+            if (expressionTokens.Count >= 3)
+            {
+                // Debug: Check if we have a two-glyph adverb
+                if (expressionTokens[1].Type == TokenType.ADVERB_SLASH_COLON ||
+                    expressionTokens[1].Type == TokenType.ADVERB_BACKSLASH_COLON ||
+                    expressionTokens[1].Type == TokenType.ADVERB_TICK_COLON)
+                {
+                    Console.WriteLine($"[DEBUG] Found two-glyph adverb: {expressionTokens[1].Lexeme}, verb: {expressionTokens[0].Lexeme}");
+                }
+                
+                // Check for verb + two-glyph adverb at the beginning
+                if (IsVerbToken(expressionTokens[0].Type) &&
+                    (expressionTokens[1].Type == TokenType.ADVERB_SLASH_COLON ||
+                     expressionTokens[1].Type == TokenType.ADVERB_BACKSLASH_COLON ||
+                     expressionTokens[1].Type == TokenType.ADVERB_TICK_COLON))
+                {
+                    Console.WriteLine($"[DEBUG] Verb + two-glyph adverb pattern detected: {expressionTokens[0].Lexeme}{expressionTokens[1].Lexeme}");
+                    
+                    // Check that remaining tokens are valid arguments
+                    bool hasValidArgs = true;
+                    for (int i = 2; i < expressionTokens.Count; i++)
+                    {
+                        if (!LRSAtomicParser.IsAtomicToken(expressionTokens[i].Type) &&
+                            expressionTokens[i].Type != TokenType.LEFT_PAREN &&
+                            expressionTokens[i].Type != TokenType.LEFT_BRACE &&
+                            expressionTokens[i].Type != TokenType.LEFT_BRACKET)
+                        {
+                            hasValidArgs = false;
+                            break;
+                        }
+                    }
+                    
+                    if (hasValidArgs)
+                    {
+                        Console.WriteLine($"[DEBUG] Arguments are valid, calling ParseVerbTwoGlyphAdverb");
+                        return ParseVerbTwoGlyphAdverb(expressionTokens);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[DEBUG] Arguments are not valid");
+                    }
+                }
+            }
+            
+            // Case 2: Simple two-glyph adverb with simple left and right sides
             // Pattern: (vector) %\: number
             if (expressionTokens.Count >= 4)
             {
@@ -621,10 +677,121 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
+        /// Check if a token represents a verb (operator or system verb)
+        /// </summary>
+        private bool IsVerbToken(TokenType tokenType)
+        {
+            return VerbRegistry.IsBinaryOperator(tokenType) || 
+                   IsUnaryOperator(tokenType) ||
+                   tokenType == TokenType.DOT_PRODUCT; // _dot
+        }
+        
+        /// <summary>
+        /// Check if a token represents a unary operator
+        /// </summary>
+        private bool IsUnaryOperator(TokenType tokenType)
+        {
+            return tokenType == TokenType.MINUS || 
+                   tokenType == TokenType.PLUS ||
+                   tokenType == TokenType.NOT ||
+                   tokenType == TokenType.ATOM ||
+                   tokenType == TokenType.MAKE ||
+                   tokenType == TokenType.HASH ||
+                   tokenType == TokenType.TYPE ||
+                   tokenType == TokenType.STRING_REPRESENTATION;
+        }
+        
+        /// <summary>
+        /// Parse verb + two-glyph adverb pattern
+        /// </summary>
+        /// <param name="expressionTokens">Tokens to parse</param>
+        /// <returns>AST node representing the adverb operation</returns>
+        private ASTNode ParseVerbTwoGlyphAdverb(List<Token> expressionTokens)
+        {
+            var verbToken = expressionTokens[0];
+            var adverbToken = expressionTokens[1];
+            
+            // Create verb node
+            var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(GetVerbName(verbToken.Type)));
+            
+            // Parse arguments after the adverb
+            var arguments = new List<ASTNode>();
+            for (int i = 2; i < expressionTokens.Count; i++)
+            {
+                var arg = LRSAtomicParser.ParseAtomicToken(expressionTokens[i]);
+                if (arg != null)
+                {
+                    arguments.Add(arg);
+                }
+            }
+            
+            // Create adverb node: ADVERB(verb, 0, args)
+            var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+            adverbNode.Value = new SymbolValue(GetAdverbName(adverbToken.Type));
+            adverbNode.Children.Add(verbNode);
+            adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0))); // left argument (dummy)
+            
+            // Add all arguments as the right argument (as a vector)
+            if (arguments.Count > 0)
+            {
+                if (arguments.Count == 1)
+                {
+                    adverbNode.Children.Add(arguments[0]);
+                }
+                else
+                {
+                    var vectorNode = new ASTNode(ASTNodeType.Vector);
+                    foreach (var arg in arguments)
+                    {
+                        vectorNode.Children.Add(arg);
+                    }
+                    adverbNode.Children.Add(vectorNode);
+                }
+            }
+            else
+            {
+                // No arguments, add dummy
+                adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0)));
+            }
+            
+            return adverbNode;
+        }
+        
+        /// <summary>
+        /// Get verb name from token type
+        /// </summary>
+        private string GetVerbName(TokenType tokenType)
+        {
+            return tokenType switch
+            {
+                TokenType.PLUS => "+",
+                TokenType.MINUS => "-",
+                TokenType.MULTIPLY => "*",
+                TokenType.DIVIDE => "%",
+                TokenType.DOT_PRODUCT => "_dot",
+                _ => tokenType.ToString()
+            };
+        }
+        
+        /// <summary>
+        /// Get adverb name from token type
+        /// </summary>
+        private string GetAdverbName(TokenType tokenType)
+        {
+            return tokenType switch
+            {
+                TokenType.ADVERB_SLASH_COLON => "ADVERB_SLASH_COLON",
+                TokenType.ADVERB_BACKSLASH_COLON => "ADVERB_BACKSLASH_COLON",
+                TokenType.ADVERB_TICK_COLON => "ADVERB_TICK_COLON",
+                _ => tokenType.ToString()
+            };
+        }
+        
+        /// <summary>
         /// Parse simple two-glyph adverb (conservative approach)
         /// </summary>
         /// <param name="expressionTokens">Tokens to parse</param>
-        /// <returns>AST node for the adverb operation</returns>
+        /// <returns>AST node representing the adverb operation</returns>
         private ASTNode ParseSimpleTwoGlyphAdverb(List<Token> expressionTokens)
         {
             // Create a simple placeholder node that represents %\: operation
