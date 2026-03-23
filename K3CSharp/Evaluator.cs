@@ -573,7 +573,8 @@ namespace K3CSharp
         private K3Value EvaluateBinaryOp(ASTNode node)
         {
             if (node.Value is not SymbolValue op) throw new Exception("Binary operator must have a symbol value");
-
+            
+            
             // Handle unary operators (which are implemented as binary ops with one child)
             if (node.Children.Count == 1)
             {
@@ -688,6 +689,45 @@ namespace K3CSharp
                 };
             }
 
+            // Special handling for ' adverb with multiple children (adverb evaluation)
+            if (op.Value.ToString() == "'" && node.Children.Count == 2)
+            {
+                // This is an adverb operation: verb' vector_of_args
+                // Handle this using the adverb evaluation pipeline
+                
+                // Get the verb (first child)
+                var verbValue = Evaluate(node.Children[0]);
+                
+                // Get the arguments vector (second child)
+                var argsVector = Evaluate(node.Children[1]);
+                
+                // Handle the ' adverb (each) - pass the verb and all arguments
+                // For _ci' pattern, we need to apply _ci to each argument individually
+                if (verbValue is SymbolValue verbSymbol && verbSymbol.Value == "_ci")
+                {
+                    // Apply _ci to each argument in the vector
+                    var result = new List<K3Value>();
+                    if (argsVector is VectorValue vector)
+                    {
+                        foreach (var arg in vector.Elements)
+                        {
+                            // Apply _ci to this argument
+                            var ciResult = Ci(arg);
+                            result.Add(ciResult);
+                        }
+                    }
+                    else
+                    {
+                        // Single argument, not a vector
+                        var ciResult = Ci(argsVector);
+                        result.Add(ciResult);
+                    }
+                    return new VectorValue(result);
+                }
+                
+                return HandleAdverbTick(verbValue, new IntegerValue(0), argsVector);
+            }
+            
             // Handle binary operators
             if (node.Children.Count == 2)
             {
@@ -833,6 +873,7 @@ namespace K3CSharp
             }
             else
             {
+                
                 // Debug output to understand the structure
                 Console.WriteLine($"[DEBUG] BinaryOp with {node.Children.Count} children, op='{op.Value}', opType={op.Value?.GetType().Name}");
                 if (node.Children.Count > 0)

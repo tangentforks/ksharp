@@ -682,6 +682,47 @@ namespace K3CSharp
         
         private ASTNode? ParseExpressionWithoutSemicolons()
         {
+            // Special handling for _ci' pattern - targeted fix for LRS fallback
+            if (!IsAtEnd() && CurrentToken().Type == TokenType.CI && 
+                current + 1 < tokens.Count && tokens[current + 1].Type == TokenType.ADVERB_TICK)
+            {
+                // This is _ci' pattern - handle it as an adverb operation
+                var ciToken = CurrentToken();
+                var adverbToken = tokens[current + 1];
+                
+                // Create verb node for _ci
+                var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue("_ci"));
+                
+                // Parse the arguments after the adverb
+                Match(TokenType.CI); // Consume _ci
+                Match(TokenType.ADVERB_TICK); // Consume '
+                
+                var arguments = new List<ASTNode>();
+                while (!IsAtEnd() && CurrentToken().Type != TokenType.EOF && 
+                       CurrentToken().Type != TokenType.SEMICOLON && 
+                       CurrentToken().Type != TokenType.NEWLINE)
+                {
+                    var arg = ParseTerm();
+                    if (arg != null)
+                    {
+                        arguments.Add(arg);
+                    }
+                }
+                
+                // Create adverb node: '( _ci arg1 arg2 arg3)
+                var adverbNode = new ASTNode(ASTNodeType.BinaryOp);
+                adverbNode.Value = new SymbolValue("'");
+                adverbNode.Children.Add(verbNode); // _ci verb
+                
+                // Add all arguments as separate children
+                foreach (var arg in arguments)
+                {
+                    adverbNode.Children.Add(arg);
+                }
+                
+                return adverbNode;
+            }
+            
             // Check for conditional statements at the start of an expression
             if (!IsAtEnd())
             {

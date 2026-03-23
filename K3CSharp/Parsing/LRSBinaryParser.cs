@@ -62,6 +62,14 @@ namespace K3CSharp.Parsing
                     // Only consider operators at depth 0 (not inside grouping constructs)
                     if (depth == 0 && IsBinaryOperatorDirect(currentToken.Type))
                     {
+                        // NEW: Check if next token is an adverb (verb+adverb pattern)
+                        if (i + 1 < tokens.Count && IsAdverbToken(tokens[i + 1].Type))
+                        {
+                            // This is a verb+adverb pattern - skip both
+                            i++; // Skip the adverb too
+                            continue;
+                        }
+                        
                         // This is a standalone binary operator at depth 0 - return it
                         return i;
                     }
@@ -280,6 +288,16 @@ namespace K3CSharp.Parsing
         public static bool CouldBeBinaryOperator(TokenType tokenType)
         {
             return IsBinaryOperatorDirect(tokenType);
+        }
+        
+        /// <summary>
+        /// Check if token is an adverb
+        /// </summary>
+        /// <param name="tokenType">Token type to check</param>
+        /// <returns>True if token is an adverb</returns>
+        private bool IsAdverbToken(TokenType tokenType)
+        {
+            return VerbRegistry.IsAdverbToken(tokenType);
         }
     }
 }

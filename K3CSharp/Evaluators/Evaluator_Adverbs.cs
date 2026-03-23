@@ -69,28 +69,40 @@ namespace K3CSharp
 
         private K3Value ApplyUnaryVerb(string verbName, K3Value operand)
         {
-            return verbName switch
+            // Use VerbRegistry to handle all monadic verbs dynamically
+            if (VerbRegistry.HasVerb(verbName))
             {
-                "+" => operand,  // Identity operation
-                "-" => Negate(operand),
-                "*" => First(operand),
-                "%" => Reciprocal(operand),
-                "&" => Where(operand),  // Where operator
-                "|" => Reverse(operand),
-                "^" => Shape(operand),
-                "!" => Enumerate(operand),
-                "," => Enlist(operand),
-                "#" => Count(operand),
-                "_" => Floor(operand),
-                "?" => Unique(operand),
-                "=" => Group(operand),
-                "~" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue)) 
-                    ? AttributeHandle(operand) 
-                    : LogicalNegate(operand),
-                "_ci" => Ci(operand),
-                "_ic" => Ic(operand),
-                _ => throw new Exception($"Unknown unary verb: {verbName}")
-            };
+                var verbInfo = VerbRegistry.GetVerb(verbName);
+                if (verbInfo != null && verbInfo.SupportedArities.Contains(1))
+                {
+                    // Handle system verbs with dedicated methods
+                    return verbName switch
+                    {
+                        "_ci" => Ci(operand),
+                        "_ic" => Ic(operand),
+                        // Basic operators
+                        "+" => operand,  // Identity operation
+                        "-" => Negate(operand),
+                        "*" => First(operand),
+                        "%" => Reciprocal(operand),
+                        "&" => Where(operand),
+                        "|" => Reverse(operand),
+                        "^" => Shape(operand),
+                        "!" => Enumerate(operand),
+                        "," => Enlist(operand),
+                        "#" => Count(operand),
+                        "_" => Floor(operand),
+                        "?" => Unique(operand),
+                        "=" => Group(operand),
+                        "~" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue)) 
+                            ? AttributeHandle(operand) 
+                            : LogicalNegate(operand),
+                        _ => throw new Exception($"Verb '{verbName}' is registered as monadic but not implemented in ApplyUnaryVerb")
+                    };
+                }
+            }
+            
+            throw new Exception($"Unknown unary verb: {verbName}");
         }
 
         private K3Value ApplySymbolVerbWithOperator(K3Value verb, K3Value left, K3Value right)
@@ -160,6 +172,23 @@ namespace K3CSharp
 
         public K3Value HandleAdverbTick(K3Value verb, K3Value left, K3Value right)
         {
+            // Special handling for system verbs with each adverb
+            if (verb is SymbolValue verbSymbol)
+            {
+                var verbName = verbSymbol.Value;
+                if (verbName == "_ci")
+                {
+                    // Handle _ci' pattern - apply _ci to each element
+                    return HandleCiEach(left, right);
+                }
+                else if (verbName == "_ic")
+                {
+                    // Handle _ic' pattern - apply _ic to each element
+                    return HandleIcEach(left, right);
+                }
+                // Add more system verbs as needed
+            }
+            
             // Check if this is a monadic verb with each (left is dummy value)
             if (left is IntegerValue leftInt && leftInt.Value == 0 && right is VectorValue dataVec)
             {
@@ -169,6 +198,66 @@ namespace K3CSharp
             
             // Default to 3-argument Each for dyadic verbs
             return Each(verb, left, right);
+        }
+        
+        /// <summary>
+        /// Handle _ci' each adverb pattern
+        /// </summary>
+        /// <param name="left">Left argument (usually dummy value)</param>
+        /// <param name="right">Right argument (data vector)</param>
+        /// <returns>Vector of characters</returns>
+        private K3Value HandleCiEach(K3Value left, K3Value right)
+        {
+            // Apply _ci to each element in the right argument
+            if (right is VectorValue dataVec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in dataVec.Elements)
+                {
+                    // Apply _ci monadic operation
+                    var ciResult = Ci(element);
+                    result.Add(ciResult);
+                }
+                
+                // If all results are characters, return as character vector
+                if (result.All(r => r is CharacterValue))
+                {
+                    return new VectorValue(result);
+                }
+                else
+                {
+                    return new VectorValue(result);
+                }
+            }
+            
+            // If right is not a vector, apply _ci to it directly
+            return Ci(right);
+        }
+        
+        /// <summary>
+        /// Handle _ic' each adverb pattern
+        /// </summary>
+        /// <param name="left">Left argument (usually dummy value)</param>
+        /// <param name="right">Right argument (data vector)</param>
+        /// <returns>Vector of integers</returns>
+        private K3Value HandleIcEach(K3Value left, K3Value right)
+        {
+            // Apply _ic to each element in the right argument
+            if (right is VectorValue dataVec)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in dataVec.Elements)
+                {
+                    // Apply _ic monadic operation
+                    var icResult = Ic(element);
+                    result.Add(icResult);
+                }
+                
+                return new VectorValue(result);
+            }
+            
+            // If right is not a vector, apply _ic to it directly
+            return Ic(right);
         }
 
         private K3Value ApplyAdverbTick(K3Value verb, K3Value left, K3Value right)

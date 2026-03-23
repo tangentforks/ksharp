@@ -89,7 +89,7 @@ namespace K3CSharp.Parsing
                 throw new Exception($"Expected expression after adverb {adverbToken.Lexeme}");
 
             // Parse the left argument (verb) - for two-glyph adverbs, the verb must be immediately to the left
-            var leftArg = ParseVerbImmediateLeft(ref position);
+            var leftArg = ParseVerbForAdverb(tokens, ref position, adverbToken);
             if (leftArg == null)
                 throw new Exception($"Expected verb before adverb {adverbToken.Lexeme}");
 
@@ -121,7 +121,7 @@ namespace K3CSharp.Parsing
                 throw new Exception($"Expected expression after adverb {adverbToken.Lexeme}");
 
             // Parse the left argument (verb) - must be immediately to the left
-            var leftArg = ParseVerbImmediateLeft(ref position);
+            var leftArg = ParseVerbForAdverb(tokens, ref position, adverbToken);
             if (leftArg == null)
                 throw new Exception($"Expected verb before adverb {adverbToken.Lexeme}");
 
@@ -150,27 +150,38 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Parse verb that must be immediately to the left of adverb
+        /// Parse verb that precedes an adverb
         /// </summary>
-        private ASTNode? ParseVerbImmediateLeft(ref int position)
+        /// <param name="tokens">Tokens to parse</param>
+        /// <param name="position">Current position (should be at verb)</param>
+        /// <param name="adverbToken">The adverb token that follows</param>
+        /// <returns>AST node for the verb, or null if not found</returns>
+        private ASTNode? ParseVerbForAdverb(List<Token> tokens, ref int position, Token adverbToken)
         {
-            if (position >= tokens.Count)
-                return null;
-
+            if (position >= tokens.Count) return null;
+            
             var verbToken = tokens[position];
             
             // Look backwards to find the verb immediately to the left
             // This is a simplified implementation - in practice, we'd need to scan backwards
             // For now, we'll handle the case where the verb is right before the adverb position
             
-            // Handle atomic verbs (identifiers, symbols)
+            // Handle system verbs and other registered verbs using VerbRegistry
+            string? verbName = GetVerbNameFromToken(verbToken);
+            if (verbName != null && VerbRegistry.HasVerb(verbName))
+            {
+                position++;
+                return ASTNode.MakeLiteral(new SymbolValue(verbName));
+            }
+            
+            // Handle atomic verbs (identifiers, symbols) as fallback
             if (LRSAtomicParser.IsAtomicToken(verbToken.Type))
             {
                 position++;
                 return LRSAtomicParser.ParseAtomicToken(verbToken);
             }
             
-            // Handle operator verbs
+            // Handle operator verbs as fallback
             if (IsBinaryOperator(verbToken.Type))
             {
                 position++;
@@ -178,6 +189,48 @@ namespace K3CSharp.Parsing
             }
             
             return null;
+        }
+        
+        /// <summary>
+        /// Get verb name from token using VerbRegistry mapping
+        /// </summary>
+        /// <param name="token">Token to convert</param>
+        /// <returns>Verb name or null if not a verb</returns>
+        private string? GetVerbNameFromToken(Token token)
+        {
+            return token.Type switch
+            {
+                TokenType.CI => "_ci",
+                TokenType.IC => "_ic",
+                TokenType.SV => "_sv",
+                TokenType.SS => "_ss",
+                TokenType.SM => "_sm",
+                TokenType.DRAW => "_draw",
+                TokenType.GETENV => "_getenv",
+                TokenType.SIZE => "_size",
+                TokenType.DIRECTORY => "_d",
+                TokenType.TIME => "_t",
+                TokenType.EVAL => "_eval",
+                TokenType.PARSE => "_parse",
+                TokenType.PLUS => "+",
+                TokenType.MINUS => "-",
+                TokenType.MULTIPLY => "*",
+                TokenType.DIVIDE => "%",
+                TokenType.POWER => "^",
+                TokenType.MODULUS => "!",
+                TokenType.LESS => "<",
+                TokenType.GREATER => ">",
+                TokenType.EQUAL => "=",
+                TokenType.MATCH => "~",
+                TokenType.JOIN => ",",
+                TokenType.HASH => "#",
+                TokenType.DOLLAR => "$",
+                TokenType.QUESTION => "?",
+                TokenType.UNDERSCORE => "_",
+                TokenType.ATOM => "@",
+                TokenType.MAKE => ".",
+                _ => null
+            };
         }
         
         /// <summary>
@@ -344,8 +397,8 @@ namespace K3CSharp.Parsing
             if (string.IsNullOrEmpty(verbName))
                 return false;
             
-            // Use VerbQueryExtensions to check compatibility
-            return VerbQueryExtensions.GetAdverbCompatibleVerbs(adverbType).Contains(verbName);
+            // Use VerbRegistry.SupportsAdverbs directly for more comprehensive validation
+            return VerbRegistry.SupportsAdverbs(verbName, adverbType);
         }
         
         /// <summary>

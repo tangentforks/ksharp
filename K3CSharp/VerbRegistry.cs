@@ -247,8 +247,8 @@ namespace K3CSharp
             RegisterVerb("_ss", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("SM", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("_sm", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("CI", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("_ci", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("CI", VerbType.Operator, new[] { 1, 2 }, new Func<K3Value[], K3Value>[] { args => Ci(args[0]), args => Ci(args[0], args[1]) });
+            RegisterVerb("_ci", VerbType.Operator, new[] { 1, 2 }, new Func<K3Value[], K3Value>[] { args => Ci(args[0]), args => Ci(args[0], args[1]) });
             RegisterVerb("IC", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("_ic", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("GETENV", VerbType.Operator, new[] { 1, 2 }, null);
@@ -987,6 +987,53 @@ namespace K3CSharp
             }
             
             return issues;
+        }
+        
+        /// <summary>
+        /// Character from integer (ci) verb implementation
+        /// </summary>
+        /// <param name="value">Integer value to convert</param>
+        /// <returns>Character value</returns>
+        private static K3Value Ci(K3Value value)
+        {
+            if (value is IntegerValue intValue)
+            {
+                char charValue = (char)intValue.Value;
+                return new CharacterValue(charValue.ToString());
+            }
+            else if (value is VectorValue vector)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vector.Elements)
+                {
+                    if (element is IntegerValue intElement)
+                    {
+                        char charValue = (char)intElement.Value;
+                        result.Add(new CharacterValue(charValue.ToString()));
+                    }
+                    else
+                    {
+                        result.Add(element);
+                    }
+                }
+                return new VectorValue(result);
+            }
+            else
+            {
+                throw new Exception($"ci expects integer or vector of integers, got {value.GetType().Name}");
+            }
+        }
+        
+        /// <summary>
+        /// Character from integer (ci) verb implementation - dyadic version
+        /// </summary>
+        /// <param name="left">Left argument</param>
+        /// <param name="right">Right argument</param>
+        /// <returns>Character value</returns>
+        private static K3Value Ci(K3Value left, K3Value right)
+        {
+            // For dyadic ci, apply to right argument (left is ignored)
+            return Ci(right);
         }
     }
 }

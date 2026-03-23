@@ -208,6 +208,20 @@ namespace K3CSharp.Parsing
                 TokenType.COLON => ASTNode.MakeLiteral(new SymbolValue(":")),
                 TokenType.SEMICOLON => ASTNode.MakeLiteral(new SymbolValue(";")),
                 
+                // System verbs
+                TokenType.CI => ASTNode.MakeLiteral(new SymbolValue("_ci")),
+                TokenType.IC => ASTNode.MakeLiteral(new SymbolValue("_ic")),
+                TokenType.SV => ASTNode.MakeLiteral(new SymbolValue("_sv")),
+                TokenType.SS => ASTNode.MakeLiteral(new SymbolValue("_ss")),
+                TokenType.SM => ASTNode.MakeLiteral(new SymbolValue("_sm")),
+                TokenType.DRAW => ASTNode.MakeLiteral(new SymbolValue("_draw")),
+                TokenType.GETENV => ASTNode.MakeLiteral(new SymbolValue("_getenv")),
+                TokenType.SIZE => ASTNode.MakeLiteral(new SymbolValue("_size")),
+                TokenType.DIRECTORY => ASTNode.MakeLiteral(new SymbolValue("_d")),
+                TokenType.TIME => ASTNode.MakeLiteral(new SymbolValue("_t")),
+                TokenType.EVAL => ASTNode.MakeLiteral(new SymbolValue("_eval")),
+                TokenType.PARSE => ASTNode.MakeLiteral(new SymbolValue("_parse")),
+                
                 // Delimiters for parse tree representation
                 TokenType.LEFT_PAREN => ASTNode.MakeLiteral(new SymbolValue("(")),
                 TokenType.RIGHT_PAREN => ASTNode.MakeLiteral(new SymbolValue(")")),

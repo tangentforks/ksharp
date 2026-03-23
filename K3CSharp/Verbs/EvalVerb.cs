@@ -137,7 +137,67 @@ namespace K3CSharp.Verbs
         /// </summary>
         private static K3Value EvaluateCallableVerb(string verbSymbol, K3Value[] arguments)
         {
+                        
             var cleanSymbol = CleanVerbSymbol(verbSymbol);
+            
+            // Special handling for _ci verb
+            if (cleanSymbol == "_ci")
+            {
+                // Apply _ci to each argument and return as vector
+                var result = new List<K3Value>();
+                foreach (var arg in arguments)
+                {
+                    if (arg is IntegerValue intArg)
+                    {
+                        char charValue = (char)intArg.Value;
+                        result.Add(new CharacterValue(charValue.ToString()));
+                    }
+                    else if (arg is VectorValue vec)
+                    {
+                        var vecResult = new List<K3Value>();
+                        foreach (var element in vec.Elements)
+                        {
+                            if (element is IntegerValue intElement)
+                            {
+                                char charValue = (char)intElement.Value;
+                                vecResult.Add(new CharacterValue(charValue.ToString()));
+                            }
+                        }
+                        result.Add(new VectorValue(vecResult));
+                    }
+                }
+                return new VectorValue(result);
+            }
+            
+            // Special handling for _ci' pattern (when parser doesn't recognize it as adverb)
+            if (cleanSymbol == "_ci'")
+            {
+                // This is _ci' pattern - apply _ci to each argument
+                var result = new List<K3Value>();
+                foreach (var arg in arguments)
+                {
+                    if (arg is IntegerValue intArg)
+                    {
+                        char charValue = (char)intArg.Value;
+                        result.Add(new CharacterValue(charValue.ToString()));
+                    }
+                    else if (arg is VectorValue vec)
+                    {
+                        var vecResult = new List<K3Value>();
+                        foreach (var element in vec.Elements)
+                        {
+                            if (element is IntegerValue intElement)
+                            {
+                                char charValue = (char)intElement.Value;
+                                vecResult.Add(new CharacterValue(charValue.ToString()));
+                            }
+                        }
+                        result.Add(new VectorValue(vecResult));
+                    }
+                }
+                return new VectorValue(result);
+            }
+            
             var verbInfo = VerbRegistry.GetVerb(cleanSymbol);
             
             if (verbInfo == null)

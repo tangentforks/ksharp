@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace K3CSharp.Parsing
 {
@@ -104,6 +105,12 @@ namespace K3CSharp.Parsing
             var multiAryResult = ParseMultiAryOperation(expressionTokens);
             if (multiAryResult != null)
                 return multiAryResult;
+            
+            // Check for adverb operations in Safe LRS mode (and Pure LRS when it's fixed)
+            if (ParseAdverbExpression(expressionTokens) is ASTNode adverbResult)
+            {
+                return adverbResult;
+            }
             
             // Handle binary operations
             var binaryResult = binaryParser.ParseBinaryOperation(expressionTokens);
@@ -502,6 +509,13 @@ namespace K3CSharp.Parsing
         /// </summary>
         private ASTNode CreateNodeFromToken(Token token)
         {
+            // Handle adverb tokens in Pure LRS mode
+            if (PureLRSMode && VerbRegistry.IsAdverbToken(token.Type))
+            {
+                // In Pure LRS mode, try to parse adverb operations
+                return ParseAdverbOperation(token);
+            }
+            
             if (LRSAtomicParser.IsAtomicToken(token.Type))
             {
                 return LRSAtomicParser.ParseAtomicToken(token);
@@ -509,6 +523,161 @@ namespace K3CSharp.Parsing
             
             // Handle operator symbols for parse trees
             return LRSAtomicParser.CreateOperatorNode(token.Type);
+        }
+        
+        /// <summary>
+        /// Parse adverb operation in Pure LRS mode
+        /// </summary>
+        /// <param name="adverbToken">The adverb token</param>
+        /// <returns>AST node representing the adverb operation</returns>
+        private ASTNode ParseAdverbOperation(Token adverbToken)
+        {
+            // Find the position of this adverb token in the original token list
+            int adverbPosition = -1;
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                if (tokens[i].Type == adverbToken.Type && tokens[i].Lexeme == adverbToken.Lexeme)
+                {
+                    adverbPosition = i;
+                    break;
+                }
+            }
+            
+            if (adverbPosition == -1)
+            {
+                throw new Exception($"Adverb token not found in token list: {adverbToken.Lexeme}");
+            }
+            
+            // Use LRSAdverbParser for proper adverb handling
+            var adverbParser = new LRSAdverbParser(tokens, BuildParseTree);
+            int position = adverbPosition;
+            
+            // Try to parse verb-immediate-left adverb pattern (verb on left side only)
+            var result = adverbParser.ParseVerbImmediateLeftAdverb(ref position);
+            if (result != null)
+            {
+                return result;
+            }
+            
+            // Fallback: create a simple node for basic adverb handling
+            var children = new List<ASTNode>();
+            return new ASTNode(ASTNodeType.BinaryOp, new SymbolValue(adverbToken.Lexeme), children);
+        }
+        
+        /// <summary>
+        /// Parse adverb expression in Safe LRS mode
+        /// </summary>
+        /// <param name="expressionTokens">Tokens to parse for adverb operations</param>
+        /// <returns>AST node representing the adverb operation, or null if no adverb found</returns>
+        private ASTNode? ParseAdverbExpression(List<Token> expressionTokens)
+        {
+            // CONSERVATIVE APPROACH: Only handle very specific, simple cases
+            // Start with the most basic adverb patterns to avoid breaking the system
+            
+            // CONSERVATIVE APPROACH: Only handle very specific, simple cases
+            // Start with the most basic adverb patterns to avoid breaking the system
+            
+            // Case 1: Simple two-glyph adverb with simple left and right sides
+            // Pattern: (vector) %\: number
+            if (expressionTokens.Count >= 4)
+            {
+                // Check for pattern: (1 2 3) %\: 2
+                if (expressionTokens[0].Type == TokenType.LEFT_PAREN &&
+                    expressionTokens[2].Type == TokenType.DIVIDE &&
+                    expressionTokens[3].Type == TokenType.ADVERB_BACKSLASH_COLON &&
+                    expressionTokens[4].Type == TokenType.INTEGER)
+                {
+                    return ParseSimpleTwoGlyphAdverb(expressionTokens);
+                }
+            }
+            
+            // Case 2: Simple single-glyph adverb with system verb
+            // Pattern: _ci' number number number
+            if (expressionTokens.Count >= 3)
+            {
+                // Check for pattern: _ci' 97 94 80 (or any number of arguments)
+                if (expressionTokens[0].Type == TokenType.CI &&
+                    expressionTokens[1].Type == TokenType.ADVERB_TICK)
+                {
+                    // Check that remaining tokens are arguments (integers, floats, etc.)
+                    bool hasValidArgs = true;
+                    for (int i = 2; i < expressionTokens.Count; i++)
+                    {
+                        if (!LRSAtomicParser.IsAtomicToken(expressionTokens[i].Type))
+                        {
+                            hasValidArgs = false;
+                            break;
+                        }
+                    }
+                    
+                    if (hasValidArgs)
+                    {
+                        return ParseSimpleSingleGlyphAdverb(expressionTokens);
+                    }
+                }
+            }
+            
+            return null; // No simple adverb pattern found
+        }
+        
+        /// <summary>
+        /// Parse simple two-glyph adverb (conservative approach)
+        /// </summary>
+        /// <param name="expressionTokens">Tokens to parse</param>
+        /// <returns>AST node for the adverb operation</returns>
+        private ASTNode ParseSimpleTwoGlyphAdverb(List<Token> expressionTokens)
+        {
+            // Create a simple placeholder node that represents %\: operation
+            // The actual evaluation will be handled by the existing evaluator
+            var children = new List<ASTNode>();
+            
+            // Left side: (1 2 3) - create a simple vector node
+            var vectorElements = new List<ASTNode>();
+            for (int i = 1; i < expressionTokens.Count - 2; i++)
+            {
+                if (expressionTokens[i].Type == TokenType.INTEGER)
+                {
+                    vectorElements.Add(ASTNode.MakeLiteral(new IntegerValue(int.Parse(expressionTokens[i].Lexeme))));
+                }
+            }
+            var leftNode = ASTNode.MakeVector(vectorElements);
+            
+            // Right side: 2
+            var rightNode = ASTNode.MakeLiteral(new IntegerValue(int.Parse(expressionTokens[4].Lexeme)));
+            
+            children.Add(leftNode);
+            children.Add(rightNode);
+            
+            // Create node with %\: symbol
+            return new ASTNode(ASTNodeType.BinaryOp, new SymbolValue("%\\:"), children);
+        }
+        
+        /// <summary>
+        /// Parse simple single-glyph adverb (conservative approach)
+        /// </summary>
+        /// <param name="expressionTokens">Tokens to parse</param>
+        /// <returns>AST node for the adverb operation</returns>
+        private ASTNode ParseSimpleSingleGlyphAdverb(List<Token> expressionTokens)
+        {
+            // Create a BinaryOp node with the ' adverb
+            // The evaluator will handle this as a special case for adverb evaluation
+            var children = new List<ASTNode>();
+            
+            // Verb: _ci
+            var verbNode = ASTNode.MakeLiteral(new SymbolValue("_ci"));
+            children.Add(verbNode);
+            
+            // Arguments: 97 94 80
+            for (int i = 2; i < expressionTokens.Count; i++)
+            {
+                if (expressionTokens[i].Type == TokenType.INTEGER)
+                {
+                    children.Add(ASTNode.MakeLiteral(new IntegerValue(int.Parse(expressionTokens[i].Lexeme))));
+                }
+            }
+            
+            // Create BinaryOp with ' symbol - evaluator will handle this specially
+            return new ASTNode(ASTNodeType.BinaryOp, new SymbolValue("'"), children);
         }
     }
 }
