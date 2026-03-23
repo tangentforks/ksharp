@@ -66,8 +66,8 @@ namespace K3CSharp.Parsing
             var rightmostOpIndex = FindRightmostDyadicOperator(tokens);
             if (rightmostOpIndex == -1)
             {
-                // No dyadic operators - check for unary operators
-                return BuildUnaryTree(tokens);
+                // No dyadic operators - check for monadic operators
+                return BuildMonadicTree(tokens);
             }
             
             // Split at rightmost operator
@@ -99,22 +99,22 @@ namespace K3CSharp.Parsing
         }
 
         /// <summary>
-        /// Build unary operation tree
+        /// Build monadic operation tree
         /// </summary>
-        private ASTNode? BuildUnaryTree(List<Token> tokens)
+        private ASTNode? BuildMonadicTree(List<Token> tokens)
         {
             if (tokens.Count == 0)
                 return null;
                 
             var firstToken = tokens[0];
             
-            // Check if first token is a unary operator
+            // Check if first token is a monadic operator
             if (OperatorDetector.SupportsMonadic(firstToken.Type))
             {
                 var operandTokens = tokens.Count > 1 ? tokens.GetRange(1, tokens.Count - 1) : new List<Token>();
                 var operand = BuildPrecedenceAwareTree(operandTokens);
                 
-                return CreateUnaryNodeWithPrecedence(firstToken, operand);
+                return CreateMonadicNodeWithPrecedence(firstToken, operand);
             }
             
             // Default to atomic parsing
@@ -149,9 +149,9 @@ namespace K3CSharp.Parsing
         }
 
         /// <summary>
-        /// Create precedence-aware unary node
+        /// Create precedence-aware monadic node
         /// </summary>
-        private ASTNode CreateUnaryNodeWithPrecedence(Token opToken, ASTNode? operand)
+        private ASTNode CreateMonadicNodeWithPrecedence(Token opToken, ASTNode? operand)
         {
             var node = ASTNode.MakeDyadicOp(opToken.Type, 
                 operand ?? ASTNode.MakeLiteral(new NullValue()), 
@@ -160,7 +160,7 @@ namespace K3CSharp.Parsing
             // Add precedence metadata
             var precedenceInfo = new Dictionary<string, object>
             {
-                ["precedence"] = "unary",
+                ["precedence"] = "monadic",
                 ["associativity"] = "right",
                 ["operator"] = VerbRegistry.GetDyadicOperatorSymbol(opToken.Type)
             };
@@ -168,7 +168,7 @@ namespace K3CSharp.Parsing
             // Store precedence info in node value
             if (node.Value is SymbolValue symbol)
             {
-                var enhancedValue = $"{symbol.Value}[precedence:unary,associativity:right]";
+                var enhancedValue = $"{symbol.Value}[precedence:monadic,associativity:right]";
                 node.Value = new SymbolValue(enhancedValue);
             }
             
@@ -272,7 +272,7 @@ namespace K3CSharp.Parsing
                 ["nodeCount"] = 0,
                 ["maxDepth"] = 0,
                 ["dyadicOpCount"] = 0,
-                ["unaryOpCount"] = 0,
+                ["monadicOpCount"] = 0,
                 ["vectorCount"] = 0
             };
             

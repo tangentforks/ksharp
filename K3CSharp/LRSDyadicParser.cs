@@ -237,7 +237,7 @@ namespace K3CSharp.Parsing
                 return nodeResult;
             }
             
-            // Try dyadic operation first (unary parsing is handled at main LRS level)
+            // Try dyadic operation first (monadic parsing is handled at main LRS level)
             var result = ParseDyadicOperation(tokens);
             if (result == null)
                 return null;
@@ -245,7 +245,7 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Parse sub-expression (could be unary, dyadic, or atomic)
+        /// Parse sub-expression (could be monadic, dyadic, or atomic)
         /// </summary>
         private ASTNode? ParseSubExpression(List<Token> tokens)
         {
@@ -256,7 +256,7 @@ namespace K3CSharp.Parsing
                 return nodeResult;
             }
             
-            // Try dyadic operation (unary parsing is handled at main LRS level)
+            // Try dyadic operation (monadic parsing is handled at main LRS level)
             return ParseDyadicOperation(tokens);
         }
         

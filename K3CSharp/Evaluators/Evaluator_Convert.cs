@@ -8,7 +8,7 @@ namespace K3CSharp
     {
         private K3Value ConvertToString(K3Value value)
         {
-            // Convert value to string representation without unary format enlisting
+            // Convert value to string representation without monadic format enlisting
             if (value is VectorValue vec && vec.Elements.Count > 0 && vec.Elements.All(e => e is CharacterValue))
             {
                 // Character vector - return as-is

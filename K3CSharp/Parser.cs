@@ -318,7 +318,7 @@ namespace K3CSharp
             return result;
         }
 
-        private bool IsUnaryOperator(TokenType type)
+        private bool IsMonadicOperator(TokenType type)
         {
             var verb = VerbRegistry.GetVerb(type.ToString());
             var result = verb != null && verb.Type == VerbType.Operator && 
@@ -328,9 +328,9 @@ namespace K3CSharp
         }
 
         // Public method for debugging
-        public bool TestUnaryOperator(TokenType type)
+        public bool TestMonadicOperator(TokenType type)
         {
-            return IsUnaryOperator(type);
+            return IsMonadicOperator(type);
         }
 
         private static readonly TokenType[] ParseUntilEndStopTokens = {
@@ -414,13 +414,13 @@ namespace K3CSharp
                 // ParseBracketContentsAsCommaEnlisted handles ']' consumption internally
                 var argsExpression = ParseBracketContentsAsCommaEnlisted();
 
-                // Special case: if the result is a unary operator (like _sqrt), treat brackets as grouping
+                // Special case: if the result is a monadic operator (like _sqrt), treat brackets as grouping
                 // So _sqrt[3] becomes _sqrt 3, not _sqrt @ [3]
                 if (result != null && result.Type == ASTNodeType.DyadicOp && result.Value is SymbolValue opSymbol && 
                     opSymbol.Value.StartsWith("_") && result.Children.Count == 1)
                 {
-                    // This is a unary operator with brackets - treat as grouping
-                    // Replace the unary operator's child with the bracket contents
+                    // This is a monadic operator with brackets - treat as grouping
+                    // Replace the monadic operator's child with the bracket contents
                     if (argsExpression != null)
                     {
                         result.Children[0] = argsExpression;
@@ -434,14 +434,14 @@ namespace K3CSharp
                 if (result != null && result.Type == ASTNodeType.Literal && result.Value is SymbolValue literalSymbol && 
                     literalSymbol.Value.StartsWith("_"))
                 {
-                    // This is a literal underscore function with brackets - convert to unary operator
-                    var unaryNode = new ASTNode(ASTNodeType.DyadicOp);
-                    unaryNode.Value = literalSymbol;
+                    // This is a literal underscore function with brackets - convert to monadic operator
+                    var monadicNode = new ASTNode(ASTNodeType.DyadicOp);
+                    monadicNode.Value = literalSymbol;
                     if (argsExpression != null)
                     {
-                        unaryNode.Children.Add(argsExpression);
+                        monadicNode.Children.Add(argsExpression);
                     }
-                    result = unaryNode;
+                    result = monadicNode;
                     // Don't consume more brackets - break the loop
                     break;
                 }
@@ -687,7 +687,7 @@ namespace K3CSharp
         private bool IsVerbToken(TokenType tokenType)
         {
             return VerbRegistry.IsDyadicOperator(tokenType) || 
-                   IsUnaryOperator(tokenType) ||
+                   IsMonadicOperator(tokenType) ||
                    tokenType == TokenType.DOT_PRODUCT; // _dot
         }
         
@@ -963,11 +963,11 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Check for unary operators at expression start (like %4, -5, +3, etc.)
-                    if (IsUnaryOperator(CurrentToken().Type))
+                    // Check for monadic operators at expression start (like %4, -5, +3, etc.)
+                    if (IsMonadicOperator(CurrentToken().Type))
                     {
                         var opToken = CurrentToken();
-                        Match(opToken.Type); // Consume the unary operator
+                        Match(opToken.Type); // Consume the monadic operator
                         
                         // Parse the operand
                         var operand = ParseTerm();
@@ -1017,13 +1017,13 @@ namespace K3CSharp
                                 _ => opToken.Type.ToString()
                             };
                             projectedNode.Value = new SymbolValue(symbolValue);
-                            // Mark this as a unary projected function (needs 1 more argument)
+                            // Mark this as a monadic projected function (needs 1 more argument)
                             projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(1))); // Arity: needs 1 more argument
                             left = projectedNode;
                         }
                         else
                         {
-                            var unaryNode = new ASTNode(ASTNodeType.DyadicOp);
+                            var monadicNode = new ASTNode(ASTNodeType.DyadicOp);
                             var symbolValue = opToken.Type switch
                             {
                                 TokenType.PLUS => "+",
@@ -1067,9 +1067,9 @@ namespace K3CSharp
                                 TokenType.IF_FUNC => "if",
                                 _ => opToken.Type.ToString()
                             };
-                            unaryNode.Value = new SymbolValue(symbolValue);
-                            unaryNode.Children.Add(operand);
-                            left = unaryNode;
+                            monadicNode.Value = new SymbolValue(symbolValue);
+                            monadicNode.Children.Add(operand);
+                            left = monadicNode;
                         }
                     }
                     else

@@ -5,20 +5,20 @@ namespace K3CSharp.Parsing
 {
     /// <summary>
     /// Monadic operator parsing for LRS parser
-    /// Handles unary operations with proper verb-agnostic detection
+    /// Handles monadic operations with proper verb-agnostic detection
     /// </summary>
-    public class LRSUnaryParser
+    public class LRSMonadicParser
     {
         private readonly LRSParser parentParser;
         
-        public LRSUnaryParser(LRSParser parentParser)
+        public LRSMonadicParser(LRSParser parentParser)
         {
             this.parentParser = parentParser;
         }
         
         /// <summary>
         /// Parse monadic operator expression from tokens
-        /// Enhanced to handle all unary operations without delegation
+        /// Enhanced to handle all monadic operations without delegation
         /// </summary>
         /// <param name="tokens">Tokens to parse</param>
         /// <returns>AST node representing monadic operation</returns>
@@ -65,7 +65,7 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Create projection node for unary operator
+        /// Create projection node for monadic operator
         /// </summary>
         private ASTNode CreateProjectionNode(Token operatorToken)
         {
@@ -100,18 +100,18 @@ namespace K3CSharp.Parsing
             }
             
             // Check if the first token of the remaining expression is another monadic operator
-            if (tokens.Count >= 1 && LRSUnaryParser.CouldBeMonadicOperator(tokens[0].Type))
+            if (tokens.Count >= 1 && LRSMonadicParser.CouldBeMonadicOperator(tokens[0].Type))
             {
                 // This is a nested monadic operation like ^,`a
                 // Parse it recursively using parent parser's mode
                 var position = 0;
-                var nestedResult = parentParser.ParseSubExpressionForUnary(tokens, ref position);
+                var nestedResult = parentParser.ParseSubExpressionForMonadic(tokens, ref position);
                 return nestedResult;
             }
             
             // Otherwise, use parent parser for dyadic operations
             var position2 = 0;
-            return parentParser.ParseSubExpressionForUnary(tokens, ref position2);
+            return parentParser.ParseSubExpressionForMonadic(tokens, ref position2);
         }
         
         /// <summary>
@@ -133,7 +133,7 @@ namespace K3CSharp.Parsing
         private bool IsOperatorToken(TokenType tokenType)
         {
             return OperatorDetector.IsDyadicOperator(tokenType) || 
-                   LRSUnaryParser.CouldBeMonadicOperator(tokenType);
+                   LRSMonadicParser.CouldBeMonadicOperator(tokenType);
         }
         
         /// <summary>

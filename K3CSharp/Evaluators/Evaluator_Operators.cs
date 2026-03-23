@@ -963,7 +963,7 @@ namespace K3CSharp
             throw new Exception($"Cannot logically negate {a.Type}");
         }
 
-        private K3Value UnaryMinus(K3Value a)
+        private K3Value MonadicMinus(K3Value a)
         {
             if (a is IntegerValue intA)
                 return new IntegerValue(-intA.Value);
@@ -972,7 +972,7 @@ namespace K3CSharp
             if (a is FloatValue floatA)
                 return new FloatValue(-floatA.Value);
             
-            throw new Exception($"Cannot apply unary minus to {a.Type}");
+            throw new Exception($"Cannot apply monadic minus to {a.Type}");
         }
 
         private K3Value Transpose(K3Value a)
@@ -1404,7 +1404,7 @@ namespace K3CSharp
             throw new Exception($"Cannot floor {a.Type}");
         }
 
-        // Binary versions for operators that can be both unary and binary
+        // Binary versions for operators that can be both monadic and binary
         private bool IsScalar(K3Value value)
         {
             return value is IntegerValue || value is LongValue || value is FloatValue || 

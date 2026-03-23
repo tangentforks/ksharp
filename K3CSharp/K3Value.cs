@@ -768,7 +768,7 @@ namespace K3CSharp
         
         public string ToStringForFormat()
         {
-            // For unary $ formatting, return symbol name in quotes without backtick
+            // For monadic $ formatting, return symbol name in quotes without backtick
             return $"\"{Value}\"";
         }
 

@@ -8,7 +8,7 @@ namespace K3CSharp
     {
         private K3Value Format(K3Value operand)
         {
-            // Unary $ operator - convert to string representation
+            // Monadic $ operator - convert to string representation
             // For vectors, preserve structure and convert each element to string
             return FormatRecursive(operand);
         }

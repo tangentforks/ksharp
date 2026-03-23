@@ -3,9 +3,9 @@ namespace K3CSharp
     partial class Parser
     {
         /// <summary>
-        /// Create a unary operator node with the given symbol and operand
+        /// Create a monadic operator node with the given symbol and operand
         /// </summary>
-        private static ASTNode MakeUnaryOperatorNode(string symbol, ASTNode? operand)
+        private static ASTNode MakeMonadicOperatorNode(string symbol, ASTNode? operand)
         {
             var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue(symbol);
@@ -155,7 +155,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.PLUS))
             {
-                // Check if this is unary transpose (at start of expression)
+                // Check if this is monadic transpose (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -182,9 +182,9 @@ namespace K3CSharp
                         }
                         else
                         {
-                            // This is unary transpose
+                            // This is monadic transpose
                             var operand = ParsePrimary();
-                            return MakeUnaryOperatorNode("+", operand);
+                            return MakeMonadicOperatorNode("+", operand);
                         }
                     }
                 }
@@ -196,7 +196,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.MINUS))
             {
-                // Check if this is unary minus (at start of expression)
+                // Check if this is monadic minus (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -213,9 +213,9 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary minus
+                        // This is monadic minus
                         var operand = ParsePrimary();
-                        return MakeUnaryOperatorNode("-", operand);
+                        return MakeMonadicOperatorNode("-", operand);
                     }
                 }
                 else
@@ -226,7 +226,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.DIVIDE))
             {
-                // Check if this is unary reciprocal (at start of expression)
+                // Check if this is monadic reciprocal (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -243,7 +243,7 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary reciprocal
+                        // This is monadic reciprocal
                         var operand = ParsePrimary();
                         if (operand == null)
                         {
@@ -267,7 +267,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.MULTIPLY))
             {
-                // Check if this is unary first (at start of expression)
+                // Check if this is monadic first (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -284,7 +284,7 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary first
+                        // This is monadic first
                         // For monadic operators, try to parse a vector if multiple elements are present
                         var elements = new List<ASTNode>();
                         
@@ -318,7 +318,7 @@ namespace K3CSharp
                             throw new Exception("Monadic * operator requires an operand");
                         }
                         
-                        return MakeUnaryOperatorNode("*", operand);
+                        return MakeMonadicOperatorNode("*", operand);
                     }
                 }
                 else
@@ -329,7 +329,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.MIN))
             {
-                // Check if this is unary min (at start of expression)
+                // Check if this is monadic min (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -340,9 +340,9 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary where (&)
+                        // This is monadic where (&)
                         var operand = ParsePrimary();
-                        return MakeUnaryOperatorNode("&", operand);
+                        return MakeMonadicOperatorNode("&", operand);
                     }
                 }
                 else
@@ -353,7 +353,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.MAX))
             {
-                // Check if this is unary max (at start of expression)
+                // Check if this is monadic max (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -364,9 +364,9 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary reverse (|)
+                        // This is monadic reverse (|)
                         var operand = ParsePrimary();
-                        return MakeUnaryOperatorNode("|", operand);
+                        return MakeMonadicOperatorNode("|", operand);
                     }
                 }
                 else
@@ -377,7 +377,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.LESS))
             {
-                // Check if this is unary grade up (at start of expression)
+                // Check if this is monadic grade up (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -388,7 +388,7 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary grade up
+                        // This is monadic grade up
                         var operand = ParseTerm(parseUntilEnd: true);
                         var node = new ASTNode(ASTNodeType.DyadicOp);
                         node.Value = new SymbolValue("<");
@@ -404,7 +404,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.GREATER))
             {
-                // Check if this is unary grade down (at start of expression)
+                // Check if this is monadic grade down (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -415,9 +415,9 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary grade down
+                        // This is monadic grade down
                         var operand = ParseTerm(parseUntilEnd: true);
-                        return MakeUnaryOperatorNode(">", operand);
+                        return MakeMonadicOperatorNode(">", operand);
                     }
                 }
                 else
@@ -428,7 +428,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.POWER))
             {
-                // Check if this is unary shape (at start of expression)
+                // Check if this is monadic shape (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -439,9 +439,9 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary shape
+                        // This is monadic shape
                         var operand = ParseTerm();
-                        return MakeUnaryOperatorNode("^", operand);
+                        return MakeMonadicOperatorNode("^", operand);
                     }
                 }
                 else
@@ -452,7 +452,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.JOIN))
             {
-                // Check if this is unary enlist (at start of expression)
+                // Check if this is monadic enlist (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -463,7 +463,7 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary enlist
+                        // This is monadic enlist
                         var operand = ParseTerm();
                         var node = new ASTNode(ASTNodeType.DyadicOp);
                         node.Value = new SymbolValue(",");
@@ -637,7 +637,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.MATCH))
             {
-                // Check if this is unary match (at start of expression)
+                // Check if this is monadic match (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -648,7 +648,7 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary match (logical negate or attribute handle)
+                        // This is monadic match (logical negate or attribute handle)
                         var operand = ParseExpression();
                         var node = new ASTNode(ASTNodeType.DyadicOp);
                         node.Value = new SymbolValue("~");
@@ -668,7 +668,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.DOLLAR))
             {
-                // Check if this is unary format (at start of expression)
+                // Check if this is monadic format (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -679,7 +679,7 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary format
+                        // This is monadic format
                         var operand = ParseExpression();
                         var node = new ASTNode(ASTNodeType.DyadicOp);
                         node.Value = new SymbolValue("$");
@@ -695,7 +695,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.HASH))
             {
-                // Check if this is unary count (at start of expression)
+                // Check if this is monadic count (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -713,7 +713,7 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary count
+                        // This is monadic count
                         var operand = ParseTerm();
                         var node = new ASTNode(ASTNodeType.DyadicOp);
                         node.Value = new SymbolValue("#");
@@ -729,7 +729,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.UNDERSCORE))
             {
-                // Check if this is unary floor (at start of expression)
+                // Check if this is monadic floor (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -740,7 +740,7 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary floor
+                        // This is monadic floor
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.DyadicOp);
                         node.Value = new SymbolValue("_");
@@ -756,7 +756,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.QUESTION))
             {
-                // Check if this is unary unique (at start of expression)
+                // Check if this is monadic unique (at start of expression)
                 if (result == null)
                 {
                     // Look ahead to see if this is part of an adverb operation
@@ -767,7 +767,7 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary unique
+                        // This is monadic unique
                         var operand = ParsePrimary();
                         var node = new ASTNode(ASTNodeType.DyadicOp);
                         node.Value = new SymbolValue("?");
@@ -783,10 +783,10 @@ namespace K3CSharp
             }
             else if (Match(TokenType.MODULUS))
             {
-                // Check if this is unary enumerate (at start of expression)
+                // Check if this is monadic enumerate (at start of expression)
                 if (result == null)
                 {
-                    // This is unary enumerate
+                    // This is monadic enumerate
                     var operand = ParsePrimary();
                     var node = new ASTNode(ASTNodeType.DyadicOp);
                     node.Value = new SymbolValue("!");
@@ -1010,7 +1010,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.BD))
             {
-                // BD function - unary, create function call
+                // BD function - monadic, create function call
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_bd");
@@ -1019,7 +1019,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.DB))
             {
-                // DB function - unary, create function call
+                // DB function - monadic, create function call
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("_db");
@@ -1394,7 +1394,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.TYPE))
             {
-                // 4: operator is unary - parse the operand with full expression parsing
+                // 4: operator is monadic - parse the operand with full expression parsing
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("TYPE");
@@ -1403,7 +1403,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.STRING_REPRESENTATION))
             {
-                // 5: operator is unary - parse the operand with full expression parsing
+                // 5: operator is monadic - parse the operand with full expression parsing
                 var operand = ParseExpression();
                 var node = new ASTNode(ASTNodeType.DyadicOp);
                 node.Value = new SymbolValue("STRING_REPRESENTATION");
@@ -1495,7 +1495,7 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // This is unary MAKE (.) operator
+                        // This is monadic MAKE (.) operator
                         var operand = ParsePrimary();
                         var makeNode = new ASTNode(ASTNodeType.DyadicOp);
                         makeNode.Value = new SymbolValue(".");
@@ -1530,7 +1530,7 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // This is unary ATOM (@) operator
+                    // This is monadic ATOM (@) operator
                     var operand = ParseTerm();
                     var atomNode = new ASTNode(ASTNodeType.DyadicOp);
                     atomNode.Value = new SymbolValue("@");
@@ -1540,7 +1540,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.PARSE))
             {
-                // This is unary PARSE (_parse) operator
+                // This is monadic PARSE (_parse) operator
                 var operand = ParsePrimary();
                 var parseNode = new ASTNode(ASTNodeType.DyadicOp);
                 parseNode.Value = new SymbolValue("_parse");
@@ -1549,7 +1549,7 @@ namespace K3CSharp
             }
             else if (Match(TokenType.EVAL))
             {
-                // This is unary EVAL (_eval) operator
+                // This is monadic EVAL (_eval) operator
                 var operand = ParsePrimary();
                 var evalNode = new ASTNode(ASTNodeType.DyadicOp);
                 evalNode.Value = new SymbolValue("_eval");

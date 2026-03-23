@@ -4,13 +4,13 @@ using System.Collections.Generic;
 namespace K3CSharp
 {
     /// <summary>
-    /// Primary parser module for handling literals, identifiers, and unary operations
+    /// Primary parser module for handling literals, identifiers, and monadic operations
     /// </summary>
     public class PrimaryParser : IParserModule
     {
         public bool CanHandle(TokenType currentToken)
         {
-            // Primary parser handles literals, identifiers, and unary operators
+            // Primary parser handles literals, identifiers, and monadic operators
             return currentToken switch
             {
                 TokenType.INTEGER or TokenType.LONG or TokenType.FLOAT or TokenType.CHARACTER or 
@@ -43,22 +43,22 @@ namespace K3CSharp
                 TokenType.LEFT_BRACE => ParseBraces(context),
                 TokenType.LEFT_BRACKET => ParseBrackets(context),
                 TokenType.NULL => ParseNull(context),
-                TokenType.PLUS => ParseUnaryPlus(context),
-                TokenType.MINUS => ParseUnaryMinus(context),
-                TokenType.MULTIPLY => ParseUnaryFirst(context),
-                TokenType.DIVIDE => ParseUnaryReciprocal(context),
-                TokenType.MODULUS => ParseUnaryReciprocal(context),
-                TokenType.POWER => ParseUnaryPower(context),
-                TokenType.JOIN => ParseUnaryJoin(context), // Add monadic ENLIST
-                TokenType.MIN => ParseUnaryMin(context),
-                TokenType.MAX => ParseUnaryMax(context),
-                TokenType.MATCH => ParseUnaryMatch(context),
-                TokenType.NOT => ParseUnaryNot(context),
-                TokenType.HASH => ParseUnaryCount(context),
-                TokenType.UNDERSCORE => ParseUnaryFloor(context),
-                TokenType.QUESTION => ParseUnaryUnique(context),
-                TokenType.DOLLAR => ParseUnaryFormat(context),
-                TokenType.APPLY => ParseUnaryApply(context),
+                TokenType.PLUS => ParseMonadicPlus(context),
+                TokenType.MINUS => ParseMonadicMinus(context),
+                TokenType.MULTIPLY => ParseMonadicFirst(context),
+                TokenType.DIVIDE => ParseMonadicReciprocal(context),
+                TokenType.MODULUS => ParseMonadicReciprocal(context),
+                TokenType.POWER => ParseMonadicPower(context),
+                TokenType.JOIN => ParseMonadicJoin(context), // Add monadic ENLIST
+                TokenType.MIN => ParseMonadicMin(context),
+                TokenType.MAX => ParseMonadicMax(context),
+                TokenType.MATCH => ParseMonadicMatch(context),
+                TokenType.NOT => ParseMonadicNot(context),
+                TokenType.HASH => ParseMonadicCount(context),
+                TokenType.UNDERSCORE => ParseMonadicFloor(context),
+                TokenType.QUESTION => ParseMonadicUnique(context),
+                TokenType.DOLLAR => ParseMonadicFormat(context),
+                TokenType.APPLY => ParseMonadicApply(context),
                 _ => throw new Exception($"Unexpected token: {token.Type}({token.Lexeme})")
             };
         }
@@ -355,16 +355,16 @@ namespace K3CSharp
                 return CreateAtomicNode(tokens[0]);
             }
             
-            // Multiple tokens - try simple unary operator detection
-            if (CouldBeUnaryOperator(tokens[0].Type))
+            // Multiple tokens - try simple monadic operator detection
+            if (CouldBeMonadicOperator(tokens[0].Type))
             {
-                var unaryTokens = tokens.Skip(1).ToList();
-                if (unaryTokens.Count == 1)
+                var monadicTokens = tokens.Skip(1).ToList();
+                if (monadicTokens.Count == 1)
                 {
-                    var operand = CreateAtomicNode(unaryTokens[0]);
+                    var operand = CreateAtomicNode(monadicTokens[0]);
                     if (operand != null)
                     {
-                        return CreateUnaryOperatorNode(tokens[0].Type, operand);
+                        return CreateMonadicOperatorNode(tokens[0].Type, operand);
                     }
                 }
             }
@@ -398,9 +398,9 @@ namespace K3CSharp
         }
         
         /// <summary>
-        /// Check if token could be unary operator
+        /// Check if token could be monadic operator
         /// </summary>
-        private bool CouldBeUnaryOperator(TokenType tokenType)
+        private bool CouldBeMonadicOperator(TokenType tokenType)
         {
             return tokenType == TokenType.PLUS || tokenType == TokenType.MINUS ||
                    tokenType == TokenType.MULTIPLY || tokenType == TokenType.DIVIDE ||
@@ -408,9 +408,9 @@ namespace K3CSharp
         }
         
         /// <summary>
-        /// Create unary operator node (simplified LRS approach)
+        /// Create monadic operator node (simplified LRS approach)
         /// </summary>
-        private ASTNode CreateUnaryOperatorNode(TokenType operatorType, ASTNode operand)
+        private ASTNode CreateMonadicOperatorNode(TokenType operatorType, ASTNode operand)
         {
             var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue(operatorType.ToString().ToLower());
@@ -468,7 +468,7 @@ namespace K3CSharp
                 case TokenType.DOLLAR:
                 case TokenType.APPLY:
                 case TokenType.JOIN: // Comma is an operator, not a separator
-                    return ParseUnaryOperator(context);
+                    return ParseMonadicOperator(context);
                     
                 default:
                     // Stop at expression separators (semicolons and newlines only)
@@ -504,7 +504,7 @@ namespace K3CSharp
             };
         }
         
-        private ASTNode ParseUnaryOperator(ParseContext context)
+        private ASTNode ParseMonadicOperator(ParseContext context)
         {
             var token = context.CurrentToken();
             context.Advance();
@@ -541,7 +541,7 @@ namespace K3CSharp
             var operand = expressionParser.Parse(context);
             if (operand == null)
             {
-                throw new Exception($"Expected expression after unary operator {token.Lexeme}");
+                throw new Exception($"Expected expression after monadic operator {token.Lexeme}");
             }
             
             return ASTNode.MakeDyadicOp(token.Type, operand, ASTNode.MakeLiteral(new NullValue()));
@@ -719,8 +719,8 @@ namespace K3CSharp
             return ASTNode.MakeFunction(parameters, body);
         }
 
-        // Unary operator parsing methods
-        private ASTNode ParseUnaryPlus(ParseContext context)
+        // Monadic operator parsing methods
+        private ASTNode ParseMonadicPlus(ParseContext context)
         {
             context.Advance();
             
@@ -833,7 +833,7 @@ namespace K3CSharp
                 }
             }
             
-            // Regular unary plus without brackets
+            // Regular monadic plus without brackets
             var operand = ParseBracketArgument(context);
             var node = new ASTNode(ASTNodeType.DyadicOp);
             node.Value = new SymbolValue("+");
@@ -841,7 +841,7 @@ namespace K3CSharp
             return node;
         }
 
-        private ASTNode ParseUnaryMinus(ParseContext context)
+        private ASTNode ParseMonadicMinus(ParseContext context)
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
@@ -851,7 +851,7 @@ namespace K3CSharp
             return node;
         }
 
-        private ASTNode ParseUnaryReciprocal(ParseContext context)
+        private ASTNode ParseMonadicReciprocal(ParseContext context)
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
@@ -870,7 +870,7 @@ namespace K3CSharp
             return node;
         }
 
-        private ASTNode ParseUnaryPower(ParseContext context)
+        private ASTNode ParseMonadicPower(ParseContext context)
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
@@ -880,7 +880,7 @@ namespace K3CSharp
             return node;
         }
 
-        private ASTNode ParseUnaryJoin(ParseContext context)
+        private ASTNode ParseMonadicJoin(ParseContext context)
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
@@ -896,8 +896,8 @@ namespace K3CSharp
             return ASTNode.MakeLiteral(new NullValue());
         }
 
-        // Missing unary operator methods
-        private ASTNode ParseUnaryFirst(ParseContext context)
+        // Missing monadic operator methods
+        private ASTNode ParseMonadicFirst(ParseContext context)
         {
             context.Advance();
             
@@ -950,7 +950,7 @@ namespace K3CSharp
             };
         }
 
-        private ASTNode ParseUnaryMin(ParseContext context)
+        private ASTNode ParseMonadicMin(ParseContext context)
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
@@ -960,7 +960,7 @@ namespace K3CSharp
             return node;
         }
 
-        private ASTNode ParseUnaryMax(ParseContext context)
+        private ASTNode ParseMonadicMax(ParseContext context)
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
@@ -970,7 +970,7 @@ namespace K3CSharp
             return node;
         }
 
-        private ASTNode ParseUnaryMatch(ParseContext context)
+        private ASTNode ParseMonadicMatch(ParseContext context)
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
@@ -980,7 +980,7 @@ namespace K3CSharp
             return node;
         }
 
-        private ASTNode ParseUnaryNot(ParseContext context)
+        private ASTNode ParseMonadicNot(ParseContext context)
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
@@ -990,7 +990,7 @@ namespace K3CSharp
             return node;
         }
 
-        private ASTNode ParseUnaryCount(ParseContext context)
+        private ASTNode ParseMonadicCount(ParseContext context)
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
@@ -1000,7 +1000,7 @@ namespace K3CSharp
             return node;
         }
 
-        private ASTNode ParseUnaryFloor(ParseContext context)
+        private ASTNode ParseMonadicFloor(ParseContext context)
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
@@ -1010,7 +1010,7 @@ namespace K3CSharp
             return node;
         }
 
-        private ASTNode ParseUnaryUnique(ParseContext context)
+        private ASTNode ParseMonadicUnique(ParseContext context)
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
@@ -1020,7 +1020,7 @@ namespace K3CSharp
             return node;
         }
 
-        private ASTNode ParseUnaryFormat(ParseContext context)
+        private ASTNode ParseMonadicFormat(ParseContext context)
         {
             context.Advance();
             var operand = ParseBracketArgument(context);
@@ -1030,7 +1030,7 @@ namespace K3CSharp
             return node;
         }
 
-        private ASTNode ParseUnaryApply(ParseContext context)
+        private ASTNode ParseMonadicApply(ParseContext context)
         {
             context.Advance();
             var operand = ParseBracketArgument(context);

@@ -265,7 +265,7 @@ namespace K3CSharp
             }
             else if (left is VectorValue vec)
             {
-                // Unary case: dot product of vector with itself
+                // Monadic case: dot product of vector with itself
                 double sum = 0.0;
                 foreach (var element in vec.Elements)
                 {
@@ -1323,7 +1323,7 @@ namespace K3CSharp
         
         private K3Value MathNot(K3Value left)
         {
-            // Bitwise NOT operation (unary)
+            // Bitwise NOT operation (monadic)
             if (left is IntegerValue intLeft)
             {
                 return new IntegerValue(~intLeft.Value);

@@ -313,11 +313,11 @@ namespace K3CSharp.Parsing
                     var braceParser = new LRSGroupingParser(tokens, buildParseTree);
                     return braceParser.ParseBraces(ref position);
                     
-                // Handle unary operators as verbs
+                // Handle monadic operators as verbs
                 default:
                     if (OperatorDetector.SupportsMonadic(currentToken.Type))
                     {
-                        var unaryTokens = new List<Token> { currentToken };
+                        var monadicTokens = new List<Token> { currentToken };
                         
                         // Check if there are more tokens for the operand
                         if (position + 1 < tokens.Count)
@@ -327,7 +327,7 @@ namespace K3CSharp.Parsing
                                 !VerbRegistry.IsAdverbToken(nextToken.Type))
                             {
                                 // Include the operand
-                                unaryTokens.Add(nextToken);
+                                monadicTokens.Add(nextToken);
                                 position += 2;
                             }
                             else
@@ -340,8 +340,8 @@ namespace K3CSharp.Parsing
                             position++;
                         }
                         
-                        var unaryParser = new LRSUnaryParser(new LRSParser(tokens, buildParseTree));
-                        return unaryParser.ParseMonadicOperator(unaryTokens);
+                        var monadicParser = new LRSMonadicParser(new LRSParser(tokens, buildParseTree));
+                        return monadicParser.ParseMonadicOperator(monadicTokens);
                     }
                     
                     throw new Exception($"Unexpected token in adverb verb: {currentToken.Type}({currentToken.Lexeme})");

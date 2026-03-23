@@ -14,7 +14,7 @@ namespace K3CSharp.Parsing
         private readonly List<Token> tokens;
         private readonly LRSExpressionParser expressionParser;
         private readonly LRSDyadicParser dyadicParser;
-        private readonly LRSUnaryParser unaryParser;
+        private readonly LRSMonadicParser monadicParser;
         private readonly LRSFunctionParser functionParser;
         private readonly LRSStatementParser statementParser;
         private readonly LRSGroupingParser groupingParser;
@@ -32,7 +32,7 @@ namespace K3CSharp.Parsing
             this.PureLRSMode = false; // Default to Safe LRS mode
             this.expressionParser = new LRSExpressionParser(tokens);
             this.dyadicParser = new LRSDyadicParser(tokens, this);
-            this.unaryParser = new LRSUnaryParser(this);
+            this.monadicParser = new LRSMonadicParser(this);
             this.functionParser = new LRSFunctionParser(tokens);
             this.statementParser = new LRSStatementParser(tokens, this);
             this.groupingParser = new LRSGroupingParser(tokens, buildParseTree);
@@ -95,9 +95,9 @@ namespace K3CSharp.Parsing
             if (expressionTokens.Count >= 2)
             {
                 var firstToken = expressionTokens[0];
-                if (LRSUnaryParser.CouldBeMonadicOperator(firstToken.Type))
+                if (LRSMonadicParser.CouldBeMonadicOperator(firstToken.Type))
                 {
-                    return unaryParser.ParseMonadicOperator(expressionTokens);
+                    return monadicParser.ParseMonadicOperator(expressionTokens);
                 }
             }
             
@@ -118,7 +118,7 @@ namespace K3CSharp.Parsing
                 return dyadicResult;
                 
             // If dyadic parsing fails, try monadic
-            return unaryParser.ParseMonadicOperator(expressionTokens);
+            return monadicParser.ParseMonadicOperator(expressionTokens);
         }
         
         /// <summary>
@@ -155,21 +155,21 @@ namespace K3CSharp.Parsing
                 return dyadicResult;
                 
             // If dyadic parsing fails, try monadic
-            return unaryParser.ParseMonadicOperator(expressionTokens);
+            return monadicParser.ParseMonadicOperator(expressionTokens);
         }
         
         /// <summary>
-        /// Parse sub-expression for unary parser (handles position parameter)
+        /// Parse sub-expression for monadic parser (handles position parameter)
         /// </summary>
         /// <param name="tokens">Tokens to parse</param>
         /// <param name="position">Reference to position parameter</param>
         /// <returns>AST node representing parsed expression</returns>
-        internal ASTNode? ParseSubExpressionForUnary(List<Token> tokens, ref int position)
+        internal ASTNode? ParseSubExpressionForMonadic(List<Token> tokens, ref int position)
         {
             if (tokens.Count == 0) return null;
             if (tokens.Count == 1) return CreateNodeFromToken(tokens[0]);
             
-            // Try dyadic operation first (unary parsing is handled at main LRS level)
+            // Try dyadic operation first (monadic parsing is handled at main LRS level)
             return dyadicParser.ParseDyadicOperation(tokens);
         }
         
@@ -658,14 +658,14 @@ namespace K3CSharp.Parsing
         private bool IsVerbToken(TokenType tokenType)
         {
             return VerbRegistry.IsDyadicOperator(tokenType) || 
-                   IsUnaryOperator(tokenType) ||
+                   IsMonadicOperator(tokenType) ||
                    tokenType == TokenType.DOT_PRODUCT; // _dot
         }
         
         /// <summary>
-        /// Check if a token represents a unary operator
+        /// Check if a token represents a monadic operator
         /// </summary>
-        private bool IsUnaryOperator(TokenType tokenType)
+        private bool IsMonadicOperator(TokenType tokenType)
         {
             return tokenType == TokenType.MINUS || 
                    tokenType == TokenType.PLUS ||

@@ -216,11 +216,11 @@ namespace K3CSharp
             }
         }
 
-        // Unary placeholder functions
+        // Monadic placeholder functions
         private K3Value InFunction(K3Value operand)
         {
             // _in function should be handled as dyadic in binary operations
-            // This unary case should not be reached in normal operation
+            // This monadic case should not be reached in normal operation
             throw new Exception("_in (Find) function requires two arguments - use infix notation: x _in y");
         }
 
@@ -232,14 +232,14 @@ namespace K3CSharp
         private K3Value BinlFunction(K3Value operand)
         {
             // _binl function should be handled as dyadic in binary operations
-            // This unary case should not be reached in normal operation
+            // This monadic case should not be reached in normal operation
             throw new Exception("_binl (binary search each-left) function requires two arguments - use infix notation: x _binl y");
         }
 
         private K3Value LinFunction(K3Value operand)
         {
             // _lin function should be handled as dyadic in binary operations
-            // This unary case should not be reached in normal operation
+            // This monadic case should not be reached in normal operation
             throw new Exception("_lin (list intersection) function requires two arguments - use infix notation: x _lin y");
         }
 
@@ -609,7 +609,7 @@ namespace K3CSharp
 
         private K3Value Ci(K3Value left)
         {
-            // _ci (character from integer) function - unary version
+            // _ci (character from integer) function - monadic version
             
             if (left is IntegerValue leftInt)
             {
@@ -650,7 +650,7 @@ namespace K3CSharp
 
         private K3Value Ic(K3Value left)
         {
-            // _ic (integer from character) function - unary version
+            // _ic (integer from character) function - monadic version
             
             if (left is CharacterValue leftChar)
             {

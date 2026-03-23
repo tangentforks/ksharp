@@ -9,11 +9,11 @@ namespace K3CSharp.Tests
     public class ModuleTestHarness
     {
         /// <summary>
-        /// Test the UnaryOperatorParser with simple expressions
+        /// Test the MonadicOperatorParser with simple expressions
         /// </summary>
-        public static void TestUnaryOperatorParser()
+        public static void TestMonadicOperatorParser()
         {
-            Console.WriteLine("Testing UnaryOperatorParser...");
+            Console.WriteLine("Testing MonadicOperatorParser...");
             
             // Test cases: (token, expectedSymbol)
             var testCases = new[]
@@ -47,11 +47,11 @@ namespace K3CSharp.Tests
                     
                     var context = new ParseContext(tokens, "test");
                     
-                    var parser = new UnaryOperatorParser();
+                    var parser = new MonadicOperatorParser();
                     if (parser.CanHandle(tokenType))
                     {
                         var result = parser.Parse(context);
-                        Console.WriteLine($"✓ {tokenType}: Successfully parsed unary operator");
+                        Console.WriteLine($"✓ {tokenType}: Successfully parsed monadic operator");
                     }
                     else
                     {
@@ -64,7 +64,7 @@ namespace K3CSharp.Tests
                 }
             }
             
-            Console.WriteLine("UnaryOperatorParser test completed.");
+            Console.WriteLine("MonadicOperatorParser test completed.");
         }
     }
 }

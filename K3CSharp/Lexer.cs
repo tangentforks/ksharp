@@ -339,7 +339,7 @@ namespace K3CSharp
                 }
                 else if (c == '@')
                 {
-                    // Let parser disambiguate between unary ATOM and binary APPLY
+                    // Let parser disambiguate between monadic ATOM and binary APPLY
                     tokens.Add(new Token(TokenType.APPLY, "@", position));
                     Advance();
                 }

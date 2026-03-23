@@ -575,14 +575,14 @@ namespace K3CSharp
             if (node.Value is not SymbolValue op) throw new Exception("Dyadic operator must have a symbol value");
             
             
-            // Handle unary operators (which are implemented as dyadic ops with one child)
+            // Handle monadic operators (which are implemented as dyadic ops with one child)
             if (node.Children.Count == 1)
             {
                 var operand = Evaluate(node.Children[0]);
                 
                 return op.Value switch
                 {
-                    "-" => UnaryMinus(operand),
+                    "-" => MonadicMinus(operand),
                     "+" => Transpose(operand),
                     "*" => First(operand),
                     "%" => Reciprocal(operand),
@@ -675,8 +675,8 @@ namespace K3CSharp
                     "_exit" => ExitFunction(operand),
                     "_getenv" => GetenvFunction(operand),
                     "_size" => SizeFunction(operand),
-                    "MIN" => operand, // Identity operation for unary min
-                    "MAX" => operand, // Identity operation for unary max
+                    "MIN" => operand, // Identity operation for monadic min
+                    "MAX" => operand, // Identity operation for monadic max
                     "ADVERB_SLASH" => ApplyAdverbSlash(operand, new IntegerValue(0), new IntegerValue(0)),
                     "ADVERB_BACKSLASH" => ApplyAdverbBackslash(operand, new IntegerValue(0), new IntegerValue(0)),
                     "ADVERB_TICK" => ApplyAdverbTick(operand, new IntegerValue(0), new IntegerValue(0)),
@@ -685,7 +685,7 @@ namespace K3CSharp
                     "ADVERB_TICK_COLON" => ApplyAdverbTickColon(operand, new IntegerValue(0), new IntegerValue(0)),
                     "_parse" => Verbs.ParseVerbHandler.Parse(new[] { operand }),
                     "_eval" => Verbs.EvalVerbHandler.Evaluate(new[] { operand }),
-                    _ => throw new Exception($"Unknown unary operator: {op.Value}")
+                    _ => throw new Exception($"Unknown monadic operator: {op.Value}")
                 };
             }
 
@@ -1719,7 +1719,7 @@ namespace K3CSharp
             switch (functionName)
             {
                 case "!":
-                    // Handle unary enumerate operator
+                    // Handle monadic enumerate operator
                     if (arguments.Count == 1)
                     {
                         // Special case: !` enumerates keys in root dictionary
@@ -3447,7 +3447,7 @@ namespace K3CSharp
                 }
                 
                 // Get the arity (how many more arguments are needed)
-                int regularArity = 1; // Default for unary operators
+                int regularArity = 1; // Default for monadic operators
                 if (node.Children.Count > 0 && node.Children[0].Value is IntegerValue regularArityValue)
                 {
                     regularArity = regularArityValue.Value;
@@ -3808,7 +3808,7 @@ namespace K3CSharp
                 return verb switch
                 {
                     "+" => arguments.Length == 1 ? evaluator.Transpose(arguments[0]) : evaluator.EvaluateDyadicOperatorWithRegistry("+", arguments[0], arguments[1]),
-                    "-" => arguments.Length == 1 ? evaluator.UnaryMinus(arguments[0]) : evaluator.EvaluateDyadicOperatorWithRegistry("-", arguments[0], arguments[1]),
+                    "-" => arguments.Length == 1 ? evaluator.MonadicMinus(arguments[0]) : evaluator.EvaluateDyadicOperatorWithRegistry("-", arguments[0], arguments[1]),
                     "*" => arguments.Length == 1 ? evaluator.First(arguments[0]) : evaluator.EvaluateDyadicOperatorWithRegistry("*", arguments[0], arguments[1]),
                     "%" => arguments.Length == 1 ? throw new Exception("% operator requires 2 arguments") : evaluator.EvaluateDyadicOperatorWithRegistry("%", arguments[0], arguments[1]),
                     "^" => arguments.Length == 1 ? evaluator.Power(arguments[0], new IntegerValue(1)) : evaluator.EvaluateDyadicOperatorWithRegistry("^", arguments[0], arguments[1]),

@@ -42,9 +42,9 @@ namespace K3CSharp
         UNDERSCORE,     // _ floor operator
         QUESTION,       // ? unique operator
         APPLY,          // @ apply operator
-        ATOM,           // @ atom operator (unary)
-        DOT_APPLY,      // . dot-apply operator (binary)
-        MAKE,           // . make operator (unary)
+        ATOM,           // @ atom operator (monadic)
+        DOT_APPLY,      // . dot-apply operator (dyadic)
+        MAKE,           // . make operator (monadic)
         ADVERB_SLASH,   // / adverb
         ADVERB_BACKSLASH, // \ adverb  
         ADVERB_TICK,    // ' adverb

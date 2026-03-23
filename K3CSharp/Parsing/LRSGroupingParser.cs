@@ -283,7 +283,7 @@ namespace K3CSharp.Parsing
                 case TokenType.LEFT_BRACE:
                     return ParseBraces(ref position);
                     
-                // Handle unary operators
+                // Handle monadic operators
                 case TokenType.PLUS:
                 case TokenType.MINUS:
                 case TokenType.MULTIPLY:
@@ -298,7 +298,7 @@ namespace K3CSharp.Parsing
                 case TokenType.QUESTION:
                 case TokenType.DOLLAR:
                 case TokenType.APPLY:
-                    return ParseUnaryOperator(ref position);
+                    return ParseMonadicOperator(ref position);
                     
                 // Stop at expression separators
                 case TokenType.SEMICOLON:
@@ -367,9 +367,9 @@ namespace K3CSharp.Parsing
         }
 
         /// <summary>
-        /// Parse unary operator within grouping context
+        /// Parse monadic operator within grouping context
         /// </summary>
-        private ASTNode ParseUnaryOperator(ref int position)
+        private ASTNode ParseMonadicOperator(ref int position)
         {
             var token = tokens[position];
             position++;
@@ -403,7 +403,7 @@ namespace K3CSharp.Parsing
             var operand = ParseExpressionInGrouping(ref position);
             if (operand == null)
             {
-                throw new Exception($"Expected expression after unary operator {token.Lexeme}");
+                throw new Exception($"Expected expression after monadic operator {token.Lexeme}");
             }
             
             return ASTNode.MakeDyadicOp(token.Type, operand, ASTNode.MakeLiteral(new NullValue()));

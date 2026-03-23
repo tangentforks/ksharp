@@ -67,7 +67,7 @@ namespace K3CSharp
             }
         }
 
-        private K3Value ApplyUnaryVerb(string verbName, K3Value operand)
+        private K3Value ApplyMonadicVerb(string verbName, K3Value operand)
         {
             // Use VerbRegistry to handle all monadic verbs dynamically
             if (VerbRegistry.HasVerb(verbName))
@@ -97,12 +97,12 @@ namespace K3CSharp
                         "~" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue)) 
                             ? AttributeHandle(operand) 
                             : LogicalNegate(operand),
-                        _ => throw new Exception($"Verb '{verbName}' is registered as monadic but not implemented in ApplyUnaryVerb")
+                        _ => throw new Exception($"Verb '{verbName}' is registered as monadic but not implemented in ApplyMonadicVerb")
                     };
                 }
             }
             
-            throw new Exception($"Unknown unary verb: {verbName}");
+            throw new Exception($"Unknown monadic verb: {verbName}");
         }
 
         private K3Value ApplySymbolVerbWithOperator(K3Value verb, K3Value left, K3Value right)
@@ -562,7 +562,7 @@ namespace K3CSharp
                     var result = new List<K3Value>();
                     foreach (var element in dataVec.Elements)
                     {
-                        result.Add(ApplyUnaryVerb(verbSymbol.Value, element));
+                        result.Add(ApplyMonadicVerb(verbSymbol.Value, element));
                     }
                     int vectorType = DetermineVectorType(result);
                     return new VectorValue(result, vectorType);
@@ -792,8 +792,8 @@ namespace K3CSharp
                 {
                     if (verb is SymbolValue verbSymbol)
                     {
-                        // For each operations, apply verb as a unary operation to each element
-                        result.Add(ApplyUnaryVerb(verbSymbol.Value, element));
+                        // For each operations, apply verb as a monadic operation to each element
+                        result.Add(ApplyMonadicVerb(verbSymbol.Value, element));
                     }
                     else
                     {
@@ -801,7 +801,7 @@ namespace K3CSharp
                         string verbStr = verb.ToString();
                         if (verbStr.Length == 1 && "+-*/%^!&|<>=^,_?#~".Contains(verbStr))
                         {
-                            result.Add(ApplyUnaryVerb(verbStr, element));
+                            result.Add(ApplyMonadicVerb(verbStr, element));
                         }
                         else
                         {
@@ -852,8 +852,8 @@ namespace K3CSharp
                 {
                     if (verb is SymbolValue verbSymbol)
                     {
-                        // For each operations, apply the verb as a unary operation to each element
-                        result.Add(ApplyUnaryVerb(verbSymbol.Value, element));
+                        // For each operations, apply the verb as a monadic operation to each element
+                        result.Add(ApplyMonadicVerb(verbSymbol.Value, element));
                     }
                     else
                     {
@@ -861,7 +861,7 @@ namespace K3CSharp
                         string verbStr = verb.ToString();
                         if (verbStr.Length == 1 && "+-*/%^!&|<>=^,_?#~".Contains(verbStr))
                         {
-                            result.Add(ApplyUnaryVerb(verbStr, element));
+                            result.Add(ApplyMonadicVerb(verbStr, element));
                         }
                         else
                         {

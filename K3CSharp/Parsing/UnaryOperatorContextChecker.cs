@@ -3,29 +3,29 @@ using System;
 namespace K3CSharp
 {
     /// <summary>
-    /// Specialized parser for unary operator context checking
-    /// Handles checking if the parser is in a unary operator context
+    /// Specialized parser for monadic operator context checking
+    /// Handles checking if the parser is in a monadic operator context
     /// </summary>
-    public class UnaryOperatorContextChecker : IParserModule
+    public class MonadicOperatorContextChecker : IParserModule
     {
         public bool CanHandle(TokenType currentToken)
         {
-            // This parser is used specifically for unary operator context checking
+            // This parser is used specifically for monadic operator context checking
             // It's not directly called by token type, but by the parser when needed
             return false;
         }
 
         public ASTNode? Parse(ParseContext context)
         {
-            // This method is not used directly - IsUnaryOperatorContext is the main entry point
-            throw new NotImplementedException("Use IsUnaryOperatorContext method instead");
+            // This method is not used directly - IsMonadicOperatorContext is the main entry point
+            throw new NotImplementedException("Use IsMonadicOperatorContext method instead");
         }
 
         /// <summary>
         /// Check if we're at the start of an expression or after a binary operator
         /// This is a simplified check - in a full implementation we'd need more sophisticated parsing
         /// </summary>
-        public static bool IsUnaryOperatorContext(ParseContext context)
+        public static bool IsMonadicOperatorContext(ParseContext context)
         {
             if (context.IsAtEnd()) return false;
             

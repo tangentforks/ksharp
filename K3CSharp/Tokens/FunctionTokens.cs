@@ -56,7 +56,7 @@ namespace K3CSharp
             _ => throw new ArgumentOutOfRangeException(nameof(MathType))
         };
 
-        public override int[] SupportedArities => new[] { 1 }; // All math functions are unary
+        public override int[] SupportedArities => new[] { 1 }; // All math functions are monadic
         public override bool IsSystemVariable => false;
     }
 

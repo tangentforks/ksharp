@@ -163,25 +163,25 @@ namespace K3CSharp
         }
 
         /// <summary>
-        /// Check if a TokenType represents a unary operator
+        /// Check if a TokenType represents a monadic operator
         /// </summary>
-        public static bool IsUnaryOperator(TokenType tokenType)
+        public static bool IsMonadicOperator(TokenType tokenType)
         {
             return tokenType switch
             {
-                // Arithmetic operators that can be unary
+                // Arithmetic operators that can be monadic
                 TokenType.MINUS or TokenType.MODULUS or TokenType.POWER or
-                // Logical operators that can be unary
+                // Logical operators that can be monadic
                 TokenType.MATCH or TokenType.NOT or
-                // Special operators that are unary
+                // Special operators that are monadic
                 TokenType.HASH or TokenType.UNDERSCORE or TokenType.QUESTION or
                 TokenType.DOLLAR or TokenType.APPLY or TokenType.MAKE or TokenType.ATOM or
-                // System functions that are unary
+                // System functions that are monadic
                 TokenType.BD or TokenType.DB or TokenType.GETENV or TokenType.SIZE or
                 TokenType.DRAW or TokenType.NOT or TokenType.INV or
                 TokenType.VS or TokenType.CI or TokenType.IC or
                 TokenType.GTIME or TokenType.LTIME or TokenType.LT or TokenType.JD or TokenType.DJ or
-                // I/O operators that can be unary
+                // I/O operators that can be monadic
                 TokenType.IO_VERB_0 or TokenType.IO_VERB_1 or TokenType.IO_VERB_2 or TokenType.IO_VERB_3 or TokenType.TYPE or TokenType.STRING_REPRESENTATION or
                 TokenType.IO_VERB_6 =>
                     true,

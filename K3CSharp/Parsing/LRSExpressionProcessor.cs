@@ -48,7 +48,7 @@ namespace K3CSharp.Parsing
                 case TokenType.LEFT_BRACE:
                     return ProcessBraceExpression(ref position);
                     
-                // Handle unary operators
+                // Handle monadic operators
                 case TokenType.PLUS:
                 case TokenType.MINUS:
                 case TokenType.MULTIPLY:
@@ -63,7 +63,7 @@ namespace K3CSharp.Parsing
                 case TokenType.QUESTION:
                 case TokenType.DOLLAR:
                 case TokenType.APPLY:
-                    return ProcessUnaryExpression(ref position);
+                    return ProcessMonadicExpression(ref position);
                     
                 // Handle special functions
                 case TokenType.PARSE:
@@ -129,19 +129,19 @@ namespace K3CSharp.Parsing
         }
 
         /// <summary>
-        /// Process unary expression using LRSUnaryParser
+        /// Process monadic expression using LRSMonadicParser
         /// </summary>
-        private ASTNode? ProcessUnaryExpression(ref int position)
+        private ASTNode? ProcessMonadicExpression(ref int position)
         {
             if (position >= tokens.Count)
                 return null;
                 
-            // Extract tokens for unary expression
-            var unaryTokens = new List<Token>();
+            // Extract tokens for monadic expression
+            var monadicTokens = new List<Token>();
             var startPos = position;
             
-            // Add the unary operator
-            unaryTokens.Add(tokens[position]);
+            // Add the monadic operator
+            monadicTokens.Add(tokens[position]);
             position++;
             
             // Add operand tokens until we hit a dyadic operator or delimiter
@@ -160,21 +160,21 @@ namespace K3CSharp.Parsing
                     break;
                 }
                 
-                unaryTokens.Add(currentToken);
+                monadicTokens.Add(currentToken);
                 position++;
             }
             
-            // Parse the unary expression
-            if (unaryTokens.Count >= 2)
+            // Parse the monadic expression
+            if (monadicTokens.Count >= 2)
             {
-                var unaryParser = new LRSUnaryParser(new LRSParser(tokens, buildParseTree));
-                return unaryParser.ParseMonadicOperator(unaryTokens);
+                var monadicParser = new LRSMonadicParser(new LRSParser(tokens, buildParseTree));
+                return monadicParser.ParseMonadicOperator(monadicTokens);
             }
             
             // Fallback to atomic parsing if only operator
-            if (unaryTokens.Count == 1)
+            if (monadicTokens.Count == 1)
             {
-                return LRSAtomicParser.CreateOperatorNode(unaryTokens[0].Type);
+                return LRSAtomicParser.CreateOperatorNode(monadicTokens[0].Type);
             }
             
             return null;
