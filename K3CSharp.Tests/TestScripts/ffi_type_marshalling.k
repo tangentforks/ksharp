@@ -1,5 +1,1 @@
-// Test type marshalling
-// Convert between K and .NET types
-3.14159 _hint `float
-"hello" _hint `string
-1 2 3 4 5 _hint `list
+f:3.14159;f _sethint `float;s:"hello";s _sethint `string;l:1 2 3 4 5;l: _sethint `list // This needs to be split at some point

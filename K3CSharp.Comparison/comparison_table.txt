@@ -1,6 +1,6 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-23 13:21:03
+Generated: 2026-03-23 17:12:22
 
 SUMMARY:
 --------
@@ -373,9 +373,9 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   in.k                                               1                              1                                                                                
 ✅ PASS   integer_types_int.k                                42                             42                                                                               
 ✅ PASS   integer_types_long.k                               123456789j                     123456789j                                                                       
-❌ FAIL   io_append_basic.k                                                                 50                                                                               
+❌ FAIL   io_append_basic.k                                                                 125                                                                              
 💥 ERROR io_append_multiple.k                                                                                             k.exe error only                                  
-❌ FAIL   io_append_simple.k                                                                20                                                                               
+❌ FAIL   io_append_simple.k                                                                45                                                                               
 ✅ PASS   io_monadic_1_char_vector_index.k                   "h"                            "h"                                                                              
 ✅ PASS   io_monadic_1_char_vector_last_index.k              "d"                            "d"                                                                              
 ✅ PASS   io_monadic_1_char_vector.k                         "hello world"                  "hello world"                                                                    

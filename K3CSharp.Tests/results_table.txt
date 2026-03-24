@@ -759,7 +759,7 @@
 ║ ffi_hint_system.k                                  │ 42 _sethint `uint    │ 42                   │                      ║
 ║ ffi_simple_assembly.k                              │ str:"System.Private.CoreLib" 2: `System.String; str │ `._dotnet.Syste...   │                      ║
 ║ ffi_assembly_load.k                                │ // Test basic FFI functionality │ `._dotnet.Syste...   │                      ║
-║ ffi_type_marshalling.k                             │ // Test type marshalling │ 1 2 3 4 5            │                      ║
+║ ffi_type_marshalling.k                             │ f:3.14159;f _sethint `float;s:"hello";s _sethint `string;l:1 2 3 4 5;l: _sethint `list // This needs to be split at some point │ Error: Undefine...   │ 1 2 3 4 5            ║
 ║ ffi_object_management.k                            │ str: "hello";str _sethint `object; str . ToUpper │ Error: Undefine...   │ HELLO                ║
 ║ ffi_constructor.k                                  │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.19\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex │ .((`real;2.0;);...   │                      ║
 ║ ffi_dispose.k                                      │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.19\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex │ `obj1                │ Disposed             ║
@@ -848,7 +848,7 @@
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 814/844 tests passed (96.4%)                                                                               ║
+║ SUMMARY: 813/844 tests passed (96.3%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -917,6 +917,11 @@ Test: io_read_bytes_empty.k
 Input: `empty 0:(); 6:`empty
 Expected: ""
 Actual: "\357\273\277"
+──────────────────────────────────────────────────────────────────────────
+Test: ffi_type_marshalling.k
+Input: f:3.14159;f _sethint `float;s:"hello";s _sethint `string;l:1 2 3 4 5;l: _sethint `list // This needs to be split at some point
+Expected: 1 2 3 4 5
+Actual: Error: Undefined variable: _sethint
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_object_management.k
 Input: str: "hello";str _sethint `object; str . ToUpper

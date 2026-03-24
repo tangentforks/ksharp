@@ -5,6 +5,29 @@ using K3CSharp.Verbs;
 
 namespace K3CSharp
 {
+    /// <summary>
+    /// Context for verb arity determination separate from parser ParseContext
+    /// </summary>
+    public class VerbArityContext
+    {
+        public bool HasLeftOperand { get; set; }
+        public bool HasRightOperand { get; set; }
+        public bool HasBracketNotation { get; set; }
+        public int BracketArgumentCount { get; set; }
+        public bool HasDisambiguatingColon { get; set; }
+        public bool IsAtExpressionStart { get; set; }
+        public TokenType NextToken { get; set; }
+        public bool IsInVectorContext { get; set; }
+        public bool IsInAssignmentContext { get; set; }
+    }
+
+    public enum VerbArityType
+    {
+        MonadicOnly,     // Verbs like _ic, _ci that are always monadic
+        DyadicOnly,      // Verbs like _sv, _vs that are always dyadic  
+        ContextSensitive, // Most glyphs - need parser analysis
+        Variadic         // Verbs like ., @ with 3+ arities
+    }
     public enum VerbType
     {
         Operator,
@@ -24,6 +47,105 @@ namespace K3CSharp
     }
 
     /// <summary>
+    /// Builder class for creating VerbArityContext from parser state
+    /// </summary>
+    public static class VerbArityContextBuilder
+    {
+        /// <summary>
+        /// Build context from parser position and tokens
+        /// </summary>
+        public static VerbArityContext BuildContext(Token[] tokens, int currentPosition, bool hasLeftOperand = false)
+        {
+            var context = new VerbArityContext();
+            
+            // Determine if we're at expression start
+            context.IsAtExpressionStart = currentPosition == 0 || 
+                tokens.Length > currentPosition - 1 && 
+                IsExpressionSeparator(tokens[currentPosition - 1].Type);
+            
+            context.HasLeftOperand = hasLeftOperand;
+            
+            // Look ahead for bracket notation
+            if (currentPosition < tokens.Length - 1)
+            {
+                context.NextToken = tokens[currentPosition + 1].Type;
+                context.HasBracketNotation = context.NextToken == TokenType.LEFT_BRACKET;
+                
+                // Count bracket arguments if bracket notation detected
+                if (context.HasBracketNotation)
+                {
+                    context.BracketArgumentCount = CountBracketArguments(tokens, currentPosition + 1);
+                }
+            }
+            
+            // Check for disambiguating colon
+            context.HasDisambiguatingColon = currentPosition < tokens.Length - 1 && 
+                                           tokens[currentPosition + 1].Type == TokenType.COLON;
+            
+            return context;
+        }
+        
+        /// <summary>
+        /// Build context for vector parsing
+        /// </summary>
+        public static VerbArityContext BuildVectorContext(Token[] tokens, int currentPosition)
+        {
+            var context = BuildContext(tokens, currentPosition);
+            context.IsInVectorContext = true;
+            return context;
+        }
+        
+        /// <summary>
+        /// Build context for assignment parsing
+        /// </summary>
+        public static VerbArityContext BuildAssignmentContext(Token[] tokens, int currentPosition)
+        {
+            var context = BuildContext(tokens, currentPosition);
+            context.IsInAssignmentContext = true;
+            return context;
+        }
+        
+        private static bool IsExpressionSeparator(TokenType tokenType)
+        {
+            return tokenType == TokenType.SEMICOLON || 
+                   tokenType == TokenType.NEWLINE || 
+                   tokenType == TokenType.EOF ||
+                   tokenType == TokenType.LEFT_PAREN ||
+                   tokenType == TokenType.LEFT_BRACE;
+        }
+        
+        private static int CountBracketArguments(Token[] tokens, int bracketStart)
+        {
+            int count = 0;
+            int depth = 1; // Start with 1 for the opening bracket
+            int i = bracketStart + 1; // Skip opening bracket
+            
+            while (i < tokens.Length && depth > 0)
+            {
+                var token = tokens[i];
+                
+                if (token.Type == TokenType.LEFT_BRACKET)
+                {
+                    depth++;
+                }
+                else if (token.Type == TokenType.RIGHT_BRACKET)
+                {
+                    depth--;
+                    if (depth == 0) break; // Reached closing bracket
+                }
+                else if (depth == 1 && token.Type == TokenType.SEMICOLON)
+                {
+                    count++;
+                }
+                
+                i++;
+            }
+            
+            return count + 1; // Number of arguments = semicolons + 1
+        }
+    }
+
+    /// <summary>
     /// Centralized registry for all verb metadata and implementations
     /// </summary>
     public static class VerbRegistry
@@ -34,6 +156,12 @@ namespace K3CSharp
         private static readonly Dictionary<string, VerbType> verbTypeCache = new Dictionary<string, VerbType>();
         private static readonly Dictionary<string, bool> systemVariableCache = new Dictionary<string, bool>();
         private static readonly Dictionary<string, int[]> supportedAritiesCache = new Dictionary<string, int[]>();
+        
+        // TokenType-level caching for performance
+        private static readonly Dictionary<TokenType, string> tokenTypeToVerbNameCache = new Dictionary<TokenType, string>();
+        private static readonly Dictionary<TokenType, bool> monadicOperatorCache = new Dictionary<TokenType, bool>();
+        private static readonly Dictionary<TokenType, bool> dyadicOperatorCache = new Dictionary<TokenType, bool>();
+        private static readonly Dictionary<TokenType, bool> verbTokenCache = new Dictionary<TokenType, bool>();
         
         // Performance monitoring
         private static int lookupCount = 0;
@@ -123,6 +251,10 @@ namespace K3CSharp
             verbTypeCache.Clear();
             systemVariableCache.Clear();
             supportedAritiesCache.Clear();
+            tokenTypeToVerbNameCache.Clear();
+            monadicOperatorCache.Clear();
+            dyadicOperatorCache.Clear();
+            verbTokenCache.Clear();
             lookupCount = 0;
             cacheHits = 0;
         }
@@ -140,7 +272,234 @@ namespace K3CSharp
                 ["HitRate"] = $"{hitRate:F2}%",
                 ["VerbTypeCacheSize"] = verbTypeCache.Count,
                 ["SystemVariableCacheSize"] = systemVariableCache.Count,
-                ["SupportedAritiesCacheSize"] = supportedAritiesCache.Count
+                ["SupportedAritiesCacheSize"] = supportedAritiesCache.Count,
+                ["TokenTypeCacheSize"] = tokenTypeToVerbNameCache.Count,
+                ["MonadicCacheSize"] = monadicOperatorCache.Count,
+                ["DyadicCacheSize"] = dyadicOperatorCache.Count,
+                ["VerbTokenCacheSize"] = verbTokenCache.Count
+            };
+        }
+
+        /// <summary>
+        /// Convert TokenType to verb name with caching
+        /// </summary>
+        public static string TokenTypeToVerbName(TokenType tokenType)
+        {
+            if (tokenTypeToVerbNameCache.TryGetValue(tokenType, out var cachedName))
+            {
+                cacheHits++;
+                return cachedName;
+            }
+            
+            lookupCount++;
+            string verbName = tokenType switch
+            {
+                TokenType.PLUS => "+",
+                TokenType.MINUS => "-",
+                TokenType.MULTIPLY => "*",
+                TokenType.DIVIDE => "%",
+                TokenType.DOT_PRODUCT => ".",
+                TokenType.DOT_APPLY => ".",
+                TokenType.MUL => "_mul",
+                TokenType.MIN => "&",
+                TokenType.MAX => "|",
+                TokenType.LESS => "<",
+                TokenType.GREATER => ">",
+                TokenType.EQUAL => "=",
+                TokenType.POWER => "^",
+                TokenType.MODULUS => "!",
+                TokenType.JOIN => ",",
+                TokenType.COLON => ":",
+                TokenType.HASH => "#",
+                TokenType.UNDERSCORE => "_",
+                TokenType.QUESTION => "?",
+                TokenType.MATCH => "~",
+                TokenType.NEGATE => "~",
+                TokenType.DOLLAR => "$",
+                TokenType.AND => "_and",
+                TokenType.OR => "_or",
+                TokenType.XOR => "_xor",
+                TokenType.ROT => "_rot",
+                TokenType.SHIFT => "_shift",
+                TokenType.LSQ => "_lsq",
+                TokenType.DIV => "_div",
+                TokenType.IN => "_in",
+                TokenType.BIN => "_bin",
+                TokenType.BINL => "_binl",
+                TokenType.LIN => "_lin",
+                TokenType.DV => "_dv",
+                TokenType.DI => "_di",
+                TokenType.VS => "_vs",
+                TokenType.SV => "_sv",
+                TokenType.SS => "_ss",
+                TokenType.SM => "_sm",
+                TokenType.CI => "_ci",
+                TokenType.IC => "_ic",
+                TokenType.DRAW => "_draw",
+                TokenType.GETENV => "_getenv",
+                TokenType.SETENV => "_setenv",
+                TokenType.SIZE => "_size",
+                TokenType.BD => "_bd",
+                TokenType.DB => "_db",
+                TokenType.LT => "_lt",
+                TokenType.JD => "_jd",
+                TokenType.DJ => "_dj",
+                TokenType.GTIME => "_gtime",
+                TokenType.LTIME => "_ltime",
+                TokenType.CEIL => "_ceil",
+                TokenType.FLOOR_MATH => "_floor",
+                TokenType.LOG => "_log",
+                TokenType.EXP => "_exp",
+                TokenType.ABS => "_abs",
+                TokenType.SQR => "_sqr",
+                TokenType.SQRT => "_sqrt",
+                TokenType.SIN => "_sin",
+                TokenType.COS => "_cos",
+                TokenType.TAN => "_tan",
+                TokenType.ASIN => "_asin",
+                TokenType.ACOS => "_acos",
+                TokenType.ATAN => "_atan",
+                TokenType.SINH => "_sinh",
+                TokenType.COSH => "_cosh",
+                TokenType.TANH => "_tanh",
+                TokenType.NOT => "_not",
+                _ => tokenType.ToString()
+            };
+            
+            tokenTypeToVerbNameCache[tokenType] = verbName;
+            return verbName;
+        }
+
+        /// <summary>
+        /// Check if token type is a monadic operator with caching and context awareness
+        /// </summary>
+        public static bool IsMonadicOperator(TokenType tokenType, VerbArityContext? context = null)
+        {
+            if (monadicOperatorCache.TryGetValue(tokenType, out var cachedResult))
+            {
+                cacheHits++;
+                return cachedResult;
+            }
+            
+            lookupCount++;
+            var arity = DetermineVerbArity(tokenType, context);
+            var result = arity == 1;
+            monadicOperatorCache[tokenType] = result;
+            return result;
+        }
+
+        /// <summary>
+        /// Check if token type is a dyadic operator with caching and context awareness
+        /// </summary>
+        public static bool IsDyadicOperator(TokenType tokenType, VerbArityContext? context = null)
+        {
+            if (dyadicOperatorCache.TryGetValue(tokenType, out var cachedResult))
+            {
+                cacheHits++;
+                return cachedResult;
+            }
+            
+            lookupCount++;
+            var arity = DetermineVerbArity(tokenType, context);
+            var result = arity == 2;
+            dyadicOperatorCache[tokenType] = result;
+            return result;
+        }
+
+        /// <summary>
+        /// Check if token type is a verb token with caching
+        /// </summary>
+        public static bool IsVerbToken(TokenType tokenType, VerbArityContext? context = null)
+        {
+            if (verbTokenCache.TryGetValue(tokenType, out var cachedResult))
+            {
+                cacheHits++;
+                return cachedResult;
+            }
+            
+            lookupCount++;
+            var verbName = TokenTypeToVerbName(tokenType);
+            var verb = GetVerb(verbName);
+            var result = verb != null && verb.Type == VerbType.Operator;
+            verbTokenCache[tokenType] = result;
+            return result;
+        }
+
+        /// <summary>
+        /// Check if a verb supports a specific arity
+        /// </summary>
+        public static bool SupportsArity(TokenType tokenType, int arity, VerbArityContext? context = null)
+        {
+            var verbName = TokenTypeToVerbName(tokenType);
+            var verb = GetVerb(verbName);
+            return verb != null && verb.SupportedArities.Contains(arity);
+        }
+
+        /// <summary>
+        /// Get supported arities for a token type
+        /// </summary>
+        public static int[] GetSupportedArities(TokenType tokenType, VerbArityContext? context = null)
+        {
+            var verbName = TokenTypeToVerbName(tokenType);
+            return GetSupportedArities(verbName);
+        }
+
+        /// <summary>
+        /// Determine verb arity based on context analysis
+        /// </summary>
+        public static int DetermineVerbArity(TokenType tokenType, VerbArityContext? context)
+        {
+            context ??= new VerbArityContext();
+            
+            // Check VerbRegistry for fixed-arity verbs first
+            var verbName = TokenTypeToVerbName(tokenType);
+            var verbInfo = GetVerb(verbName);
+            if (verbInfo != null)
+            {
+                // System verbs with fixed arity
+                if (verbInfo.SupportedArities.Length == 1)
+                    return verbInfo.SupportedArities[0];
+                    
+                // Context-sensitive verbs - use parser analysis
+                return AnalyzeContextForArity(tokenType, context, verbInfo.SupportedArities);
+            }
+            
+            // Fallback to context analysis for unregistered verbs
+            return AnalyzeContextForArity(tokenType, context, new[] { 1, 2 });
+        }
+
+        /// <summary>
+        /// Analyze context to determine verb arity
+        /// </summary>
+        private static int AnalyzeContextForArity(TokenType tokenType, VerbArityContext context, int[] supportedArities)
+        {
+            // 1. Check bracket notation for explicit argument count
+            if (context.HasBracketNotation)
+                return context.BracketArgumentCount;
+                
+            // 2. Check for left operand (dyadic indication)
+            if (context.HasLeftOperand && supportedArities.Contains(2))
+                return 2;
+                
+            // 3. Check for expression start (monadic indication)
+            if (context.IsAtExpressionStart && supportedArities.Contains(1))
+                return 1;
+                
+            // 4. Special disambiguation rules
+            return tokenType switch
+            {
+                // Colon: assignment vs return
+                TokenType.COLON when context.HasLeftOperand => 2, // Assignment
+                TokenType.COLON => 1, // Return
+                
+                // Hash: count vs take  
+                TokenType.HASH when context.HasLeftOperand => 2, // Take
+                TokenType.HASH => 1, // Count
+                
+                // Default: prefer dyadic if left operand present
+                _ when context.HasLeftOperand && supportedArities.Contains(2) => 2,
+                _ when supportedArities.Contains(1) => 1,
+                _ => supportedArities.Max() // Fallback to highest supported arity
             };
         }
 
@@ -542,31 +901,7 @@ namespace K3CSharp
             
             // For multi-arity operators, determine preferred arity based on context
             if (verb.SupportedArities.Length > 1)
-            {
-                // Hash (#) is context-sensitive: monadic for count, dyadic for take
-                if (verbName == "#")
-                {
-                    return hasLeftOperand && hasRightOperand ? 2 : 1;
-                }
-                
-                // Underscore (_) is context-sensitive: monadic for floor, dyadic for conditional
-                if (verbName == "_")
-                {
-                    return hasLeftOperand && hasRightOperand ? 2 : 1;
-                }
-                
-                // Dollar ($) is context-sensitive: monadic for count, dyadic for each
-                if (verbName == "$")
-                {
-                    return hasLeftOperand && hasRightOperand ? 2 : 1;
-                }
-                
-                // At (@) is context-sensitive: monadic for type, dyadic for apply
-                if (verbName == "@")
-                {
-                    return hasLeftOperand && hasRightOperand ? 2 : 1;
-                }
-                
+            {                
                 // For other multi-arity operators, prefer dyadic if we have both operands
                 if (hasLeftOperand && hasRightOperand && verb.SupportedArities.Contains(2))
                     return 2;

@@ -237,7 +237,7 @@ namespace K3CSharp.Tests
             var indent = new string(' ', depth * 2);
             result.AppendLine($"{indent}{node.Type}: {node}");
             
-            if (node.Type == ASTNodeType.BinaryOp)
+            if (node.Type == ASTNodeType.DyadicOp)
             {
                 if (node.Children.Count >= 2)
                 {
