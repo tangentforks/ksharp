@@ -28,8 +28,14 @@ namespace K3CSharp.Parsing
             {
                 var token = tokens[position];
                 
-                // Stop at separators when at base level, but only if we have some tokens already
-                if (delimiterDepth.IsAtBaseLevel() && ShouldStopAtToken(token.Type) && expressionTokens.Count > 0)
+                // Always stop at EOF - it marks end of input, not start of new expression
+                if (token.Type == TokenType.EOF)
+                    break;
+                
+                // Stop at other separators when at base level, but only if we have some tokens already
+                if (delimiterDepth.IsAtBaseLevel() && 
+                    (token.Type == TokenType.SEMICOLON || token.Type == TokenType.NEWLINE) && 
+                    expressionTokens.Count > 0)
                     break;
                     
                 // Update delimiter depth
@@ -44,16 +50,6 @@ namespace K3CSharp.Parsing
             }
             
             return expressionTokens;
-        }
-        
-        /// <summary>
-        /// Check if parsing should stop at given token type
-        /// </summary>
-        private bool ShouldStopAtToken(TokenType tokenType)
-        {
-            return tokenType == TokenType.SEMICOLON || 
-                   tokenType == TokenType.NEWLINE || 
-                   tokenType == TokenType.EOF;
         }
         
         /// <summary>

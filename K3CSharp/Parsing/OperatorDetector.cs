@@ -21,7 +21,8 @@ namespace K3CSharp.Parsing
         /// </summary>
         public static bool SupportsMonadic(TokenType tokenType)
         {
-            var verb = VerbRegistry.GetVerb(tokenType.ToString());
+            var verbName = VerbRegistry.TokenTypeToVerbName(tokenType);
+            var verb = VerbRegistry.GetVerb(verbName);
             return verb?.SupportedArities?.Contains(1) ?? false;
         }
         
@@ -30,7 +31,8 @@ namespace K3CSharp.Parsing
         /// </summary>
         public static bool SupportsDyadic(TokenType tokenType)
         {
-            var verb = VerbRegistry.GetVerb(tokenType.ToString());
+            var verbName = VerbRegistry.TokenTypeToVerbName(tokenType);
+            var verb = VerbRegistry.GetVerb(verbName);
             return verb?.SupportedArities?.Contains(2) ?? false;
         }
         
@@ -39,7 +41,8 @@ namespace K3CSharp.Parsing
         /// </summary>
         public static VerbInfo? GetVerbInfo(TokenType tokenType)
         {
-            return VerbRegistry.GetVerb(tokenType.ToString());
+            var verbName = VerbRegistry.TokenTypeToVerbName(tokenType);
+            return VerbRegistry.GetVerb(verbName);
         }
         
         /// <summary>
@@ -47,7 +50,8 @@ namespace K3CSharp.Parsing
         /// </summary>
         public static bool IsFunction(TokenType tokenType)
         {
-            var verb = VerbRegistry.GetVerb(tokenType.ToString());
+            var verbName = VerbRegistry.TokenTypeToVerbName(tokenType);
+            var verb = VerbRegistry.GetVerb(verbName);
             return verb?.Type == VerbType.Function;
         }
         
@@ -56,7 +60,8 @@ namespace K3CSharp.Parsing
         /// </summary>
         public static bool IsSystemVariable(TokenType tokenType)
         {
-            var verb = VerbRegistry.GetVerb(tokenType.ToString());
+            var verbName = VerbRegistry.TokenTypeToVerbName(tokenType);
+            var verb = VerbRegistry.GetVerb(verbName);
             return verb?.Type == VerbType.SystemVariable;
         }
     }

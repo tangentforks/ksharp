@@ -116,20 +116,78 @@ namespace K3CSharp.Parsing
         }
 
         /// <summary>
-        /// Parse string token (character vector)
+        /// Parse string token (character vector) with full K escape sequence support
+        /// Supports: \\, \b, \t, \n, \r, \", and octal sequences \000-\377
         /// </summary>
         private static ASTNode ParseString(Token token)
         {
             var lexeme = token.Lexeme;
             
-            // Remove quotes and handle escape sequences
+            // Remove quotes and process escape sequences
             if (lexeme.Length >= 2 && lexeme[0] == '"' && lexeme[^1] == '"')
             {
-                var stringValue = lexeme.Substring(1, lexeme.Length - 2);
-                return ASTNode.MakeLiteral(new SymbolValue(stringValue));
+                var rawString = lexeme.Substring(1, lexeme.Length - 2);
+                var processedString = ProcessEscapeSequences(rawString);
+                return ASTNode.MakeLiteral(new SymbolValue(processedString));
             }
             
             throw new ArgumentException($"Invalid string literal: {lexeme}");
+        }
+        
+        /// <summary>
+        /// Process escape sequences in string according to K specification
+        /// </summary>
+        private static string ProcessEscapeSequences(string input)
+        {
+            var result = new System.Text.StringBuilder();
+            int i = 0;
+            
+            while (i < input.Length)
+            {
+                if (input[i] == '\\' && i + 1 < input.Length)
+                {
+                    char nextChar = input[i + 1];
+                    
+                    // Check for octal escape sequence (\000-\377)
+                    if (nextChar >= '0' && nextChar <= '7' && i + 3 < input.Length)
+                    {
+                        string octalDigits = input.Substring(i + 1, 3);
+                        if (octalDigits.Length == 3 && 
+                            octalDigits[0] >= '0' && octalDigits[0] <= '7' &&
+                            octalDigits[1] >= '0' && octalDigits[1] <= '7' &&
+                            octalDigits[2] >= '0' && octalDigits[2] <= '7')
+                        {
+                            // Convert octal to character
+                            int octalValue = Convert.ToInt32(octalDigits, 8);
+                            result.Append((char)octalValue);
+                            i += 4; // Skip \xxx
+                            continue;
+                        }
+                    }
+                    
+                    // Handle standard escape sequences
+                    char escapedChar = nextChar switch
+                    {
+                        '\\' => '\\',
+                        'b' => '\b',
+                        't' => '\t',
+                        'n' => '\n',
+                        'r' => '\r',
+                        '"' => '"',
+                        _ => nextChar // Any other character after \ is interpreted as itself
+                    };
+                    
+                    result.Append(escapedChar);
+                    i += 2; // Skip \x
+                }
+                else
+                {
+                    result.Append(input[i]);
+                    i++;
+                }
+            }
+            
+            return result.ToString();
         }
 
         /// <summary>

@@ -134,6 +134,14 @@ namespace K3CSharp.Parsing
             if (expressionTokens.Count == 1)
                 return CreateNodeFromToken(expressionTokens[0]);
                 
+            // Pure LRS mode: Check for implicit vector creation (sequences of atomic literals)
+            if (PureLRSMode && expressionTokens.Count >= 2)
+            {
+                var implicitVector = TryCreateImplicitVector(expressionTokens);
+                if (implicitVector != null)
+                    return implicitVector;
+            }
+                
             // Check for statements first (statements have lower precedence than verbs but higher than separators)
             if (expressionTokens.Count >= 2)
             {
@@ -143,11 +151,30 @@ namespace K3CSharp.Parsing
                     return statementParser.ParseStatement(expressionTokens);
                 }
             }
+            
+            // Check for assignments (variable:value pattern)
+            // Assignments can appear anywhere in the token list, not just at the start
+            for (int i = 1; i < expressionTokens.Count; i++)
+            {
+                if (expressionTokens[i].Type == TokenType.COLON ||
+                    expressionTokens[i].Type == TokenType.ASSIGNMENT ||
+                    expressionTokens[i].Type == TokenType.GLOBAL_ASSIGNMENT)
+                {
+                    // Found an assignment operator - parse as assignment statement
+                    return statementParser.ParseStatement(expressionTokens);
+                }
+            }
                 
             // Check for multi-arity operations first (triadic, tetradic, variadic)
             var multiAryResult = ParseMultiAryOperation(expressionTokens);
             if (multiAryResult != null)
                 return multiAryResult;
+                
+            // Check for adverb operations
+            if (ParseAdverbExpression(expressionTokens) is ASTNode adverbResult)
+            {
+                return adverbResult;
+            }
                 
             // Try dyadic operation
             var dyadicResult = dyadicParser.ParseDyadicOperation(expressionTokens);
@@ -649,32 +676,87 @@ namespace K3CSharp.Parsing
                 }
             }
             
+            // Case 3: Generic verb + single-glyph adverb pattern
+            // Pattern: verb/ args, verb\ args, verb' args (e.g., -/ 10 2 3 1, +\ 1 2 3, #' (1 2;3 4))
+            if (expressionTokens.Count >= 2)
+            {
+                // Check for verb followed by single-glyph adverb
+                if (IsVerbToken(expressionTokens[0].Type) &&
+                    (expressionTokens[1].Type == TokenType.ADVERB_SLASH ||
+                     expressionTokens[1].Type == TokenType.ADVERB_BACKSLASH ||
+                     expressionTokens[1].Type == TokenType.ADVERB_TICK))
+                {
+                    return ParseGenericVerbAdverb(expressionTokens);
+                }
+            }
+            
             return null; // No simple adverb pattern found
         }
         
         /// <summary>
-        /// Check if a token represents a verb (operator or system verb)
+        /// Check if a token represents a verb (operator or system function)
+        /// Uses VerbRegistry to include all verbs, not just hardcoded operators
         /// </summary>
         private bool IsVerbToken(TokenType tokenType)
         {
-            return VerbRegistry.IsDyadicOperator(tokenType) || 
-                   IsMonadicOperator(tokenType) ||
-                   tokenType == TokenType.DOT_PRODUCT; // _dot
+            // Use VerbRegistry to check all registered verbs (operators + system functions)
+            return VerbRegistry.IsVerbToken(tokenType);
         }
         
         /// <summary>
-        /// Check if a token represents a monadic operator
+        /// Parse generic verb + single-glyph adverb pattern (verb/ verb\ verb')
+        /// Handles common patterns like: -/ 10 2 3 1, +\ 1 2 3, #' (1 2;3 4)
         /// </summary>
-        private bool IsMonadicOperator(TokenType tokenType)
+        private ASTNode ParseGenericVerbAdverb(List<Token> expressionTokens)
         {
-            return tokenType == TokenType.MINUS || 
-                   tokenType == TokenType.PLUS ||
-                   tokenType == TokenType.NOT ||
-                   tokenType == TokenType.ATOM ||
-                   tokenType == TokenType.MAKE ||
-                   tokenType == TokenType.HASH ||
-                   tokenType == TokenType.TYPE ||
-                   tokenType == TokenType.STRING_REPRESENTATION;
+            var verbToken = expressionTokens[0];
+            var adverbToken = expressionTokens[1];
+            
+            // Create verb node
+            var verbNode = CreateNodeFromToken(verbToken);
+            
+            // Parse arguments (everything after the adverb)
+            var argTokens = expressionTokens.Skip(2).ToList();
+            ASTNode? argNode = null;
+            
+            if (argTokens.Count > 0)
+            {
+                // Parse the arguments as a sub-expression
+                int argPosition = 0;
+                var argParser = new LRSExpressionProcessor(argTokens, BuildParseTree);
+                argNode = argParser.ProcessExpression(ref argPosition);
+                
+                // If we couldn't parse the arguments, try parsing them as a vector
+                if (argNode == null && argTokens.Count > 0)
+                {
+                    // Create a vector node from the argument tokens
+                    var argNodes = new List<ASTNode>();
+                    foreach (var token in argTokens)
+                    {
+                        if (LRSAtomicParser.IsAtomicToken(token.Type))
+                        {
+                            argNodes.Add(LRSAtomicParser.ParseAtomicToken(token));
+                        }
+                    }
+                    
+                    if (argNodes.Count > 0)
+                    {
+                        argNode = new ASTNode(ASTNodeType.Vector, null, argNodes);
+                    }
+                }
+            }
+            
+            // Create adverb node: DyadicOp(adverb_symbol, verb, arguments)
+            var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
+            adverbNode.Value = new SymbolValue(GetAdverbName(adverbToken.Type));
+            adverbNode.Children.Add(verbNode);
+            
+            if (argNode != null)
+            {
+                adverbNode.Children.Add(argNode);
+            }
+            
+            return adverbNode;
         }
         
         /// <summary>
@@ -821,6 +903,56 @@ namespace K3CSharp.Parsing
             
             // Create DyadicOp with ' symbol - evaluator will handle this specially
             return new ASTNode(ASTNodeType.DyadicOp, new SymbolValue("'"), children);
+        }
+        
+        /// <summary>
+        /// Try to create an implicit vector from a sequence of atomic literals
+        /// Returns null if tokens don't form a valid implicit vector
+        /// </summary>
+        private ASTNode? TryCreateImplicitVector(List<Token> tokens)
+        {
+            if (tokens.Count < 2)
+                return null;
+                
+            // Check if all tokens are atomic literals of compatible types
+            var elements = new List<ASTNode>();
+            TokenType? firstType = null;
+            bool allNumeric = true;
+            bool allSymbols = true;
+            
+            foreach (var token in tokens)
+            {
+                // Check if token is an atomic literal
+                if (!LRSAtomicParser.IsAtomicToken(token.Type))
+                    return null; // Not all atomic - can't be implicit vector
+                    
+                // Track first type
+                if (firstType == null)
+                    firstType = token.Type;
+                    
+                // Check type compatibility
+                bool isNumeric = token.Type == TokenType.INTEGER || 
+                                token.Type == TokenType.LONG || 
+                                token.Type == TokenType.FLOAT;
+                bool isSymbol = token.Type == TokenType.SYMBOL;
+                
+                if (!isNumeric) allNumeric = false;
+                if (!isSymbol) allSymbols = false;
+                
+                // Parse the token and add to elements
+                var node = LRSAtomicParser.ParseAtomicToken(token);
+                if (node == null)
+                    return null;
+                    
+                elements.Add(node);
+            }
+            
+            // Check if we have a valid vector (all numeric or all symbols)
+            if (!allNumeric && !allSymbols)
+                return null; // Mixed incompatible types
+                
+            // Create and return vector node
+            return ASTNode.MakeVector(elements);
         }
     }
 }

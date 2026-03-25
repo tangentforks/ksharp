@@ -12,11 +12,13 @@ namespace K3CSharp.Parsing
     {
         private readonly List<Token> tokens;
         private readonly LRSParser? parentParser;
+        private readonly LRSGroupingParser? groupingParser;
         
         public LRSDyadicParser(List<Token> tokens, LRSParser? parentParser = null)
         {
             this.tokens = tokens;
             this.parentParser = parentParser;
+            this.groupingParser = new LRSGroupingParser(tokens, parentParser?.BuildParseTree ?? false);
         }
         
         /// <summary>
@@ -246,14 +248,89 @@ namespace K3CSharp.Parsing
         
         /// <summary>
         /// Parse sub-expression (could be monadic, dyadic, or atomic)
+        /// Pure LRS mode: Enhanced with grouping parser support
         /// </summary>
         private ASTNode? ParseSubExpression(List<Token> tokens)
         {
             if (tokens.Count == 0) return null;
+            
+            bool pureLRSMode = parentParser?.PureLRSMode ?? false;
+            
+            // Pure LRS mode: Check for grouping constructs first
+            if (pureLRSMode && tokens.Count == 1)
+            {
+                var token = tokens[0];
+                
+                // Handle grouping constructs using LRSGroupingParser
+                if (token.Type == TokenType.LEFT_PAREN || 
+                    token.Type == TokenType.LEFT_BRACKET || 
+                    token.Type == TokenType.LEFT_BRACE)
+                {
+                    int pos = 0;
+                    try
+                    {
+                        if (token.Type == TokenType.LEFT_PAREN)
+                            return groupingParser?.ParseParentheses(ref pos);
+                        else if (token.Type == TokenType.LEFT_BRACKET)
+                            return groupingParser?.ParseBrackets(ref pos);
+                        else if (token.Type == TokenType.LEFT_BRACE)
+                            return groupingParser?.ParseBraces(ref pos);
+                    }
+                    catch
+                    {
+                        // Fall through to default handling
+                    }
+                }
+            }
+            
             if (tokens.Count == 1) 
             {
                 var nodeResult = CreateNodeFromToken(tokens[0]);
                 return nodeResult;
+            }
+            
+            // Pure LRS mode: Check if entire expression is wrapped in grouping construct
+            if (pureLRSMode && tokens.Count > 2)
+            {
+                var firstToken = tokens[0];
+                
+                if (firstToken.Type == TokenType.LEFT_PAREN || 
+                    firstToken.Type == TokenType.LEFT_BRACKET || 
+                    firstToken.Type == TokenType.LEFT_BRACE)
+                {
+                    // Check if this is a complete grouping construct
+                    int depth = 0;
+                    TokenType openType = firstToken.Type;
+                    TokenType closeType = openType == TokenType.LEFT_PAREN ? TokenType.RIGHT_PAREN :
+                                         openType == TokenType.LEFT_BRACKET ? TokenType.RIGHT_BRACKET :
+                                         TokenType.RIGHT_BRACE;
+                    
+                    for (int i = 0; i < tokens.Count; i++)
+                    {
+                        if (tokens[i].Type == openType) depth++;
+                        else if (tokens[i].Type == closeType) depth--;
+                        
+                        // If we close at the last token, this is a complete grouping
+                        if (depth == 0 && i == tokens.Count - 1)
+                        {
+                            int pos = 0;
+                            try
+                            {
+                                if (openType == TokenType.LEFT_PAREN)
+                                    return groupingParser?.ParseParentheses(ref pos);
+                                else if (openType == TokenType.LEFT_BRACKET)
+                                    return groupingParser?.ParseBrackets(ref pos);
+                                else if (openType == TokenType.LEFT_BRACE)
+                                    return groupingParser?.ParseBraces(ref pos);
+                            }
+                            catch
+                            {
+                                // Fall through to dyadic parsing
+                            }
+                            break;
+                        }
+                    }
+                }
             }
             
             // Try dyadic operation (monadic parsing is handled at main LRS level)

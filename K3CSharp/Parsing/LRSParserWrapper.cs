@@ -67,7 +67,13 @@ namespace K3CSharp.Parsing
             
             try
             {
-                // Try LRS parsing first
+                // Pure LRS mode: Handle multiple semicolon-separated expressions
+                if (!enableFallback)
+                {
+                    return ParseMultipleExpressions();
+                }
+                
+                // Safe LRS mode: Single expression with fallback
                 var position = 0;
                 var result = lrsParser?.ParseExpression(ref position);
                 
@@ -105,6 +111,19 @@ namespace K3CSharp.Parsing
                 if (result != null && position >= tokens.Count)
                 {
                     return result;
+                }
+                
+                // Debug logging for Pure LRS mode failures
+                if (!enableFallback && ParserConfig.EnableDebugging)
+                {
+                    Console.WriteLine($"[DEBUG] Pure LRS parsing incomplete:");
+                    Console.WriteLine($"  Source: {sourceText}");
+                    Console.WriteLine($"  Result: {(result != null ? "NOT NULL" : "NULL")}");
+                    Console.WriteLine($"  Position: {position}/{tokens.Count}");
+                    if (position < tokens.Count)
+                    {
+                        Console.WriteLine($"  Remaining tokens: {string.Join(" ", tokens.Skip(position).Select(t => t.Type))}");
+                    }
                 }
                 
                 // If LRS parsing didn't consume all tokens, fall back
@@ -293,6 +312,87 @@ namespace K3CSharp.Parsing
             if (lastTokenType.HasValue)
                 return $"After {lastTokenType.Value} (position {consumedTokens}/{totalTokens})";
             return $"Position {consumedTokens}/{totalTokens}";
+        }
+        
+        /// <summary>
+        /// Parse multiple semicolon-separated expressions in Pure LRS mode
+        /// Returns the result of the last expression (K semantics)
+        /// </summary>
+        private ASTNode? ParseMultipleExpressions()
+        {
+            var position = 0;
+            ASTNode? lastResult = null;
+            
+            while (position < tokens.Count)
+            {
+                // Skip leading separators
+                while (position < tokens.Count && 
+                       (tokens[position].Type == TokenType.NEWLINE || 
+                        tokens[position].Type == TokenType.SEMICOLON))
+                {
+                    position++;
+                }
+                
+                // Check if we've reached the end
+                if (position >= tokens.Count || tokens[position].Type == TokenType.EOF)
+                {
+                    break;
+                }
+                
+                // Parse one expression
+                var result = lrsParser?.ParseExpression(ref position);
+                
+                if (result == null)
+                {
+                    // Parsing failed - record failure and return null
+                    if (ParserConfig.EnableDebugging)
+                    {
+                        Console.WriteLine($"[DEBUG] Pure LRS multi-expression parsing failed at position {position}");
+                        Console.WriteLine($"  Source: {sourceText}");
+                        if (position < tokens.Count)
+                        {
+                            Console.WriteLine($"  Failed at token: {tokens[position].Type}({tokens[position].Lexeme})");
+                        }
+                    }
+                    return null;
+                }
+                
+                lastResult = result;
+                
+                // Skip trailing separators after this expression
+                while (position < tokens.Count && 
+                       (tokens[position].Type == TokenType.NEWLINE || 
+                        tokens[position].Type == TokenType.SEMICOLON))
+                {
+                    position++;
+                }
+            }
+            
+            // Skip final EOF token if present
+            if (position < tokens.Count && tokens[position].Type == TokenType.EOF)
+            {
+                position++;
+            }
+            
+            // Validate that we consumed all tokens
+            if (position >= tokens.Count)
+            {
+                return lastResult;
+            }
+            
+            // Debug logging for incomplete parsing
+            if (ParserConfig.EnableDebugging)
+            {
+                Console.WriteLine($"[DEBUG] Pure LRS multi-expression parsing incomplete:");
+                Console.WriteLine($"  Source: {sourceText}");
+                Console.WriteLine($"  Position: {position}/{tokens.Count}");
+                if (position < tokens.Count)
+                {
+                    Console.WriteLine($"  Remaining tokens: {string.Join(" ", tokens.Skip(position).Select(t => t.Type))}");
+                }
+            }
+            
+            return null; // Incomplete parse
         }
     }
     

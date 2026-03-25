@@ -260,7 +260,7 @@ namespace K3CSharp.Parsing
         private ASTNode? ParseExpressionInGrouping(ref int position)
         {
             if (position >= tokens.Count)
-                return null;
+                return ASTNode.MakeLiteral(new NullValue()); // Return K NullValue for empty
                 
             var token = tokens[position];
             
@@ -300,13 +300,13 @@ namespace K3CSharp.Parsing
                 case TokenType.APPLY:
                     return ParseMonadicOperator(ref position);
                     
-                // Stop at expression separators
+                // Stop at expression separators - return K NullValue
                 case TokenType.SEMICOLON:
                 case TokenType.NEWLINE:
                 case TokenType.RIGHT_PAREN:
                 case TokenType.RIGHT_BRACKET:
                 case TokenType.RIGHT_BRACE:
-                    return null; // End of current expression
+                    return ASTNode.MakeLiteral(new NullValue()); // K NullValue for empty expression
                     
                 default:
                     throw new Exception($"Unexpected token in expression: {token.Type}({token.Lexeme})");
@@ -327,6 +327,7 @@ namespace K3CSharp.Parsing
 
         /// <summary>
         /// Parse function body with optional parameters
+        /// Creates proper Function AST node with FunctionValue
         /// </summary>
         private ASTNode ParseFunctionBody(ref int position)
         {
@@ -363,7 +364,20 @@ namespace K3CSharp.Parsing
             
             // Parse function body
             var body = ParseExpressionInGrouping(ref position);
-            return body ?? ASTNode.MakeLiteral(new NullValue());
+            var bodyNode = body ?? ASTNode.MakeLiteral(new NullValue());
+            
+            // Create Function AST node with FunctionValue
+            // Note: FunctionValue stores body as text, but we also store the parsed AST in the node's Children
+            var functionNode = new ASTNode(ASTNodeType.Function);
+            
+            // Store the body text (simplified representation for now)
+            string bodyText = "parsed_lambda_body";
+            functionNode.Value = new FunctionValue(bodyText, parameters, null!, bodyText);
+            
+            // Store the actual parsed body AST as a child node for evaluation
+            functionNode.Children.Add(bodyNode);
+            
+            return functionNode;
         }
 
         /// <summary>

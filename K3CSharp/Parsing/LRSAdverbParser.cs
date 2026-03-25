@@ -192,65 +192,24 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Get verb name from token using VerbRegistry mapping
+        /// Get verb name from token using VerbRegistry (verb-agnostic)
         /// </summary>
         /// <param name="token">Token to convert</param>
         /// <returns>Verb name or null if not a verb</returns>
         private string? GetVerbNameFromToken(Token token)
         {
-            return token.Type switch
-            {
-                TokenType.CI => "_ci",
-                TokenType.IC => "_ic",
-                TokenType.SV => "_sv",
-                TokenType.SS => "_ss",
-                TokenType.SM => "_sm",
-                TokenType.DRAW => "_draw",
-                TokenType.GETENV => "_getenv",
-                TokenType.SIZE => "_size",
-                TokenType.DIRECTORY => "_d",
-                TokenType.TIME => "_t",
-                TokenType.EVAL => "_eval",
-                TokenType.PARSE => "_parse",
-                TokenType.PLUS => "+",
-                TokenType.MINUS => "-",
-                TokenType.MULTIPLY => "*",
-                TokenType.DIVIDE => "%",
-                TokenType.POWER => "^",
-                TokenType.MODULUS => "!",
-                TokenType.LESS => "<",
-                TokenType.GREATER => ">",
-                TokenType.EQUAL => "=",
-                TokenType.MATCH => "~",
-                TokenType.JOIN => ",",
-                TokenType.HASH => "#",
-                TokenType.DOLLAR => "$",
-                TokenType.QUESTION => "?",
-                TokenType.UNDERSCORE => "_",
-                TokenType.ATOM => "@",
-                TokenType.MAKE => ".",
-                _ => null
-            };
+            // Use VerbRegistry to get verb name from token type
+            var verbName = VerbRegistry.TokenTypeToVerbName(token.Type);
+            // Return null if it's not a recognized verb (TokenTypeToVerbName returns the token type string for unknown verbs)
+            return VerbRegistry.HasVerb(verbName) ? verbName : null;
         }
         
         /// <summary>
-        /// Check if token type is a dyadic operator
+        /// Check if token type is a dyadic operator using VerbRegistry (verb-agnostic)
         /// </summary>
         private bool IsDyadicOperator(TokenType tokenType)
         {
-            // Simplified check - in practice, this should use the same logic as LRSDyadicParser
-            return tokenType == TokenType.PLUS ||
-                   tokenType == TokenType.MINUS ||
-                   tokenType == TokenType.MULTIPLY ||
-                   tokenType == TokenType.DIVIDE ||
-                   tokenType == TokenType.MODULUS ||
-                   tokenType == TokenType.POWER ||
-                   tokenType == TokenType.LESS ||
-                   tokenType == TokenType.GREATER ||
-                   tokenType == TokenType.EQUAL ||
-                   tokenType == TokenType.MATCH ||
-                   tokenType == TokenType.JOIN ||
-                   tokenType == TokenType.HASH;
+            return VerbRegistry.IsDyadicOperatorToken(tokenType);
         }
         
         /// <summary>
@@ -262,19 +221,23 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Create two-glyph adverb node
+        /// Create two-glyph adverb node with correct arity
         /// </summary>
         private ASTNode CreateTwoGlyphAdverbNode(Token adverbToken, ASTNode leftArg, ASTNode rightArg)
         {
+            // Two-glyph adverbs (/: \: ':) are always dyadic per K spec
             var children = new List<ASTNode> { leftArg, rightArg };
             return new ASTNode(ASTNodeType.DyadicOp, new SymbolValue(adverbToken.Lexeme), children);
         }
         
         /// <summary>
-        /// Create verb-immediate-left adverb node
+        /// Create verb-immediate-left adverb node with correct arity
+        /// Note: Uses DyadicOp for all adverbs (K3CSharp convention), evaluator handles arity
         /// </summary>
         private ASTNode CreateVerbImmediateLeftAdverbNode(Token adverbToken, ASTNode leftArg, ASTNode rightArg)
         {
+            // Note: K3CSharp uses DyadicOp for all operators regardless of arity
+            // The evaluator determines actual arity from the adverb type and verb characteristics
             var children = new List<ASTNode> { leftArg, rightArg };
             return new ASTNode(ASTNodeType.DyadicOp, new SymbolValue(adverbToken.Lexeme), children);
         }
@@ -425,6 +388,7 @@ namespace K3CSharp.Parsing
         
         /// <summary>
         /// Create AST node for adverb operation with validation
+        /// Creates correct node type (MonadicOp or DyadicOp) based on modified verb's arity
         /// </summary>
         private ASTNode CreateAdverbNode(Token adverbToken, ASTNode verb, ASTNode? argument = null)
         {
@@ -437,6 +401,13 @@ namespace K3CSharp.Parsing
                 throw new Exception($"Verb '{verbName}' is not compatible with adverb '{adverbToken.Lexeme}' ({adverbType})");
             }
             
+            // Note: K3CSharp uses DyadicOp for all operators regardless of arity
+            // The evaluator determines actual arity from:
+            // - K spec (lines 1092-1098): / \ can be monadic or dyadic, ' preserves arity,
+            //   \: /: are always dyadic, ': can be monadic or dyadic
+            // - Disambiguating colon: verb: before adverb forces monadic interpretation
+            // - Default: dyadic interpretation for polymorphic verbs (K spec line 844)
+            
             var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
             adverbNode.Value = new SymbolValue(GetAdverbSymbol(adverbToken.Type));
             adverbNode.Children.Add(verb);
@@ -444,7 +415,7 @@ namespace K3CSharp.Parsing
                 adverbNode.Children.Add(argument);
             return adverbNode;
         }
-
+        
         /// <summary>
         /// Get adverb symbol for token type
         /// </summary>
