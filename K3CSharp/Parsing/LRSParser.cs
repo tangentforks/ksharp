@@ -35,7 +35,7 @@ namespace K3CSharp.Parsing
             this.monadicParser = new LRSMonadicParser(this);
             this.functionParser = new LRSFunctionParser(tokens);
             this.statementParser = new LRSStatementParser(tokens, this);
-            this.groupingParser = new LRSGroupingParser(tokens, buildParseTree);
+            this.groupingParser = new LRSGroupingParser(tokens, buildParseTree, this);
         }
         
         /// <summary>
@@ -134,6 +134,46 @@ namespace K3CSharp.Parsing
             if (expressionTokens.Count == 1)
                 return CreateNodeFromToken(expressionTokens[0]);
                 
+            // Check for grouping constructs FIRST (highest precedence per K spec)
+            // Only if the ENTIRE expression is wrapped in grouping constructs
+            if (expressionTokens.Count >= 2)
+            {
+                var firstToken = expressionTokens[0];
+                if (firstToken.Type == TokenType.LEFT_PAREN || 
+                    firstToken.Type == TokenType.LEFT_BRACKET || 
+                    firstToken.Type == TokenType.LEFT_BRACE)
+                {
+                    // Check if the entire expression is wrapped in this grouping construct
+                    int depth = 0;
+                    TokenType openType = firstToken.Type;
+                    TokenType closeType = openType == TokenType.LEFT_PAREN ? TokenType.RIGHT_PAREN :
+                                         openType == TokenType.LEFT_BRACKET ? TokenType.RIGHT_BRACKET :
+                                         TokenType.RIGHT_BRACE;
+                    
+                    for (int i = 0; i < expressionTokens.Count; i++)
+                    {
+                        if (expressionTokens[i].Type == openType) depth++;
+                        else if (expressionTokens[i].Type == closeType) depth--;
+                        
+                        // If we close at the last token, this is a complete grouping
+                        if (depth == 0 && i == expressionTokens.Count - 1)
+                        {
+                            // Delegate to grouping parser for the entire wrapped expression
+                            var tempGroupingParser = new LRSGroupingParser(expressionTokens, BuildParseTree, this);
+                            int pos = 0;
+                            if (openType == TokenType.LEFT_PAREN)
+                                return tempGroupingParser.ParseParentheses(ref pos);
+                            else if (openType == TokenType.LEFT_BRACKET)
+                                return tempGroupingParser.ParseBrackets(ref pos);
+                            else if (openType == TokenType.LEFT_BRACE)
+                                return tempGroupingParser.ParseBraces(ref pos);
+                        }
+                    }
+                }
+                // Period expressions (dictionaries) handled by DOT_APPLY/MAKE operators
+                // These will be caught by the dyadic/monadic parsing below
+            }
+                
             // Pure LRS mode: Check for implicit vector creation (sequences of atomic literals)
             if (PureLRSMode && expressionTokens.Count >= 2)
             {
@@ -149,6 +189,16 @@ namespace K3CSharp.Parsing
                 if (LRSStatementParser.CouldBeStatement(firstToken.Type))
                 {
                     return statementParser.ParseStatement(expressionTokens);
+                }
+            }
+            
+            // Check for special functions (_parse, _eval, lambda definitions)
+            if (expressionTokens.Count >= 2)
+            {
+                var firstToken = expressionTokens[0];
+                if (LRSFunctionParser.CouldBeFunction(firstToken.Type))
+                {
+                    return functionParser.ParseFunctionCall(expressionTokens);
                 }
             }
             

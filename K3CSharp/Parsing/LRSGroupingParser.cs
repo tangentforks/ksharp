@@ -12,11 +12,13 @@ namespace K3CSharp.Parsing
     {
         private readonly List<Token> tokens;
         private readonly bool buildParseTree;
+        private readonly LRSParser? parentParser;
         
-        public LRSGroupingParser(List<Token> tokens, bool buildParseTree = false)
+        public LRSGroupingParser(List<Token> tokens, bool buildParseTree = false, LRSParser? parentParser = null)
         {
             this.tokens = tokens;
             this.buildParseTree = buildParseTree;
+            this.parentParser = parentParser;
         }
 
         /// <summary>
@@ -256,63 +258,85 @@ namespace K3CSharp.Parsing
 
         /// <summary>
         /// Parse expression within grouping constructs
+        /// Collects all tokens including nested parentheses and delegates to LRS parser
         /// </summary>
         private ASTNode? ParseExpressionInGrouping(ref int position)
         {
             if (position >= tokens.Count)
                 return ASTNode.MakeLiteral(new NullValue()); // Return K NullValue for empty
-                
+            
             var token = tokens[position];
             
-            // Handle atomic expressions
-            if (LRSAtomicParser.IsAtomicToken(token.Type))
+            // Check for expression separators or closing delimiters at start
+            if (token.Type == TokenType.SEMICOLON || token.Type == TokenType.NEWLINE ||
+                token.Type == TokenType.RIGHT_PAREN || token.Type == TokenType.RIGHT_BRACKET || 
+                token.Type == TokenType.RIGHT_BRACE)
             {
-                position++;
-                return LRSAtomicParser.ParseAtomicToken(token);
+                return ASTNode.MakeLiteral(new NullValue()); // Empty expression
             }
             
-            // Handle grouping constructs
-            switch (token.Type)
+            // Collect all tokens for this expression, including nested parentheses
+            // Track depth to know when we hit the end of this expression
+            // We start at depth 0 (outside any grouping constructs)
+            var exprTokens = new List<Token>();
+            int depth = 0;
+            
+            while (position < tokens.Count)
             {
-                case TokenType.LEFT_PAREN:
-                    return ParseParentheses(ref position);
-                    
-                case TokenType.LEFT_BRACKET:
-                    return ParseBrackets(ref position);
-                    
-                case TokenType.LEFT_BRACE:
-                    return ParseBraces(ref position);
-                    
-                // Handle monadic operators
-                case TokenType.PLUS:
-                case TokenType.MINUS:
-                case TokenType.MULTIPLY:
-                case TokenType.DIVIDE:
-                case TokenType.MODULUS:
-                case TokenType.POWER:
-                case TokenType.JOIN:
-                case TokenType.MATCH:
-                case TokenType.NOT:
-                case TokenType.HASH:
-                case TokenType.UNDERSCORE:
-                case TokenType.QUESTION:
-                case TokenType.DOLLAR:
-                case TokenType.APPLY:
-                    return ParseMonadicOperator(ref position);
-                    
-                // Stop at expression separators - return K NullValue
-                case TokenType.SEMICOLON:
-                case TokenType.NEWLINE:
-                case TokenType.RIGHT_PAREN:
-                case TokenType.RIGHT_BRACKET:
-                case TokenType.RIGHT_BRACE:
-                    return ASTNode.MakeLiteral(new NullValue()); // K NullValue for empty expression
-                    
-                default:
-                    throw new Exception($"Unexpected token in expression: {token.Type}({token.Lexeme})");
+                token = tokens[position];
+                
+                // Check for closing delimiter at depth 0 - this belongs to our parent
+                if (depth == 0 && (token.Type == TokenType.RIGHT_PAREN || 
+                                   token.Type == TokenType.RIGHT_BRACKET || 
+                                   token.Type == TokenType.RIGHT_BRACE))
+                {
+                    break; // End of this expression (closing delimiter of parent)
+                }
+                
+                // Check for separator at depth 0
+                if (depth == 0 && (token.Type == TokenType.SEMICOLON || token.Type == TokenType.NEWLINE))
+                {
+                    break; // Expression separator at base level
+                }
+                
+                // Track nesting depth for grouping constructs
+                if (token.Type == TokenType.LEFT_PAREN || token.Type == TokenType.LEFT_BRACKET || 
+                    token.Type == TokenType.LEFT_BRACE)
+                {
+                    depth++;
+                }
+                else if (token.Type == TokenType.RIGHT_PAREN || token.Type == TokenType.RIGHT_BRACKET || 
+                         token.Type == TokenType.RIGHT_BRACE)
+                {
+                    depth--;
+                }
+                
+                exprTokens.Add(token);
+                position++;
+            }
+            
+            // If no tokens collected, return null
+            if (exprTokens.Count == 0)
+                return ASTNode.MakeLiteral(new NullValue());
+            
+            // Delegate to parent LRS parser for proper expression parsing
+            // Parent parser will handle nested parentheses recursively
+            if (parentParser != null)
+            {
+                if (buildParseTree)
+                    return parentParser.BuildParseTreeFromRight(exprTokens);
+                else
+                    return parentParser.EvaluateFromRight(exprTokens);
+            }
+            else
+            {
+                // Fallback: create new parser instance (should not happen in normal flow)
+                var lrsParser = new LRSParser(exprTokens, buildParseTree);
+                int pos = 0;
+                return lrsParser.ParseExpression(ref pos);
             }
         }
-
+        
         /// <summary>
         /// Parse bracket argument (single expression within brackets)
         /// </summary>
@@ -378,49 +402,6 @@ namespace K3CSharp.Parsing
             functionNode.Children.Add(bodyNode);
             
             return functionNode;
-        }
-
-        /// <summary>
-        /// Parse monadic operator within grouping context
-        /// </summary>
-        private ASTNode ParseMonadicOperator(ref int position)
-        {
-            var token = tokens[position];
-            position++;
-            
-            // Check if this is a projection (no operand before closing parenthesis/separator)
-            var isProjection = position >= tokens.Count || 
-                tokens[position].Type == TokenType.RIGHT_PAREN ||
-                tokens[position].Type == TokenType.RIGHT_BRACKET ||
-                tokens[position].Type == TokenType.RIGHT_BRACE ||
-                tokens[position].Type == TokenType.SEMICOLON ||
-                tokens[position].Type == TokenType.NEWLINE;
-                
-            if (isProjection)
-            {
-                // This is a projection - create a ProjectedFunction node
-                var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
-                
-                // Convert token type to operator symbol
-                var operatorSymbol = VerbRegistry.GetDyadicOperatorSymbol(token.Type);
-                
-                projectedNode.Value = new SymbolValue(operatorSymbol);
-                
-                // Determine arity from VerbRegistry - use highest supported arity as default
-                var verb = VerbRegistry.GetVerb(operatorSymbol);
-                int defaultArity = verb?.SupportedArities?.Max() ?? 2;
-                projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(defaultArity)));
-                
-                return projectedNode;
-            }
-            
-            var operand = ParseExpressionInGrouping(ref position);
-            if (operand == null)
-            {
-                throw new Exception($"Expected expression after monadic operator {token.Lexeme}");
-            }
-            
-            return ASTNode.MakeDyadicOp(token.Type, operand, ASTNode.MakeLiteral(new NullValue()));
         }
     }
 }

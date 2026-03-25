@@ -171,6 +171,11 @@
 ║ underflow_regular_int.k                            │ -2147483639 - 40     │ 2147483617           │                      ║
 ║ parentheses_basic.k                                │ 1 + 2 * 3            │ 7                    │                      ║
 ║ parentheses_grouping.k                             │ (1 + 2) * 3          │ 9                    │                      ║
+║ debug_mult_only.k                                  │ 3 * 7                │ 21                   │                      ║
+║ debug_no_outer_paren.k                             │ 1 + 2 * 3 + 4        │ 15                   │                      ║
+║ debug_left_paren.k                                 │ (1 + 2)              │ 3                    │                      ║
+║ debug_simple_mult.k                                │ (1 + 2) * (3 + 4)    │ 21                   │                      ║
+║ debug_double_nested.k                              │ ((1 + 2) * (3 + 4))  │ 21                   │                      ║
 ║ parentheses_nested.k                               │ (1 + (2 * 3))        │ 7                    │                      ║
 ║ parentheses_nested1.k                              │ ((1 + 2) * (3 + 4))  │ 21                   │                      ║
 ║ parentheses_nested2.k                              │ (10 % (2 + (3 * 4))) │ 0.7142857            │                      ║
@@ -458,7 +463,7 @@
 ║ semicolon_vars_test.k                              │ a: 10                │                      │                      ║
 ║ apply_and_assign_simple.k                          │ i:0;i+:1;i           │ 0                    │ 1                    ║
 ║ apply_and_assign_multiline.k                       │ i:0                  │ 0                    │ 1                    ║
-║ io_read_basic.k                                    │ 0:`test              │ ()                   │ ("line1";"line2...   ║
+║ io_read_basic.k                                    │ 0:`test              │ ,"0 1 2 255"         │ ("line1";"line2...   ║
 ║ io_write_basic.k                                   │ `testW 0: ("line1";"line2";"line3");0:`testW │ ("line1";"line2...   │                      ║
 ║ io_append_simple.k                                 │ `testfile 5: "hello" │                      │                      ║
 ║ io_append_basic.k                                  │ `test 5: "hello"     │                      │                      ║
@@ -848,7 +853,7 @@
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 813/844 tests passed (96.3%)                                                                               ║
+║ SUMMARY: 818/849 tests passed (96.3%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -906,7 +911,7 @@ Actual: 0
 Test: io_read_basic.k
 Input: 0:`test
 Expected: ("line1";"line2";"line3")
-Actual: ()
+Actual: ,"0 1 2 255"
 ──────────────────────────────────────────────────────────────────────────
 Test: io_read_bytes_basic.k
 Input: `test 0:,"hello";6:`test

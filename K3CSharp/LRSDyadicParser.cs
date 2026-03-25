@@ -266,15 +266,17 @@ namespace K3CSharp.Parsing
                     token.Type == TokenType.LEFT_BRACKET || 
                     token.Type == TokenType.LEFT_BRACE)
                 {
+                    // Create new grouping parser with the sub-expression tokens
+                    var subGroupingParser = new LRSGroupingParser(tokens, parentParser?.BuildParseTree ?? false, parentParser);
                     int pos = 0;
                     try
                     {
                         if (token.Type == TokenType.LEFT_PAREN)
-                            return groupingParser?.ParseParentheses(ref pos);
+                            return subGroupingParser.ParseParentheses(ref pos);
                         else if (token.Type == TokenType.LEFT_BRACKET)
-                            return groupingParser?.ParseBrackets(ref pos);
+                            return subGroupingParser.ParseBrackets(ref pos);
                         else if (token.Type == TokenType.LEFT_BRACE)
-                            return groupingParser?.ParseBraces(ref pos);
+                            return subGroupingParser.ParseBraces(ref pos);
                     }
                     catch
                     {
@@ -313,15 +315,17 @@ namespace K3CSharp.Parsing
                         // If we close at the last token, this is a complete grouping
                         if (depth == 0 && i == tokens.Count - 1)
                         {
+                            // Create new grouping parser with the sub-expression tokens
+                            var subGroupingParser = new LRSGroupingParser(tokens, parentParser?.BuildParseTree ?? false, parentParser);
                             int pos = 0;
                             try
                             {
                                 if (openType == TokenType.LEFT_PAREN)
-                                    return groupingParser?.ParseParentheses(ref pos);
+                                    return subGroupingParser.ParseParentheses(ref pos);
                                 else if (openType == TokenType.LEFT_BRACKET)
-                                    return groupingParser?.ParseBrackets(ref pos);
+                                    return subGroupingParser.ParseBrackets(ref pos);
                                 else if (openType == TokenType.LEFT_BRACE)
-                                    return groupingParser?.ParseBraces(ref pos);
+                                    return subGroupingParser.ParseBraces(ref pos);
                             }
                             catch
                             {

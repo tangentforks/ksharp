@@ -682,6 +682,16 @@ namespace K3CSharp.Tests
 
                 ("parentheses_grouping.k", "9"),
 
+                ("debug_mult_only.k", "21"),
+                
+                ("debug_no_outer_paren.k", "15"),
+                
+                ("debug_left_paren.k", "3"),
+                
+                ("debug_simple_mult.k", "21"),
+                
+                ("debug_double_nested.k", "21"),
+                
                 ("parentheses_nested.k", "7"),
 
                 ("parentheses_nested1.k", "21"),

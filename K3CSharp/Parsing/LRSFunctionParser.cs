@@ -31,6 +31,12 @@ namespace K3CSharp.Parsing
             
             var funcToken = tokens[0];
             
+            // Lambda expressions need legacy parser (LRS doesn't have lambda parsing yet)
+            if (funcToken.Type == TokenType.LEFT_BRACE)
+            {
+                return DelegateToLegacyParser(tokens);
+            }
+            
             // Check if this is a special function (_parse, _eval, etc.)
             if (IsSpecialFunction(funcToken.Type))
             {
@@ -203,13 +209,28 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
+        /// Delegate to legacy parser for lambda expressions
+        /// LRS doesn't have lambda parsing yet, so we use the legacy FunctionParser
+        /// </summary>
+        private ASTNode? DelegateToLegacyParser(List<Token> tokens)
+        {
+            // Create a parse context for the legacy parser
+            // We need to reconstruct the source text from tokens for ParseContext
+            var sourceText = string.Join(" ", tokens.Select(t => t.Lexeme));
+            var context = new ParseContext(tokens, sourceText);
+            var parser = new FunctionParser();
+            return parser.Parse(context);
+        }
+        
+        /// <summary>
         /// Check if token could be a function using OperatorDetector
         /// </summary>
         public static bool CouldBeFunction(TokenType tokenType)
         {
             return OperatorDetector.IsFunction(tokenType) || 
                    tokenType == TokenType.PARSE || 
-                   tokenType == TokenType.EVAL;
+                   tokenType == TokenType.EVAL ||
+                   tokenType == TokenType.LEFT_BRACE; // Lambda expressions
         }
     }
 }

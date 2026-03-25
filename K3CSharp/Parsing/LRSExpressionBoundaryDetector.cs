@@ -96,7 +96,8 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Check if we're at an expression boundary based on verb properties
+        /// Check if we're at an expression boundary
+        /// K has no operator precedence - all operators evaluate right-to-left
         /// </summary>
         private bool IsAtExpressionBoundary(Token token, int position, ExpressionContext context)
         {
@@ -108,9 +109,7 @@ namespace K3CSharp.Parsing
             if (VerbRegistry.IsAdverbToken(token.Type) && depthTracker.IsAtBaseLevel())
                 return true;
             
-            // Check for operator precedence boundaries
-            if (IsOperatorBoundary(token, position))
-                return true;
+            // No operator precedence in K - removed IsOperatorBoundary check
             
             return false;
         }
@@ -158,27 +157,14 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Operator boundary detection
-        /// </summary>
-        private bool IsOperatorBoundary(Token token, int position)
-        {
-            // Check if this operator creates a natural boundary
-            if (IsHighPrecedenceOperator(token.Type))
-            {
-                // High precedence operators might create boundaries for lower precedence expressions
-                return position > 0 && IsLowPrecedenceOperator(tokens[position - 1].Type);
-            }
-            
-            return false;
-        }
-        
-        /// <summary>
         /// Context-specific boundary detection for adverb arguments
+        /// K has no operator precedence - all operators evaluate right-to-left
         /// </summary>
         private bool ShouldStopForAdverbArgument(Token token)
         {
-            // Adverb arguments typically stop at separators or operator boundaries
-            return depthTracker.IsAtBaseLevel() && (IsSeparatorToken(token.Type) || IsOperatorBoundary(token, 0));
+            // Adverb arguments stop at separators when at base level
+            // No operator precedence in K - all operators have equal precedence
+            return depthTracker.IsAtBaseLevel() && IsSeparatorToken(token.Type);
         }
         
         /// <summary>
@@ -210,26 +196,15 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Extract verb name from token
+        /// Extract verb name from token using VerbRegistry
         /// </summary>
         private string GetVerbName(Token token)
         {
-            return token.Type switch
-            {
-                TokenType.IDENTIFIER => token.Lexeme,
-                TokenType.PLUS => "+",
-                TokenType.MINUS => "-",
-                TokenType.MULTIPLY => "*",
-                TokenType.DIVIDE => "%",
-                TokenType.POWER => "^",
-                TokenType.MODULUS => "!",
-                TokenType.JOIN => ",",
-                TokenType.MATCH => "~",
-                TokenType.HASH => "#",
-                TokenType.DOLLAR => "$",
-                TokenType.UNDERSCORE => "_",
-                _ => ""
-            };
+            // Use VerbRegistry for proper token-to-verb mapping
+            if (token.Type == TokenType.IDENTIFIER)
+                return token.Lexeme;
+            
+            return VerbRegistry.TokenTypeToVerbName(token.Type);
         }
         
         /// <summary>
@@ -260,27 +235,6 @@ namespace K3CSharp.Parsing
             // Since TokenType.ERROR doesn't exist, we'll handle this differently
             // For now, we'll consider unknown tokens as errors
             return tokenType == TokenType.UNKNOWN;
-        }
-        
-        /// <summary>
-        /// Check if token is a high precedence operator
-        /// </summary>
-        private bool IsHighPrecedenceOperator(TokenType tokenType)
-        {
-            return tokenType == TokenType.MULTIPLY ||
-                   tokenType == TokenType.DIVIDE ||
-                   tokenType == TokenType.MODULUS ||
-                   tokenType == TokenType.POWER;
-        }
-        
-        /// <summary>
-        /// Check if token is a low precedence operator
-        /// </summary>
-        private bool IsLowPrecedenceOperator(TokenType tokenType)
-        {
-            return tokenType == TokenType.PLUS ||
-                   tokenType == TokenType.MINUS ||
-                   tokenType == TokenType.JOIN;
         }
         
         /// <summary>
