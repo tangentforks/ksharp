@@ -30,6 +30,13 @@ namespace K3CSharp.Tests
 
         {
 
+            // Check for diagnostics mode
+            if (args.Length > 0 && args[0] == "--diagnose-pure-lrs")
+            {
+                PureLRSDiagnosticsRunner.RunDiagnostics();
+                return;
+            }
+
             // Set PROMPT environment variable to "$P$G" for consistency with test expectations
 
             Environment.SetEnvironmentVariable("PROMPT", "$P$G");

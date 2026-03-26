@@ -769,8 +769,8 @@
 ║ ffi_assembly_load.k                                │ // Test basic FFI functionality │ `._dotnet.Syste...   │                      ║
 ║ ffi_type_marshalling.k                             │ f:3.14159;f _sethint `float;s:"hello";s _sethint `string;l:1 2 3 4 5;l: _sethint `list // This needs to be split at some point │ Error: Undefine...   │ 1 2 3 4 5            ║
 ║ ffi_object_management.k                            │ str: "hello";str _sethint `object; str . ToUpper │ Error: Undefine...   │ HELLO                ║
-║ ffi_constructor.k                                  │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.19\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex │ .((`real;2.0;);...   │                      ║
-║ ffi_dispose.k                                      │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.19\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex │ `obj1                │ Disposed             ║
+║ ffi_constructor.k                                  │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex │ .((`real;2.0;);...   │                      ║
+║ ffi_dispose.k                                      │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex │ `obj1                │ Disposed             ║
 ║ ffi_complete_workflow.k                            │ // Complete FFI Workflow Test │ .((`real;2.0;);...   │                      ║
 ║ idioms_01_575_kronecker_delta.k                    │ x:0 0 1 1            │ 1 0 0 1              │                      ║
 ║ idioms_01_571_xbutnoty.k                           │ x:0 1 0 1            │ 0 1 0 0              │                      ║
@@ -937,7 +937,7 @@ Expected: HELLO
 Actual: Error: Undefined variable: _sethint
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_dispose.k
-Input: complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.19\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
+Input: complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
 Expected: Disposed
 Actual: `obj1
 ──────────────────────────────────────────────────────────────────────────

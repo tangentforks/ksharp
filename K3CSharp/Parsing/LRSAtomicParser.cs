@@ -134,15 +134,21 @@ namespace K3CSharp.Parsing
         {
             var lexeme = token.Lexeme;
             
-            // Remove quotes and process escape sequences
+            // CHARACTER_VECTOR tokens from lexer contain raw string content (no quotes)
+            // But we also need to handle cases where quotes might be present
             if (lexeme.Length >= 2 && lexeme[0] == '"' && lexeme[^1] == '"')
             {
+                // Traditional quoted string - remove quotes and process escape sequences
                 var rawString = lexeme.Substring(1, lexeme.Length - 2);
                 var processedString = ProcessEscapeSequences(rawString);
                 return ASTNode.MakeLiteral(new SymbolValue(processedString));
             }
-            
-            throw new ArgumentException($"Invalid string literal: {lexeme}");
+            else
+            {
+                // CHARACTER_VECTOR token with raw content - process escape sequences directly
+                var processedString = ProcessEscapeSequences(lexeme);
+                return ASTNode.MakeLiteral(new SymbolValue(processedString));
+            }
         }
         
         /// <summary>

@@ -78,17 +78,44 @@ namespace K3CSharp.Parsing
         /// <returns>AST node representing the parsed expression</returns>
         public ASTNode? ParseExpression(ref int position)
         {
+            if (PureLRSMode && ParserConfig.EnableDebugging)
+            {
+                Console.WriteLine($"[PURE LRS DEBUG] ParseExpression called at position {position}/{tokens.Count}");
+            }
+            
             // Step 1: Read entire expression until separator
             var expressionTokens = expressionParser.ReadExpressionTokens(ref position);
+            
+            if (PureLRSMode && ParserConfig.EnableDebugging)
+            {
+                Console.WriteLine($"[PURE LRS DEBUG] ReadExpressionTokens returned {expressionTokens.Count} tokens");
+                if (expressionTokens.Count == 0)
+                {
+                    Console.WriteLine($"[PURE LRS DEBUG] NULL RETURN: No tokens read from position {position}");
+                }
+                else
+                {
+                    var tokenTypes = string.Join(", ", expressionTokens.Select(t => t.Type.ToString()));
+                    Console.WriteLine($"[PURE LRS DEBUG] Tokens: {tokenTypes}");
+                }
+            }
             
             if (expressionTokens.Count == 0)
                 return null;
                 
             // Step 2: Choose strategy based on mode
+            ASTNode? result;
             if (BuildParseTree)
-                return BuildParseTreeFromRight(expressionTokens);
+                result = BuildParseTreeFromRight(expressionTokens);
             else
-                return EvaluateFromRight(expressionTokens);
+                result = EvaluateFromRight(expressionTokens);
+                
+            if (PureLRSMode && ParserConfig.EnableDebugging)
+            {
+                Console.WriteLine($"[PURE LRS DEBUG] ParseExpression result: {(result == null ? "NULL" : result.Type.ToString())}");
+            }
+            
+            return result;
         }
         
         /// <summary>
@@ -161,13 +188,19 @@ namespace K3CSharp.Parsing
         /// <returns>AST node representing parsed expression</returns>
         internal ASTNode? EvaluateFromRight(List<Token> expressionTokens)
         {
-            if (ParserConfig.EnableDebugging)
+            if (PureLRSMode && ParserConfig.EnableDebugging)
             {
-                Console.WriteLine($"[EvaluateFromRight] Processing {expressionTokens.Count} tokens: {string.Join(" ", expressionTokens.Select(t => t.Type))}");
+                Console.WriteLine($"[PURE LRS DEBUG] EvaluateFromRight processing {expressionTokens.Count} tokens: {string.Join(" ", expressionTokens.Select(t => $"{t.Type}({t.Lexeme})"))}");
             }
             
             if (expressionTokens.Count == 0)
+            {
+                if (PureLRSMode && ParserConfig.EnableDebugging)
+                {
+                    Console.WriteLine($"[PURE LRS DEBUG] NULL RETURN: EvaluateFromRight called with empty token list");
+                }
                 return null;
+            }
                 
             if (expressionTokens.Count == 1)
             {
@@ -294,7 +327,18 @@ namespace K3CSharp.Parsing
                 return dyadicResult;
                 
             // If dyadic parsing fails, try monadic
-            return monadicParser.ParseMonadicOperator(expressionTokens);
+            var monadicResult = monadicParser.ParseMonadicOperator(expressionTokens);
+            
+            if (PureLRSMode && ParserConfig.EnableDebugging)
+            {
+                Console.WriteLine($"[PURE LRS DEBUG] Final monadic parsing result: {(monadicResult == null ? "NULL" : monadicResult.Type.ToString())}");
+                if (monadicResult == null)
+                {
+                    Console.WriteLine($"[PURE LRS DEBUG] NULL RETURN: All parsing strategies failed for {expressionTokens.Count} tokens");
+                }
+            }
+
+            return monadicResult;
         }
         
         /// <summary>

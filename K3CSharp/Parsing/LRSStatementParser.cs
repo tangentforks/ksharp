@@ -392,7 +392,11 @@ namespace K3CSharp.Parsing
                 return CreateNodeFromToken(rightTokens[0]);
             
             // Use the parent parser to handle complex expressions
-            return parentParser.BuildParseTreeFromRight(rightTokens);
+            // Choose the right method based on parser mode
+            if (parentParser.BuildParseTree)
+                return parentParser.BuildParseTreeFromRight(rightTokens);
+            else
+                return parentParser.EvaluateFromRight(rightTokens);
         }
         
         /// <summary>
