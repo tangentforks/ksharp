@@ -317,26 +317,46 @@ namespace K3CSharp.Parsing
         /// <summary>
         /// Parse multiple semicolon-separated expressions in Pure LRS mode
         /// Returns the result of the last expression (K semantics)
+        /// Follows K spec: sequential left-to-right evaluation, newlines vs semicolons distinction
         /// </summary>
         private ASTNode? ParseMultipleExpressions()
         {
             var position = 0;
-            ASTNode? lastResult = null;
+            var expressions = new List<ASTNode>();
             
+            // Skip leading whitespace-only lines (top-level only)
+            // Per K spec: whitespace-only lines at top level are ignored
+            while (position < tokens.Count && 
+                   (tokens[position].Type == TokenType.NEWLINE || 
+                    tokens[position].Type == TokenType.SEMICOLON))
+            {
+                position++;
+            }
+            
+            // Parse expressions sequentially left-to-right
+            // CRITICAL: Sequential evaluation for stateful operations (assignments, I/O, side effects)
             while (position < tokens.Count)
             {
-                // Skip leading separators
-                while (position < tokens.Count && 
-                       (tokens[position].Type == TokenType.NEWLINE || 
-                        tokens[position].Type == TokenType.SEMICOLON))
+                // Check for EOF
+                if (tokens[position].Type == TokenType.EOF)
+                    break;
+                
+                // Check for empty expression (consecutive separators with semicolon)
+                // Per K spec: semicolons create null elements, newlines don't
+                if (tokens[position].Type == TokenType.SEMICOLON)
                 {
+                    // This is an empty expression - add null
+                    expressions.Add(ASTNode.MakeLiteral(new NullValue()));
                     position++;
+                    continue;
                 }
                 
-                // Check if we've reached the end
-                if (position >= tokens.Count || tokens[position].Type == TokenType.EOF)
+                // Skip newlines (but not semicolons - they mark empty expressions)
+                // Per K spec: newlines are separators but don't create null elements at top level
+                if (tokens[position].Type == TokenType.NEWLINE)
                 {
-                    break;
+                    position++;
+                    continue;
                 }
                 
                 // Parse one expression
@@ -357,12 +377,11 @@ namespace K3CSharp.Parsing
                     return null;
                 }
                 
-                lastResult = result;
+                expressions.Add(result);
                 
-                // Skip trailing separators after this expression
+                // After expression, skip trailing newlines but preserve semicolons
                 while (position < tokens.Count && 
-                       (tokens[position].Type == TokenType.NEWLINE || 
-                        tokens[position].Type == TokenType.SEMICOLON))
+                       tokens[position].Type == TokenType.NEWLINE)
                 {
                     position++;
                 }
@@ -375,24 +394,31 @@ namespace K3CSharp.Parsing
             }
             
             // Validate that we consumed all tokens
-            if (position >= tokens.Count)
+            if (position < tokens.Count)
             {
-                return lastResult;
-            }
-            
-            // Debug logging for incomplete parsing
-            if (ParserConfig.EnableDebugging)
-            {
-                Console.WriteLine($"[DEBUG] Pure LRS multi-expression parsing incomplete:");
-                Console.WriteLine($"  Source: {sourceText}");
-                Console.WriteLine($"  Position: {position}/{tokens.Count}");
-                if (position < tokens.Count)
+                // Debug logging for incomplete parsing
+                if (ParserConfig.EnableDebugging)
                 {
+                    Console.WriteLine($"[DEBUG] Pure LRS multi-expression parsing incomplete:");
+                    Console.WriteLine($"  Source: {sourceText}");
+                    Console.WriteLine($"  Position: {position}/{tokens.Count}");
                     Console.WriteLine($"  Remaining tokens: {string.Join(" ", tokens.Skip(position).Select(t => t.Type))}");
                 }
+                return null; // Incomplete parse
             }
             
-            return null; // Incomplete parse
+            // Apply K top-level semantics
+            // Per K spec: 0 expressions → null, 1 expression → its value, multiple → last value
+            if (expressions.Count == 0)
+                return ASTNode.MakeLiteral(new NullValue());
+            
+            if (expressions.Count == 1)
+                return expressions[0]; // Single expression - return its value
+            
+            // Multiple expressions: return last value
+            // Note: Sequential evaluation already happened during parsing
+            // Future: wrap as niladic function for proper K semantics
+            return expressions[expressions.Count - 1];
         }
     }
     

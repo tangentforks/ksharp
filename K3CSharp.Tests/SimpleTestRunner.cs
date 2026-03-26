@@ -18,10 +18,10 @@ namespace K3CSharp.Tests
 
         static SimpleTestRunner()
         {
-            // Enable Safe LRS mode with fallback to test the complete implementation
+            // Enable Safe LRS mode - baseline configuration
             ParserConfig.EnableLRSSafely();
-            ParserConfig.EnableDebugging = true;
-            ParserConfig.LogConfigChange("TestRunner initialization - Safe LRS mode enabled");
+            ParserConfig.EnableDebugging = false;
+            ParserConfig.LogConfigChange("TestRunner initialization - Safe LRS mode");
         }
 
 
@@ -707,6 +707,11 @@ namespace K3CSharp.Tests
                 ("parentheses_precedence.k", "7"),
 
                 ("parenthesized_vector.k", "1 2 3 4"),
+
+                // List null handling tests (Phase 1.7.2)
+                ("list_null_consecutive_semicolons.k", "(1;;2)"),
+                ("list_null_multiple_semicolons.k", "(;;)"),
+                ("list_null_empty_parens.k", "()"), // Empty list (0 items), not null
 
                 
 

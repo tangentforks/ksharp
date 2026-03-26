@@ -128,11 +128,20 @@ namespace K3CSharp.Parsing
         /// <returns>AST node representing parsed expression</returns>
         internal ASTNode? EvaluateFromRight(List<Token> expressionTokens)
         {
+            if (ParserConfig.EnableDebugging)
+            {
+                Console.WriteLine($"[EvaluateFromRight] Processing {expressionTokens.Count} tokens: {string.Join(" ", expressionTokens.Select(t => t.Type))}");
+            }
+            
             if (expressionTokens.Count == 0)
                 return null;
                 
             if (expressionTokens.Count == 1)
+            {
+                if (ParserConfig.EnableDebugging)
+                    Console.WriteLine($"[EvaluateFromRight] Single token, returning: {expressionTokens[0].Type}");
                 return CreateNodeFromToken(expressionTokens[0]);
+            }
                 
             // Check for grouping constructs FIRST (highest precedence per K spec)
             // Only if the ENTIRE expression is wrapped in grouping constructs
@@ -143,6 +152,9 @@ namespace K3CSharp.Parsing
                     firstToken.Type == TokenType.LEFT_BRACKET || 
                     firstToken.Type == TokenType.LEFT_BRACE)
                 {
+                    if (ParserConfig.EnableDebugging)
+                        Console.WriteLine($"[EvaluateFromRight] First token is grouping construct: {firstToken.Type}");
+                    
                     // Check if the entire expression is wrapped in this grouping construct
                     int depth = 0;
                     TokenType openType = firstToken.Type;
@@ -156,8 +168,13 @@ namespace K3CSharp.Parsing
                         else if (expressionTokens[i].Type == closeType) depth--;
                         
                         // If we close at the last token, this is a complete grouping
-                        if (depth == 0 && i == expressionTokens.Count - 1)
+                        // CRITICAL: Must check that the CLOSING DELIMITER is at the last position,
+                        // not just that depth is 0 at the last position
+                        if (depth == 0 && i == expressionTokens.Count - 1 && expressionTokens[i].Type == closeType)
                         {
+                            if (ParserConfig.EnableDebugging)
+                                Console.WriteLine($"[EvaluateFromRight] Entire expression wrapped in {openType}, delegating to grouping parser");
+                            
                             // Delegate to grouping parser for the entire wrapped expression
                             var tempGroupingParser = new LRSGroupingParser(expressionTokens, BuildParseTree, this);
                             int pos = 0;
@@ -169,6 +186,9 @@ namespace K3CSharp.Parsing
                                 return tempGroupingParser.ParseBraces(ref pos);
                         }
                     }
+                    
+                    if (ParserConfig.EnableDebugging)
+                        Console.WriteLine($"[EvaluateFromRight] Grouping does not wrap entire expression, continuing to dyadic parsing");
                 }
                 // Period expressions (dictionaries) handled by DOT_APPLY/MAKE operators
                 // These will be caught by the dyadic/monadic parsing below

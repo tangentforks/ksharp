@@ -184,6 +184,9 @@
 ║ parentheses_nested5.k                              │ ((1 * 2) + (3 * (4 + 5))) │ 29                   │                      ║
 ║ parentheses_precedence.k                           │ 1 + (2 * 3)          │ 7                    │                      ║
 ║ parenthesized_vector.k                             │ (1;2;3;4)            │ 1 2 3 4              │                      ║
+║ list_null_consecutive_semicolons.k                 │ (1;;2)               │ (1;;2)               │                      ║
+║ list_null_multiple_semicolons.k                    │ (;;)                 │ (;;)                 │                      ║
+║ list_null_empty_parens.k                           │ ()                   │ ()                   │                      ║
 ║ power_operator.k                                   │ 2 ^ 3                │ 8                    │                      ║
 ║ precedence_chain1.k                                │ 10 + 20 * 30 + 40    │ 1410                 │                      ║
 ║ precedence_chain2.k                                │ 100 % 10 + 20 * 30 + 40 │ 0.07092199           │                      ║
@@ -853,7 +856,7 @@
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 818/849 tests passed (96.3%)                                                                               ║
+║ SUMMARY: 821/852 tests passed (96.4%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:

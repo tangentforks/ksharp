@@ -33,11 +33,12 @@ namespace K3CSharp.Parsing
 
             var elements = new List<ASTNode>();
             
-            // Handle empty parentheses () - should be treated as 1 expression of value null
+            // Handle empty parentheses () - should be treated as empty list (0 items), not null
+            // Per K spec: () is an empty vector of mixed type (type 0)
             if (position < tokens.Count && tokens[position].Type == TokenType.RIGHT_PAREN)
             {
                 position++; // Consume ')'
-                return ASTNode.MakeLiteral(new NullValue());
+                return ASTNode.MakeVector(new List<ASTNode>()); // Empty list
             }
             
             // Parse expressions sequentially from left to right
