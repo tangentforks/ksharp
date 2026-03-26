@@ -322,20 +322,30 @@ namespace K3CSharp.Parsing
             
             // Delegate to parent LRS parser for proper expression parsing
             // Parent parser will handle nested parentheses recursively
+            ASTNode? result = null;
+            
             if (parentParser != null)
             {
                 if (buildParseTree)
-                    return parentParser.BuildParseTreeFromRight(exprTokens);
+                    result = parentParser.BuildParseTreeFromRight(exprTokens);
                 else
-                    return parentParser.EvaluateFromRight(exprTokens);
+                    result = parentParser.EvaluateFromRight(exprTokens);
             }
             else
             {
                 // Fallback: create new parser instance (should not happen in normal flow)
                 var lrsParser = new LRSParser(exprTokens, buildParseTree);
                 int pos = 0;
-                return lrsParser.ParseExpression(ref pos);
+                result = lrsParser.ParseExpression(ref pos);
             }
+            
+            // Phase 2.1: Ensure we return K NullValue instead of C# null
+            if (result == null)
+            {
+                return ASTNode.MakeLiteral(new NullValue());
+            }
+            
+            return result;
         }
         
         /// <summary>
@@ -344,10 +354,16 @@ namespace K3CSharp.Parsing
         private ASTNode? ParseBracketArgument(ref int position)
         {
             if (position >= tokens.Count)
-                return null;
+                return ASTNode.MakeLiteral(new NullValue()); // Phase 2.1: Return K NullValue
                 
             // Simple case: parse the contents as a single expression
-            return ParseExpressionInGrouping(ref position);
+            var result = ParseExpressionInGrouping(ref position);
+            
+            // Phase 2.1: Ensure we return K NullValue instead of C# null
+            if (result == null)
+                return ASTNode.MakeLiteral(new NullValue());
+                
+            return result;
         }
 
         /// <summary>

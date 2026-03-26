@@ -713,8 +713,6 @@ namespace K3CSharp.Tests
                 ("list_null_multiple_semicolons.k", "(;;)"),
                 ("list_null_empty_parens.k", "()"), // Empty list (0 items), not null
 
-                
-
                 // Power operator
 
                 ("power_operator.k", "8"),

@@ -156,7 +156,10 @@ namespace K3CSharp.Parsing
                         Console.WriteLine($"[EvaluateFromRight] First token is grouping construct: {firstToken.Type}");
                     
                     // Check if the entire expression is wrapped in this grouping construct
+                    // CRITICAL FIX: We need to verify that the FIRST opening delimiter
+                    // is closed by the LAST closing delimiter, not just any closing delimiter
                     int depth = 0;
+                    bool firstOpenClosed = false;
                     TokenType openType = firstToken.Type;
                     TokenType closeType = openType == TokenType.LEFT_PAREN ? TokenType.RIGHT_PAREN :
                                          openType == TokenType.LEFT_BRACKET ? TokenType.RIGHT_BRACKET :
@@ -167,23 +170,29 @@ namespace K3CSharp.Parsing
                         if (expressionTokens[i].Type == openType) depth++;
                         else if (expressionTokens[i].Type == closeType) depth--;
                         
-                        // If we close at the last token, this is a complete grouping
-                        // CRITICAL: Must check that the CLOSING DELIMITER is at the last position,
-                        // not just that depth is 0 at the last position
-                        if (depth == 0 && i == expressionTokens.Count - 1 && expressionTokens[i].Type == closeType)
+                        // Track when the first opening delimiter gets closed
+                        if (i == 0) depth = 1; // First token is the opening delimiter
+                        if (depth == 0 && !firstOpenClosed)
                         {
-                            if (ParserConfig.EnableDebugging)
-                                Console.WriteLine($"[EvaluateFromRight] Entire expression wrapped in {openType}, delegating to grouping parser");
-                            
-                            // Delegate to grouping parser for the entire wrapped expression
-                            var tempGroupingParser = new LRSGroupingParser(expressionTokens, BuildParseTree, this);
-                            int pos = 0;
-                            if (openType == TokenType.LEFT_PAREN)
-                                return tempGroupingParser.ParseParentheses(ref pos);
-                            else if (openType == TokenType.LEFT_BRACKET)
-                                return tempGroupingParser.ParseBrackets(ref pos);
-                            else if (openType == TokenType.LEFT_BRACE)
-                                return tempGroupingParser.ParseBraces(ref pos);
+                            firstOpenClosed = true;
+                            // If the first opening closes at the last position, entire expression is wrapped
+                            if (i == expressionTokens.Count - 1 && expressionTokens[i].Type == closeType)
+                            {
+                                if (ParserConfig.EnableDebugging)
+                                    Console.WriteLine($"[EvaluateFromRight] Entire expression wrapped in {openType}, delegating to grouping parser");
+                                
+                                // Delegate to grouping parser for the entire wrapped expression
+                                var tempGroupingParser = new LRSGroupingParser(expressionTokens, BuildParseTree, this);
+                                int pos = 0;
+                                if (openType == TokenType.LEFT_PAREN)
+                                    return tempGroupingParser.ParseParentheses(ref pos);
+                                else if (openType == TokenType.LEFT_BRACKET)
+                                    return tempGroupingParser.ParseBrackets(ref pos);
+                                else if (openType == TokenType.LEFT_BRACE)
+                                    return tempGroupingParser.ParseBraces(ref pos);
+                            }
+                            // If first opening closes before the end, expression is NOT fully wrapped
+                            break;
                         }
                     }
                     
