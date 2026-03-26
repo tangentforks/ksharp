@@ -415,10 +415,15 @@ namespace K3CSharp.Parsing
             if (expressions.Count == 1)
                 return expressions[0]; // Single expression - return its value
             
-            // Multiple expressions: return last value
-            // Note: Sequential evaluation already happened during parsing
-            // Future: wrap as niladic function for proper K semantics
-            return expressions[expressions.Count - 1];
+            // Multiple expressions: wrap in Block node for sequential evaluation
+            // The evaluator will execute each expression in order and return the last value
+            // This is critical for assignments and stateful operations
+            var blockNode = new ASTNode(ASTNodeType.Block);
+            foreach (var expr in expressions)
+            {
+                blockNode.Children.Add(expr);
+            }
+            return blockNode;
         }
     }
     

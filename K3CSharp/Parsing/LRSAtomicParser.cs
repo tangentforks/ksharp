@@ -16,6 +16,17 @@ namespace K3CSharp.Parsing
         /// <returns>AST node representing atomic value</returns>
         public static ASTNode ParseAtomicToken(Token token)
         {
+            return ParseAtomicToken(token, null);
+        }
+        
+        /// <summary>
+        /// Parse atomic token and create appropriate AST node with parser context
+        /// </summary>
+        /// <param name="token">Token to parse</param>
+        /// <param name="parser">Optional parser reference for variable tracking</param>
+        /// <returns>AST node representing atomic value</returns>
+        public static ASTNode ParseAtomicToken(Token token, LRSParser? parser)
+        {
             return token.Type switch
             {
                 TokenType.INTEGER => ParseInteger(token),
@@ -24,7 +35,7 @@ namespace K3CSharp.Parsing
                 TokenType.CHARACTER => ParseCharacter(token),
                 TokenType.CHARACTER_VECTOR => ParseString(token),
                 TokenType.SYMBOL => ParseSymbol(token),
-                TokenType.IDENTIFIER => ParseIdentifier(token),
+                TokenType.IDENTIFIER => ParseIdentifier(token, parser),
                 TokenType.NULL => ParseNull(token),
                 _ => throw new Exception($"Unsupported atomic token type: {token.Type}({token.Lexeme})")
             };
@@ -206,7 +217,7 @@ namespace K3CSharp.Parsing
         /// Parse identifier token (variable)
         /// Uses verb-agnostic system function detection
         /// </summary>
-        private static ASTNode ParseIdentifier(Token token)
+        private static ASTNode ParseIdentifier(Token token, LRSParser? parser)
         {
             var identifier = token.Lexeme;
             
@@ -215,6 +226,16 @@ namespace K3CSharp.Parsing
             {
                 // Create a system function node instead of a regular variable
                 return ASTNode.MakeFunctionCall(ASTNode.MakeVariable(identifier), new List<ASTNode>());
+            }
+            
+            // Per spec: Check if variable is defined during parsing (for multi-line scripts)
+            // This allows variables assigned in earlier expressions to be referenced in later ones
+            // Note: We create the variable node regardless - the evaluator will validate at runtime
+            // The parser just needs to know the variable is "expected to exist" when evaluation runs
+            if (parser != null && parser.IsVariableDefined(identifier))
+            {
+                // Variable is registered as defined during parsing - safe to create variable node
+                return ASTNode.MakeVariable(identifier);
             }
             
             return ASTNode.MakeVariable(identifier);

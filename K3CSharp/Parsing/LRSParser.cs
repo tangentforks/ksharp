@@ -25,6 +25,39 @@ namespace K3CSharp.Parsing
         // Pure LRS mode flag (enables improved parsing logic when no fallback)
         public bool PureLRSMode { get; set; }
         
+        // Defined variables tracker for parser-time variable registration
+        // Per spec: allows expressions to be parsed before evaluation by tracking
+        // variables defined in assignment operations during AST construction
+        private readonly HashSet<string> definedVariables = new HashSet<string>();
+        
+        /// <summary>
+        /// Register a variable as defined during parsing (for assignment targets)
+        /// </summary>
+        public void RegisterDefinedVariable(string variableName)
+        {
+            definedVariables.Add(variableName);
+            if (ParserConfig.EnableDebugging)
+            {
+                Console.WriteLine($"[VARIABLE TRACKING] Registered variable: {variableName}");
+            }
+        }
+        
+        /// <summary>
+        /// Check if a variable is defined (either in evaluator or registered during parsing)
+        /// </summary>
+        public bool IsVariableDefined(string variableName)
+        {
+            return definedVariables.Contains(variableName);
+        }
+        
+        /// <summary>
+        /// Clear defined variables tracker (called after parsing completes)
+        /// </summary>
+        public void ClearDefinedVariables()
+        {
+            definedVariables.Clear();
+        }
+        
         public LRSParser(List<Token> tokens, bool buildParseTree = false)
         {
             this.tokens = tokens;
@@ -624,7 +657,7 @@ namespace K3CSharp.Parsing
             
             if (LRSAtomicParser.IsAtomicToken(token.Type))
             {
-                return LRSAtomicParser.ParseAtomicToken(token);
+                return LRSAtomicParser.ParseAtomicToken(token, this);
             }
             
             // Handle operator symbols for parse trees
@@ -814,7 +847,7 @@ namespace K3CSharp.Parsing
                     {
                         if (LRSAtomicParser.IsAtomicToken(token.Type))
                         {
-                            argNodes.Add(LRSAtomicParser.ParseAtomicToken(token));
+                            argNodes.Add(LRSAtomicParser.ParseAtomicToken(token, this));
                         }
                     }
                     
@@ -855,7 +888,7 @@ namespace K3CSharp.Parsing
             var arguments = new List<ASTNode>();
             for (int i = 2; i < expressionTokens.Count; i++)
             {
-                var arg = LRSAtomicParser.ParseAtomicToken(expressionTokens[i]);
+                var arg = LRSAtomicParser.ParseAtomicToken(expressionTokens[i], this);
                 if (arg != null)
                 {
                     arguments.Add(arg);
@@ -993,44 +1026,26 @@ namespace K3CSharp.Parsing
             if (tokens.Count < 2)
                 return null;
                 
-            // Check if all tokens are atomic literals of compatible types
+            // Check if all tokens are atomic literals and collect them
             var elements = new List<ASTNode>();
-            TokenType? firstType = null;
-            bool allNumeric = true;
-            bool allSymbols = true;
             
             foreach (var token in tokens)
             {
                 // Check if token is an atomic literal
                 if (!LRSAtomicParser.IsAtomicToken(token.Type))
                     return null; // Not all atomic - can't be implicit vector
-                    
-                // Track first type
-                if (firstType == null)
-                    firstType = token.Type;
-                    
-                // Check type compatibility
-                bool isNumeric = token.Type == TokenType.INTEGER || 
-                                token.Type == TokenType.LONG || 
-                                token.Type == TokenType.FLOAT;
-                bool isSymbol = token.Type == TokenType.SYMBOL;
-                
-                if (!isNumeric) allNumeric = false;
-                if (!isSymbol) allSymbols = false;
                 
                 // Parse the token and add to elements
-                var node = LRSAtomicParser.ParseAtomicToken(token);
+                var node = LRSAtomicParser.ParseAtomicToken(token, this);
                 if (node == null)
                     return null;
                     
                 elements.Add(node);
             }
             
-            // Check if we have a valid vector (all numeric or all symbols)
-            if (!allNumeric && !allSymbols)
-                return null; // Mixed incompatible types
-                
-            // Create and return vector node
+            // Create vector for all implicit collections
+            // K semantics: space-separated literals create vectors (homogeneous or mixed)
+            // The evaluator will determine the proper K3Value type based on element types
             return ASTNode.MakeVector(elements);
         }
     }

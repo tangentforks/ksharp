@@ -45,6 +45,7 @@ namespace K3CSharp.Parsing
                 
             var firstToken = statementTokens[0];
             
+            // Check for statements that start with specific keywords
             switch (firstToken.Type)
             {
                 case TokenType.COLON:
@@ -58,9 +59,21 @@ namespace K3CSharp.Parsing
                     return ParseWhileStatement(statementTokens);
                 case TokenType.IF_FUNC:
                     return ParseIfStatement(statementTokens);
-                default:
-                    return null;
             }
+            
+            // Check for assignments anywhere in the token list (e.g., a:5, x:10)
+            // This handles the common case where variable name comes before the colon
+            for (int i = 1; i < statementTokens.Count; i++)
+            {
+                if (statementTokens[i].Type == TokenType.COLON ||
+                    statementTokens[i].Type == TokenType.ASSIGNMENT ||
+                    statementTokens[i].Type == TokenType.GLOBAL_ASSIGNMENT)
+                {
+                    return ParseAssignmentStatement(statementTokens);
+                }
+            }
+            
+            return null;
         }
         
         /// <summary>
@@ -108,6 +121,13 @@ namespace K3CSharp.Parsing
             if (variableNode == null)
                 return null;
             
+            // Register variable as defined during parsing (per spec)
+            // This allows subsequent expressions to reference this variable before evaluation
+            if (variableNode.Value is SymbolValue symbolValue)
+            {
+                parentParser.RegisterDefinedVariable(symbolValue.Value);
+            }
+            
             // Parse right side (expression)
             var rightNode = ParseRightSideExpression(rightTokens);
             if (rightNode == null)
@@ -134,6 +154,11 @@ namespace K3CSharp.Parsing
             var variableNode = ParseVariableName(leftTokens);
             if (variableNode == null)
                 return null;
+            
+            // Note: Do NOT register variable for apply-and-assign operations
+            // Apply-and-assign (i+:1) needs to access the existing variable first,
+            // so the variable must already be defined. Only regular assignments (i:1)
+            // should register new variables in the tracker.
             
             // Parse right side (expression)
             var rightNode = ParseRightSideExpression(rightTokens);
@@ -399,7 +424,7 @@ namespace K3CSharp.Parsing
         /// </summary>
         private ASTNode CreateNodeFromToken(Token token)
         {
-            return LRSAtomicParser.ParseAtomicToken(token);
+            return LRSAtomicParser.ParseAtomicToken(token, parentParser);
         }
     }
 }
