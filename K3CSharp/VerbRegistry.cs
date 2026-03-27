@@ -546,10 +546,10 @@ namespace K3CSharp
             RegisterVerb("DOLLAR", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("~", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("MATCH", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("@", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("APPLY", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb(".", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("DOT", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("@", VerbType.Operator, new[] { 1, 2, 3, 4 }, null);
+            RegisterVerb("APPLY", VerbType.Operator, new[] { 1, 2, 3, 4 }, null);
+            RegisterVerb(".", VerbType.Operator, new[] { 1, 2, 3, 4 }, null);
+            RegisterVerb("DOT_APPLY", VerbType.Operator, new[] { 1, 2, 3, 4 }, null);
 
             // Additional mathematical operators
             RegisterVerb("DIV", VerbType.Operator, new[] { 1, 2 }, null);
@@ -580,8 +580,6 @@ namespace K3CSharp
             RegisterVerb("DRAW", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("TYPE", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("STRING_REPRESENTATION", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("APPLY", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("DOT_APPLY", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("LSQ", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("DOT_MULTIPLY", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("_dot", VerbType.Operator, new[] { 1, 2 }, null);

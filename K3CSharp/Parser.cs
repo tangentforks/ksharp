@@ -1172,7 +1172,6 @@ namespace K3CSharp
                             "TYPE" => "@",
                             "STRING_REPRESENTATION" => "$",
                             "APPLY" => "@",
-                            "DOT" => "_dot",
                             "DOT_PRODUCT" => "_dot",
                             _ => PreviousToken().Lexeme
                         };
@@ -1332,7 +1331,6 @@ namespace K3CSharp
                             "TYPE" => "@",
                             "STRING_REPRESENTATION" => "$",
                             "APPLY" => "@",
-                            "DOT" => "_dot",
                             "DOT_PRODUCT" => "_dot",
                             _ => PreviousToken().Lexeme
                         };

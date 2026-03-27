@@ -541,6 +541,9 @@ namespace K3CSharp
             // Handle special cases with lambda expressions
             switch (opName)
             {
+                // THIS IS FUNDAMENTALLY WRONG, ADVERBS MUST BE AGNOSTIC TO THE VERB THEY MODIFY
+                // WE WANT GENERIC HandleAdverbOver HandleAdverbScan HandleAdverbEach
+                //   HandleAdverbEachRight HandleAdverbEachLeft HandleAdverbEachPrior
                 case "ADVERB_SLASH": return Over(new SymbolValue("+"), left, right);
                 case "ADVERB_BACKSLASH": return Scan(new SymbolValue("+"), left, right);
                 case "ADVERB_TICK": return HandleAdverbTick(left, new IntegerValue(0), right);
