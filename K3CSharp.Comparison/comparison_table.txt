@@ -1,11 +1,11 @@
 K3Sharp vs k.exe Comparison Report
 =================================
-Generated: 2026-03-23 17:12:22
+Generated: 2026-03-28 01:11:15
 
 SUMMARY:
 --------
-Total Tests:     844
-✅ Matched:       775
+Total Tests:     852
+✅ Matched:       783
 ❌ Differed:      43
 ⚠️  Skipped:       22
 💥 Errors:        4
@@ -136,6 +136,11 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   db_symbol_vector_longer.k                          `hello`world`test              `hello`world`test              Compact representation                            
 ✅ PASS   db_symbol_vector.k                                 `a`b`c                         `a`b`c                         Compact representation                            
 ✅ PASS   db_symbol.k                                        `test                          `test                          Compact representation                            
+✅ PASS   debug_double_nested.k                              21                             21                                                                               
+✅ PASS   debug_left_paren.k                                 3                              3                                                                                
+✅ PASS   debug_mult_only.k                                  21                             21                                                                               
+✅ PASS   debug_no_outer_paren.k                             15                             15                                                                               
+✅ PASS   debug_simple_mult.k                                21                             21                                                                               
 ✅ PASS   dictionary_dot_apply.k                             1                              1                                                                                
 ✅ PASS   dictionary_empty.k                                 .()                            .()                                                                              
 ✅ PASS   dictionary_enumerate.k                             `a`b                           `a`b                           Compact representation                            
@@ -373,9 +378,9 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   in.k                                               1                              1                                                                                
 ✅ PASS   integer_types_int.k                                42                             42                                                                               
 ✅ PASS   integer_types_long.k                               123456789j                     123456789j                                                                       
-❌ FAIL   io_append_basic.k                                                                 125                                                                              
+❌ FAIL   io_append_basic.k                                                                 155                                                                              
 💥 ERROR io_append_multiple.k                                                                                             k.exe error only                                  
-❌ FAIL   io_append_simple.k                                                                45                                                                               
+❌ FAIL   io_append_simple.k                                                                55                                                                               
 ✅ PASS   io_monadic_1_char_vector_index.k                   "h"                            "h"                                                                              
 ✅ PASS   io_monadic_1_char_vector_last_index.k              "d"                            "d"                                                                              
 ✅ PASS   io_monadic_1_char_vector.k                         "hello world"                  "hello world"                                                                    
@@ -438,6 +443,9 @@ Status   Test File                                          K3Sharp Output      
 ✅ PASS   list_dv_basic.k                                    3 5                            3 5                                                                              
 ✅ PASS   list_dv_nomatch.k                                  3 4 4 5                        3 4 4 5                                                                          
 ✅ PASS   list_getenv.k                                      "$P$G"                         "$P$G"                                                                           
+✅ PASS   list_null_consecutive_semicolons.k                 (1;;2)                         (1;;2)                                                                           
+✅ PASS   list_null_empty_parens.k                           ()                             ()                                                                               
+✅ PASS   list_null_multiple_semicolons.k                    (;;)                           (;;)                                                                             
 ✅ PASS   list_setenv.k                                                                                                                                                      
 ✅ PASS   list_size_existing.k                               11264.0                        11264.0                                                                          
 ✅ PASS   list_sv_base10.k                                   1995                           1995                                                                             

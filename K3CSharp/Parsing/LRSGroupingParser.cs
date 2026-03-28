@@ -10,7 +10,7 @@ namespace K3CSharp.Parsing
     /// </summary>
     public class LRSGroupingParser
     {
-        private readonly List<Token> tokens;
+        private List<Token> tokens;
         private readonly bool buildParseTree;
         private readonly LRSParser? parentParser;
         
@@ -170,9 +170,26 @@ namespace K3CSharp.Parsing
             }
             
             // Parse additional elements separated by semicolons
-            while (position < tokens.Count && tokens[position].Type != TokenType.RIGHT_BRACKET)
+            int bracketDepth = 0;
+            while (position < tokens.Count)
             {
-                if (tokens[position].Type == TokenType.SEMICOLON)
+                var token = tokens[position];
+                
+                // Track nesting depth for brackets
+                if (token.Type == TokenType.LEFT_BRACKET)
+                {
+                    bracketDepth++;
+                }
+                else if (token.Type == TokenType.RIGHT_BRACKET)
+                {
+                    if (bracketDepth == 0)
+                    {
+                        break; // Found our closing bracket
+                    }
+                    bracketDepth--;
+                }
+                
+                if (token.Type == TokenType.SEMICOLON)
                 {
                     position++; // Consume semicolon
                     hasSemicolon = true;
@@ -186,6 +203,7 @@ namespace K3CSharp.Parsing
                     
                     if (position < tokens.Count && tokens[position].Type != TokenType.RIGHT_BRACKET)
                     {
+                        // Check if we're still at depth 0 for this bracket level
                         var element = ParseBracketArgument(ref position);
                         if (element != null)
                         {
@@ -234,6 +252,28 @@ namespace K3CSharp.Parsing
             }
             
             return ASTNode.MakeVector(elements);
+        }
+        
+        /// <summary>
+        /// Parse brackets from a token list (used by BuildParseTreeFromRight)
+        /// </summary>
+        public ASTNode? ParseBrackets(List<Token> bracketTokens)
+        {
+            if (bracketTokens.Count == 0 || bracketTokens[0].Type != TokenType.LEFT_BRACKET)
+                return null;
+            
+            // Temporarily swap tokens to use the provided list
+            var originalTokens = tokens;
+            try
+            {
+                tokens = bracketTokens;
+                int position = 0;
+                return ParseBrackets(ref position);
+            }
+            finally
+            {
+                tokens = originalTokens;
+            }
         }
 
         /// <summary>

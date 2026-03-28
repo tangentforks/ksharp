@@ -77,7 +77,7 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Parse colon statement (either assignment or conditional evaluation)
+        /// Parse colon statement (either assignment, conditional evaluation, or monadic return)
         /// </summary>
         private ASTNode? ParseColonStatement(List<Token> tokens)
         {
@@ -85,6 +85,21 @@ namespace K3CSharp.Parsing
             if (tokens.Count >= 2 && tokens[1].Type == TokenType.LEFT_BRACKET)
             {
                 return ParseConditionalEvaluation(tokens);
+            }
+            
+            // Check if this is monadic colon (return/identity) - no left operand
+            // Format: : value  (e.g., : 42)
+            var assignmentIndex = FindAssignmentOperator(tokens);
+            if (assignmentIndex == 0)
+            {
+                // Colon is the first token - this is monadic return
+                // Return the operand as-is
+                if (tokens.Count >= 2)
+                {
+                    var operandTokens = tokens.GetRange(1, tokens.Count - 1);
+                    return ParseRightSideExpression(operandTokens);
+                }
+                return null;
             }
             
             // Otherwise, treat as assignment

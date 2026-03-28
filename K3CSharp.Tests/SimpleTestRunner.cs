@@ -20,6 +20,7 @@ namespace K3CSharp.Tests
         {
             // Enable Safe LRS mode - production configuration
             ParserConfig.EnableLRSSafely();
+            //ParserConfig.EnablePureLRS();
             ParserConfig.EnableDebugging = false;
             ParserConfig.LogConfigChange("TestRunner initialization - Safe LRS mode");
         }
@@ -2504,9 +2505,19 @@ namespace K3CSharp.Tests
 
                     // Trim trailing whitespace and empty lines as per K specification
                     // When evaluating whole file, empty lines at end should be trimmed
+                    // Also strip comments (/) which can be at start of line or after space
                     var lines = script
                         .Split('\n')
-                        .Select(line => line.Trim())
+                        .Select(line => {
+                            var trimmed = line.Trim();
+                            // Strip comments: / at start or space followed by /
+                            var commentIndex = trimmed.StartsWith("/") ? 0 : trimmed.IndexOf(" /");
+                            if (commentIndex >= 0)
+                            {
+                                trimmed = trimmed.Substring(0, commentIndex).Trim();
+                            }
+                            return trimmed;
+                        })
                         .Where(line => !string.IsNullOrEmpty(line))
                         .ToArray();
 
@@ -2537,6 +2548,9 @@ namespace K3CSharp.Tests
                         var trimmedLine = line.Trim();
 
                         if (string.IsNullOrEmpty(trimmedLine)) continue;
+
+                        // Skip comment-only lines (lines starting with /)
+                        if (trimmedLine.StartsWith("/")) continue;
 
 
 

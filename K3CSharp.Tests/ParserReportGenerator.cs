@@ -58,11 +58,17 @@ namespace K3CSharp.Tests
         /// </summary>
         private LRSFailureReport GenerateReportFromRecords(List<K3CSharp.Parsing.ParserFailureRecord> records)
         {
+            // Categorize failures
+            var nullResults = records.Where(r => !r.FailurePoint.StartsWith("Incomplete consumption")).ToList();
+            var incompleteResults = records.Where(r => r.FailurePoint.StartsWith("Incomplete consumption")).ToList();
+            
             var report = new LRSFailureReport
             {
                 GeneratedAt = DateTime.Now,
                 TotalFailures = records.Count,
-                TotalIncorrectResults = 0 // We'll track this separately if needed
+                TotalIncorrectResults = 0, // We'll track this separately if needed
+                NullResults = nullResults.Count,
+                IncompleteResults = incompleteResults.Count
             };
             
             // Convert records to the expected type
@@ -113,7 +119,9 @@ namespace K3CSharp.Tests
             writer.WriteLine($"**Success Rate:** {(testResults.Count(t => t.Passed) * 100.0 / testResults.Count):F1}%");
             writer.WriteLine();
             writer.WriteLine("**LRS Parser Statistics:**");
-            writer.WriteLine($"- NULL Results: {report.TotalFailures}");
+            writer.WriteLine($"- NULL Results: {report.NullResults}");
+            writer.WriteLine($"- Incomplete Token Consumption: {report.IncompleteResults}");
+            writer.WriteLine($"- Total Fallbacks to Legacy: {report.TotalFailures}");
             writer.WriteLine($"- Incorrect Results: {report.TotalIncorrectResults}");
             writer.WriteLine($"- LRS Success Rate: {((testResults.Count - report.TotalFailures) * 100.0 / testResults.Count):F1}%");
             writer.WriteLine();
@@ -136,22 +144,58 @@ namespace K3CSharp.Tests
                 writer.WriteLine("## LRS Parser Failures");
                 writer.WriteLine();
                 
-                var count = 0;
-                foreach (var record in report.FailureRecords.Take(config.ParserAnalysis.MaxReportEntries))
+                // Show NULL Results
+                var nullRecords = report.FailureRecords.Where(r => !r.FailurePoint.StartsWith("Incomplete consumption")).Take(config.ParserAnalysis.MaxReportEntries).ToList();
+                if (nullRecords.Any())
                 {
-                    var testName = string.IsNullOrEmpty(record.TestName) ? "Unknown" : record.TestName;
-                    writer.WriteLine($"{count + 1}. **{testName}**:");
-                    writer.WriteLine("```k");
-                    writer.WriteLine(record.SourceText);
-                    writer.WriteLine("```");
-                    writer.WriteLine($"{record.FailurePoint}");
-                    writer.WriteLine("-------------------------------------------------");
-                    count++;
+                    writer.WriteLine("### NULL Results (LRS returned NULL)");
+                    writer.WriteLine();
+                    var count = 0;
+                    foreach (var record in nullRecords)
+                    {
+                        var testName = string.IsNullOrEmpty(record.TestName) ? "Unknown" : record.TestName;
+                        writer.WriteLine($"{count + 1}. **{testName}**:");
+                        writer.WriteLine("```k");
+                        writer.WriteLine(record.SourceText);
+                        writer.WriteLine("```");
+                        writer.WriteLine($"{record.FailurePoint}");
+                        writer.WriteLine("-------------------------------------------------");
+                        count++;
+                    }
+                    
+                    var moreNull = report.NullResults - nullRecords.Count;
+                    if (moreNull > 0)
+                    {
+                        writer.WriteLine($"... and {moreNull} more NULL result cases");
+                        writer.WriteLine();
+                    }
                 }
                 
-                if (report.FailureRecords.Count > config.ParserAnalysis.MaxReportEntries)
+                // Show Incomplete Consumption Results
+                var incompleteRecords = report.FailureRecords.Where(r => r.FailurePoint.StartsWith("Incomplete consumption")).Take(config.ParserAnalysis.MaxReportEntries).ToList();
+                if (incompleteRecords.Any())
                 {
-                    writer.WriteLine($"... and {report.FailureRecords.Count - config.ParserAnalysis.MaxReportEntries} more cases");
+                    writer.WriteLine("### Incomplete Token Consumption (LRS returned result but didn't consume all tokens)");
+                    writer.WriteLine();
+                    var count = 0;
+                    foreach (var record in incompleteRecords)
+                    {
+                        var testName = string.IsNullOrEmpty(record.TestName) ? "Unknown" : record.TestName;
+                        writer.WriteLine($"{count + 1}. **{testName}**:");
+                        writer.WriteLine("```k");
+                        writer.WriteLine(record.SourceText);
+                        writer.WriteLine("```");
+                        writer.WriteLine($"{record.FailurePoint} (consumed {record.ConsumedTokens}/{record.TotalTokens})");
+                        writer.WriteLine("-------------------------------------------------");
+                        count++;
+                    }
+                    
+                    var moreIncomplete = report.IncompleteResults - incompleteRecords.Count;
+                    if (moreIncomplete > 0)
+                    {
+                        writer.WriteLine($"... and {moreIncomplete} more incomplete consumption cases");
+                        writer.WriteLine();
+                    }
                 }
                 writer.WriteLine();
             }

@@ -51,6 +51,13 @@ namespace K3CSharp.Parsing
                 return HandleSystemFunction(funcToken, argTokens);
             }
             
+            // Check if this is a system operator (like _gtime, _ltime, _getenv, etc.)
+            if (IsSystemOperator(funcToken.Type))
+            {
+                var argTokens = tokens.Count > 1 ? tokens.GetRange(1, tokens.Count - 1) : new List<Token>();
+                return HandleSystemOperator(funcToken, argTokens);
+            }
+            
             // Parse as regular function call
             var regularArgTokens = tokens.Count > 1 ? tokens.GetRange(1, tokens.Count - 1) : new List<Token>();
             return ParseRegularFunction(funcToken, regularArgTokens);
@@ -185,11 +192,14 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Check if token type represents a special function
+        /// Check if token type represents a special function (_parse, _eval, etc.)
+        /// These are registered as SystemFunction in the VerbRegistry
         /// </summary>
         private bool IsSpecialFunction(TokenType tokenType)
         {
-            return tokenType == TokenType.PARSE || tokenType == TokenType.EVAL;
+            var verbName = VerbRegistry.TokenTypeToVerbName(tokenType);
+            var verb = VerbRegistry.GetVerb(verbName);
+            return verb?.Type == VerbType.SystemFunction;
         }
         
         /// <summary>
@@ -198,6 +208,36 @@ namespace K3CSharp.Parsing
         private bool IsSystemFunction(TokenType tokenType)
         {
             return OperatorDetector.IsFunction(tokenType);
+        }
+        
+        /// <summary>
+        /// Check if token type represents a system operator (like _gtime, _ltime, etc.)
+        /// System operators are registered as VerbType.Operator with names starting with "_"
+        /// </summary>
+        private bool IsSystemOperator(TokenType tokenType)
+        {
+            var verbName = VerbRegistry.TokenTypeToVerbName(tokenType);
+            var verb = VerbRegistry.GetVerb(verbName);
+            
+            // System operators are operators with names starting with "_"
+            return verb?.Type == VerbType.Operator && verbName.StartsWith("_");
+        }
+        
+        /// <summary>
+        /// Handle system operators (like _gtime, _ltime, _getenv, etc.)
+        /// These are registered as operators but function like system calls
+        /// </summary>
+        private ASTNode HandleSystemOperator(Token funcToken, List<Token> argTokens)
+        {
+            // Parse argument using LRS parser
+            var argument = ParseArgumentWithLRS(argTokens);
+            
+            var funcCall = new ASTNode(ASTNodeType.FunctionCall);
+            funcCall.Children.Add(ASTNode.MakeVariable(funcToken.Lexeme));
+            if (argument != null)
+                funcCall.Children.Add(argument);
+                
+            return funcCall;
         }
         
         /// <summary>
@@ -223,14 +263,15 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Check if token could be a function using OperatorDetector
+        /// Check if token could be a function using VerbRegistry
         /// </summary>
         public static bool CouldBeFunction(TokenType tokenType)
         {
-            return OperatorDetector.IsFunction(tokenType) || 
-                   tokenType == TokenType.PARSE || 
-                   tokenType == TokenType.EVAL ||
-                   tokenType == TokenType.LEFT_BRACE; // Lambda expressions
+            // Any registered verb (Operator or SystemFunction) or lambda expression
+            var verbName = VerbRegistry.TokenTypeToVerbName(tokenType);
+            var verb = VerbRegistry.GetVerb(verbName);
+            
+            return verb != null || tokenType == TokenType.LEFT_BRACE;
         }
     }
 }

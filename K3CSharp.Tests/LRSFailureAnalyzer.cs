@@ -302,6 +302,8 @@ namespace K3CSharp.Tests
         public DateTime GeneratedAt { get; set; }
         public int TotalFailures { get; set; }
         public int TotalIncorrectResults { get; set; }
+        public int NullResults { get; set; }
+        public int IncompleteResults { get; set; }
         public List<ParserFailureRecord> FailureRecords { get; set; } = new();
         public List<ParserIncorrectResultRecord> IncorrectResultRecords { get; set; } = new();
         public Dictionary<string, int> FailurePatterns { get; set; } = new();

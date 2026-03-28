@@ -129,6 +129,29 @@ namespace K3CSharp.Parsing
                 // If LRS parsing didn't consume all tokens, fall back
                 if (enableFallback)
                 {
+                    // Track incomplete consumption cases separately
+                    if (result != null && position < tokens.Count)
+                    {
+                        lock (failureAnalyzerLock)
+                        {
+                            var record = new ParserFailureRecord
+                            {
+                                Timestamp = DateTime.Now,
+                                TestName = currentTestName,
+                                SourceText = sourceText,
+                                ConsumedTokens = position,
+                                TotalTokens = tokens.Count,
+                                LastTokenType = position < tokens.Count ? tokens[position].Type : null,
+                                FailurePoint = $"Incomplete consumption (position {position}/{tokens.Count})"
+                            };
+                            failureRecords.Add(record);
+                            
+                            if (failureRecords.Count > 10000)
+                            {
+                                failureRecords.RemoveAt(0);
+                            }
+                        }
+                    }
                     return FallbackToLegacyParser();
                 }
                 
@@ -364,7 +387,38 @@ namespace K3CSharp.Parsing
                 
                 if (result == null)
                 {
-                    // Parsing failed - record failure and return null
+                    // Check if this is a comment-only line (no meaningful tokens to parse)
+                    // If we haven't advanced position, it's likely a comment-only line
+                    var startPosition = position;
+                    
+                    // Try to skip ahead to next newline/semicolon/EOF to see if there's more content
+                    while (position < tokens.Count && 
+                           tokens[position].Type != TokenType.NEWLINE && 
+                           tokens[position].Type != TokenType.SEMICOLON &&
+                           tokens[position].Type != TokenType.EOF)
+                    {
+                        position++;
+                    }
+                    
+                    // If we didn't advance at all (or only hit EOF), this was comment-only
+                    // Skip it and continue rather than failing
+                    if (position == startPosition || 
+                        (position < tokens.Count && tokens[position].Type == TokenType.EOF))
+                    {
+                        // Skip the EOF and continue
+                        if (position < tokens.Count && tokens[position].Type == TokenType.EOF)
+                            position++;
+                        
+                        // Skip any following newlines
+                        while (position < tokens.Count && 
+                               tokens[position].Type == TokenType.NEWLINE)
+                        {
+                            position++;
+                        }
+                        continue;
+                    }
+                    
+                    // Otherwise, it's a real parsing failure
                     if (ParserConfig.EnableDebugging)
                     {
                         Console.WriteLine($"[DEBUG] Pure LRS multi-expression parsing failed at position {position}");

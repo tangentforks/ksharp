@@ -10,10 +10,10 @@ namespace K3CSharp.Tests
         {
             Console.WriteLine("=== Pure LRS Diagnostics ===");
             
-            // Enable Pure LRS mode without debugging for production testing
+            // Enable Pure LRS mode WITH debugging for troubleshooting
             ParserConfig.EnablePureLRS();
-            ParserConfig.EnableDebugging = false;
-            ParserConfig.LogConfigChange("Pure LRS Production Testing - Debug disabled");
+            ParserConfig.EnableDebugging = true;
+            ParserConfig.LogConfigChange("Pure LRS Debug - Bracket Function Call Trace");
             
             // Test case 1: Simple vector (should create implicit vector)
             Console.WriteLine("\n--- Test 1: Simple vector '1 2 3 4 5' ---");
@@ -50,6 +50,46 @@ namespace K3CSharp.Tests
             // Test case 9: Multi-line script
             Console.WriteLine("\n--- Test 9: Multi-line script ---");
             TestMultiLineScript("a:5\na+3");
+            
+            // Test case 10: Dictionary creation and indexing
+            Console.WriteLine("\n--- Test 10: Dictionary indexing ---");
+            TestMultiLineScript("d:.((`keyA;1 2 3;);(`keyB;1 3 5))\nd[`keyB]");
+            
+            // Test case 11: Simple implicit vector
+            Console.WriteLine("\n--- Test 11: Simple implicit vector '1 2 3 4 5' ---");
+            TestExpression("1 2 3 4 5");
+            
+            // Test case 12: Monadic colon
+            Console.WriteLine("\n--- Test 12: Monadic colon ': 42' ---");
+            TestExpression(": 42");
+            
+            // Test case 13: System function _gtime
+            Console.WriteLine("\n--- Test 13: System function '_gtime 0' ---");
+            TestExpression("_gtime 0");
+            
+            // Test case 14: Comment line followed by code
+            Console.WriteLine("\n--- Test 14: Comment + code ---");
+            TestExpression("_bd 42");
+            
+            // Test case 15: Just system operator
+            Console.WriteLine("\n--- Test 15: Just _bd 42 ---");
+            TestExpression("_bd 42");
+            
+            // Test case 16: 5-element vector (failing in LRS)
+            Console.WriteLine("\n--- Test 16: 5-element vector '1 2 3 4 5' ---");
+            TestExpression("1 2 3 4 5");
+            
+            // Test case 17: _db _bd system operators
+            Console.WriteLine("\n--- Test 17: _db _bd 42 ---");
+            TestExpression("_db _bd 42");
+            
+            // Test case 18: Lambda bracket call
+            Console.WriteLine("\n--- Test 18: Lambda bracket call ---");
+            TestExpression("{a:\"hello\";a}[]");
+            
+            // Test case 19: Function bracket call div[8;4]
+            Console.WriteLine("\n--- Test 19: Function bracket call ---");
+            TestExpression("div[8;4]");
             
             Console.WriteLine("\n=== Diagnostics Complete ===");
         }

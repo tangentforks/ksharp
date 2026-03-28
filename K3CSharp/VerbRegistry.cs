@@ -30,10 +30,12 @@ namespace K3CSharp
     }
     public enum VerbType
     {
-        Operator,
-        SystemVariable,
-        Function,
-        ProjectedFunction
+        Operator, // Native operators
+        SystemFunction, // Native functions with names that start with underscore. Names are longer than 1 char
+        SystemVariable, // Native variables with names that start with underscore. Names are 1 char long
+        Function, // Anonymous functions (value)
+        FunctionVariable, // Named functions (variables of type 7 that have an anonymous function assigned to them)
+        ProjectedFunction // Value that results from calls to other functions with fewer arguments than their valence (-arity)
     }
 
     public class VerbInfo
@@ -564,9 +566,9 @@ namespace K3CSharp
             RegisterVerb("LESS", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("GREATER", VerbType.Operator, new[] { 1, 2 }, null);
             
-            // Parse tree verbs
-            RegisterVerb("_parse", VerbType.Operator, new[] { 1 }, new Func<K3Value[], K3Value>?[] { ParseVerbHandler.Parse, null });
-            RegisterVerb("_eval", VerbType.Operator, new[] { 1 }, new Func<K3Value[], K3Value>?[] { EvalVerbHandler.Evaluate, null });
+            // Parse tree verbs - registered as SystemFunction (names start with underscore)
+            RegisterVerb("_parse", VerbType.SystemFunction, new[] { 1 }, new Func<K3Value[], K3Value>?[] { ParseVerbHandler.Parse, null });
+            RegisterVerb("_eval", VerbType.SystemFunction, new[] { 1 }, new Func<K3Value[], K3Value>?[] { EvalVerbHandler.Evaluate, null });
             RegisterVerb("MATCH", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("IN", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("POWER", VerbType.Operator, new[] { 1, 2 }, null);

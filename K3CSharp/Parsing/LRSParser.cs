@@ -102,6 +102,53 @@ namespace K3CSharp.Parsing
             
             if (expressionTokens.Count == 0)
                 return null;
+            
+            // Check for bracket function call pattern BEFORE delegating to specific parsers
+            // This handles patterns like {lambda}[] and func[arg1;arg2] where we need to
+            // extract the function call pattern before grouping parsers intercept braces
+            for (int i = 1; i < expressionTokens.Count; i++)
+            {
+                if ((int)expressionTokens[i].Type == (int)TokenType.LEFT_BRACKET)
+                {
+                    var bracketEnd = FindMatchingBracket(expressionTokens, i);
+                    if (bracketEnd != -1 && bracketEnd == expressionTokens.Count - 1)
+                    {
+                        // The bracket is at the end - this is a function call pattern
+                        var funcTokens = expressionTokens.GetRange(0, i);
+                        var argTokens = expressionTokens.GetRange(i + 1, bracketEnd - i - 1);
+                        
+                        // Parse the function part
+                        ASTNode? funcNode;
+                        if (BuildParseTree)
+                            funcNode = BuildParseTreeFromRight(funcTokens);
+                        else
+                            funcNode = EvaluateFromRight(funcTokens);
+                            
+                        if (funcNode != null)
+                        {
+                            if (argTokens.Count == 0)
+                            {
+                                // No arguments: {lambda}[] -> call with empty args
+                                return ASTNode.MakeDyadicOp(TokenType.APPLY, funcNode, ASTNode.MakeVector(new List<ASTNode>()));
+                            }
+                            else
+                            {
+                                ASTNode? argNode;
+                                if (BuildParseTree)
+                                    argNode = BuildParseTreeFromRight(argTokens);
+                                else
+                                    argNode = EvaluateFromRight(argTokens);
+                                    
+                                if (argNode != null)
+                                {
+                                    return ASTNode.MakeDyadicOp(TokenType.APPLY, funcNode, argNode);
+                                }
+                            }
+                        }
+                    }
+                    break; // Only check the first bracket
+                }
+            }
                 
             // Step 2: Choose strategy based on mode
             ASTNode? result;
@@ -141,44 +188,37 @@ namespace K3CSharp.Parsing
                 }
             }
             
-            // Check for special functions first (_parse, _eval)
-            if (expressionTokens.Count >= 2)
+            // Check for grouping constructs (parentheses, braces, brackets)
+            var firstTok = expressionTokens[0];
+            if (firstTok.Type == TokenType.LEFT_PAREN || firstTok.Type == TokenType.LEFT_BRACE || firstTok.Type == TokenType.LEFT_BRACKET)
             {
-                var firstToken = expressionTokens[0];
-                if (LRSFunctionParser.CouldBeFunction(firstToken.Type))
-                {
-                    return functionParser.ParseFunctionCall(expressionTokens);
-                }
+                var groupingResult = groupingParser.ParseBrackets(expressionTokens);
+                if (groupingResult != null)
+                    return groupingResult;
             }
             
-            // Check for monadic operations first (K LRS: monadic has lower precedence than dyadic)
-            if (expressionTokens.Count >= 2)
+            // Check for atomic-only sequences (implicit vector creation)
+            if (expressionTokens.Count > 1 && expressionTokens.All(t => LRSAtomicParser.IsAtomicToken(t.Type)))
             {
-                var firstToken = expressionTokens[0];
-                if (LRSMonadicParser.CouldBeMonadicOperator(firstToken.Type))
-                {
-                    return monadicParser.ParseMonadicOperator(expressionTokens);
-                }
+                return TryCreateImplicitVector(expressionTokens);
             }
             
-            // Check for multi-arity operations first (triadic, tetradic, variadic)
-            var multiAryResult = ParseMultiAryOperation(expressionTokens);
-            if (multiAryResult != null)
-                return multiAryResult;
-            
-            // Check for adverb operations in Safe LRS mode (and Pure LRS when it's fixed)
-            if (ParseAdverbExpression(expressionTokens) is ASTNode adverbResult)
+            // Try function call parsing
+            if (LRSFunctionParser.CouldBeFunction(firstTok.Type))
             {
-                return adverbResult;
+                var functionResult = functionParser.ParseFunctionCall(expressionTokens);
+                if (functionResult != null)
+                    return functionResult;
             }
             
-            // Handle dyadic operations
-            var dyadicResult = dyadicParser.ParseDyadicOperation(expressionTokens);
-            if (dyadicResult != null)
-                return dyadicResult;
-                
-            // If dyadic parsing fails, try monadic
-            return monadicParser.ParseMonadicOperator(expressionTokens);
+            // Handle monadic operations
+            if (expressionTokens.Count == 2)
+            {
+                return monadicParser.ParseMonadicOperator(expressionTokens);
+            }
+            
+            // Handle multi-token expressions using dyadic parser
+            return dyadicParser.ParseDyadicOperation(expressionTokens);
         }
         
         /// <summary>
@@ -207,6 +247,35 @@ namespace K3CSharp.Parsing
                 if (ParserConfig.EnableDebugging)
                     Console.WriteLine($"[EvaluateFromRight] Single token, returning: {expressionTokens[0].Type}");
                 return CreateNodeFromToken(expressionTokens[0]);
+            }
+            
+            // Check for statements first (statements have lower precedence than verbs but higher than separators)
+            // This is critical for assignment parsing in Pure LRS mode
+            if (expressionTokens.Count >= 2)
+            {
+                var firstToken = expressionTokens[0];
+                if (LRSStatementParser.CouldBeStatement(firstToken.Type))
+                {
+                    if (PureLRSMode && ParserConfig.EnableDebugging)
+                    {
+                        Console.WriteLine($"[PURE LRS DEBUG] EvaluateFromRight delegating to statement parser for {firstToken.Type}");
+                    }
+                    return statementParser.ParseStatement(expressionTokens);
+                }
+                
+                // Also check for assignment operators elsewhere in the expression
+                // This handles cases like 'foo:7' where first token is IDENTIFIER, not COLON
+                for (int i = 1; i < expressionTokens.Count; i++)
+                {
+                    if (LRSStatementParser.CouldBeStatement(expressionTokens[i].Type))
+                    {
+                        if (PureLRSMode && ParserConfig.EnableDebugging)
+                        {
+                            Console.WriteLine($"[PURE LRS DEBUG] EvaluateFromRight found statement token at position {i}: {expressionTokens[i].Type}");
+                        }
+                        return statementParser.ParseStatement(expressionTokens);
+                    }
+                }
             }
                 
             // Check for grouping constructs FIRST (highest precedence per K spec)
@@ -269,8 +338,9 @@ namespace K3CSharp.Parsing
                 // These will be caught by the dyadic/monadic parsing below
             }
                 
-            // Pure LRS mode: Check for implicit vector creation (sequences of atomic literals)
-            if (PureLRSMode && expressionTokens.Count >= 2)
+            // Check for implicit vector creation (sequences of atomic literals like "1 2 3 4 5")
+            // This applies to both Pure and Safe LRS modes
+            if (expressionTokens.Count >= 2)
             {
                 var implicitVector = TryCreateImplicitVector(expressionTokens);
                 if (implicitVector != null)
@@ -297,6 +367,24 @@ namespace K3CSharp.Parsing
                 }
             }
             
+            // Check for system operators (like _gtime, _ltime, _getenv, etc.)
+            if (expressionTokens.Count >= 2)
+            {
+                var firstToken = expressionTokens[0];
+                if (PureLRSMode && ParserConfig.EnableDebugging)
+                {
+                    Console.WriteLine($"[PURE LRS DEBUG] Checking for verb token: {firstToken.Type}({firstToken.Lexeme}) - IsVerbToken={VerbRegistry.IsVerbToken(firstToken.Type)}");
+                }
+                if (VerbRegistry.IsVerbToken(firstToken.Type))
+                {
+                    if (PureLRSMode && ParserConfig.EnableDebugging)
+                    {
+                        Console.WriteLine($"[PURE LRS DEBUG] Found verb token, delegating to function parser");
+                    }
+                    return functionParser.ParseFunctionCall(expressionTokens);
+                }
+            }
+            
             // Check for assignments (variable:value pattern)
             // Assignments can appear anywhere in the token list, not just at the start
             for (int i = 1; i < expressionTokens.Count; i++)
@@ -319,6 +407,80 @@ namespace K3CSharp.Parsing
             if (ParseAdverbExpression(expressionTokens) is ASTNode adverbResult)
             {
                 return adverbResult;
+            }
+            
+            // Check for bracket indexing pattern: identifier[expression]
+            // This is equivalent to identifier @ expression (index at depth)
+            if (expressionTokens.Count >= 4 &&
+                expressionTokens[0].Type == TokenType.IDENTIFIER &&
+                expressionTokens[1].Type == TokenType.LEFT_BRACKET)
+            {
+                var bracketEnd = FindMatchingBracket(expressionTokens, 1);
+                if (bracketEnd != -1 && bracketEnd == expressionTokens.Count - 1)
+                {
+                    // Valid bracket indexing pattern: d[`keyB] -> d @ `keyB
+                    var leftNode = ASTNode.MakeVariable(expressionTokens[0].Lexeme);
+                    var indexTokens = expressionTokens.GetRange(2, bracketEnd - 2);
+                    var indexNode = BuildParseTreeFromTokens(indexTokens);
+                    
+                    if (indexNode != null)
+                    {
+                        return ASTNode.MakeDyadicOp(TokenType.APPLY, leftNode, indexNode);
+                    }
+                }
+            }
+            
+            // Check for bracket function call pattern: expression[args] (e.g., {lambda}[], func[arg1;arg2])
+            // Find the first LEFT_BRACKET that could be a function call
+            for (int i = 1; i < expressionTokens.Count; i++)
+            {
+                if (expressionTokens[i].Type == TokenType.LEFT_BRACKET)
+                {
+                    if (ParserConfig.EnableDebugging)
+                    {
+                        Console.WriteLine($"[EvaluateFromRight] Found LEFT_BRACKET at position {i}, checking for function call pattern");
+                    }
+                    
+                    var bracketEnd = FindMatchingBracket(expressionTokens, i);
+                    
+                    if (ParserConfig.EnableDebugging)
+                    {
+                        Console.WriteLine($"[EvaluateFromRight] Matching bracket at {bracketEnd}, token count = {expressionTokens.Count}");
+                    }
+                    
+                    if (bracketEnd != -1 && bracketEnd == expressionTokens.Count - 1)
+                    {
+                        // The bracket is at the end - this is a function call pattern
+                        // Parse the left side as the function, bracket content as arguments
+                        var funcTokens = expressionTokens.GetRange(0, i);
+                        var argTokens = expressionTokens.GetRange(i + 1, bracketEnd - i - 1);
+                        
+                        if (ParserConfig.EnableDebugging)
+                        {
+                            Console.WriteLine($"[EvaluateFromRight] Bracket function call: funcTokens={funcTokens.Count}, argTokens={argTokens.Count}");
+                        }
+                        
+                        var funcNode = BuildParseTreeFromTokens(funcTokens);
+                        if (funcNode != null)
+                        {
+                            if (argTokens.Count == 0)
+                            {
+                                // No arguments: {lambda}[] -> call with empty args
+                                return ASTNode.MakeDyadicOp(TokenType.APPLY, funcNode, ASTNode.MakeVector(new List<ASTNode>()));
+                            }
+                            else
+                            {
+                                // Parse arguments and create apply operation
+                                var argNode = BuildParseTreeFromTokens(argTokens);
+                                if (argNode != null)
+                                {
+                                    return ASTNode.MakeDyadicOp(TokenType.APPLY, funcNode, argNode);
+                                }
+                            }
+                        }
+                    }
+                    break; // Only check the first bracket
+                }
             }
                 
             // Try dyadic operation
@@ -351,6 +513,27 @@ namespace K3CSharp.Parsing
         {
             if (tokens.Count == 0) return null;
             if (tokens.Count == 1) return CreateNodeFromToken(tokens[0]);
+            
+            // Handle parenthesized expressions using grouping parser
+            if (tokens[0].Type == TokenType.LEFT_PAREN)
+            {
+                var tempGroupingParser = new LRSGroupingParser(tokens, BuildParseTree, this);
+                return tempGroupingParser.ParseParentheses(ref position);
+            }
+            
+            // Handle bracket expressions using grouping parser
+            if (tokens[0].Type == TokenType.LEFT_BRACKET)
+            {
+                var tempGroupingParser = new LRSGroupingParser(tokens, BuildParseTree, this);
+                return tempGroupingParser.ParseBrackets(ref position);
+            }
+            
+            // Handle brace expressions using grouping parser
+            if (tokens[0].Type == TokenType.LEFT_BRACE)
+            {
+                var tempGroupingParser = new LRSGroupingParser(tokens, BuildParseTree, this);
+                return tempGroupingParser.ParseBraces(ref position);
+            }
             
             // Try dyadic operation first (monadic parsing is handled at main LRS level)
             return dyadicParser.ParseDyadicOperation(tokens);
