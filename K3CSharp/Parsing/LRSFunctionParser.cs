@@ -217,6 +217,7 @@ namespace K3CSharp.Parsing
         /// <summary>
         /// Check if token type represents a system operator (like _gtime, _ltime, etc.)
         /// System operators are registered as VerbType.Operator with names starting with "_"
+        /// AND must support monadic arity (function-style calls like _gtime 0)
         /// </summary>
         private bool IsSystemOperator(TokenType tokenType)
         {
@@ -224,7 +225,10 @@ namespace K3CSharp.Parsing
             var verb = VerbRegistry.GetVerb(verbName);
             
             // System operators are operators with names starting with "_"
-            return verb?.Type == VerbType.Operator && verbName.StartsWith("_");
+            // AND must support monadic arity (function-style calls)
+            return verb?.Type == VerbType.Operator && 
+                   verbName.StartsWith("_") && 
+                   verb.SupportedArities.Contains(1);
         }
         
         /// <summary>

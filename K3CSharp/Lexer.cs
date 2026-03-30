@@ -920,6 +920,8 @@ namespace K3CSharp
                 "_exit" => new Token(TokenType.EXIT, opName, start),
                 "_parse" => new Token(TokenType.PARSE, opName, start),
                 "_eval" => new Token(TokenType.EVAL, opName, start),
+                "_gethint" => new Token(TokenType.GETHINT, opName, start),
+                "_sethint" => new Token(TokenType.SETHINT, opName, start),
                 
                 // Integer and bitwise operations
                 "_div" => new Token(TokenType.DIV, opName, start),

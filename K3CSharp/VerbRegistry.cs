@@ -365,6 +365,11 @@ namespace K3CSharp
                 TokenType.COSH => "_cosh",
                 TokenType.TANH => "_tanh",
                 TokenType.NOT => "_not",
+                TokenType.DISPOSE => "_dispose",
+                TokenType.SETHINT => "_sethint",
+                TokenType.GETHINT => "_gethint",
+                TokenType.PARSE => "_parse",
+                TokenType.EVAL => "_eval",
                 _ => tokenType.ToString()
             };
             

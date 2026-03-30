@@ -1,6 +1,6 @@
 # K3CSharp Parser Failures
 
-**Generated:** 2026-03-30 14:37:20
+**Generated:** 2026-03-30 15:28:52
 **Test Results:** 820/852 passed (96.2%)
 
 ## Executive Summary
@@ -11,22 +11,22 @@
 **Success Rate:** 96.2%
 
 **LRS Parser Statistics:**
-- NULL Results: 14
-- Incomplete Token Consumption: 963
-- Total Fallbacks to Legacy: 977
+- NULL Results: 2
+- Incomplete Token Consumption: 974
+- Total Fallbacks to Legacy: 976
 - Incorrect Results: 0
-- LRS Success Rate: -14.7%
+- LRS Success Rate: -14.6%
 
 **Top Failure Patterns:**
 - Incomplete consumption (position 3/4): 264
-- Incomplete consumption (position 2/3): 130
+- Incomplete consumption (position 2/3): 138
 - Incomplete consumption (position 7/8): 77
 - Incomplete consumption (position 5/6): 74
 - Incomplete consumption (position 6/7): 60
 - Incomplete consumption (position 4/5): 58
 - Incomplete consumption (position 1/2): 39
-- Incomplete consumption (position 9/10): 36
-- Incomplete consumption (position 8/9): 25
+- Incomplete consumption (position 9/10): 37
+- Incomplete consumption (position 8/9): 24
 - Incomplete consumption (position 10/11): 22
 
 ## LRS Parser Failures
@@ -39,83 +39,11 @@
 ```
 After SYMBOL (position 3/4)
 -------------------------------------------------
-2. **ffi_dispose.k**:
-```k
-_dispose c1
-```
-After IDENTIFIER (position 2/3)
--------------------------------------------------
-3. **ffi_complete_workflow.k**:
+2. **ffi_complete_workflow.k**:
 ```k
 magnitude: c1[`Abs][]
 ```
 After RIGHT_BRACKET (position 8/9)
--------------------------------------------------
-4. **test_parse_verb.k**:
-```k
-_parse "1 + 2"
-```
-After CHARACTER_VECTOR (position 2/3)
--------------------------------------------------
-5. **test_parse_eval_together.k**:
-```k
-parse_tree: _parse "1 + 2"; _eval parse_tree
-```
-After CHARACTER_VECTOR (position 4/8)
--------------------------------------------------
-6. **test_parse_monadic_star.k**:
-```k
-_parse "*1 2 3 4"
-```
-After CHARACTER_VECTOR (position 2/3)
--------------------------------------------------
-7. **parse_atomic_value_no_verb.k**:
-```k
-_parse "`a"
-```
-After CHARACTER_VECTOR (position 2/3)
--------------------------------------------------
-8. **parse_projection_dyadic_plus.k**:
-```k
-_parse "(+)"
-```
-After CHARACTER_VECTOR (position 2/3)
--------------------------------------------------
-9. **parse_projection_dyadic_plus_fixed_left.k**:
-```k
-_parse "1+"
-```
-After CHARACTER_VECTOR (position 2/3)
--------------------------------------------------
-10. **parse_projection_dyadic_plus_fixed_right.k**:
-```k
-_parse "+[;2]"
-```
-After CHARACTER_VECTOR (position 2/3)
--------------------------------------------------
-11. **parse_monadic_shape_atomic.k**:
-```k
-_parse "^,`a"
-```
-After CHARACTER_VECTOR (position 2/3)
--------------------------------------------------
-12. **eval_dyadic_plus.k**:
-```k
-_eval (`"+";5 6 7 8;1 2 3 4)
-```
-After RIGHT_PAREN (position 14/15)
--------------------------------------------------
-13. **eval_monadic_star_nested.k**:
-```k
-_eval (`"*";2;(`"+";4;7))
-```
-After RIGHT_PAREN (position 14/15)
--------------------------------------------------
-14. **test_eval_monadic_star.k**:
-```k
-_eval (`"*:";1 2 3 4)
-```
-After RIGHT_PAREN (position 9/10)
 -------------------------------------------------
 ### Incomplete Token Consumption (LRS returned result but didn't consume all tokens)
 
@@ -4975,6 +4903,12 @@ Incomplete consumption (position 8/9) (consumed 8/9)
 -------------------------------------------------
 **ffi_dispose.k**:
 ```k
+_dispose c1
+```
+Incomplete consumption (position 2/3) (consumed 2/3)
+-------------------------------------------------
+**ffi_dispose.k**:
+```k
 c1 @ `_this
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
@@ -5207,11 +5141,17 @@ Incomplete consumption (position 7/8) (consumed 7/8)
 ```
 Incomplete consumption (position 4/5) (consumed 4/5)
 -------------------------------------------------
-**test_eval_verb.k**:
+**test_parse_verb.k**:
 ```k
-_eval ("+", 1, 2)
+_parse "1 + 2"
 ```
-Incomplete consumption (position 8/9) (consumed 8/9)
+Incomplete consumption (position 2/3) (consumed 2/3)
+-------------------------------------------------
+**test_parse_eval_together.k**:
+```k
+parse_tree: _parse "1 + 2"; _eval parse_tree
+```
+Incomplete consumption (position 4/8) (consumed 4/8)
 -------------------------------------------------
 **idioms_01_388_drop_rows.k**:
 ```k
@@ -5861,6 +5801,54 @@ x: (1;2;3)
 ```
 Incomplete consumption (position 9/10) (consumed 9/10)
 -------------------------------------------------
+**test_parse_monadic_star.k**:
+```k
+_parse "*1 2 3 4"
+```
+Incomplete consumption (position 2/3) (consumed 2/3)
+-------------------------------------------------
+**parse_atomic_value_no_verb.k**:
+```k
+_parse "`a"
+```
+Incomplete consumption (position 2/3) (consumed 2/3)
+-------------------------------------------------
+**parse_projection_dyadic_plus.k**:
+```k
+_parse "(+)"
+```
+Incomplete consumption (position 2/3) (consumed 2/3)
+-------------------------------------------------
+**parse_projection_dyadic_plus_fixed_left.k**:
+```k
+_parse "1+"
+```
+Incomplete consumption (position 2/3) (consumed 2/3)
+-------------------------------------------------
+**parse_projection_dyadic_plus_fixed_right.k**:
+```k
+_parse "+[;2]"
+```
+Incomplete consumption (position 2/3) (consumed 2/3)
+-------------------------------------------------
+**parse_monadic_shape_atomic.k**:
+```k
+_parse "^,`a"
+```
+Incomplete consumption (position 2/3) (consumed 2/3)
+-------------------------------------------------
+**eval_dyadic_plus.k**:
+```k
+_eval (`"+";5 6 7 8;1 2 3 4)
+```
+Incomplete consumption (position 14/15) (consumed 14/15)
+-------------------------------------------------
+**eval_monadic_star_nested.k**:
+```k
+_eval (`"*";2;(`"+";4;7))
+```
+Incomplete consumption (position 14/15) (consumed 14/15)
+-------------------------------------------------
 **eval_dot_execute_path.k**:
 ```k
 v:`e`f
@@ -5890,6 +5878,12 @@ Incomplete consumption (position 3/4) (consumed 3/4)
 . "a+4"
 ```
 Incomplete consumption (position 2/3) (consumed 2/3)
+-------------------------------------------------
+**test_eval_monadic_star.k**:
+```k
+_eval (`"*:";1 2 3 4)
+```
+Incomplete consumption (position 9/10) (consumed 9/10)
 -------------------------------------------------
 **test_eval_monadic_star_atomic.k**:
 ```k
