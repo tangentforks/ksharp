@@ -172,7 +172,7 @@ namespace K3CSharp
         static VerbRegistry()
         {
             InitializeBasicOperators();
-            PopulateImplementationDelegates();
+            PopulateImplementationDelegates(); // This is a hack for _eval. We need to fix _eval and remove it
         }
 
         public static void RegisterVerb(string name, VerbType type, int[] arities, Func<K3Value[], K3Value>?[]? implementations, bool isSystemVariable = false, string? description = null)
@@ -517,7 +517,11 @@ namespace K3CSharp
 
         private static void InitializeBasicOperators()
         {
-            // Basic mathematical operators - register both symbol and token type names
+            // Clear all caches to ensure clean state before registration
+            ClearCaches();
+            
+            // Primitive verbs
+            // + - * % | & ^ < > = ! # _ ~ $ ? @ . ,
             RegisterVerb("+", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("PLUS", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("-", VerbType.Operator, new[] { 1, 2 }, null);
@@ -526,199 +530,224 @@ namespace K3CSharp
             RegisterVerb("MULTIPLY", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("%", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("DIVIDE", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("&", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("MIN", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("|", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("MAX", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("&", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("MIN", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("^", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("POWER", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("<", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("LESS", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb(">", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("GREATER", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("=", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("EQUAL", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("!", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("MODULUS", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb(",", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("JOIN", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("#", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("HASH", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("_", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("UNDERSCORE", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("?", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("QUESTION", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("=", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("EQUAL", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("$", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("DOLLAR", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("~", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("MATCH", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("$", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("DOLLAR", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("?", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("QUESTION", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("@", VerbType.Operator, new[] { 1, 2, 3, 4 }, null);
             RegisterVerb("APPLY", VerbType.Operator, new[] { 1, 2, 3, 4 }, null);
             RegisterVerb(".", VerbType.Operator, new[] { 1, 2, 3, 4 }, null);
             RegisterVerb("DOT_APPLY", VerbType.Operator, new[] { 1, 2, 3, 4 }, null);
-
-            // Additional mathematical operators
-            RegisterVerb("DIV", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("MUL", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("AND", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("OR", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("XOR", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("ROT", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("SHIFT", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("MIN", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("MAX", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("LESS", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("GREATER", VerbType.Operator, new[] { 1, 2 }, null);
-            
-            // Parse tree verbs - registered as SystemFunction (names start with underscore)
-            RegisterVerb("_parse", VerbType.SystemFunction, new[] { 1 }, new Func<K3Value[], K3Value>?[] { ParseVerbHandler.Parse, null });
-            RegisterVerb("_eval", VerbType.SystemFunction, new[] { 1 }, new Func<K3Value[], K3Value>?[] { EvalVerbHandler.Evaluate, null });
-            RegisterVerb("MATCH", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("IN", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("POWER", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("MODULUS", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb(",", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("JOIN", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("COLON", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("HASH", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("UNDERSCORE", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("QUESTION", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("DOLLAR", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("DRAW", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("TYPE", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("STRING_REPRESENTATION", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("LSQ", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("DOT_MULTIPLY", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("_dot", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("MUL", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("_mul", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("INV", VerbType.Operator, new[] { 1 }, null);
 
-            // System verbs (underscore functions)
-            RegisterVerb("BIN", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("_bin", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("BINL", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("_binl", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("LIN", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("_lin", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("DV", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("_dv", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("DI", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("_di", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("VS", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("SV", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("SS", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("_ss", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("SM", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("_sm", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("CI", VerbType.Operator, new[] { 1, 2 }, new Func<K3Value[], K3Value>[] { args => Ci(args[0]), args => Ci(args[0], args[1]) });
-            RegisterVerb("_ci", VerbType.Operator, new[] { 1, 2 }, new Func<K3Value[], K3Value>[] { args => Ci(args[0]), args => Ci(args[0], args[1]) });
-            RegisterVerb("IC", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("_ic", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("GETENV", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("SETENV", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("SIZE", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("DIRECTORY", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("BD", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("DB", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("DO", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("WHILE", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("IF", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("EXIT", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("_dispose", VerbType.Function, new[] { 1 }, null);
-            RegisterVerb("HINT", VerbType.Operator, new[] { 1, 2 }, null);
-            
-            // Also register lowercase versions for identifier recognition
-            RegisterVerb("do", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("while", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("if", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("exit", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("dispose", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("hint", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("NULL", VerbType.Operator, new[] { 0 }, null);
-            RegisterVerb("GTIME", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("LT", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("JD", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("DJ", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("CEIL", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("TIME", VerbType.Operator, new[] { 0 }, null);
+            // Monadic
+            RegisterVerb("+:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("FLIP", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("-:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("ARITHMETICNEGATE", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("*:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("MULTIPLY", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("%:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("INVERT", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("|:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("REVERSE", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("&:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("WHERE", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("^:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("SHAPE", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("<:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("GRADEUP", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb(">:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("GRADEDOWN", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("=:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("GROUP", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("!:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("ENUMERATE", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("#:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("COUNT", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("_:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("TOLERANTFLOOR", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("~:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("LOGICALNEGATE", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("$:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("FORMAT", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("?:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("UNIQUES", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("@:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("ATOM", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb(".:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("MAKE", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb(",:", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("ENLIST", VerbType.Operator, new[] { 1 }, null);
+            RegisterVerb("COLON", VerbType.Operator, new[] { 1, 2 }, null); // Return
 
             // Mathematical functions - register both symbol and token type names
-            RegisterVerb("_log", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("LOG", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_exp", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("EXP", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_abs", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("ABS", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_sqr", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("SQR", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_sqrt", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("SQRT", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_floor", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("FLOOR_MATH", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_sin", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("SIN", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_cos", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("COS", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_tan", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("TAN", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_asin", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("ASIN", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_acos", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("ACOS", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_atan", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("ATAN", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_sinh", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("SINH", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_cosh", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("COSH", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_tanh", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("TANH", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("NOT", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("NEGATE", VerbType.Operator, new[] { 1 }, null);
+            // _log _exp _abs _sqr _sqrt _floor _ceil _dot _mul _inv
+            // _sin _cos _tan _asin _acos _atan _sinh _cosh _tanh
+            // _div (integer) _and _or _xor _not _rot _shift (bitwise)
+            // y _lsq A is least squares x for y~+/A*x (i.e. Ax=y)
+            RegisterVerb("_log", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("LOG", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_exp", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("EXP", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_abs", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("ABS", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_sqr", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("SQR", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_sqrt", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("SQRT", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_floor", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("FLOOR_MATH", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_ceil", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("CEIL", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_dot", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("DOT_MULTIPLY", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_mul", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("MUL", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_inv", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("INV", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_sin", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("SIN", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_cos", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("COS", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_tan", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("TAN", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_asin", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("ASIN", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_acos", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("ACOS", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_atan", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("ATAN", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_sinh", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("SINH", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_cosh", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("COSH", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_tanh", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("TANH", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_div", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("DIV", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_and", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("AND", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_or", VerbType.SystemFunction, new[] { 2 }, null);            
+            RegisterVerb("OR", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_xor", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("XOR", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_not", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("NOT", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_rot", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("ROT", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_shift", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("SHIFT", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_lsq", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("LSQ", VerbType.SystemFunction, new[] { 2 }, null);
 
-            // Additional monadic system verbs
-            RegisterVerb("_lt", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("LT", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_jd", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("JD", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_dj", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("DJ", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_T", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_in", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("IN", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_bd", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("BD", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_db", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("DB", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_not", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("NOT", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("_exit", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("EXIT", VerbType.Operator, new[] { 1 }, null);
+            // Rand Functions
+            // x _draw y (from !y); x _draw -y (deal from !y); x _draw 0 (from (0,1))
+            RegisterVerb("_draw", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("DRAW", VerbType.SystemFunction, new[] { 1, 2 }, null);
 
-            // Adverbs
-            RegisterVerb("ADVERB_SLASH", VerbType.Operator, new[] { 2 }, null);
-            RegisterVerb("ADVERB_BACKSLASH", VerbType.Operator, new[] { 2 }, null);
-            RegisterVerb("ADVERB_TICK", VerbType.Operator, new[] { 2 }, null);
-            RegisterVerb("ADVERB_SLASH_COLON", VerbType.Operator, new[] { 2 }, null);
-            RegisterVerb("ADVERB_BACKSLASH_COLON", VerbType.Operator, new[] { 2 }, null);
-            RegisterVerb("ADVERB_TICK_COLON", VerbType.Operator, new[] { 2 }, null);
+            // Time Functions
+            // _t is gmt seconds. _lt is local from gmt, e.g. _gtime _lt _t
+            // _jd yyyymmdd (and _dj) for to and from julian day number (0 is monday)
+            RegisterVerb("_T", VerbType.SystemVariable, new[] { 0 }, null);
+            RegisterVerb("DAYS", VerbType.SystemVariable, new[] { 0 }, null);
+            RegisterVerb("_t", VerbType.SystemVariable, new[] { 0 }, null);
+            RegisterVerb("SECONDS", VerbType.SystemVariable, new[] { 0 }, null);
+            //RegisterVerb("TIME", VerbType.Operator, new[] { 0 }, null);
+            RegisterVerb("_lt", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("LT", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_gtime", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("GTIME", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_ltime", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("LTIME", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_jd", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("JD", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_dj", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("DJ", VerbType.SystemFunction, new[] { 1 }, null);
 
-            // I/O verbs (0:, 1:, 2:, 3:, 4:, 5:, 6:, 7:, 8:, 9:)
-            for (int i = 0; i <= 9; i++)
-            {
-                var ioNum = i.ToString();
-                RegisterVerb(ioNum, VerbType.Operator, new[] { 1, 2 }, null);
-            }
-            
-            // Also register with the TokenType names that the evaluator expects
-            RegisterVerb("IO_VERB_0", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("IO_VERB_1", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("IO_VERB_2", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("IO_VERB_3", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("IO_VERB_4", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("IO_VERB_5", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("IO_VERB_6", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("IO_VERB_7", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("IO_VERB_8", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("IO_VERB_9", VerbType.Operator, new[] { 1, 2 }, null);
+            // List
+            // x _in y is 1 if x is an item of y; 0 otherwise (list: _lin)
+            // x _bin y is binary search for y in ascending x (list: _binl)
+            // x _dv y and x _di y to delete by value and index (list: _dvl)
+            // x _sv v (scalar from vector) and x _vs s (vector from scalar)
+            // _ci i (character from integer) and _ic c (integer from character)
+            // x _sm y is string match. y can have *?[^-], e.g. files _sm "*.[kK]"
+            // x _ss y is string/symbol search for start indices. y can have ?[^-].
+            // _ssr[x;y;z] is string/symbol search and replace. z can be a function.
+            RegisterVerb("_in", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("IN", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_lin", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("LIN", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("_bin", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("BIN", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("_binl", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("BINL", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("_dv", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("DV", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("_di", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("DI", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("_sv", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("SV", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("_vs", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("VS", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("_ci", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("CI", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("_ic", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("IC", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("_sm", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("SM", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("_ss", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("SS", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("_ssr", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("SSR", VerbType.SystemFunction, new[] { 1, 2 }, null);
+
+            // Data verbs
+            // _bd d (bytes from data) and _db b (data from bytes). _hd (hash from data).
+            RegisterVerb("_bd", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("BD", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_db", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("DB", VerbType.SystemFunction, new[] { 1 }, null);
+
+            // System verbs
+            // _getenv v (v _setenv s) gets(sets) environment variable v.
+            // _host addr; _host name; _size file; _del file; old _rename new
+            // _exit code; _kill PIDS
+            RegisterVerb("_getenv", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("GETENV", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("_setenv", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("SETENV", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("_size", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("SIZE", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_host", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("HOST", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_exit", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("EXIT", VerbType.SystemFunction, new[] { 1 }, null);
 
             // System variables (0-arity)
+            // _d(dir) _v(var) _i(index) _t(second) _f(function) _n(null) _s(space)
+            // _h(host) _p(port) _P(PID) _w(who) _u(user) _a(address) _k(version) _T(time)
+            // _o(os) _c(cores) _r(RAM) _m(mach id) _y(stack) _b(backtrace if enabled)
             RegisterVerb("_d", VerbType.SystemVariable, new[] { 0 }, null);
             RegisterVerb("_v", VerbType.SystemVariable, new[] { 0 }, null);
             RegisterVerb("_i", VerbType.SystemVariable, new[] { 0 }, null);
@@ -736,23 +765,61 @@ namespace K3CSharp
             RegisterVerb("_c", VerbType.SystemVariable, new[] { 0 }, null);
             RegisterVerb("_r", VerbType.SystemVariable, new[] { 0 }, null);
             RegisterVerb("_m", VerbType.SystemVariable, new[] { 0 }, null);
-            RegisterVerb("_y", VerbType.SystemVariable, new[] { 0 }, null);
+            RegisterVerb("_y", VerbType.SystemVariable, new[] { 0 }, null);            
+            RegisterVerb("DIRECTORY", VerbType.Operator, new[] { 1, 2 }, null);
             
             // Also register NULL for TokenType.NULL
             RegisterVerb("NULL", VerbType.SystemVariable, new[] { 0 }, null);
+
+            // I/O verbs (0:, 1:, 2:, 3:, 4:, 5:, 6:, 7:, 8:, 9:)
+            for (int i = 0; i <= 9; i++)
+            {
+                var ioNum = i.ToString();
+                RegisterVerb(ioNum+":", VerbType.Operator, new[] { 1, 2 }, null);
+                RegisterVerb(ioNum+"::", VerbType.Operator, new[] { 1 }, null);
+            }
             
-            // Hint system functions
+            // Also register with the TokenType names that the evaluator expects
+            RegisterVerb("IO_VERB_0", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("IO_VERB_1", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("IO_VERB_2", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("IO_VERB_3", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("IO_VERB_4", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("IO_VERB_5", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("IO_VERB_6", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("IO_VERB_7", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("IO_VERB_8", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("IO_VERB_9", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("TYPE", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("STRING_REPRESENTATION", VerbType.Operator, new[] { 1, 2 }, null);
+
+            // ksharp new verbs: parser and FFI
+            RegisterVerb("_parse", VerbType.SystemFunction, new[] { 1 }, new Func<K3Value[], K3Value>?[] { ParseVerbHandler.Parse, null });
+            RegisterVerb("_eval", VerbType.SystemFunction, new[] { 1 }, new Func<K3Value[], K3Value>?[] { EvalVerbHandler.Evaluate, null });
+            RegisterVerb("_dispose", VerbType.Function, new[] { 1 }, null);
             RegisterVerb("_gethint", VerbType.Function, new[] { 1 }, null);
             RegisterVerb("GETHINT", VerbType.Function, new[] { 1 }, null);
             RegisterVerb("_sethint", VerbType.Operator, new[] { 2 }, null);
             RegisterVerb("SETHINT", VerbType.Operator, new[] { 2 }, null);
             
-            // Modified verbs (operators with adverbs)
-            RegisterVerb("*:", VerbType.ProjectedFunction, new[] { 1, 2 }, null);
-            RegisterVerb("/:", VerbType.ProjectedFunction, new[] { 1, 2 }, null);
-            RegisterVerb("\\:", VerbType.ProjectedFunction, new[] { 1, 2 }, null);
+            // Adverbs (Should these be moved elsewhere?)
+            RegisterVerb("ADVERB_SLASH", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("ADVERB_BACKSLASH", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("ADVERB_TICK", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("ADVERB_SLASH_COLON", VerbType.Operator, new[] { 2 }, null);
+            RegisterVerb("ADVERB_BACKSLASH_COLON", VerbType.Operator, new[] { 2 }, null);
+            RegisterVerb("ADVERB_TICK_COLON", VerbType.Operator, new[] { 2 }, null);
+
+            // Statements (Should these be moved elsewhere?)
+            RegisterVerb("DO", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("WHILE", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("IF", VerbType.Operator, new[] { 1, 2 }, null);            
+            RegisterVerb("do", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("while", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("if", VerbType.Operator, new[] { 1, 2 }, null);
         }
 
+        // This is a hack for _eval, we should fix _eval and remove it
         private static void PopulateImplementationDelegates()
         {
             // Only implement basic arithmetic operators that have K3Value methods
@@ -881,8 +948,32 @@ namespace K3CSharp
                     }
                 }
             });
+            
+            // System operators - need to access Evaluator methods
+            // These will be handled by the evaluator's method dispatch
+            UpdateVerbImplementations("GTIME", new Func<K3Value[], K3Value>?[] { null, null });
+            UpdateVerbImplementations("_gtime", new Func<K3Value[], K3Value>?[] { null, null });
+            UpdateVerbImplementations("LTIME", new Func<K3Value[], K3Value>?[] { null, null });
+            UpdateVerbImplementations("_ltime", new Func<K3Value[], K3Value>?[] { null, null });
+            UpdateVerbImplementations("GETENV", new Func<K3Value[], K3Value>?[] { null, null });
+            UpdateVerbImplementations("_getenv", new Func<K3Value[], K3Value>?[] { null, null });
+            UpdateVerbImplementations("SETENV", new Func<K3Value[], K3Value>?[] { null, null });
+            UpdateVerbImplementations("_setenv", new Func<K3Value[], K3Value>?[] { null, null });
+            
+            // Mathematical functions - delegate to Evaluator_Math.cs implementations via Evaluator switch
+            UpdateVerbImplementations("CEIL", new Func<K3Value[], K3Value>?[] { null, null });
+            UpdateVerbImplementations("_ceil", new Func<K3Value[], K3Value>?[] { null, null });
+            UpdateVerbImplementations("FLOOR", new Func<K3Value[], K3Value>?[] { null, null });
+            UpdateVerbImplementations("_floor", new Func<K3Value[], K3Value>?[] { null, null });
+            UpdateVerbImplementations("SIN", new Func<K3Value[], K3Value>?[] { null, null });
+            UpdateVerbImplementations("_sin", new Func<K3Value[], K3Value>?[] { null, null });
+            UpdateVerbImplementations("COS", new Func<K3Value[], K3Value>?[] { null, null });
+            UpdateVerbImplementations("_cos", new Func<K3Value[], K3Value>?[] { null, null });
+            UpdateVerbImplementations("TAN", new Func<K3Value[], K3Value>?[] { null, null });
+            UpdateVerbImplementations("_tan", new Func<K3Value[], K3Value>?[] { null, null });
         }
 
+        // This is a hack for _eval, we should fix _eval and remove it
         private static void UpdateVerbImplementations(string name, Func<K3Value[], K3Value>?[]? implementations)
         {
             if (verbs.TryGetValue(name, out var verb))
@@ -1322,53 +1413,6 @@ namespace K3CSharp
             }
             
             return issues;
-        }
-        
-        /// <summary>
-        /// Character from integer (ci) verb implementation
-        /// </summary>
-        /// <param name="value">Integer value to convert</param>
-        /// <returns>Character value</returns>
-        private static K3Value Ci(K3Value value)
-        {
-            if (value is IntegerValue intValue)
-            {
-                char charValue = (char)intValue.Value;
-                return new CharacterValue(charValue.ToString());
-            }
-            else if (value is VectorValue vector)
-            {
-                var result = new List<K3Value>();
-                foreach (var element in vector.Elements)
-                {
-                    if (element is IntegerValue intElement)
-                    {
-                        char charValue = (char)intElement.Value;
-                        result.Add(new CharacterValue(charValue.ToString()));
-                    }
-                    else
-                    {
-                        result.Add(element);
-                    }
-                }
-                return new VectorValue(result);
-            }
-            else
-            {
-                throw new Exception($"ci expects integer or vector of integers, got {value.GetType().Name}");
-            }
-        }
-        
-        /// <summary>
-        /// Character from integer (ci) verb implementation - dyadic version
-        /// </summary>
-        /// <param name="left">Left argument</param>
-        /// <param name="right">Right argument</param>
-        /// <returns>Character value</returns>
-        private static K3Value Ci(K3Value left, K3Value right)
-        {
-            // For dyadic ci, apply to right argument (left is ignored)
-            return Ci(right);
         }
     }
 }

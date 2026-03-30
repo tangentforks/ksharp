@@ -7,8 +7,8 @@ A comprehensive C# implementation of the K3 programming language core, a high-pe
 **K3CSharp is now at 96.4% K3 specification compliance** with comprehensive core language implementation, complete serialization system, robust .NET Foreign Function Interface, statement parsing support, Pure LRS parser with variable tracking, and mostly complete I/O system.
 
 ### 📈 Latest Test Results
-- **Test Suite**: 821/852 tests passing (96.4% success rate)
-- **K3 Compatibility**: 775/844 tests matched (94.3% compatibility)  
+- **Test Suite**: 820/852 tests passing (96.2% success rate)
+- **K3 Compatibility**: 745/852 tests matched (91.4% compatibility)  
 - **Dictionary Indexing**: ✅ All dictionary indexing tests now pass
 - **Operator Precedence**: ✅ K's Long Right Scope properly implemented
 - **Parser Stability**: ✅ No special cases or workarounds in ParsePrimary
@@ -133,10 +133,13 @@ cd K3CSharp.Comparison && dotnet run
 - ✅ **Smart Integer Division**: `4 % 2` → `2` (integer, not float)
 - ✅ **64-bit Long Integers**: `123456789012345j` support
 - ✅ **Compact Symbol Vectors**: `` `a`b`c `` (no spaces)
-- ✅ **Compact Dictionary Display**: Semicolon-separated format
-- ✅ **Enhanced Function Display**: Cleaner representation
-- ✅ **Improvements inspired on 64-bit e**: _P _o _c _r _m _y
+- ✅ **Compact List and Dictionary Display**: Semicolon-separated format ``.(`a;1;);(`b;2;))``
+- ✅ **Enhanced Function Display**: Literal function body instead of pre-parsed
+- ✅ **Improvements inspired on 64-bit e**: `_P` `_o` `_c` `_r` `_m` `_y`
 - ✅ **No denorm dictionaries**:   ``.((`a;1);(`a;2)) is .,(`a;2;) and not .((`a;1;);(`a;2;))``
+- ✅ **Parse and eval**: `_parse "1 + 2"` ``_eval (`"+";1;2)``
+- ✅ **.NET type loading**: `2:` loads Assemblies into `` ._dotnet`` tree 
+- ✅ **.NET type conversion hints**:`_sethint` and `_gethint`
 
 ### **Recently Implemented Features:**
 - ✅ **Complete Adverb System**: Full support for two-glyph adverbs (`/:`, `\:`, `':`) and complex patterns
@@ -690,7 +693,7 @@ These official K documentation resources provide in-depth coverage of:
 
 ## 👨‍💻 **Authorship**
 
-This K3 interpreter implementation was written primarily by **SWE-1.5** based on specifications, direction, prompts, comments and manual fixes provided by **Eusebio Rufian-Zilbermann**. Additional contributions by **Michal Wallace** using **Claude**
+This K3 interpreter implementation was coded initially by **SWE-1.5** with significant contributions from **Kimi K-2.5** and **Claude Opus/Sonnet** based on specifications, direction, prompts, comments and manual fixes provided by **Eusebio Rufian-Zilbermann** and additional contributions by **Michal Wallace**.
 
 ### **Acknowledgements**
 
@@ -700,7 +703,7 @@ In addition to Michal Wallace's direct contributions, the following people have 
 - **Adam Jacobs** - His comments and insight over the years regarding the K interpreter have provided invaluable inspiration and information.
 - **Joel Kaplan** - He gave me the chance to learn K. His warning over a decade ago "Once you learn K it will change your mind and you will never think about programming the same way" has proven to be remarkably accurate.
 - **Stevan Apter** - His K parser at nsl.com has been a really helpful source of inspiration and reference. Stevan, together with **Sasha Katsman** and **Michael Rosenberg**, greatly helped in my understanding of traditional "idiomatic K".
-- **John Earnest** - His oK (K5 interpreter) proved to me that a single person can build a fully functional K interpreter. His regular questioning of AI assisted development has been an outstanding motivation for pushing the limits and exploring what's possible.
+- **John Earnest** - His oK (K5 interpreter) was an important inspiration for deciding to develop ksharp. Additionally, his regular questioning of AI assisted development has been an outstanding motivation for pushing the limits and exploring what's possible.
 
 ## Note regarding project name
 

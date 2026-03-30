@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using K3CSharp;
+using K3CSharp.Parsing;
 
 namespace K3CSharp.Comparison
 {
@@ -96,6 +97,13 @@ namespace K3CSharp.Comparison
     }
     public class ComparisonRunner
     {
+        static ComparisonRunner()
+        {
+            // Enable Safe LRS mode with fallback - critical for correct parsing
+            ParserConfig.EnableLRSSafely();
+            ParserConfig.EnableDebugging = false;
+        }
+
         public static void Main(string[] args)
         {
             Console.WriteLine("K3Sharp vs k.exe Comparison Report Generator");
@@ -461,8 +469,7 @@ namespace K3CSharp.Comparison
                 {
                     var lexer = new Lexer(accumulatedLine);
                     var tokens = lexer.Tokenize();
-                    var parser = new Parser(tokens, accumulatedLine);
-                    var ast = parser.Parse();
+                    var ast = ParserConfig.ParseWithConfig(tokens, accumulatedLine);
                     
                     if (ast != null)
                     {

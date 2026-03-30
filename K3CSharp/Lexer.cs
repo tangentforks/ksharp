@@ -183,11 +183,11 @@ namespace K3CSharp
                             }
                             else
                             {
-                                // This is _n followed by letters, let ReadMathOperation handle it
-                                var mathOp = ReadMathOperation();
-                                if (mathOp != null)
+                                // This is _n followed by letters, let ReadSystemFunction handle it
+                                var systemFunction = ReadSystemFunction();
+                                if (systemFunction != null)
                                 {
-                                    tokens.Add(mathOp);
+                                    tokens.Add(systemFunction);
                                 }
                                 else
                                 {
@@ -197,11 +197,11 @@ namespace K3CSharp
                         }
                         else
                         {
-                            // Check for mathematical operations
-                            var mathOp = ReadMathOperation();
-                            if (mathOp != null)
+                            // Check for system functions
+                            var systemFunction = ReadSystemFunction();
+                            if (systemFunction != null)
                             {
-                                                                tokens.Add(mathOp);
+                                                                tokens.Add(systemFunction);
                             }
                             else
                             {
@@ -823,7 +823,7 @@ namespace K3CSharp
             return new Token(TokenType.INTEGER, number, start);
         }
 
-        private Token? ReadMathOperation()
+        private Token? ReadSystemFunction()
         {
             int start = position;
             
@@ -918,6 +918,8 @@ namespace K3CSharp
                 "_while" => new Token(TokenType.WHILE, opName, start),
                 "_if" => new Token(TokenType.IF_FUNC, opName, start),
                 "_exit" => new Token(TokenType.EXIT, opName, start),
+                "_parse" => new Token(TokenType.PARSE, opName, start),
+                "_eval" => new Token(TokenType.EVAL, opName, start),
                 
                 // Integer and bitwise operations
                 "_div" => new Token(TokenType.DIV, opName, start),

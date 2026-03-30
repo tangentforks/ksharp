@@ -25,16 +25,20 @@ namespace K3CSharp.Parsing
         /// </summary>
         /// <param name="tokens">Tokens to parse</param>
         /// <returns>AST node representing function call</returns>
-        public ASTNode? ParseFunctionCall(List<Token> tokens)
+        public ASTNode ParseFunctionCall(List<Token> tokens)
         {
-            if (tokens.Count < 1) return null;
-            
+            if (tokens.Count == 0)
+                throw new ArgumentException("Cannot parse empty function call");
+                
             var funcToken = tokens[0];
             
             // Lambda expressions need legacy parser (LRS doesn't have lambda parsing yet)
             if (funcToken.Type == TokenType.LEFT_BRACE)
             {
-                return DelegateToLegacyParser(tokens);
+                var result = DelegateToLegacyParser(tokens);
+                if (result == null)
+                    throw new Exception("Failed to parse lambda expression");
+                return result;
             }
             
             // Check if this is a special function (_parse, _eval, etc.)
@@ -229,8 +233,22 @@ namespace K3CSharp.Parsing
         /// </summary>
         private ASTNode HandleSystemOperator(Token funcToken, List<Token> argTokens)
         {
+            if (ParserConfig.EnableDebugging)
+            {
+                Console.WriteLine($"[HandleSystemOperator] Processing {funcToken.Lexeme} with {argTokens.Count} argument tokens");
+                if (argTokens.Count > 0)
+                {
+                    Console.WriteLine($"[HandleSystemOperator] Arg tokens: {string.Join(" ", argTokens.Select(t => $"{t.Type}({t.Lexeme})"))}");
+                }
+            }
+            
             // Parse argument using LRS parser
             var argument = ParseArgumentWithLRS(argTokens);
+            
+            if (ParserConfig.EnableDebugging)
+            {
+                Console.WriteLine($"[HandleSystemOperator] Parsed argument: {(argument != null ? argument.ToString() : "null")}");
+            }
             
             var funcCall = new ASTNode(ASTNodeType.FunctionCall);
             funcCall.Children.Add(ASTNode.MakeVariable(funcToken.Lexeme));

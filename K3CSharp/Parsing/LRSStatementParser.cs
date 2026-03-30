@@ -435,6 +435,23 @@ namespace K3CSharp.Parsing
             
             // Simplified heuristic: if the assignment is the first token in a simple expression,
             // treat it as terminal. This is not perfect but handles common cases.
+            // 
+            // IMPORTANT: For inline assignments (called from ParseSubExpression in dyadic context),
+            // we should always return false so the assignment returns its value, not null.
+            // The caller (ParseSubExpression) can detect this is an inline assignment by checking
+            // if the assignment is at the start of the token list (identifier at position 0).
+            if (tokens.Count >= 3 && 
+                tokens[0].Type == TokenType.IDENTIFIER && 
+                tokens[1].Type == TokenType.COLON)
+            {
+                // This is a simple assignment like 'a: 42'
+                // Check if it's likely inline by looking at the token count
+                // 3 tokens = 'a: 42' - could be terminal or inline
+                // We need more context to determine for sure
+                // For now, assume 3 tokens with simple pattern is inline if called from sub-expression
+                return false; // Assume inline - return the value, not null
+            }
+            
             return tokens.Count <= 3; // Simple heuristic: var: value is terminal
         }
         

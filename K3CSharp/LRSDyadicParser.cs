@@ -254,6 +254,17 @@ namespace K3CSharp.Parsing
         {
             if (tokens.Count == 0) return null;
             
+            // Check for simple assignment statement (e.g., 'a: 42' in '1 + a: 42')
+            // This handles inline assignment where assignment is a sub-expression
+            if (tokens.Count >= 3 && IsSimpleAssignment(tokens))
+            {
+                var statementParser = parentParser?.GetStatementParser();
+                if (statementParser != null)
+                {
+                    return statementParser.ParseStatement(tokens);
+                }
+            }
+            
             bool pureLRSMode = parentParser?.PureLRSMode ?? false;
             
             // Pure LRS mode: Check for grouping constructs first
@@ -339,6 +350,29 @@ namespace K3CSharp.Parsing
             
             // Try dyadic operation (monadic parsing is handled at main LRS level)
             return ParseDyadicOperation(tokens);
+        }
+        
+        /// <summary>
+        /// Check if tokens represent a simple assignment (e.g., 'a: 42')
+        /// Pattern: IDENTIFIER COLON expression
+        /// </summary>
+        private bool IsSimpleAssignment(List<Token> tokens)
+        {
+            // Must have at least: identifier, colon, value
+            if (tokens.Count < 3)
+                return false;
+            
+            // First token must be an identifier (variable name)
+            if (tokens[0].Type != TokenType.IDENTIFIER)
+                return false;
+            
+            // Second token must be colon
+            if (tokens[1].Type != TokenType.COLON)
+                return false;
+            
+            // Must not contain any operators before the colon (simple variable name only)
+            // e.g., 'a: 42' is simple, but '1 + a: 42' is not
+            return true;
         }
         
         /// <summary>

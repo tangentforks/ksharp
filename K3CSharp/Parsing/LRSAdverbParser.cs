@@ -22,6 +22,7 @@ namespace K3CSharp.Parsing
 
         /// <summary>
         /// Parse adverb operation from tokens
+        /// The verb must be immediately to the LEFT of the adverb (per K spec line 847-848)
         /// </summary>
         /// <param name="position">Reference to current position, updated to end of adverb expression</param>
         /// <returns>AST node representing adverb operation</returns>
@@ -36,6 +37,15 @@ namespace K3CSharp.Parsing
             if (!VerbRegistry.IsAdverbToken(adverbToken.Type))
                 return null;
 
+            // Per K spec line 847: "Spaces are not allowed between a verb and its adverb"
+            // Per K spec line 848: "The binding of an adverb to a verb has higher lexical precedence"
+            // The verb must be immediately to the LEFT of the adverb
+            
+            // First, find the verb by looking BACKWARDS from the adverb position
+            var leftArg = ParseVerbBeforeAdverb(position);
+            if (leftArg == null)
+                throw new Exception($"Expected verb immediately before adverb {adverbToken.Lexeme}");
+            
             position++; // Consume adverb token
 
             // Parse the right argument for the adverb
@@ -43,13 +53,97 @@ namespace K3CSharp.Parsing
             if (rightArg == null)
                 throw new Exception($"Expected expression after adverb {adverbToken.Lexeme}");
 
-            // Parse the left argument (verb) if present
-            var leftArg = ParseAdverbVerb(ref position);
-            if (leftArg == null)
-                throw new Exception($"Expected verb before adverb {adverbToken.Lexeme}");
-
             // Create adverb node: ADVERB(adverb, verb, rightArg)
             return CreateAdverbNode(adverbToken, leftArg, rightArg);
+        }
+        
+        /// <summary>
+        /// Parse the verb that appears immediately BEFORE the adverb at the given position
+        /// Per K spec: "Spaces are not allowed between a verb and its adverb"
+        /// Handles disambiguating colons: colon between verb and adverb indicates monadic interpretation
+        /// E.g., #:' means monadic # (count) with each adverb
+        /// Also handles modified verbs (verbs with adverbs attached): #:' is itself a valid verb for another adverb
+        /// E.g., #:'' means (count each) each
+        /// </summary>
+        /// <param name="adverbPosition">Position of the adverb token</param>
+        /// <returns>AST node for the verb to the left of the adverb</returns>
+        private ASTNode? ParseVerbBeforeAdverb(int adverbPosition)
+        {
+            if (adverbPosition <= 0)
+                return null;
+            
+            // The verb is immediately before the adverb
+            int verbPosition = adverbPosition - 1;
+            var verbToken = tokens[verbPosition];
+            
+            // Handle nested adverbs: if the token before us is an adverb, 
+            // then what precedes it is a modified verb (e.g., #:' in #:'' )
+            // Recursively parse that adverb-modified verb as our verb
+            if (VerbRegistry.IsAdverbToken(verbToken.Type))
+            {
+                // The verb is actually an adverb-modified verb
+                // Parse it as an adverb operation - this gives us the modified verb
+                var modifiedVerbPosition = verbPosition;
+                var modifiedVerb = ParseAdverbOperation(ref modifiedVerbPosition);
+                if (modifiedVerb != null)
+                {
+                    // The position after parsing should be where the actual base verb starts
+                    // We need to adjust because ParseAdverbOperation consumed tokens
+                    // Return the modified verb as our verb
+                    return modifiedVerb;
+                }
+            }
+            
+            // Handle disambiguating colon: verb + colon + adverb means monadic verb + adverb
+            // E.g., #:' where : indicates monadic # (count) rather than dyadic # (take)
+            if (verbToken.Type == TokenType.COLON && verbPosition > 0)
+            {
+                int beforeColonPosition = verbPosition - 1;
+                var beforeColonToken = tokens[beforeColonPosition];
+                
+                // Check if token before colon is a verb that can use disambiguating colon
+                string? verbName = GetVerbNameFromToken(beforeColonToken);
+                
+                if (verbName != null && VerbRegistry.HasVerb(verbName))
+                {
+                    // Return the verb with disambiguating colon (monadic interpretation)
+                    return ASTNode.MakeLiteral(new SymbolValue(verbName));
+                }
+                
+                // Handle operators that can be disambiguated with colon
+                if (IsDyadicOperator(beforeColonToken.Type) || 
+                    OperatorDetector.SupportsMonadic(beforeColonToken.Type))
+                {
+                    return CreateOperatorNode(beforeColonToken);
+                }
+            }
+            
+            // Handle system verbs and other registered verbs using VerbRegistry
+            string? verbNameDirect = GetVerbNameFromToken(verbToken);
+            if (verbNameDirect != null && VerbRegistry.HasVerb(verbNameDirect))
+            {
+                return ASTNode.MakeLiteral(new SymbolValue(verbNameDirect));
+            }
+            
+            // Handle atomic verbs (identifiers, symbols) as fallback
+            if (LRSAtomicParser.IsAtomicToken(verbToken.Type))
+            {
+                return LRSAtomicParser.ParseAtomicToken(verbToken);
+            }
+            
+            // Handle operator verbs as fallback
+            if (IsDyadicOperator(verbToken.Type))
+            {
+                return CreateOperatorNode(verbToken);
+            }
+            
+            // Handle monadic operators as verbs
+            if (OperatorDetector.SupportsMonadic(verbToken.Type))
+            {
+                return CreateOperatorNode(verbToken);
+            }
+            
+            return null;
         }
 
         /// <summary>
@@ -67,6 +161,7 @@ namespace K3CSharp.Parsing
 
         /// <summary>
         /// Parse simple two-glyph adverb operation
+        /// The verb must be immediately to the LEFT of the adverb (per K spec)
         /// </summary>
         /// <param name="position">Reference to current position, updated to end of adverb expression</param>
         /// <returns>AST node representing two-glyph adverb operation</returns>
@@ -81,6 +176,11 @@ namespace K3CSharp.Parsing
             if (!IsSimpleTwoGlyphAdverb(adverbToken.Type))
                 return null;
 
+            // Per K spec: verb must be immediately to the LEFT of the adverb
+            var leftArg = ParseVerbBeforeAdverb(position);
+            if (leftArg == null)
+                throw new Exception($"Expected verb immediately before adverb {adverbToken.Lexeme}");
+
             position++; // Consume adverb token
 
             // Parse the right argument for the adverb
@@ -88,17 +188,13 @@ namespace K3CSharp.Parsing
             if (rightArg == null)
                 throw new Exception($"Expected expression after adverb {adverbToken.Lexeme}");
 
-            // Parse the left argument (verb) - for two-glyph adverbs, the verb must be immediately to the left
-            var leftArg = ParseVerbForAdverb(tokens, ref position, adverbToken);
-            if (leftArg == null)
-                throw new Exception($"Expected verb before adverb {adverbToken.Lexeme}");
-
             // Create two-glyph adverb node
             return CreateTwoGlyphAdverbNode(adverbToken, leftArg, rightArg);
         }
         
         /// <summary>
         /// Parse verb-immediate-left adverb pattern (verb on left side only)
+        /// The verb must be immediately to the LEFT of the adverb (per K spec)
         /// </summary>
         /// <param name="position">Reference to current position, updated to end of adverb expression</param>
         /// <returns>AST node representing verb-immediate-left adverb operation</returns>
@@ -113,17 +209,17 @@ namespace K3CSharp.Parsing
             if (!IsVerbImmediateLeftAdverb(adverbToken.Type))
                 return null;
 
+            // Per K spec: verb must be immediately to the LEFT of the adverb
+            var leftArg = ParseVerbBeforeAdverb(position);
+            if (leftArg == null)
+                throw new Exception($"Expected verb immediately before adverb {adverbToken.Lexeme}");
+
             position++; // Consume adverb token
 
             // Parse the right argument for the adverb
             var rightArg = ParseAdverbArgument(ref position);
             if (rightArg == null)
                 throw new Exception($"Expected expression after adverb {adverbToken.Lexeme}");
-
-            // Parse the left argument (verb) - must be immediately to the left
-            var leftArg = ParseVerbForAdverb(tokens, ref position, adverbToken);
-            if (leftArg == null)
-                throw new Exception($"Expected verb before adverb {adverbToken.Lexeme}");
 
             // Create verb-immediate-left adverb node
             return CreateVerbImmediateLeftAdverbNode(adverbToken, leftArg, rightArg);
@@ -147,48 +243,6 @@ namespace K3CSharp.Parsing
             return tokenType == TokenType.ADVERB_SLASH ||
                    tokenType == TokenType.ADVERB_BACKSLASH ||
                    tokenType == TokenType.ADVERB_TICK;
-        }
-        
-        /// <summary>
-        /// Parse verb that precedes an adverb
-        /// </summary>
-        /// <param name="tokens">Tokens to parse</param>
-        /// <param name="position">Current position (should be at verb)</param>
-        /// <param name="adverbToken">The adverb token that follows</param>
-        /// <returns>AST node for the verb, or null if not found</returns>
-        private ASTNode? ParseVerbForAdverb(List<Token> tokens, ref int position, Token adverbToken)
-        {
-            if (position >= tokens.Count) return null;
-            
-            var verbToken = tokens[position];
-            
-            // Look backwards to find the verb immediately to the left
-            // This is a simplified implementation - in practice, we'd need to scan backwards
-            // For now, we'll handle the case where the verb is right before the adverb position
-            
-            // Handle system verbs and other registered verbs using VerbRegistry
-            string? verbName = GetVerbNameFromToken(verbToken);
-            if (verbName != null && VerbRegistry.HasVerb(verbName))
-            {
-                position++;
-                return ASTNode.MakeLiteral(new SymbolValue(verbName));
-            }
-            
-            // Handle atomic verbs (identifiers, symbols) as fallback
-            if (LRSAtomicParser.IsAtomicToken(verbToken.Type))
-            {
-                position++;
-                return LRSAtomicParser.ParseAtomicToken(verbToken);
-            }
-            
-            // Handle operator verbs as fallback
-            if (IsDyadicOperator(verbToken.Type))
-            {
-                position++;
-                return CreateOperatorNode(verbToken);
-            }
-            
-            return null;
         }
         
         /// <summary>

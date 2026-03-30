@@ -86,20 +86,6 @@ namespace K3CSharp.Parsing
             // Step 1: Read entire expression until separator
             var expressionTokens = expressionParser.ReadExpressionTokens(ref position);
             
-            if (PureLRSMode && ParserConfig.EnableDebugging)
-            {
-                Console.WriteLine($"[PURE LRS DEBUG] ReadExpressionTokens returned {expressionTokens.Count} tokens");
-                if (expressionTokens.Count == 0)
-                {
-                    Console.WriteLine($"[PURE LRS DEBUG] NULL RETURN: No tokens read from position {position}");
-                }
-                else
-                {
-                    var tokenTypes = string.Join(", ", expressionTokens.Select(t => t.Type.ToString()));
-                    Console.WriteLine($"[PURE LRS DEBUG] Tokens: {tokenTypes}");
-                }
-            }
-            
             if (expressionTokens.Count == 0)
                 return null;
             
@@ -133,15 +119,26 @@ namespace K3CSharp.Parsing
                             }
                             else
                             {
+                                // Split arguments by semicolons and parse each one
+                                var splitArgs = SplitBracketArguments(argTokens, int.MaxValue);
+                                var argNodes = new List<ASTNode>();
+                                
+                                foreach (var splitArgTokens in splitArgs)
+                                {
                                 ASTNode? argNode;
                                 if (BuildParseTree)
-                                    argNode = BuildParseTreeFromRight(argTokens);
+                                        argNode = BuildParseTreeFromRight(splitArgTokens);
                                 else
-                                    argNode = EvaluateFromRight(argTokens);
+                                        argNode = EvaluateFromRight(splitArgTokens);
                                     
                                 if (argNode != null)
+                                        argNodes.Add(argNode);
+                                }
+                                
+                                if (argNodes.Count > 0)
                                 {
-                                    return ASTNode.MakeDyadicOp(TokenType.APPLY, funcNode, argNode);
+                                    var argVector = ASTNode.MakeVector(argNodes);
+                                    return ASTNode.MakeDyadicOp(TokenType.APPLY, funcNode, argVector);
                                 }
                             }
                         }
@@ -249,6 +246,25 @@ namespace K3CSharp.Parsing
                 return CreateNodeFromToken(expressionTokens[0]);
             }
             
+            // Check for disambiguating colon pattern: verb + colon + adverb
+            // Pattern: #:' args (e.g., #:' (1 2;3 4) for count each)
+            // This MUST be checked FIRST because other verb-related checks would otherwise intercept
+            if (expressionTokens.Count >= 3)
+            {
+                Console.WriteLine($"[LRS DEBUG] Checking disambiguating pattern: token0={expressionTokens[0].Type}, token1={expressionTokens[1].Type}, token2={expressionTokens[2].Type}");
+                Console.WriteLine($"[LRS DEBUG] IsVerbToken(token0)={VerbRegistry.IsVerbToken(expressionTokens[0].Type)}");
+                
+                if (VerbRegistry.IsVerbToken(expressionTokens[0].Type) &&
+                    expressionTokens[1].Type == TokenType.COLON &&
+                    (expressionTokens[2].Type == TokenType.ADVERB_SLASH ||
+                     expressionTokens[2].Type == TokenType.ADVERB_BACKSLASH ||
+                     expressionTokens[2].Type == TokenType.ADVERB_TICK))
+                {
+                    Console.WriteLine($"[LRS DEBUG] Found disambiguating colon pattern: {expressionTokens[0].Lexeme}:{expressionTokens[2].Lexeme}");
+                    return ParseGenericVerbAdverbWithColon(expressionTokens);
+                }
+            }
+            
             // Check for statements first (statements have lower precedence than verbs but higher than separators)
             // This is critical for assignment parsing in Pure LRS mode
             if (expressionTokens.Count >= 2)
@@ -265,15 +281,30 @@ namespace K3CSharp.Parsing
                 
                 // Also check for assignment operators elsewhere in the expression
                 // This handles cases like 'foo:7' where first token is IDENTIFIER, not COLON
+                // But DON'T treat as statement if assignment is embedded in larger expression
+                // e.g., '1 + a: 42' should parse as '1 + (a: 42)' not as a statement
                 for (int i = 1; i < expressionTokens.Count; i++)
                 {
                     if (LRSStatementParser.CouldBeStatement(expressionTokens[i].Type))
                     {
+                        // Only treat as statement if:
+                        // 1. The assignment is at position 1 (e.g., 'a: 42' where a is at 0, : at 1)
+                        // 2. The token before assignment is a simple identifier (variable name)
+                        // This ensures '1 + a: 42' is NOT treated as a statement
+                        bool isSimpleAssignment = i == 1 && expressionTokens[0].Type == TokenType.IDENTIFIER;
+                        bool isAssignmentOnly = expressionTokens[i].Type == TokenType.COLON && 
+                                                i == expressionTokens.Count - 2 && 
+                                                expressionTokens[0].Type == TokenType.IDENTIFIER;
+                        
+                        if (isSimpleAssignment || isAssignmentOnly)
+                    {
                         if (PureLRSMode && ParserConfig.EnableDebugging)
                         {
-                            Console.WriteLine($"[PURE LRS DEBUG] EvaluateFromRight found statement token at position {i}: {expressionTokens[i].Type}");
+                                Console.WriteLine($"[PURE LRS DEBUG] EvaluateFromRight found simple assignment at position {i}: {expressionTokens[i].Type}");
                         }
                         return statementParser.ParseStatement(expressionTokens);
+                        }
+                        // Otherwise, let dyadic parser handle colon as operator (e.g., inline assignment)
                     }
                 }
             }
@@ -361,9 +392,30 @@ namespace K3CSharp.Parsing
             if (expressionTokens.Count >= 2)
             {
                 var firstToken = expressionTokens[0];
+                Console.WriteLine($"[LRS DEBUG] Checking CouldBeFunction for {firstToken.Type}({firstToken.Lexeme}): {LRSFunctionParser.CouldBeFunction(firstToken.Type)}");
                 if (LRSFunctionParser.CouldBeFunction(firstToken.Type))
                 {
                     return functionParser.ParseFunctionCall(expressionTokens);
+                }
+            }
+            
+            // Check for disambiguating colon pattern: verb + colon + adverb
+            // Pattern: #:' args (e.g., #:' (1 2;3 4) for count each)
+            // This MUST be checked BEFORE the system operators check because
+            // the verb token check would otherwise dispatch to the function parser
+            if (expressionTokens.Count >= 3)
+            {
+                Console.WriteLine($"[LRS DEBUG] Checking disambiguating pattern: token0={expressionTokens[0].Type}, token1={expressionTokens[1].Type}, token2={expressionTokens[2].Type}");
+                Console.WriteLine($"[LRS DEBUG] IsVerbToken(token0)={VerbRegistry.IsVerbToken(expressionTokens[0].Type)}");
+                
+                if (VerbRegistry.IsVerbToken(expressionTokens[0].Type) &&
+                    expressionTokens[1].Type == TokenType.COLON &&
+                    (expressionTokens[2].Type == TokenType.ADVERB_SLASH ||
+                     expressionTokens[2].Type == TokenType.ADVERB_BACKSLASH ||
+                     expressionTokens[2].Type == TokenType.ADVERB_TICK))
+                {
+                    Console.WriteLine($"[LRS DEBUG] Found disambiguating colon pattern: {expressionTokens[0].Lexeme}:{expressionTokens[2].Lexeme}");
+                    return ParseGenericVerbAdverbWithColon(expressionTokens);
                 }
             }
             
@@ -387,14 +439,27 @@ namespace K3CSharp.Parsing
             
             // Check for assignments (variable:value pattern)
             // Assignments can appear anywhere in the token list, not just at the start
+            // BUT only treat as statement if it's a simple assignment (identifier: value)
+            // For inline assignments like '1 + a: 42', let dyadic parser handle the colon as part of expression
             for (int i = 1; i < expressionTokens.Count; i++)
             {
                 if (expressionTokens[i].Type == TokenType.COLON ||
                     expressionTokens[i].Type == TokenType.ASSIGNMENT ||
                     expressionTokens[i].Type == TokenType.GLOBAL_ASSIGNMENT)
                 {
-                    // Found an assignment operator - parse as assignment statement
+                    // Only treat as statement if it's a simple assignment (identifier: value)
+                    // where the identifier is at position i-1 and position 0 is also an identifier
+                    // This handles 'a: 42' but not '1 + a: 42'
+                    bool isSimpleAssignment = i == 1 && 
+                                              expressionTokens[0].Type == TokenType.IDENTIFIER &&
+                                              expressionTokens[i].Type == TokenType.COLON;
+                    
+                    if (isSimpleAssignment)
+                    {
+                        // Found a simple assignment operator - parse as assignment statement
                     return statementParser.ParseStatement(expressionTokens);
+                    }
+                    // Otherwise, let dyadic parser handle it (inline assignment in expression)
                 }
             }
                 
@@ -937,6 +1002,14 @@ namespace K3CSharp.Parsing
         /// <returns>AST node representing the adverb operation, or null if no adverb found</returns>
         private ASTNode? ParseAdverbExpression(List<Token> expressionTokens)
         {
+            Console.WriteLine($"[ParseAdverbExpression] Called with {expressionTokens.Count} tokens");
+            if (expressionTokens.Count > 0)
+            {
+                for (int i = 0; i < Math.Min(expressionTokens.Count, 5); i++)
+                {
+                    Console.WriteLine($"  Token[{i}]: {expressionTokens[i].Type}({expressionTokens[i].Lexeme})");
+                }
+            }
                         
             // CONSERVATIVE APPROACH: Only handle very specific, simple cases
             // Start with the most basic adverb patterns to avoid breaking the system
@@ -1015,6 +1088,20 @@ namespace K3CSharp.Parsing
                 }
             }
             
+            // Case 3a: Disambiguating colon pattern - verb + colon + adverb
+            // Pattern: verb:' args (e.g., #:' (1 2;3 4) for count each)
+            if (expressionTokens.Count >= 3)
+            {
+                if (IsVerbToken(expressionTokens[0].Type) &&
+                    expressionTokens[1].Type == TokenType.COLON &&
+                    (expressionTokens[2].Type == TokenType.ADVERB_SLASH ||
+                     expressionTokens[2].Type == TokenType.ADVERB_BACKSLASH ||
+                     expressionTokens[2].Type == TokenType.ADVERB_TICK))
+                {
+                    return ParseGenericVerbAdverbWithColon(expressionTokens);
+                }
+            }
+            
             // Case 3: Generic verb + single-glyph adverb pattern
             // Pattern: verb/ args, verb\ args, verb' args (e.g., -/ 10 2 3 1, +\ 1 2 3, #' (1 2;3 4))
             if (expressionTokens.Count >= 2)
@@ -1056,6 +1143,64 @@ namespace K3CSharp.Parsing
             
             // Parse arguments (everything after the adverb)
             var argTokens = expressionTokens.Skip(2).ToList();
+            ASTNode? argNode = null;
+            
+            if (argTokens.Count > 0)
+            {
+                // Parse the arguments as a sub-expression
+                int argPosition = 0;
+                var argParser = new LRSExpressionProcessor(argTokens, BuildParseTree);
+                argNode = argParser.ProcessExpression(ref argPosition);
+                
+                // If we couldn't parse the arguments, try parsing them as a vector
+                if (argNode == null && argTokens.Count > 0)
+                {
+                    // Create a vector node from the argument tokens
+                    var argNodes = new List<ASTNode>();
+                    foreach (var token in argTokens)
+                    {
+                        if (LRSAtomicParser.IsAtomicToken(token.Type))
+                        {
+                            argNodes.Add(LRSAtomicParser.ParseAtomicToken(token, this));
+                        }
+                    }
+                    
+                    if (argNodes.Count > 0)
+                    {
+                        argNode = new ASTNode(ASTNodeType.Vector, null, argNodes);
+                    }
+                }
+            }
+            
+            // Create adverb node: DyadicOp(adverb_symbol, verb, arguments)
+            var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
+            adverbNode.Value = new SymbolValue(GetAdverbName(adverbToken.Type));
+            adverbNode.Children.Add(verbNode);
+            
+            if (argNode != null)
+            {
+                adverbNode.Children.Add(argNode);
+            }
+            
+            return adverbNode;
+        }
+        
+        /// <summary>
+        /// Parse generic verb + colon + single-glyph adverb pattern (verb:' verb:/ verb:\)
+        /// Handles disambiguating colon patterns like #:' (count each), +:/ (sum over)
+        /// The colon indicates monadic interpretation of the verb
+        /// </summary>
+        private ASTNode ParseGenericVerbAdverbWithColon(List<Token> expressionTokens)
+        {
+            var verbToken = expressionTokens[0];
+            var colonToken = expressionTokens[1];  // COLON - disambiguating
+            var adverbToken = expressionTokens[2];
+            
+            // Create verb node (the colon indicates monadic interpretation, but we still use the verb as-is)
+            var verbNode = CreateNodeFromToken(verbToken);
+            
+            // Parse arguments (everything after the adverb)
+            var argTokens = expressionTokens.Skip(3).ToList();
             ASTNode? argNode = null;
             
             if (argTokens.Count > 0)
@@ -1274,6 +1419,15 @@ namespace K3CSharp.Parsing
             // K semantics: space-separated literals create vectors (homogeneous or mixed)
             // The evaluator will determine the proper K3Value type based on element types
             return ASTNode.MakeVector(elements);
+        }
+        
+        /// <summary>
+        /// Get the statement parser for handling assignment statements in sub-expressions
+        /// </summary>
+        /// <returns>The LRS statement parser instance</returns>
+        public LRSStatementParser? GetStatementParser()
+        {
+            return statementParser;
         }
     }
 }

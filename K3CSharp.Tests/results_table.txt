@@ -846,7 +846,7 @@
 ║ parse_atomic_value_no_verb.k                       │ _parse "`a"          │ ,`a                  │                      ║
 ║ parse_projection_dyadic_plus.k                     │ _parse "(+)"         │ (`"+";,`"(";,`")")   │ `"+"`"::"`"::"       ║
 ║ parse_projection_dyadic_plus_fixed_left.k          │ _parse "1+"          │ Error: Parse er...   │ (`"+";,1;`"::")      ║
-║ parse_projection_dyadic_plus_fixed_right.k         │ _parse "+[;2]"       │ (`;,`"+";)           │ (`"+";`"::";,2)      ║
+║ parse_projection_dyadic_plus_fixed_right.k         │ _parse "+[;2]"       │ (`"@";,`"+";)        │ (`"+";`"::";,2)      ║
 ║ parse_monadic_shape_atomic.k                       │ _parse "^,`a"        │ (`;,`"^";)           │ (`"^:";(`",:";,...   ║
 ║ eval_dyadic_plus.k                                 │ _eval (`"+";5 6 7 8;1 2 3 4) │ 6 8 10 12            │                      ║
 ║ eval_monadic_star_nested.k                         │ _eval (`"*";2;(`"+";4;7)) │ 22                   │                      ║
@@ -1014,7 +1014,7 @@ Actual: Error: Parse error: Failed to parse expression
 Test: parse_projection_dyadic_plus_fixed_right.k
 Input: _parse "+[;2]"
 Expected: (`"+";`"::";,2)
-Actual: (`;,`"+";)
+Actual: (`"@";,`"+";)
 ──────────────────────────────────────────────────────────────────────────
 Test: parse_monadic_shape_atomic.k
 Input: _parse "^,`a"
