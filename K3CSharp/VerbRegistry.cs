@@ -561,7 +561,7 @@ namespace K3CSharp
             RegisterVerb(",", VerbType.Operator, new[] { 1, 2 }, null);
             RegisterVerb("JOIN", VerbType.Operator, new[] { 1, 2 }, null);
 
-            // Monadic
+            // Monadic (incl forced monadic, with disambiguating colon)
             RegisterVerb("+:", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("FLIP", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("-:", VerbType.Operator, new[] { 1 }, null);
@@ -600,7 +600,7 @@ namespace K3CSharp
             RegisterVerb("MAKE", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb(",:", VerbType.Operator, new[] { 1 }, null);
             RegisterVerb("ENLIST", VerbType.Operator, new[] { 1 }, null);
-            RegisterVerb("COLON", VerbType.Operator, new[] { 1, 2 }, null); // Return
+            RegisterVerb("COLON", VerbType.Operator, new[] { 1 }, null); // Return
 
             // Mathematical functions - register both symbol and token type names
             // _log _exp _abs _sqr _sqrt _floor _ceil _dot _mul _inv
@@ -766,7 +766,7 @@ namespace K3CSharp
             RegisterVerb("_r", VerbType.SystemVariable, new[] { 0 }, null);
             RegisterVerb("_m", VerbType.SystemVariable, new[] { 0 }, null);
             RegisterVerb("_y", VerbType.SystemVariable, new[] { 0 }, null);            
-            RegisterVerb("DIRECTORY", VerbType.Operator, new[] { 1, 2 }, null);
+            RegisterVerb("DIRECTORY", VerbType.Operator, new[] { 0 }, null);
             
             // Also register NULL for TokenType.NULL
             RegisterVerb("NULL", VerbType.SystemVariable, new[] { 0 }, null);
@@ -775,8 +775,8 @@ namespace K3CSharp
             for (int i = 0; i <= 9; i++)
             {
                 var ioNum = i.ToString();
-                RegisterVerb(ioNum+":", VerbType.Operator, new[] { 1, 2 }, null);
-                RegisterVerb(ioNum+"::", VerbType.Operator, new[] { 1 }, null);
+                RegisterVerb(ioNum+":", VerbType.Operator, new[] { 1, 2 }, null); // Dyadic
+                RegisterVerb(ioNum+"::", VerbType.Operator, new[] { 1 }, null); // Forced Monadic with disambiguating colon
             }
             
             // Also register with the TokenType names that the evaluator expects
@@ -801,22 +801,6 @@ namespace K3CSharp
             RegisterVerb("GETHINT", VerbType.Function, new[] { 1 }, null);
             RegisterVerb("_sethint", VerbType.Operator, new[] { 2 }, null);
             RegisterVerb("SETHINT", VerbType.Operator, new[] { 2 }, null);
-            
-            // Adverbs (Should these be moved elsewhere?)
-            RegisterVerb("ADVERB_SLASH", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("ADVERB_BACKSLASH", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("ADVERB_TICK", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("ADVERB_SLASH_COLON", VerbType.Operator, new[] { 2 }, null);
-            RegisterVerb("ADVERB_BACKSLASH_COLON", VerbType.Operator, new[] { 2 }, null);
-            RegisterVerb("ADVERB_TICK_COLON", VerbType.Operator, new[] { 2 }, null);
-
-            // Statements (Should these be moved elsewhere?)
-            RegisterVerb("DO", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("WHILE", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("IF", VerbType.Operator, new[] { 1, 2 }, null);            
-            RegisterVerb("do", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("while", VerbType.Operator, new[] { 1, 2 }, null);
-            RegisterVerb("if", VerbType.Operator, new[] { 1, 2 }, null);
         }
 
         // This is a hack for _eval, we should fix _eval and remove it

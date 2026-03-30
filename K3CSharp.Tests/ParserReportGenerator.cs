@@ -181,7 +181,7 @@ namespace K3CSharp.Tests
                     foreach (var record in incompleteRecords)
                     {
                         var testName = string.IsNullOrEmpty(record.TestName) ? "Unknown" : record.TestName;
-                        writer.WriteLine($"{count + 1}. **{testName}**:");
+                        writer.WriteLine($"**{testName}**:");
                         writer.WriteLine("```k");
                         writer.WriteLine(record.SourceText);
                         writer.WriteLine("```");
