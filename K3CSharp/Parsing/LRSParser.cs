@@ -90,60 +90,94 @@ namespace K3CSharp.Parsing
                 return null;
             
             // Check for bracket function call pattern BEFORE delegating to specific parsers
-            // This handles patterns like {lambda}[] and func[arg1;arg2] where we need to
-            // extract the function call pattern before grouping parsers intercept braces
-            for (int i = 1; i < expressionTokens.Count; i++)
+            // Brackets bind left-to-right with stronger binding the closer they are to the base.
+            // e.g., c1[`Abs][] => (c1[`Abs])[] and f[1][4] => (f[1])[4]
+            // Find the first bracket position (prefix is everything before it)
             {
-                if ((int)expressionTokens[i].Type == (int)TokenType.LEFT_BRACKET)
+                int firstBracket = -1;
+                for (int i = 1; i < expressionTokens.Count; i++)
                 {
-                    var bracketEnd = FindMatchingBracket(expressionTokens, i);
-                    if (bracketEnd != -1 && bracketEnd == expressionTokens.Count - 1)
+                    if ((int)expressionTokens[i].Type == (int)TokenType.LEFT_BRACKET)
                     {
-                        // The bracket is at the end - this is a function call pattern
-                        var funcTokens = expressionTokens.GetRange(0, i);
-                        var argTokens = expressionTokens.GetRange(i + 1, bracketEnd - i - 1);
-                        
-                        // Parse the function part
-                        ASTNode? funcNode;
-                        if (BuildParseTree)
-                            funcNode = BuildParseTreeFromRight(funcTokens);
-                        else
-                            funcNode = EvaluateFromRight(funcTokens);
-                            
-                        if (funcNode != null)
+                        firstBracket = i;
+                        break;
+                    }
+                }
+                
+                if (firstBracket != -1)
+                {
+                    // Verify the token sequence from firstBracket to end is entirely consecutive bracket groups
+                    // i.e., tokens[firstBracket..end] = [arg1][arg2]...[argN]
+                    bool allBrackets = true;
+                    int pos = firstBracket;
+                    var bracketGroups = new List<(int start, int end)>();
+                    while (pos < expressionTokens.Count)
+                    {
+                        if ((int)expressionTokens[pos].Type != (int)TokenType.LEFT_BRACKET)
                         {
-                            if (argTokens.Count == 0)
+                            allBrackets = false;
+                            break;
+                        }
+                        var groupEnd = FindMatchingBracket(expressionTokens, pos);
+                        if (groupEnd == -1)
+                        {
+                            allBrackets = false;
+                            break;
+                        }
+                        bracketGroups.Add((pos, groupEnd));
+                        pos = groupEnd + 1;
+                    }
+                    
+                    if (allBrackets && bracketGroups.Count > 0)
+                    {
+                        // Parse the base (prefix before first bracket)
+                        var prefixTokens = expressionTokens.GetRange(0, firstBracket);
+                        ASTNode? currentNode;
+                        if (BuildParseTree)
+                            currentNode = BuildParseTreeFromRight(prefixTokens);
+                        else
+                            currentNode = EvaluateFromRight(prefixTokens);
+                        
+                        if (currentNode != null)
+                        {
+                            // Apply each bracket group left-to-right
+                            foreach (var (groupStart, groupEnd) in bracketGroups)
                             {
-                                // No arguments: {lambda}[] -> call with empty args
-                                return ASTNode.MakeDyadicOp(TokenType.APPLY, funcNode, ASTNode.MakeVector(new List<ASTNode>()));
-                            }
-                            else
-                            {
-                                // Split arguments by semicolons and parse each one
-                                var splitArgs = SplitBracketArguments(argTokens, int.MaxValue);
-                                var argNodes = new List<ASTNode>();
+                                var argTokens = expressionTokens.GetRange(groupStart + 1, groupEnd - groupStart - 1);
                                 
-                                foreach (var splitArgTokens in splitArgs)
+                                if (argTokens.Count == 0)
                                 {
-                                ASTNode? argNode;
-                                if (BuildParseTree)
-                                        argNode = BuildParseTreeFromRight(splitArgTokens);
+                                    // niladic call: f[]
+                                    currentNode = ASTNode.MakeDyadicOp(TokenType.APPLY, currentNode, ASTNode.MakeVector(new List<ASTNode>()));
+                                }
                                 else
-                                        argNode = EvaluateFromRight(splitArgTokens);
-                                    
-                                if (argNode != null)
-                                        argNodes.Add(argNode);
-                                }
-                                
-                                if (argNodes.Count > 0)
                                 {
-                                    var argVector = ASTNode.MakeVector(argNodes);
-                                    return ASTNode.MakeDyadicOp(TokenType.APPLY, funcNode, argVector);
+                                    // Split arguments by semicolons and parse each one
+                                    var splitArgs = SplitBracketArguments(argTokens, int.MaxValue);
+                                    var argNodes = new List<ASTNode>();
+                                    
+                                    foreach (var splitArgTokens in splitArgs)
+                                    {
+                                        ASTNode? argNode;
+                                        if (BuildParseTree)
+                                            argNode = BuildParseTreeFromRight(splitArgTokens);
+                                        else
+                                            argNode = EvaluateFromRight(splitArgTokens);
+                                        
+                                        if (argNode != null)
+                                            argNodes.Add(argNode);
+                                    }
+                                    
+                                    if (argNodes.Count > 0)
+                                    {
+                                        var argVector = argNodes.Count == 1 ? argNodes[0] : ASTNode.MakeVector(argNodes);
+                                        currentNode = ASTNode.MakeDyadicOp(TokenType.APPLY, currentNode, argVector);
+                                    }
                                 }
                             }
+                            return currentNode;
                         }
                     }
-                    break; // Only check the first bracket
                 }
             }
                 

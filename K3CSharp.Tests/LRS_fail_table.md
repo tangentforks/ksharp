@@ -1,6 +1,6 @@
 # K3CSharp Parser Failures
 
-**Generated:** 2026-03-30 20:11:57
+**Generated:** 2026-03-30 22:49:40
 **Test Results:** 820/852 passed (96.2%)
 
 ## Executive Summary
@@ -11,8 +11,8 @@
 **Success Rate:** 96.2%
 
 **LRS Parser Statistics:**
-- NULL Results: 1
-- Incomplete Token Consumption: 975
+- NULL Results: 0
+- Incomplete Token Consumption: 976
 - Total Fallbacks to Legacy: 976
 - Incorrect Results: 0
 - LRS Success Rate: -14.6%
@@ -26,19 +26,11 @@
 - Incomplete consumption (position 4/5): 58
 - Incomplete consumption (position 1/2): 39
 - Incomplete consumption (position 9/10): 37
-- Incomplete consumption (position 8/9): 24
+- Incomplete consumption (position 8/9): 25
 - Incomplete consumption (position 10/11): 22
 
 ## LRS Parser Failures
 
-### NULL Results (LRS returned NULL)
-
-1. **ffi_complete_workflow.k**:
-```k
-magnitude: c1[`Abs][]
-```
-After RIGHT_BRACKET (position 8/9)
--------------------------------------------------
 ### Incomplete Token Consumption (LRS returned result but didn't consume all tokens)
 
 **adverb_each_vector_minus.k**:
@@ -4928,6 +4920,12 @@ Incomplete consumption (position 6/7) (consumed 6/7)
 **ffi_complete_workflow.k**:
 ```k
 c1:complex_new[2;3]
+```
+Incomplete consumption (position 8/9) (consumed 8/9)
+-------------------------------------------------
+**ffi_complete_workflow.k**:
+```k
+magnitude: c1[`Abs][]
 ```
 Incomplete consumption (position 8/9) (consumed 8/9)
 -------------------------------------------------
