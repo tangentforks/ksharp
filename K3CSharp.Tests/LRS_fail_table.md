@@ -1,6 +1,6 @@
 # K3CSharp Parser Failures
 
-**Generated:** 2026-03-30 15:28:52
+**Generated:** 2026-03-30 20:11:57
 **Test Results:** 820/852 passed (96.2%)
 
 ## Executive Summary
@@ -11,14 +11,14 @@
 **Success Rate:** 96.2%
 
 **LRS Parser Statistics:**
-- NULL Results: 2
-- Incomplete Token Consumption: 974
+- NULL Results: 1
+- Incomplete Token Consumption: 975
 - Total Fallbacks to Legacy: 976
 - Incorrect Results: 0
 - LRS Success Rate: -14.6%
 
 **Top Failure Patterns:**
-- Incomplete consumption (position 3/4): 264
+- Incomplete consumption (position 3/4): 265
 - Incomplete consumption (position 2/3): 138
 - Incomplete consumption (position 7/8): 77
 - Incomplete consumption (position 5/6): 74
@@ -33,13 +33,7 @@
 
 ### NULL Results (LRS returned NULL)
 
-1. **ffi_hint_system.k**:
-```k
-42 _sethint `uint
-```
-After SYMBOL (position 3/4)
--------------------------------------------------
-2. **ffi_complete_workflow.k**:
+1. **ffi_complete_workflow.k**:
 ```k
 magnitude: c1[`Abs][]
 ```
@@ -4832,6 +4826,12 @@ Incomplete consumption (position 3/4) (consumed 3/4)
 **math_xor_vector.k**:
 ```k
 1 2 3
+```
+Incomplete consumption (position 3/4) (consumed 3/4)
+-------------------------------------------------
+**ffi_hint_system.k**:
+```k
+42 _sethint `uint
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
 -------------------------------------------------

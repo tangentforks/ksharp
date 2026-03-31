@@ -80,7 +80,18 @@ namespace K3CSharp.Parsing
                     // Handle dyadic operators (should be handled at higher level)
                     if (OperatorDetector.IsDyadicOperator(token.Type))
                     {
+                        // DEBUG: Trace dyadic operator detection
+                        if (token.Type == TokenType.SETHINT || token.Type == TokenType.LSQ || token.Type == TokenType.DRAW)
+                        {
+                            Console.WriteLine($"[DEBUG LRSExprProc] Dyadic operator detected: {token.Type}({token.Lexeme}), returning null for caller handling");
+                        }
                         return null; // Let caller handle dyadic operations
+                    }
+                    
+                    // DEBUG: Trace unhandled tokens
+                    if (token.Type == TokenType.SETHINT || token.Type == TokenType.LSQ || token.Type == TokenType.DRAW)
+                    {
+                        Console.WriteLine($"[DEBUG LRSExprProc] Token not handled: {token.Type}({token.Lexeme}), IsFunction={OperatorDetector.IsFunction(token.Type)}, IsDyadicOperator={OperatorDetector.IsDyadicOperator(token.Type)}");
                     }
                     
                     throw new Exception($"Unexpected token in expression: {token.Type}({token.Lexeme})");

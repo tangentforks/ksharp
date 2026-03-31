@@ -96,75 +96,17 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Direct dyadic operator detection without VerbRegistry (temporary fix)
+        /// Check if token type represents a verb that supports dyadic arity
+        /// Uses VerbRegistry for verb-agnostic detection
         /// </summary>
         private static bool IsDyadicOperatorDirect(TokenType tokenType)
         {
-            return tokenType == TokenType.PLUS ||
-                   tokenType == TokenType.MINUS ||
-                   tokenType == TokenType.MULTIPLY ||
-                   tokenType == TokenType.DIVIDE ||
-                   tokenType == TokenType.DOT_PRODUCT ||
-                   tokenType == TokenType.MIN ||
-                   tokenType == TokenType.MAX ||
-                   tokenType == TokenType.LESS ||
-                   tokenType == TokenType.GREATER ||
-                   tokenType == TokenType.EQUAL ||
-                   tokenType == TokenType.IN ||
-                   tokenType == TokenType.POWER ||
-                   tokenType == TokenType.MODULUS ||
-                   tokenType == TokenType.MATCH ||
-                   tokenType == TokenType.NEGATE ||
-                   tokenType == TokenType.DOLLAR ||
-                   tokenType == TokenType.QUESTION ||
-                   // I/O verbs (digit-colon operators)
-                   tokenType == TokenType.IO_VERB_0 ||
-                   tokenType == TokenType.IO_VERB_1 ||
-                   tokenType == TokenType.IO_VERB_2 ||
-                   tokenType == TokenType.IO_VERB_3 ||
-                   tokenType == TokenType.IO_VERB_4 ||
-                   tokenType == TokenType.IO_VERB_5 ||
-                   tokenType == TokenType.IO_VERB_6 ||
-                   tokenType == TokenType.IO_VERB_7 ||
-                   tokenType == TokenType.IO_VERB_8 ||
-                   tokenType == TokenType.IO_VERB_9 ||
-                   // Additional operators
-                   tokenType == TokenType.JOIN ||
-                   tokenType == TokenType.HASH ||
-                   tokenType == TokenType.UNDERSCORE ||
-                   tokenType == TokenType.APPLY ||
-                   tokenType == TokenType.DOT_APPLY ||
-                   tokenType == TokenType.TYPE ||
-                   tokenType == TokenType.STRING_REPRESENTATION ||
-                   // Mathematical functions (dyadic)
-                   tokenType == TokenType.DIV ||
-                   tokenType == TokenType.DOT_PRODUCT ||
-                   tokenType == TokenType.MUL ||
-                   tokenType == TokenType.AND ||
-                   tokenType == TokenType.OR ||
-                   tokenType == TokenType.XOR ||
-                   tokenType == TokenType.ROT ||
-                   tokenType == TokenType.SHIFT ||
-                   tokenType == TokenType.LSQ ||
-                   tokenType == TokenType.LIN ||
-                   tokenType == TokenType.BIN ||
-                   tokenType == TokenType.BINL ||
-                   tokenType == TokenType.DV ||
-                   tokenType == TokenType.DI ||
-                   tokenType == TokenType.VS ||
-                   tokenType == TokenType.SV ||
-                   tokenType == TokenType.SS ||
-                   tokenType == TokenType.SM ||
-                   tokenType == TokenType.CI ||
-                   tokenType == TokenType.IC ||
-                   tokenType == TokenType.BD ||
-                   tokenType == TokenType.DB ||
-                   // System functions (dyadic)
-                   tokenType == TokenType.IN ||
-                   tokenType == TokenType.DRAW ||
-                   tokenType == TokenType.GETENV ||
-                   tokenType == TokenType.SETENV ||
-                   tokenType == TokenType.SIZE;
+            // Use VerbRegistry to check if the verb supports dyadic arity
+            // This ensures any registered verb (operator, system function, etc.) 
+            // with dyadic support is automatically recognized
+            var verbName = VerbRegistry.TokenTypeToVerbName(tokenType);
+            var verb = VerbRegistry.GetVerb(verbName);
+            return verb?.SupportedArities.Contains(2) ?? false;
         }
         
         /// <summary>

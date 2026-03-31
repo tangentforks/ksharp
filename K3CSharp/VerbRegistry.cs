@@ -427,7 +427,10 @@ namespace K3CSharp
             lookupCount++;
             var verbName = TokenTypeToVerbName(tokenType);
             var verb = GetVerb(verbName);
-            var result = verb != null && verb.Type == VerbType.Operator;
+            // Include all verb types that can act as operators: Operator, SystemFunction, and Function
+            var result = verb != null && (verb.Type == VerbType.Operator || 
+                                          verb.Type == VerbType.SystemFunction || 
+                                          verb.Type == VerbType.Function);
             verbTokenCache[tokenType] = result;
             return result;
         }
@@ -669,8 +672,8 @@ namespace K3CSharp
 
             // Rand Functions
             // x _draw y (from !y); x _draw -y (deal from !y); x _draw 0 (from (0,1))
-            RegisterVerb("_draw", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("DRAW", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("_draw", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("DRAW", VerbType.SystemFunction, new[] { 2 }, null);
 
             // Time Functions
             // _t is gmt seconds. _lt is local from gmt, e.g. _gtime _lt _t
@@ -700,35 +703,35 @@ namespace K3CSharp
             // x _sm y is string match. y can have *?[^-], e.g. files _sm "*.[kK]"
             // x _ss y is string/symbol search for start indices. y can have ?[^-].
             // _ssr[x;y;z] is string/symbol search and replace. z can be a function.
-            RegisterVerb("_in", VerbType.SystemFunction, new[] { 1 }, null);
-            RegisterVerb("IN", VerbType.SystemFunction, new[] { 1 }, null);
-            RegisterVerb("_lin", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("LIN", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("_bin", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("BIN", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("_binl", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("BINL", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("_dv", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("DV", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("_di", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("DI", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("_sv", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("SV", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("_vs", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("VS", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("_ci", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("CI", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("_ic", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("IC", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("_sm", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("SM", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("_ss", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("SS", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("_ssr", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("SSR", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("_in", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("IN", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_lin", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("LIN", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_bin", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("BIN", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_binl", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("BINL", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_dv", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("DV", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_di", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("DI", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_sv", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("SV", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_vs", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("VS", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_ci", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("CI", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_ic", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("IC", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_sm", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("SM", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_ss", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("SS", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_ssr", VerbType.SystemFunction, new[] { 3 }, null);
+            RegisterVerb("SSR", VerbType.SystemFunction, new[] { 3 }, null);
 
             // Data verbs
-            // _bd d (bytes from data) and _db b (data from bytes). _hd (hash from data).
+            // _bd d (bytes from data) and _db b (data from bytes).
             RegisterVerb("_bd", VerbType.SystemFunction, new[] { 1 }, null);
             RegisterVerb("BD", VerbType.SystemFunction, new[] { 1 }, null);
             RegisterVerb("_db", VerbType.SystemFunction, new[] { 1 }, null);
@@ -738,10 +741,10 @@ namespace K3CSharp
             // _getenv v (v _setenv s) gets(sets) environment variable v.
             // _host addr; _host name; _size file; _del file; old _rename new
             // _exit code; _kill PIDS
-            RegisterVerb("_getenv", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("GETENV", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("_setenv", VerbType.SystemFunction, new[] { 1, 2 }, null);
-            RegisterVerb("SETENV", VerbType.SystemFunction, new[] { 1, 2 }, null);
+            RegisterVerb("_getenv", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("GETENV", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_setenv", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("SETENV", VerbType.SystemFunction, new[] { 2 }, null);
             RegisterVerb("_size", VerbType.SystemFunction, new[] { 1 }, null);
             RegisterVerb("SIZE", VerbType.SystemFunction, new[] { 1 }, null);
             RegisterVerb("_host", VerbType.SystemFunction, new[] { 1 }, null);
@@ -801,11 +804,11 @@ namespace K3CSharp
             // ksharp new verbs: parser and FFI
             RegisterVerb("_parse", VerbType.SystemFunction, new[] { 1 }, new Func<K3Value[], K3Value>?[] { ParseVerbHandler.Parse, null });
             RegisterVerb("_eval", VerbType.SystemFunction, new[] { 1 }, new Func<K3Value[], K3Value>?[] { EvalVerbHandler.Evaluate, null });
-            RegisterVerb("_dispose", VerbType.Function, new[] { 1 }, null);
-            RegisterVerb("_gethint", VerbType.Function, new[] { 1 }, null);
-            RegisterVerb("GETHINT", VerbType.Function, new[] { 1 }, null);
-            RegisterVerb("_sethint", VerbType.Operator, new[] { 2 }, null);
-            RegisterVerb("SETHINT", VerbType.Operator, new[] { 2 }, null);
+            RegisterVerb("_dispose", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_gethint", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("GETHINT", VerbType.SystemFunction, new[] { 1 }, null);
+            RegisterVerb("_sethint", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("SETHINT", VerbType.SystemFunction, new[] { 2 }, null);
         }
 
         // This is a hack for _eval, we should fix _eval and remove it
