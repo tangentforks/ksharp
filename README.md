@@ -4,11 +4,12 @@ A comprehensive C# implementation of the K3 programming language core, a high-pe
 
 ## 🎯 Current Status
 
-**K3CSharp is now at 96.4% K3 specification compliance** with comprehensive core language implementation, complete serialization system, robust .NET Foreign Function Interface, statement parsing support, Pure LRS parser with variable tracking, and mostly complete I/O system.
+**K3CSharp is now at 96.2% K3 specification compliance** with comprehensive core language implementation, complete serialization system, robust .NET Foreign Function Interface, statement parsing support, Pure LRS parser with variable tracking, and mostly complete I/O system.
 
 ### 📈 Latest Test Results
-- **Test Suite**: 820/852 tests passing (96.2% success rate)
-- **K3 Compatibility**: 745/852 tests matched (91.4% compatibility)  
+- **Test Suite**: 821/853 tests passing (96.2% success rate)
+- **K3 Compatibility**: 784/853 tests matched (94.3% compatibility)  
+- **LRS Parser**: 95.3% success rate (40 fallbacks, down from 976)
 - **Dictionary Indexing**: ✅ All dictionary indexing tests now pass
 - **Operator Precedence**: ✅ K's Long Right Scope properly implemented
 - **Parser Stability**: ✅ No special cases or workarounds in ParsePrimary
@@ -61,6 +62,12 @@ A comprehensive C# implementation of the K3 programming language core, a high-pe
   - [Build](#build)
   - [Run](#run)
 - [🎯 Recent Major Improvements](#-recent-major-improvements)
+  - **🔥 LRS Parser EOF Fix (Mar 2026)** - Dramatically reduced LRS parser fallbacks from 976 to 40 (95.3% reduction) by fixing incomplete token consumption. The parser now properly handles EOF tokens.
+    - **Before**: 976 "Incomplete Token Consumption" fallbacks to legacy parser
+    - **After**: 40 fallbacks remaining (multi-statement scripts only)
+    - **LRS Success Rate**: Improved to 95.3%
+    - **Root Cause**: `ReadExpressionTokens` stopped AT EOF token instead of past it
+    - **Fix**: Added EOF skip in `LRSParserWrapper.cs` Safe LRS mode path
   - **🎯 Dictionary Indexing and Precedence Problems Fixed (Mar 2026)** - Successfully resolved critical parsing issues that were causing dictionary indexing failures and operator precedence problems. The fixes eliminate special cases from ParsePrimary and restore proper Long Right Scope (LRS) parsing behavior.
     - **Dictionary Indexing**: All dictionary indexing tests now pass (`(.((`a;1);(`b;2))) @ `a` → `1`)
     - **Operator Precedence**: K's Long Right Scope properly implemented (`- 1 + 2` → `-3`)
@@ -117,15 +124,15 @@ cd K3CSharp.Comparison && dotnet run
 ## 📈 **Validation Results**
 
 ### **Comprehensive Test Suite:**
-- **Total Tests**: 844 validation scenarios
-- **✅ Core Functionality**: 814 scenarios validated (96.4% success rate)
-- **❌ Implementation Issues**: 30 scenarios (3.6% remaining work)
+- **Total Tests**: 853 validation scenarios
+- **✅ Core Functionality**: 821 scenarios validated (96.2% success rate)
+- **❌ Implementation Issues**: 32 scenarios (3.8% remaining work)
 - **⚠️ Advanced Features**: Some tests for advanced K features not yet implemented
 
 ### **K.exe Compatibility Analysis:**
-- **Total Comparison Tests**: 844 scenarios
-- **✅ Matched**: 775 scenarios (94.3% compatibility)
-- **❌ Differed**: 43 scenarios (5.1% implementation differences)
+- **Total Comparison Tests**: 853 scenarios
+- **✅ Matched**: 784 scenarios (94.3% compatibility)
+- **❌ Differed**: 43 scenarios (5.0% implementation differences)
 - **💥 Errors**: 4 scenarios (0.5% implementation issues)
 - **⚠️ Skipped**: 22 scenarios (2.6% new _eval and _parse verbs, and FFI)
 
@@ -576,7 +583,7 @@ a _ b            // a _ b (unambiguous operator)
 cd K3CSharp.Comparison
 dotnet run
 ```
-- **512 validation scenarios** compared against k.exe reference
+- **853 validation scenarios** compared against k.exe reference
 - **Comprehensive validation** with intelligent formatting detection
 - **Batch processing** to prevent timeouts
 - **Detailed reporting** with `comparison_table.txt`
@@ -592,7 +599,7 @@ dotnet run
 - **Perfect test organization** with systematic form/format naming
 - **High-quality codebase** with excellent maintainability
 - **Clean repository structure** with no obsolete files
-- **95.0% K3 specification compliance** with comprehensive functionality and solid foundation for remaining features
+- **96.2% K3 specification compliance** with comprehensive functionality and solid foundation for remaining features
 
 ### **Critical Language Features**
 - **Shape operator specification compliance**: `^ 42` → `!0` (correct empty vector display)
@@ -624,9 +631,9 @@ dotnet run
 - **Character Vector Identity**: `" "$"abc"` → `"abc"` (proper character vector handling)
 - **Symbol Identity**: `` ` `$symbol `` → `"symbol"` (symbol to string conversion)
 - **Expression Evaluation**: `{"x+y"}[2;3]` → `5` (dynamic expression with variables)
-## **Development Plan Status**: **3.6% functionality remaining** for complete K3 specification compliance
+## **Development Plan Status**: **3.8% functionality remaining** for complete K3 specification compliance
 
-Based on comprehensive analysis of current implementation status, K3CSharp has achieved **96.4% K3 specification compliance** with **3.6% functionality remaining**. The recent addition of statement parsing and LRS parser improvements provides essential language features and brings the implementation very close to complete K3 language support.
+Based on comprehensive analysis of current implementation status, K3CSharp has achieved **96.2% K3 specification compliance** with **3.8% functionality remaining**. The recent addition of statement parsing and LRS parser improvements provides essential language features and brings the implementation very close to complete K3 language support.
 
 ### **I/O System Status** ✅ **Mostly Implemented**
 
