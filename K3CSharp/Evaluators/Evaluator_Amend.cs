@@ -115,19 +115,26 @@ namespace K3CSharp
                 }
                 else if (arguments.Count == 4)
                 {
-                    // Tetradic: @[d; i; :; y] - amend operation with trapped apply
-                    try
+                    // Tetradic: @[d; i; :; y] - amend by directly setting values at indices
+                    // The colon is a marker, not a function to call
+                    // Replace items at indices with the value directly
+                    if (data is VectorValue dataList)
                     {
-                        // Apply amend operation with trapped apply
-                        var result = AmendAtom(data, new SymbolValue(":"), value);
-                        // Return success tuple: (0; result)
-                        return new VectorValue(new List<K3Value> { new IntegerValue(0), result });
+                        // For @ amend, we set values directly at the specified indices
+                        return AmendListWithValue(dataList, indices, value!);
                     }
-                    catch (Exception ex)
+                    else if (data is DictionaryValue dataDict)
                     {
-                        // Return error tuple: (1; error_message)
-                        var errorMsg = new VectorValue(ex.Message.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList());
-                        return new VectorValue(new List<K3Value> { new IntegerValue(1), errorMsg });
+                        return AmendDictionaryWithValue(dataDict, indices, value!);
+                    }
+                    else if (data is CharacterValue || data is IntegerValue || data is FloatValue)
+                    {
+                        // For atomic data with indices, just return the value
+                        return value!;
+                    }
+                    else
+                    {
+                        throw new Exception("Amend Item with colon not supported for this data type");
                     }
                 }
             }
@@ -241,6 +248,103 @@ namespace K3CSharp
                         {
                             var currentValue = current.Value;
                             var newValue = ApplyAmendFunction(currentValue, function, value);
+                            result[keySymbol] = (newValue, current.Item2);
+                        }
+                        else
+                        {
+                            throw new Exception($"Key '{keySymbol.Value}' not found in dictionary");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Dictionary indices must be symbols");
+                    }
+                }
+            }
+            else
+            {
+                throw new Exception("Dictionary indices must be symbols or vector of symbols");
+            }
+            
+            return new DictionaryValue(result);
+        }
+        
+        private K3Value AmendListWithValue(VectorValue list, K3Value indices, K3Value newValue)
+        {
+            // Create a copy of the list to modify
+            var result = new List<K3Value>(list.Elements);
+
+            // Normalize single integer index to a vector
+            if (indices is IntegerValue singleIdx)
+            {
+                indices = new VectorValue(new List<K3Value> { singleIdx });
+            }
+
+            if (indices is VectorValue indexVec)
+            {
+                for (int i = 0; i < indexVec.Elements.Count; i++)
+                {
+                    var index = indexVec.Elements[i];
+                    if (index is IntegerValue intIndex)
+                    {
+                        int idx = (int)intIndex.Value;
+                        if (idx < 0 || idx >= result.Count)
+                        {
+                            throw new Exception($"Index {idx} out of bounds for list of length {result.Count}");
+                        }
+                        result[idx] = newValue;
+                    }
+                    else
+                    {
+                        throw new Exception("List indices must be integers");
+                    }
+                }
+            }
+            else if (indices is NullValue)
+            {
+                // Amend all items in the list
+                for (int i = 0; i < result.Count; i++)
+                {
+                    result[i] = newValue;
+                }
+            }
+            else
+            {
+                throw new Exception("Indices must be a vector or null");
+            }
+            
+            return new VectorValue(result);
+        }
+        
+        private K3Value AmendDictionaryWithValue(DictionaryValue dict, K3Value indices, K3Value newValue)
+        {
+            // Create a copy of the dictionary to modify
+            var result = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue?)>(dict.Entries);
+            
+            if (indices is SymbolValue symbol)
+            {
+                // Single key amendment
+                if (result.ContainsKey(symbol))
+                {
+                    var current = result[symbol];
+                    result[symbol] = (newValue, current.Item2);
+                }
+                else
+                {
+                    throw new Exception($"Key '{symbol.Value}' not found in dictionary");
+                }
+            }
+            else if (indices is VectorValue indexVec)
+            {
+                // Multiple key amendments
+                for (int i = 0; i < indexVec.Elements.Count; i++)
+                {
+                    var index = indexVec.Elements[i];
+                    if (index is SymbolValue keySymbol)
+                    {
+                        if (result.ContainsKey(keySymbol))
+                        {
+                            var current = result[keySymbol];
                             result[keySymbol] = (newValue, current.Item2);
                         }
                         else

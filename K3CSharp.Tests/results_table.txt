@@ -524,8 +524,8 @@
 ║ amend_test_func_var.k                              │ f:{x+y}              │ 11 2 3               │                      ║
 ║ trap_dot_add.k                                     │ .[+;(1 2;3 4);:]     │ (0;4 6)              │                      ║
 ║ trap_dot_success.k                                 │ a:3 2 1              │ (0;1 3)              │                      ║
-║ amend_colon_direct.k                               │ (.) . (1 2 3; 1; :; 99)  // Amend with colon: replace element at index 1 with 99 │ 1 99 3               │                      ║
-║ amend_triadic_monadic.k                            │ (.) . (1 2 3; 1; -:)  // Triadic amend: apply monadic neg to element at index 1 │ Error: Both LRS...   │                      ║
+║ amend_colon_direct.k                               │ .[1 2 3; 1; :; 99]  // Amend with colon: replace element at index 1 with 99 │ 1 99 3               │                      ║
+║ amend_triadic_monadic.k                            │ .[1 2 3; 1; -:]  // Triadic amend: apply monadic neg to element at index 1 │ Error: Both LRS...   │ 1 -2 3               ║
 ║ conditional_bracket_test.k                         │ :[1 < 2; "true"; "false"]  // Test conditional evaluation with bracket notation │ "true"               │                      ║
 ║ conditional_false.k                                │ :[0; "true"; "false"]  // Conditional evaluation - condition false │ "false"              │                      ║
 ║ conditional_simple_test.k                          │ :[1; "true"; "false"] │ "true"               │                      ║
@@ -806,12 +806,12 @@
 ║ idioms_01_88_name_variable.k                       │ x:"test"             │ Error: Error ev...   │ (0 1 2;3 4 5)        ║
 ║ idioms_01_96_conditional_execution.k               │ @[+/;!6;:]           │ 0 15                 │                      ║
 ║ idioms_01_493_choose_boolean.k                     │ x:"abcdef"           │ "xyz"                │                      ║
-║ idioms_01_434_replace_first.k                      │ x:"abbccdefcdab"     │ (1;"Assignment ...   │ "tbbccdefcdab"       ║
-║ idioms_01_433_replace_last.k                       │ x:"abbccdefcdab"     │ (1;"Assignment ...   │ "abbccdefcdat"       ║
+║ idioms_01_434_replace_first.k                      │ x:"abbccdefcdab"     │ "tbbccdefcdab"       │                      ║
+║ idioms_01_433_replace_last.k                       │ x:"abbccdefcdab"     │ "abbccdefcdat"       │                      ║
 ║ idioms_01_406_add_last.k                           │ x:1 2 3 4 5          │ 1 2 3 4 105          │                      ║
 ║ idioms_01_449_limit_between.k                      │ x:(58 9 37 84 39 99;60 30 45 97 77 35;49 87 82 79 8 30;46 61 20 51 12 34;31 51 29 35 17 89) // 5 6 _draw 100 │ (58 30 37 70 39...   │                      ║
 ║ idioms_01_495_indices_occurrences.k                │ x:"abcdefgab"        │ ()                   │ 0 2 5 7              ║
-║ idioms_01_504_replace_satisfying.k                 │ x:1 0 0 0 1 0 1 1 0 1 │ (1;"Assignment ...   │ " bcd f i "          ║
+║ idioms_01_504_replace_satisfying.k                 │ x:1 0 0 0 1 0 1 1 0 1 │ " bcd f  i "         │ " bcd f i "          ║
 ║ idioms_01_569_change_to_one.k                      │ y:10 5 7 12 20       │ 10 1 7 1 1           │                      ║
 ║ idioms_01_556_all_indices.k                        │ x:2 2 2 2            │ Error: Take cou...   │ 0 1 2 3              ║
 ║ idioms_01_535_avoid_parentheses.k                  │ x:1 2 3 4 5          │ 1 5                  │ 5 1                  ║
@@ -861,7 +861,7 @@
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 823/857 tests passed (96.0%)                                                                               ║
+║ SUMMARY: 825/857 tests passed (96.3%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -937,9 +937,9 @@ Expected: ""
 Actual: "\357\273\277"
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_triadic_monadic.k
-Input: (.) . (1 2 3; 1; -:)  // Triadic amend: apply monadic neg to element at index 1
-Expected: 
-Actual: Error: Both LRS and legacy parsers failed for: (.) . (1 2 3; 1; -:). Legacy error: Unexpected token: ASSIGNMENT(-:)
+Input: .[1 2 3; 1; -:]  // Triadic amend: apply monadic neg to element at index 1
+Expected: 1 -2 3
+Actual: Error: Both LRS and legacy parsers failed for: .[1 2 3; 1; -:]. Legacy error: Unexpected token: ASSIGNMENT(-:)
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_type_marshalling.k
 Input: f:3.14159;f _sethint `float;s:"hello";s _sethint `string;l:1 2 3 4 5;l: _sethint `list // This needs to be split at some point
@@ -961,16 +961,6 @@ Input: x:"test"
 Expected: (0 1 2;3 4 5)
 Actual: Error: Error evaluating string expression 'var': Undefined variable: var
 ──────────────────────────────────────────────────────────────────────────
-Test: idioms_01_434_replace_first.k
-Input: x:"abbccdefcdab"
-Expected: "tbbccdefcdab"
-Actual: (1;"Assignment requires a variable name on the left side")
-──────────────────────────────────────────────────────────────────────────
-Test: idioms_01_433_replace_last.k
-Input: x:"abbccdefcdab"
-Expected: "abbccdefcdat"
-Actual: (1;"Assignment requires a variable name on the left side")
-──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_495_indices_occurrences.k
 Input: x:"abcdefgab"
 Expected: 0 2 5 7
@@ -979,7 +969,7 @@ Actual: ()
 Test: idioms_01_504_replace_satisfying.k
 Input: x:1 0 0 0 1 0 1 1 0 1
 Expected: " bcd f i "
-Actual: (1;"Assignment requires a variable name on the left side")
+Actual: " bcd f  i "
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_556_all_indices.k
 Input: x:2 2 2 2

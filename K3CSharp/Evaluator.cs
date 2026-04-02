@@ -84,6 +84,7 @@ namespace K3CSharp
 
         public K3Value Evaluate(ASTNode? node)
         {
+            Console.WriteLine($"[DEBUG] Evaluate called with node type: {node?.Type}");
             if (node == null)
                 return new NullValue();
                 
@@ -212,6 +213,17 @@ namespace K3CSharp
 
                 case ASTNodeType.TriadicOp:
                     return EvaluateTriadicOp(node);
+
+                case ASTNodeType.MonadicOp:
+                    // MonadicOp wraps a verb for disambiguating colon syntax (e.g., -: in triadic amend)
+                    // Extract and return the inner verb
+                    Console.WriteLine($"[DEBUG] MonadicOp case reached, children count: {node.Children.Count}");
+                    if (node.Children.Count > 0 && node.Children[0].Value is SymbolValue verbSymbol)
+                    {
+                        Console.WriteLine($"[DEBUG] MonadicOp returning verb: {verbSymbol.Value}");
+                        return verbSymbol;
+                    }
+                    throw new Exception("MonadicOp must have a verb symbol as its child");
 
                 case ASTNodeType.TetradicOp:
                     return EvaluateTetradicOp(node);
@@ -3680,21 +3692,21 @@ namespace K3CSharp
                 return TrappedApply(arg1, arg3);
             }
             
-            var arg1Eval = Evaluate(node.Children[0]);
-            var arg2Eval = Evaluate(node.Children[1]);
-            var arg3Eval = Evaluate(node.Children[2]);
+            var arg1Eval = Evaluate(node.Children[0]) ?? new NullValue();
+            var arg2Eval = Evaluate(node.Children[1]) ?? new NullValue();
+            var arg3Eval = Evaluate(node.Children[2]) ?? new NullValue();
             
             // For now, dispatch to existing evaluators for triadic dot and at operations
             // According to the plan, these should dispatch to existing evaluators
             if (opName == ".")
             {
                 // Triadic dot: dispatch to existing evaluator
-                return EvaluateTriadicDot(arg1Eval, arg2Eval, arg3Eval);
+                return EvaluateTriadicDot(arg1Eval!, arg2Eval!, arg3Eval!);
             }
             else if (opName == "@")
             {
                 // Triadic at: dispatch to existing evaluator
-                return EvaluateTriadicAt(arg1Eval, arg2Eval, arg3Eval);
+                return EvaluateTriadicAt(arg1Eval!, arg2Eval!, arg3Eval!);
             }
             else
             {
@@ -3707,19 +3719,14 @@ namespace K3CSharp
         /// </summary>
         private bool IsColonNode(ASTNode node)
         {
-            // Debug output
-            Console.WriteLine($"[DEBUG] IsColonNode checking: Type={node.Type}, Value={node.Value?.GetType().Name}, ValueContent={node.Value}");
-            
             // Check if the node is a literal colon symbol
             if (node.Type == ASTNodeType.Literal && node.Value is SymbolValue sym)
             {
-                Console.WriteLine($"[DEBUG] Found Literal with SymbolValue: '{sym.Value}'");
                 return sym.Value == ":";
             }
             // Also check if it's a single token that is a colon
             if (node.Value is SymbolValue sym2 && sym2.Value == ":")
             {
-                Console.WriteLine($"[DEBUG] Found SymbolValue colon directly");
                 return true;
             }
             return false;
@@ -3730,10 +3737,10 @@ namespace K3CSharp
             if (node.Value is not SymbolValue op) throw new Exception("Tetradic operator must have a symbol value");
             if (node.Children.Count < 4) throw new Exception("Tetradic operator requires 4 arguments");
             
-            var arg1 = Evaluate(node.Children[0]);
-            var arg2 = Evaluate(node.Children[1]);
-            var arg3 = Evaluate(node.Children[2]);
-            var arg4 = Evaluate(node.Children[3]);
+            var arg1 = Evaluate(node.Children[0]) ?? new NullValue();
+            var arg2 = Evaluate(node.Children[1]) ?? new NullValue();
+            var arg3 = Evaluate(node.Children[2]) ?? new NullValue();
+            var arg4 = Evaluate(node.Children[3]) ?? new NullValue();
             
             var opName = op.Value;
             
@@ -3769,16 +3776,25 @@ namespace K3CSharp
         private K3Value EvaluateTriadicDot(K3Value arg1, K3Value arg2, K3Value arg3)
         {
             // Check for trapped apply: .[f; args; :]
-            if (IsColon(arg2))
+            if (arg2 != null && IsColon(arg2))
             {
                 // Trapped apply: behave like dyadic dot apply but never throw exceptions
-                return TrappedApply(arg1, arg3);
+                return TrappedApply(arg1 ?? new NullValue(), arg3 ?? new NullValue());
+            }
+            
+            // Check if arg3 is a SymbolValue (verb from MonadicOp wrapper)
+            // This happens when the parser detects disambiguating colon syntax: .[d; i; verb:]
+            if (arg3 is SymbolValue verbSymbol)
+            {
+                // The verb should be applied monadically to the selected element
+                var amendArgs = new List<K3Value> { arg1 ?? new NullValue(), arg2 ?? new NullValue(), arg3 };
+                return AmendFunction(amendArgs);
             }
             
             // Otherwise, it's a triadic amend operation: .[d; i; f]
             // where arg1=data, arg2=indices, arg3=function
-            var amendArgs = new List<K3Value> { arg1, arg2, arg3 };
-            return AmendFunction(amendArgs);
+            var amendArgs2 = new List<K3Value> { arg1 ?? new NullValue(), arg2 ?? new NullValue(), arg3 ?? new NullValue() };
+            return AmendFunction(amendArgs2);
         }
 
         private K3Value EvaluateTriadicAt(K3Value arg1, K3Value arg2, K3Value arg3)
@@ -3793,7 +3809,10 @@ namespace K3CSharp
 
         private K3Value EvaluateTetradicAt(K3Value arg1, K3Value arg2, K3Value arg3, K3Value arg4)
         {
-            throw new Exception("Tetradic at operation not yet implemented");
+            // Tetradic at: @[d; i; f; y] - amend item operation
+            // arg1=data, arg2=indices, arg3=function, arg4=value
+            var amendArgs = new List<K3Value> { arg1, arg2, arg3, arg4 };
+            return AmendItemFunction(amendArgs);
         }
 
         /// <summary>

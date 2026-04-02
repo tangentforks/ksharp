@@ -1,21 +1,21 @@
 # K3CSharp Parser Failures
 
-**Generated:** 2026-04-02 03:56:35
-**Test Results:** 823/857 passed (96.0%)
+**Generated:** 2026-04-02 12:23:59
+**Test Results:** 825/857 passed (96.3%)
 
 ## Executive Summary
 
 **Total Tests:** 857
-**Passed Tests:** 823
-**Failed Tests:** 34
-**Success Rate:** 96.0%
+**Passed Tests:** 825
+**Failed Tests:** 32
+**Success Rate:** 96.3%
 
 **LRS Parser Statistics:**
 - NULL Results: 20
-- Incomplete Token Consumption: 966
-- Total Fallbacks to Legacy: 986
+- Incomplete Token Consumption: 976
+- Total Fallbacks to Legacy: 996
 - Incorrect Results: 0
-- LRS Success Rate: -15.1%
+- LRS Success Rate: -16.2%
 
 **Top Failure Patterns:**
 - Incomplete consumption (position 3/4): 246
@@ -27,7 +27,7 @@
 - Incomplete consumption (position 1/2): 39
 - Incomplete consumption (position 9/10): 38
 - Incomplete consumption (position 8/9): 33
-- Incomplete consumption (position 10/11): 29
+- Incomplete consumption (position 10/11): 32
 
 ## LRS Parser Failures
 
@@ -1624,6 +1624,12 @@ Incomplete consumption (position 3/4) (consumed 3/4)
 a-c
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
+-------------------------------------------------
+**test_triadic_dot.k**:
+```k
+.[1 2 3;1;-:]
+```
+Incomplete consumption (position 10/11) (consumed 10/11)
 -------------------------------------------------
 **test_adverb_aware_evaluation.k**:
 ```k
@@ -3359,6 +3365,24 @@ Incomplete consumption (position 9/10) (consumed 9/10)
 ```
 Incomplete consumption (position 11/12) (consumed 11/12)
 -------------------------------------------------
+**amend_item_basic.k**:
+```k
+@[1 2 3; 1; +; 10]
+```
+Incomplete consumption (position 12/13) (consumed 12/13)
+-------------------------------------------------
+**amend_item_multiple.k**:
+```k
+@[1 2 3; 0 2; +; 10]
+```
+Incomplete consumption (position 13/14) (consumed 13/14)
+-------------------------------------------------
+**amend_item_monadic.k**:
+```k
+@[1 2 3; 1; {x*2}]
+```
+Incomplete consumption (position 14/15) (consumed 14/15)
+-------------------------------------------------
 **amend_test.k**:
 ```k
 (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)
@@ -3575,6 +3599,12 @@ Incomplete consumption (position 7/8) (consumed 7/8)
 ```
 Incomplete consumption (position 30/31) (consumed 30/31)
 -------------------------------------------------
+**amend_dot_test.k**:
+```k
+.[1 2 3; 1; +; 10]
+```
+Incomplete consumption (position 12/13) (consumed 12/13)
+-------------------------------------------------
 **amend_parenthesized.k**:
 ```k
 (.) . (1 2 3; 0; +; 10)
@@ -3605,6 +3635,12 @@ Incomplete consumption (position 7/8) (consumed 7/8)
 ```
 Incomplete consumption (position 17/18) (consumed 17/18)
 -------------------------------------------------
+**trap_dot_add.k**:
+```k
+.[+;(1 2;3 4);:]
+```
+Incomplete consumption (position 14/15) (consumed 14/15)
+-------------------------------------------------
 **trap_dot_success.k**:
 ```k
 a:3 2 1
@@ -3613,15 +3649,15 @@ Incomplete consumption (position 5/6) (consumed 5/6)
 -------------------------------------------------
 **amend_colon_direct.k**:
 ```k
-(.) . (1 2 3; 1; :; 99)
+.[1 2 3; 1; :; 99]
 ```
-Incomplete consumption (position 15/16) (consumed 15/16)
+Incomplete consumption (position 12/13) (consumed 12/13)
 -------------------------------------------------
 **amend_triadic_monadic.k**:
 ```k
-(.) . (1 2 3; 1; -:)
+.[1 2 3; 1; -:]
 ```
-Incomplete consumption (position 13/14) (consumed 13/14)
+Incomplete consumption (position 10/11) (consumed 10/11)
 -------------------------------------------------
 **conditional_bracket_test.k**:
 ```k
@@ -5369,11 +5405,23 @@ x:"abbccdefcdab"
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
 -------------------------------------------------
+**idioms_01_434_replace_first.k**:
+```k
+@[x;0;:;y]
+```
+Incomplete consumption (position 10/11) (consumed 10/11)
+-------------------------------------------------
 **idioms_01_433_replace_last.k**:
 ```k
 x:"abbccdefcdab"
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
+-------------------------------------------------
+**idioms_01_433_replace_last.k**:
+```k
+@[x;-1+#x;:;y]
+```
+Incomplete consumption (position 13/14) (consumed 13/14)
 -------------------------------------------------
 **idioms_01_406_add_last.k**:
 ```k
@@ -5386,6 +5434,12 @@ Incomplete consumption (position 7/8) (consumed 7/8)
 y:100
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
+-------------------------------------------------
+**idioms_01_406_add_last.k**:
+```k
+@[x;-1+#x;+;y]
+```
+Incomplete consumption (position 13/14) (consumed 13/14)
 -------------------------------------------------
 **idioms_01_449_limit_between.k**:
 ```k
@@ -5440,6 +5494,12 @@ Incomplete consumption (position 12/13) (consumed 12/13)
 y:"abcdefghij"
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
+-------------------------------------------------
+**idioms_01_504_replace_satisfying.k**:
+```k
+@[y;&x;:;g]
+```
+Incomplete consumption (position 11/12) (consumed 11/12)
 -------------------------------------------------
 **idioms_01_569_change_to_one.k**:
 ```k

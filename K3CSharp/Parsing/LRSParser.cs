@@ -106,76 +106,99 @@ namespace K3CSharp.Parsing
                 
                 if (firstBracket != -1)
                 {
-                    // Verify the token sequence from firstBracket to end is entirely consecutive bracket groups
-                    // i.e., tokens[firstBracket..end] = [arg1][arg2]...[argN]
-                    bool allBrackets = true;
-                    int pos = firstBracket;
-                    var bracketGroups = new List<(int start, int end)>();
-                    while (pos < expressionTokens.Count)
+                    // Check if this is a triadic/tetradic operation pattern
+                    // Format: .[arg1;arg2;arg3] or @[arg1;arg2;arg3;arg4]
+                    // These should NOT be treated as bracket function calls
+                    var prefixToken = expressionTokens[0];
+                    if (prefixToken.Type == TokenType.DOT_APPLY || prefixToken.Type == TokenType.APPLY)
                     {
-                        if ((int)expressionTokens[pos].Type != (int)TokenType.LEFT_BRACKET)
+                        // Count arguments inside the brackets
+                        int argCount = CountBracketArguments(expressionTokens, firstBracket);
+                        if (argCount >= 3)
                         {
-                            allBrackets = false;
-                            break;
+                            // This is a triadic/tetradic operation - skip bracket function call handling
+                            // Let ParseMultiAryOperation handle it
+                            Console.WriteLine($"[DEBUG] Detected triadic/tetradic pattern with {argCount} args, skipping bracket function call handling");
                         }
-                        var groupEnd = FindMatchingBracket(expressionTokens, pos);
-                        if (groupEnd == -1)
-                        {
-                            allBrackets = false;
-                            break;
-                        }
-                        bracketGroups.Add((pos, groupEnd));
-                        pos = groupEnd + 1;
-                    }
-                    
-                    if (allBrackets && bracketGroups.Count > 0)
-                    {
-                        // Parse the base (prefix before first bracket)
-                        var prefixTokens = expressionTokens.GetRange(0, firstBracket);
-                        ASTNode? currentNode;
-                        if (BuildParseTree)
-                            currentNode = BuildParseTreeFromRight(prefixTokens);
                         else
-                            currentNode = EvaluateFromRight(prefixTokens);
-                        
-                        if (currentNode != null)
                         {
-                            // Apply each bracket group left-to-right
-                            foreach (var (groupStart, groupEnd) in bracketGroups)
+                            // Fall through to bracket function call handling
+                        }
+                    }
+                    else
+                    {
+                        // Not a dot/apply operation, proceed with bracket function call handling
+                        // Verify the token sequence from firstBracket to end is entirely consecutive bracket groups
+                        // i.e., tokens[firstBracket..end] = [arg1][arg2]...[argN]
+                        bool allBrackets = true;
+                        int pos = firstBracket;
+                        var bracketGroups = new List<(int start, int end)>();
+                        while (pos < expressionTokens.Count)
+                        {
+                            if ((int)expressionTokens[pos].Type != (int)TokenType.LEFT_BRACKET)
                             {
-                                var argTokens = expressionTokens.GetRange(groupStart + 1, groupEnd - groupStart - 1);
-                                
-                                if (argTokens.Count == 0)
-                                {
-                                    // niladic call: f[]
-                                    currentNode = ASTNode.MakeDyadicOp(TokenType.APPLY, currentNode, ASTNode.MakeVector(new List<ASTNode>()));
-                                }
-                                else
-                                {
-                                    // Split arguments by semicolons and parse each one
-                                    var splitArgs = SplitBracketArguments(argTokens, int.MaxValue);
-                                    var argNodes = new List<ASTNode>();
-                                    
-                                    foreach (var splitArgTokens in splitArgs)
-                                    {
-                                        ASTNode? argNode;
-                                        if (BuildParseTree)
-                                            argNode = BuildParseTreeFromRight(splitArgTokens);
-                                        else
-                                            argNode = EvaluateFromRight(splitArgTokens);
-                                        
-                                        if (argNode != null)
-                                            argNodes.Add(argNode);
-                                    }
-                                    
-                                    if (argNodes.Count > 0)
-                                    {
-                                        var argVector = argNodes.Count == 1 ? argNodes[0] : ASTNode.MakeVector(argNodes);
-                                        currentNode = ASTNode.MakeDyadicOp(TokenType.APPLY, currentNode, argVector);
-                                    }
-                                }
+                                allBrackets = false;
+                                break;
                             }
-                            return currentNode;
+                            var groupEnd = FindMatchingBracket(expressionTokens, pos);
+                            if (groupEnd == -1)
+                            {
+                                allBrackets = false;
+                                break;
+                            }
+                            bracketGroups.Add((pos, groupEnd));
+                            pos = groupEnd + 1;
+                        }
+                        
+                        if (allBrackets && bracketGroups.Count > 0)
+                        {
+                            // Parse the base (prefix before first bracket)
+                            var prefixTokens = expressionTokens.GetRange(0, firstBracket);
+                            ASTNode? currentNode;
+                            if (BuildParseTree)
+                                currentNode = BuildParseTreeFromRight(prefixTokens);
+                            else
+                                currentNode = EvaluateFromRight(prefixTokens);
+                            
+                            if (currentNode != null)
+                            {
+                                // Apply each bracket group left-to-right
+                                foreach (var (groupStart, groupEnd) in bracketGroups)
+                                {
+                                    var argTokens = expressionTokens.GetRange(groupStart + 1, groupEnd - groupStart - 1);
+                                    
+                                    if (argTokens.Count == 0)
+                                    {
+                                        // niladic call: f[]
+                                        currentNode = ASTNode.MakeDyadicOp(TokenType.APPLY, currentNode, ASTNode.MakeVector(new List<ASTNode>()));
+                                    }
+                                    else
+                                    {
+                                        // Split arguments by semicolons and parse each one
+                                        var splitArgs = SplitBracketArguments(argTokens, int.MaxValue);
+                                        var argNodes = new List<ASTNode>();
+                                        
+                                        foreach (var splitArgTokens in splitArgs)
+                                        {
+                                            ASTNode? argNode;
+                                            if (BuildParseTree)
+                                                argNode = BuildParseTreeFromRight(splitArgTokens);
+                                            else
+                                                argNode = EvaluateFromRight(splitArgTokens);
+                                            
+                                            if (argNode != null)
+                                                argNodes.Add(argNode);
+                                        }
+                                        
+                                        if (argNodes.Count > 0)
+                                        {
+                                            var argVector = argNodes.Count == 1 ? argNodes[0] : ASTNode.MakeVector(argNodes);
+                                            currentNode = ASTNode.MakeDyadicOp(TokenType.APPLY, currentNode, argVector);
+                                        }
+                                    }
+                                }
+                                return currentNode;
+                            }
                         }
                     }
                 }
@@ -203,6 +226,12 @@ namespace K3CSharp.Parsing
         /// <returns>AST node representing parse tree structure</returns>
         internal ASTNode? BuildParseTreeFromRight(List<Token> expressionTokens)
         {
+            Console.WriteLine($"[DEBUG] BuildParseTreeFromRight called with {expressionTokens.Count} tokens");
+            for (int i = 0; i < expressionTokens.Count; i++)
+            {
+                Console.WriteLine($"[DEBUG] Token[{i}]: {expressionTokens[i].Type}({expressionTokens[i].Lexeme})");
+            }
+            
             if (expressionTokens.Count == 0)
                 return null;
                 
@@ -258,6 +287,12 @@ namespace K3CSharp.Parsing
                 if (functionResult != null)
                     return functionResult;
             }
+            
+            // Check for multi-arity operations (triadic, tetradic, variadic)
+            Console.WriteLine($"[DEBUG] About to call ParseMultiAryOperation from BuildParseTreeFromRight");
+            var multiAryResult = ParseMultiAryOperation(expressionTokens);
+            if (multiAryResult != null)
+                return multiAryResult;
             
             // Fallback to dyadic parser for any remaining cases
             return dyadicParser.ParseDyadicOperation(expressionTokens);
@@ -627,19 +662,23 @@ namespace K3CSharp.Parsing
         /// <returns>AST node for multi-arity operation</returns>
         private ASTNode? ParseMultiAryOperation(List<Token> tokens)
         {
+            Console.WriteLine($"[DEBUG] ParseMultiAryOperation called with {tokens.Count} tokens");
             if (tokens.Count < 2) return null;
             
             // Look for multi-arity operators
             for (int i = 0; i < tokens.Count; i++)
             {
                 var token = tokens[i];
+                Console.WriteLine($"[DEBUG] Token[{i}]: {token.Type}({token.Lexeme})");
                 int arity = DetectOperationArity(tokens, i);
+                Console.WriteLine($"[DEBUG] Detected arity={arity} at position {i}");
                 
                 if (arity >= 3)
                 {
                     // Handle triadic operations
                     if (arity == 3)
                     {
+                        Console.WriteLine($"[DEBUG] Calling ParseTriadicOperation at position {i}");
                         return ParseTriadicOperation(tokens, i);
                     }
                     // Handle tetradic operations
@@ -782,9 +821,11 @@ namespace K3CSharp.Parsing
         /// <returns>AST node for triadic operation</returns>
         private ASTNode? ParseTriadicOperation(List<Token> tokens, int position)
         {
+            Console.WriteLine($"[DEBUG] ParseTriadicOperation called at position {position}, token count={tokens.Count}");
             if (position >= tokens.Count) return null;
             
             var opToken = tokens[position];
+            Console.WriteLine($"[DEBUG] opToken={opToken.Type}({opToken.Lexeme})");
             
             // Must be followed by LEFT_BRACKET for triadic operations
             if (position + 1 >= tokens.Count || tokens[position + 1].Type != TokenType.LEFT_BRACKET)
@@ -798,12 +839,57 @@ namespace K3CSharp.Parsing
             
             var bracketTokens = tokens.GetRange(position + 2, bracketEnd - position - 2); // Skip . and [
             var splitArgs = SplitBracketArguments(bracketTokens, 3);
+            Console.WriteLine($"[DEBUG] splitArgs count={splitArgs.Count}");
+            for (int i = 0; i < splitArgs.Count; i++)
+            {
+                Console.WriteLine($"[DEBUG] Arg[{i}]: {splitArgs[i].Count} tokens");
+                for (int j = 0; j < splitArgs[i].Count; j++)
+                {
+                    Console.WriteLine($"[DEBUG]   Token[{j}]: {splitArgs[i][j].Type}({splitArgs[i][j].Lexeme})");
+                }
+            }
             
             if (splitArgs.Count >= 3)
             {
-                foreach (var argTokens in splitArgs.Take(3))
+                // Parse first two arguments normally
+                for (int i = 0; i < 2 && i < splitArgs.Count; i++)
                 {
-                    var argNode = BuildParseTreeFromTokens(argTokens);
+                    var argNode = BuildParseTreeFromTokens(splitArgs[i]);
+                    if (argNode != null) children.Add(argNode);
+                }
+                
+                // Handle 3rd argument with disambiguating colon detection
+                // Pattern: verb: (e.g., -:) where tokenizer joined them into ASSIGNMENT
+                var thirdArgTokens = splitArgs[2];
+                Console.WriteLine($"[DEBUG] Third arg has {thirdArgTokens.Count} tokens");
+                if (thirdArgTokens.Count == 1 && thirdArgTokens[0].Type == TokenType.ASSIGNMENT)
+                {
+                    Console.WriteLine($"[DEBUG] Found ASSIGNMENT token: {thirdArgTokens[0].Lexeme}");
+                    // This is a verb+colon pattern like -: 
+                    // Extract the verb part (everything before the colon)
+                    var lexeme = thirdArgTokens[0].Lexeme;
+                    if (lexeme.EndsWith(":") && lexeme.Length > 1)
+                    {
+                        var verbPart = lexeme.Substring(0, lexeme.Length - 1);
+                        Console.WriteLine($"[DEBUG] Extracted verb part: {verbPart}");
+                        // Create a symbol node for the verb with disambiguating colon marker
+                        var verbWithColonNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(verbPart));
+                        // Store disambiguating colon info in a special way
+                        // We'll wrap it to signal to the evaluator
+                        var wrapperNode = new ASTNode(ASTNodeType.MonadicOp, new SymbolValue("monadic"), new List<ASTNode> { verbWithColonNode });
+                        children.Add(wrapperNode);
+                    }
+                    else
+                    {
+                        // Regular colon, parse normally
+                        var argNode = BuildParseTreeFromTokens(thirdArgTokens);
+                        if (argNode != null) children.Add(argNode);
+                    }
+                }
+                else
+                {
+                    // Normal parsing for 3rd argument
+                    var argNode = BuildParseTreeFromTokens(thirdArgTokens);
                     if (argNode != null) children.Add(argNode);
                 }
                 

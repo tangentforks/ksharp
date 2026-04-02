@@ -9,6 +9,7 @@ namespace K3CSharp
         Literal,
         Vector,
         DyadicOp,
+        MonadicOp,               // Monadic operations (for disambiguating colon)
         Assignment,
         GlobalAssignment,
         Variable,

@@ -1612,7 +1612,7 @@ namespace K3CSharp.Tests
                 ("trap_dot_add.k", "(0;4 6)"),
                 ("trap_dot_success.k", "(0;1 3)"),
                 ("amend_colon_direct.k", "1 99 3"),
-                ("amend_triadic_monadic.k", ""),
+                ("amend_triadic_monadic.k", "1 -2 3"),
 
                 ("conditional_bracket_test.k", "\"true\""),
 
