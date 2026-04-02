@@ -289,11 +289,24 @@ namespace K3CSharp.Parsing
         /// </summary>
         public static bool CouldBeFunction(TokenType tokenType)
         {
-            // Any registered verb (Operator or SystemFunction) or lambda expression
+            // Lambda expressions are functions
+            if (tokenType == TokenType.LEFT_BRACE)
+                return true;
+            
+            // Check if it's a registered verb
             var verbName = VerbRegistry.TokenTypeToVerbName(tokenType);
             var verb = VerbRegistry.GetVerb(verbName);
             
-            return verb != null || tokenType == TokenType.LEFT_BRACE;
+            // System functions are always treated as functions, even if monadic
+            if (verb != null && (verb.Type == VerbType.SystemFunction || verb.Type == VerbType.SystemVariable))
+                return true;
+            
+            // Only treat as function if it's NOT a monadic operator
+            // Monadic operators should be handled by the monadic parser
+            if (verb != null && OperatorDetector.SupportsMonadic(tokenType))
+                return false;
+            
+            return verb != null;
         }
     }
 }

@@ -1,36 +1,158 @@
 # K3CSharp Parser Failures
 
-**Generated:** 2026-03-30 22:49:40
-**Test Results:** 820/852 passed (96.2%)
+**Generated:** 2026-04-02 03:56:35
+**Test Results:** 823/857 passed (96.0%)
 
 ## Executive Summary
 
-**Total Tests:** 852
-**Passed Tests:** 820
-**Failed Tests:** 32
-**Success Rate:** 96.2%
+**Total Tests:** 857
+**Passed Tests:** 823
+**Failed Tests:** 34
+**Success Rate:** 96.0%
 
 **LRS Parser Statistics:**
-- NULL Results: 0
-- Incomplete Token Consumption: 976
-- Total Fallbacks to Legacy: 976
+- NULL Results: 20
+- Incomplete Token Consumption: 966
+- Total Fallbacks to Legacy: 986
 - Incorrect Results: 0
-- LRS Success Rate: -14.6%
+- LRS Success Rate: -15.1%
 
 **Top Failure Patterns:**
-- Incomplete consumption (position 3/4): 265
+- Incomplete consumption (position 3/4): 246
 - Incomplete consumption (position 2/3): 138
-- Incomplete consumption (position 7/8): 77
-- Incomplete consumption (position 5/6): 74
-- Incomplete consumption (position 6/7): 60
-- Incomplete consumption (position 4/5): 58
+- Incomplete consumption (position 5/6): 71
+- Incomplete consumption (position 7/8): 69
+- Incomplete consumption (position 6/7): 62
+- Incomplete consumption (position 4/5): 61
 - Incomplete consumption (position 1/2): 39
-- Incomplete consumption (position 9/10): 37
-- Incomplete consumption (position 8/9): 25
-- Incomplete consumption (position 10/11): 22
+- Incomplete consumption (position 9/10): 38
+- Incomplete consumption (position 8/9): 33
+- Incomplete consumption (position 10/11): 29
 
 ## LRS Parser Failures
 
+### NULL Results (LRS returned NULL)
+
+1. **serialization_bd_db_roundtrip_integer.k**:
+```k
+_db _bd 42
+```
+After INTEGER (position 3/4)
+-------------------------------------------------
+2. **serialization_bd_ic_symbol.k**:
+```k
+_ic _bd `A
+```
+After SYMBOL (position 3/4)
+-------------------------------------------------
+3. **db_basic_integer.k**:
+```k
+_db _bd 42
+```
+After INTEGER (position 3/4)
+-------------------------------------------------
+4. **db_float.k**:
+```k
+_db _bd 3.14
+```
+After FLOAT (position 3/4)
+-------------------------------------------------
+5. **db_symbol.k**:
+```k
+_db _bd `test
+```
+After SYMBOL (position 3/4)
+-------------------------------------------------
+6. **db_int_vector.k**:
+```k
+_db _bd 1 2 3
+```
+After INTEGER (position 5/6)
+-------------------------------------------------
+7. **db_symbol_vector.k**:
+```k
+_db _bd `a`b`c
+```
+After SYMBOL (position 5/6)
+-------------------------------------------------
+8. **db_char_vector.k**:
+```k
+_db _bd "hello"
+```
+After CHARACTER_VECTOR (position 3/4)
+-------------------------------------------------
+9. **db_null.k**:
+```k
+_db _bd 0N
+```
+After INTEGER (position 3/4)
+-------------------------------------------------
+10. **db_character.k**:
+```k
+_db _bd "a"
+```
+After CHARACTER (position 3/4)
+-------------------------------------------------
+11. **db_float_simple.k**:
+```k
+_db _bd 1.5
+```
+After FLOAT (position 3/4)
+-------------------------------------------------
+12. **db_int_vector_long.k**:
+```k
+_db _bd 1 2 3 4 5
+```
+After INTEGER (position 7/8)
+-------------------------------------------------
+13. **db_float_vector.k**:
+```k
+_db _bd 1.1 2.2 3.3
+```
+After FLOAT (position 5/6)
+-------------------------------------------------
+14. **db_char_vector_sentence.k**:
+```k
+_db _bd "hello world"
+```
+After CHARACTER_VECTOR (position 3/4)
+-------------------------------------------------
+15. **db_symbol_simple.k**:
+```k
+_db _bd `hello
+```
+After SYMBOL (position 3/4)
+-------------------------------------------------
+16. **db_float_vector_longer.k**:
+```k
+_db _bd 1.1 2.2 3.3 4.4 5.5
+```
+After FLOAT (position 7/8)
+-------------------------------------------------
+17. **db_int_vector_longer.k**:
+```k
+_db _bd 1 2 3 4 5 6 7 8 9 10
+```
+After INTEGER (position 12/13)
+-------------------------------------------------
+18. **db_string_hello.k**:
+```k
+_db _bd "hello"
+```
+After CHARACTER_VECTOR (position 3/4)
+-------------------------------------------------
+19. **db_symbol_hello.k**:
+```k
+_db _bd `hello
+```
+After SYMBOL (position 3/4)
+-------------------------------------------------
+20. **db_symbol_vector_longer.k**:
+```k
+_db _bd `hello`world`test
+```
+After SYMBOL (position 5/6)
+-------------------------------------------------
 ### Incomplete Token Consumption (LRS returned result but didn't consume all tokens)
 
 **adverb_each_vector_minus.k**:
@@ -57,18 +179,6 @@ Incomplete consumption (position 14/15) (consumed 14/15)
 ```
 Incomplete consumption (position 5/6) (consumed 5/6)
 -------------------------------------------------
-**adverb_over_max.k**:
-```k
-|/ 1 3 2 5 4
-```
-Incomplete consumption (position 7/8) (consumed 7/8)
--------------------------------------------------
-**adverb_over_min.k**:
-```k
-&/ 5 3 4 1 2
-```
-Incomplete consumption (position 7/8) (consumed 7/8)
--------------------------------------------------
 **adverb_over_minus.k**:
 ```k
 -/ 10 2 3 1
@@ -86,6 +196,18 @@ Incomplete consumption (position 6/7) (consumed 6/7)
 +/ 1 2 3 4 5
 ```
 Incomplete consumption (position 7/8) (consumed 7/8)
+-------------------------------------------------
+**plus_over_empty.k**:
+```k
++/!0
+```
+Incomplete consumption (position 4/5) (consumed 4/5)
+-------------------------------------------------
+**multiply_over_empty.k**:
+```k
+*/!0
+```
+Incomplete consumption (position 4/5) (consumed 4/5)
 -------------------------------------------------
 **adverb_over_power.k**:
 ```k
@@ -110,18 +232,6 @@ Incomplete consumption (position 7/8) (consumed 7/8)
 %\ 100 2 5
 ```
 Incomplete consumption (position 5/6) (consumed 5/6)
--------------------------------------------------
-**adverb_scan_max.k**:
-```k
-|\ 1 3 2 5 4
-```
-Incomplete consumption (position 7/8) (consumed 7/8)
--------------------------------------------------
-**adverb_scan_min.k**:
-```k
-&\ 5 3 4 1 2
-```
-Incomplete consumption (position 7/8) (consumed 7/8)
 -------------------------------------------------
 **adverb_scan_minus.k**:
 ```k
@@ -315,12 +425,6 @@ Incomplete consumption (position 18/19) (consumed 18/19)
 ```
 Incomplete consumption (position 18/19) (consumed 18/19)
 -------------------------------------------------
-**dictionary_make_symbol_vector.k**:
-```k
-.,`a`b
-```
-Incomplete consumption (position 4/5) (consumed 4/5)
--------------------------------------------------
 **dictionary_multiple.k**:
 ```k
 .((`a;1);(`b;2))
@@ -333,18 +437,6 @@ Incomplete consumption (position 14/15) (consumed 14/15)
 ```
 Incomplete consumption (position 14/15) (consumed 14/15)
 -------------------------------------------------
-**dictionary_single.k**:
-```k
-.,(`a;`b)
-```
-Incomplete consumption (position 7/8) (consumed 7/8)
--------------------------------------------------
-**dictionary_type.k**:
-```k
-4:.((`a;1);(`b;2))
-```
-Incomplete consumption (position 15/16) (consumed 15/16)
--------------------------------------------------
 **dictionary_with_null_value.k**:
 ```k
 .((`a;1);(`b;_n);(`c;3))
@@ -356,12 +448,6 @@ Incomplete consumption (position 20/21) (consumed 20/21)
 d: .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer))));d[.]
 ```
 Incomplete consumption (position 88/94) (consumed 88/94)
--------------------------------------------------
-**test_minimal_dict.k**:
-```k
-d: .,(`a;1;.,(`x;2));d[.]
-```
-Incomplete consumption (position 17/23) (consumed 17/23)
 -------------------------------------------------
 **test_simple_period.k**:
 ```k
@@ -392,12 +478,6 @@ Incomplete consumption (position 29/30) (consumed 29/30)
 d: .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer))));d
 ```
 Incomplete consumption (position 88/91) (consumed 88/91)
--------------------------------------------------
-**test_simple_dict_create.k**:
-```k
-.,(`a;1)
-```
-Incomplete consumption (position 7/8) (consumed 7/8)
 -------------------------------------------------
 **test_specific_attr.k**:
 ```k
@@ -1683,6 +1763,12 @@ Incomplete consumption (position 4/5) (consumed 4/5)
 ```
 Incomplete consumption (position 2/3) (consumed 2/3)
 -------------------------------------------------
+**string_representation_mixed.k**:
+```k
+5:(1;2.5;"a")
+```
+Incomplete consumption (position 8/9) (consumed 8/9)
+-------------------------------------------------
 **string_representation_symbol.k**:
 ```k
 5:`symbol
@@ -2211,6 +2297,12 @@ Incomplete consumption (position 6/7) (consumed 6/7)
 ```
 Incomplete consumption (position 6/7) (consumed 6/7)
 -------------------------------------------------
+**type_operator_vector_mixed.k**:
+```k
+4: (1;2.0;"a")
+```
+Incomplete consumption (position 8/9) (consumed 8/9)
+-------------------------------------------------
 **type_operator_vector_symbol.k**:
 ```k
 4: "abc"
@@ -2679,6 +2771,12 @@ b:3
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
 -------------------------------------------------
+**format_braces_expressions.k**:
+```k
+{}$("a+b";"a*b";"a-b")
+```
+Incomplete consumption (position 10/11) (consumed 10/11)
+-------------------------------------------------
 **format_braces_nested_expr.k**:
 ```k
 x:10
@@ -2696,6 +2794,12 @@ Incomplete consumption (position 3/4) (consumed 3/4)
 z:3
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
+-------------------------------------------------
+**format_braces_nested_expr.k**:
+```k
+{}$("(x+y;x*y)";"(x-z;x%z)")
+```
+Incomplete consumption (position 8/9) (consumed 8/9)
 -------------------------------------------------
 **format_braces_complex.k**:
 ```k
@@ -2715,6 +2819,12 @@ c:3
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
 -------------------------------------------------
+**format_braces_complex.k**:
+```k
+{}$("a*b+c";"(a+b)*c";"a+b*c")
+```
+Incomplete consumption (position 10/11) (consumed 10/11)
+-------------------------------------------------
 **format_braces_string.k**:
 ```k
 name:"John"
@@ -2726,6 +2836,12 @@ Incomplete consumption (position 3/4) (consumed 3/4)
 age:25
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
+-------------------------------------------------
+**format_braces_string.k**:
+```k
+{}$("name";"\"is\"";"age";"\"years old\"")
+```
+Incomplete consumption (position 12/13) (consumed 12/13)
 -------------------------------------------------
 **format_braces_mixed_type.k**:
 ```k
@@ -2744,6 +2860,12 @@ Incomplete consumption (position 3/4) (consumed 3/4)
 b:3
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
+-------------------------------------------------
+**format_braces_simple.k**:
+```k
+{}$("a+b")
+```
+Incomplete consumption (position 6/7) (consumed 6/7)
 -------------------------------------------------
 **format_braces_arith.k**:
 ```k
@@ -2769,6 +2891,12 @@ c:3
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
 -------------------------------------------------
+**format_braces_nested_arith.k**:
+```k
+{}$("(a+b;a*b)";"(a-c;a%b)";"(b+c;b-c)")
+```
+Incomplete consumption (position 10/11) (consumed 10/11)
+-------------------------------------------------
 **format_braces_float.k**:
 ```k
 a:1.5
@@ -2786,6 +2914,12 @@ Incomplete consumption (position 3/4) (consumed 3/4)
 c:3.0
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
+-------------------------------------------------
+**format_braces_float.k**:
+```k
+{}$("a+b";"a*b";"a%b";"a-b")
+```
+Incomplete consumption (position 12/13) (consumed 12/13)
 -------------------------------------------------
 **format_braces_mixed_arith.k**:
 ```k
@@ -2805,6 +2939,12 @@ z:2.5
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
 -------------------------------------------------
+**format_braces_mixed_arith.k**:
+```k
+{}$("x+y*z";"(x+y)*z";"x-y+z")
+```
+Incomplete consumption (position 10/11) (consumed 10/11)
+-------------------------------------------------
 **format_braces_example.k**:
 ```k
 a:5
@@ -2816,6 +2956,12 @@ Incomplete consumption (position 3/4) (consumed 3/4)
 b:3
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
+-------------------------------------------------
+**format_braces_example.k**:
+```k
+{}$("a+b";"4+a")
+```
+Incomplete consumption (position 8/9) (consumed 8/9)
 -------------------------------------------------
 **format_braces_function_calls.k**:
 ```k
@@ -2835,6 +2981,12 @@ double:{[x] x*2}
 ```
 Incomplete consumption (position 10/11) (consumed 10/11)
 -------------------------------------------------
+**format_braces_function_calls.k**:
+```k
+{}$("sum[2;3]";"product[4;5]";"double[6]")
+```
+Incomplete consumption (position 10/11) (consumed 10/11)
+-------------------------------------------------
 **format_braces_nested_function_calls.k**:
 ```k
 sum:{[a;b] a+b}
@@ -2850,6 +3002,12 @@ Incomplete consumption (position 10/11) (consumed 10/11)
 **format_braces_nested_function_calls.k**:
 ```k
 square:{[x] x*x}
+```
+Incomplete consumption (position 10/11) (consumed 10/11)
+-------------------------------------------------
+**format_braces_nested_function_calls.k**:
+```k
+{}$("sum[2;3]";"double[4]";"square[5]")
 ```
 Incomplete consumption (position 10/11) (consumed 10/11)
 -------------------------------------------------
@@ -3447,6 +3605,24 @@ Incomplete consumption (position 7/8) (consumed 7/8)
 ```
 Incomplete consumption (position 17/18) (consumed 17/18)
 -------------------------------------------------
+**trap_dot_success.k**:
+```k
+a:3 2 1
+```
+Incomplete consumption (position 5/6) (consumed 5/6)
+-------------------------------------------------
+**amend_colon_direct.k**:
+```k
+(.) . (1 2 3; 1; :; 99)
+```
+Incomplete consumption (position 15/16) (consumed 15/16)
+-------------------------------------------------
+**amend_triadic_monadic.k**:
+```k
+(.) . (1 2 3; 1; -:)
+```
+Incomplete consumption (position 13/14) (consumed 13/14)
+-------------------------------------------------
 **conditional_bracket_test.k**:
 ```k
 :[1 < 2; "true"; "false"]
@@ -3579,6 +3755,12 @@ product:{[x;y] x*y}
 ```
 Incomplete consumption (position 12/13) (consumed 12/13)
 -------------------------------------------------
+**format_braces_complex_expressions.k**:
+```k
+{}$("sum[3;4]*2";"product[sum[2;3];4]";"sum[product[2;3];4]")
+```
+Incomplete consumption (position 10/11) (consumed 10/11)
+-------------------------------------------------
 **format_float_precision_complex_mixed.k**:
 ```k
 10.3$(1.234;2.567;3.890;4.123)
@@ -3632,6 +3814,18 @@ Incomplete consumption (position 3/4) (consumed 3/4)
 `$("abc";"de";"f")
 ```
 Incomplete consumption (position 9/10) (consumed 9/10)
+-------------------------------------------------
+**form_braces_string_new.k**:
+```k
+{}$"{y*z+x}"
+```
+Incomplete consumption (position 4/5) (consumed 4/5)
+-------------------------------------------------
+**form_braces_complex_new.k**:
+```k
+{}$("{y*z+x}";"{[t;a;v;s] s+(v*t)+.5*a*t*t}")
+```
+Incomplete consumption (position 8/9) (consumed 8/9)
 -------------------------------------------------
 **format_string_pad_left.k**:
 ```k
@@ -3699,6 +3893,12 @@ b:2.5
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
 -------------------------------------------------
+**isolated.k**:
+```k
+{}$("a%b")
+```
+Incomplete consumption (position 6/7) (consumed 6/7)
+-------------------------------------------------
 **modulo.k**:
 ```k
 a:1.5
@@ -3722,6 +3922,12 @@ Incomplete consumption (position 3/4) (consumed 3/4)
 $(1;2.5;"hello";`symbol)
 ```
 Incomplete consumption (position 10/11) (consumed 10/11)
+-------------------------------------------------
+**over_plus_empty.k**:
+```k
++/!0
+```
+Incomplete consumption (position 4/5) (consumed 4/5)
 -------------------------------------------------
 **simple_division.k**:
 ```k
@@ -3824,12 +4030,6 @@ Incomplete consumption (position 7/8) (consumed 7/8)
 .k
 ```
 Incomplete consumption (position 2/3) (consumed 2/3)
--------------------------------------------------
-**k_tree_flip_dictionary.k**:
-```k
-.+(`a`b`c;1 2 3)
-```
-Incomplete consumption (position 11/12) (consumed 11/12)
 -------------------------------------------------
 **k_tree_null_to_dict_conversion.k**:
 ```k
@@ -3945,11 +4145,11 @@ _bd `a`b`c
 ```
 Incomplete consumption (position 4/5) (consumed 4/5)
 -------------------------------------------------
-**serialization_bd_db_dictionary.k**:
+**serialization_bd_db_list.k**:
 ```k
-_bd .((`a;`"1");(`b;`"2"))
+_bd (1;2.5;"a")
 ```
-Incomplete consumption (position 15/16) (consumed 15/16)
+Incomplete consumption (position 8/9) (consumed 8/9)
 -------------------------------------------------
 **serialization_bd_db_anonymousfunction.k**:
 ```k
@@ -3957,53 +4157,11 @@ _bd {[x] x+1}
 ```
 Incomplete consumption (position 9/10) (consumed 9/10)
 -------------------------------------------------
-**serialization_bd_db_roundtrip_integer.k**:
+**serialization_bd_db_roundtrip_list.k**:
 ```k
-_db _bd 42
+_db _bd (1;2.5;"a")
 ```
-Incomplete consumption (position 3/4) (consumed 3/4)
--------------------------------------------------
-**serialization_bd_ic_symbol.k**:
-```k
-_ic _bd `A
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
--------------------------------------------------
-**db_basic_integer.k**:
-```k
-_db _bd 42
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
--------------------------------------------------
-**db_float.k**:
-```k
-_db _bd 3.14
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
--------------------------------------------------
-**db_symbol.k**:
-```k
-_db _bd `test
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
--------------------------------------------------
-**db_int_vector.k**:
-```k
-_db _bd 1 2 3
-```
-Incomplete consumption (position 5/6) (consumed 5/6)
--------------------------------------------------
-**db_symbol_vector.k**:
-```k
-_db _bd `a`b`c
-```
-Incomplete consumption (position 5/6) (consumed 5/6)
--------------------------------------------------
-**db_char_vector.k**:
-```k
-_db _bd "hello"
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
+Incomplete consumption (position 9/10) (consumed 9/10)
 -------------------------------------------------
 **db_list_simple.k**:
 ```k
@@ -4029,47 +4187,11 @@ _db _bd {x+y}
 ```
 Incomplete consumption (position 7/8) (consumed 7/8)
 -------------------------------------------------
-**db_null.k**:
-```k
-_db _bd 0N
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
--------------------------------------------------
 **db_empty_list.k**:
 ```k
 _db _bd ()
 ```
 Incomplete consumption (position 4/5) (consumed 4/5)
--------------------------------------------------
-**db_float_simple.k**:
-```k
-_db _bd 1.5
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
--------------------------------------------------
-**db_int_vector_long.k**:
-```k
-_db _bd 1 2 3 4 5
-```
-Incomplete consumption (position 7/8) (consumed 7/8)
--------------------------------------------------
-**db_float_vector.k**:
-```k
-_db _bd 1.1 2.2 3.3
-```
-Incomplete consumption (position 5/6) (consumed 5/6)
--------------------------------------------------
-**db_char_vector_sentence.k**:
-```k
-_db _bd "hello world"
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
--------------------------------------------------
-**db_symbol_simple.k**:
-```k
-_db _bd `hello
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
 -------------------------------------------------
 **db_list_longer.k**:
 ```k
@@ -4359,18 +4481,6 @@ _bd "\n\t\r"
 ```
 Incomplete consumption (position 2/3) (consumed 2/3)
 -------------------------------------------------
-**serialization_bd_integervector_edge_empty.k**:
-```k
-_bd !0
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
--------------------------------------------------
-**serialization_bd_integervector_edge_single.k**:
-```k
-_bd ,1
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
--------------------------------------------------
 **serialization_bd_integervector_edge_123.k**:
 ```k
 _bd 1 2 3
@@ -4389,11 +4499,11 @@ _bd ()
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
 -------------------------------------------------
-**serialization_bd_list_edge_null.k**:
+**serialization_bd_list_edge_mixed.k**:
 ```k
-_bd ,_n
+_bd (1;2.5;"a")
 ```
-Incomplete consumption (position 3/4) (consumed 3/4)
+Incomplete consumption (position 8/9) (consumed 8/9)
 -------------------------------------------------
 **serialization_bd_list_edge_complex.k**:
 ```k
@@ -4412,6 +4522,18 @@ Incomplete consumption (position 14/15) (consumed 14/15)
 _bd (.,(`a;1);.,(`b;2))
 ```
 Incomplete consumption (position 18/19) (consumed 18/19)
+-------------------------------------------------
+**serialization_bd_anonymousfunction_random_1.k**:
+```k
+_bd {[x] x+7;x$1;x<=2}
+```
+Incomplete consumption (position 18/19) (consumed 18/19)
+-------------------------------------------------
+**serialization_bd_anonymousfunction_random_2.k**:
+```k
+_bd {[] 0|4;0&3}
+```
+Incomplete consumption (position 12/13) (consumed 12/13)
 -------------------------------------------------
 **serialization_bd_anonymousfunction_random_3.k**:
 ```k
@@ -4485,18 +4607,6 @@ Incomplete consumption (position 1/2) (consumed 1/2)
 ```
 Incomplete consumption (position 4/5) (consumed 4/5)
 -------------------------------------------------
-**serialization_bd_dictionary_with_symbol_vectors.k**:
-```k
-_bd .((`colA;`a `b `c);(`colB;`dd `eee `ffff))
-```
-Incomplete consumption (position 19/20) (consumed 19/20)
--------------------------------------------------
-**serialization_bd_dictionary_with_vectors.k**:
-```k
-_bd .((`col1;1 2 3 4);(`col2;5 6 7 8))
-```
-Incomplete consumption (position 21/22) (consumed 21/22)
--------------------------------------------------
 **serialization_bd_list_with_explicit_nulls.k**:
 ```k
 _bd ((`a;`"1";);(`b;`"2";))
@@ -4533,41 +4643,11 @@ _db _bd .((`key1;`value1;);(`key2;42;);(`key3;3.14))
 ```
 Incomplete consumption (position 24/25) (consumed 24/25)
 -------------------------------------------------
-**db_float_vector_longer.k**:
-```k
-_db _bd 1.1 2.2 3.3 4.4 5.5
-```
-Incomplete consumption (position 7/8) (consumed 7/8)
--------------------------------------------------
-**db_int_vector_longer.k**:
-```k
-_db _bd 1 2 3 4 5 6 7 8 9 10
-```
-Incomplete consumption (position 12/13) (consumed 12/13)
--------------------------------------------------
 **db_nested_structures.k**:
 ```k
 _db _bd .((`a;(1;2;3));(`b;(4;5;6)))
 ```
 Incomplete consumption (position 28/29) (consumed 28/29)
--------------------------------------------------
-**db_string_hello.k**:
-```k
-_db _bd "hello"
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
--------------------------------------------------
-**db_symbol_hello.k**:
-```k
-_db _bd `hello
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
--------------------------------------------------
-**db_symbol_vector_longer.k**:
-```k
-_db _bd `hello`world`test
-```
-Incomplete consumption (position 5/6) (consumed 5/6)
 -------------------------------------------------
 **test_dict_larger.k**:
 ```k
@@ -4587,27 +4667,9 @@ Incomplete consumption (position 21/22) (consumed 21/22)
 ```
 Incomplete consumption (position 1/2) (consumed 1/2)
 -------------------------------------------------
-**type_empty_int_vector.k**:
-```k
-4: !0
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
--------------------------------------------------
 **bd_empty_list.k**:
 ```k
 _bd ()
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
--------------------------------------------------
-**bd_enlist_single_int.k**:
-```k
-_bd ,5
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
--------------------------------------------------
-**bd_enlist_single_string.k**:
-```k
-_bd ,"hello"
 ```
 Incomplete consumption (position 3/4) (consumed 3/4)
 -------------------------------------------------
@@ -4616,12 +4678,6 @@ Incomplete consumption (position 3/4) (consumed 3/4)
 _bd `hello`world`test
 ```
 Incomplete consumption (position 4/5) (consumed 4/5)
--------------------------------------------------
-**bd_enlist_single_symbol.k**:
-```k
-_bd ,`test
-```
-Incomplete consumption (position 3/4) (consumed 3/4)
 -------------------------------------------------
 **math_and_basic.k**:
 ```k
@@ -5144,6 +5200,12 @@ Incomplete consumption (position 4/5) (consumed 4/5)
 _parse "1 + 2"
 ```
 Incomplete consumption (position 2/3) (consumed 2/3)
+-------------------------------------------------
+**test_eval_verb.k**:
+```k
+_eval ("+", 1, 2)
+```
+Incomplete consumption (position 8/9) (consumed 8/9)
 -------------------------------------------------
 **test_parse_eval_together.k**:
 ```k

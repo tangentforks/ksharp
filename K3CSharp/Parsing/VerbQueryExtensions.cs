@@ -126,7 +126,7 @@ namespace K3CSharp.Parsing
                 return cached;
             
             var verb = VerbRegistry.GetVerb(verbName);
-            var result = verb?.IsSystemVariable == true && verb?.Type == VerbType.Function;
+            var result = verb?.Type == VerbType.SystemFunction || verb?.Type == VerbType.Function;
             
             isSystemFunctionCache[verbName] = result;
             return result;

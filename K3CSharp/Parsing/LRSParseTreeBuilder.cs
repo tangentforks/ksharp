@@ -130,20 +130,8 @@ namespace K3CSharp.Parsing
                 left ?? ASTNode.MakeLiteral(new NullValue()), 
                 right ?? ASTNode.MakeLiteral(new NullValue()));
             
-            // Add precedence metadata as a special attribute
-            var precedenceInfo = new Dictionary<string, object>
-            {
-                ["precedence"] = "dyadic",
-                ["associativity"] = "right",
-                ["operator"] = VerbRegistry.GetDyadicOperatorSymbol(opToken.Type)
-            };
-            
-            // Store precedence info in node value (for inspection)
-            if (node.Value is SymbolValue symbol)
-            {
-                var enhancedValue = $"{symbol.Value}[precedence:dyadic,associativity:right]";
-                node.Value = new SymbolValue(enhancedValue);
-            }
+            // Keep the operator symbol clean - evaluator expects plain symbols like ","
+            // Precedence metadata should not modify the node value
             
             return node;
         }

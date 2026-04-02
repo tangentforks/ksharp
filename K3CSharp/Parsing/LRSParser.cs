@@ -234,7 +234,24 @@ namespace K3CSharp.Parsing
                 return TryCreateImplicitVector(expressionTokens);
             }
             
-            // Try function call parsing
+            // Handle multi-token expressions using dyadic parser FIRST (right-to-left evaluation)
+            // This ensures expressions like "_bd ,5" are parsed as: _bd (monadic) applied to (,5 monadic enlist)
+            // rather than as a function call _bd(,5)
+            if (expressionTokens.Count > 2)
+            {
+                var dyadicResult = dyadicParser.ParseDyadicOperation(expressionTokens);
+                if (dyadicResult != null)
+                    return dyadicResult;
+            }
+            
+            // Handle monadic operations (2 tokens: verb + argument)
+            if (expressionTokens.Count == 2)
+            {
+                return monadicParser.ParseMonadicOperator(expressionTokens);
+            }
+            
+            // Try function call parsing only if dyadic/monadic parsing didn't handle it
+            // This handles explicit function calls like f[x] or lambda applications
             if (LRSFunctionParser.CouldBeFunction(firstTok.Type))
             {
                 var functionResult = functionParser.ParseFunctionCall(expressionTokens);
@@ -242,13 +259,7 @@ namespace K3CSharp.Parsing
                     return functionResult;
             }
             
-            // Handle monadic operations
-            if (expressionTokens.Count == 2)
-            {
-                return monadicParser.ParseMonadicOperator(expressionTokens);
-            }
-            
-            // Handle multi-token expressions using dyadic parser
+            // Fallback to dyadic parser for any remaining cases
             return dyadicParser.ParseDyadicOperation(expressionTokens);
         }
         
@@ -422,54 +433,25 @@ namespace K3CSharp.Parsing
                 }
             }
             
-            // Check for special functions (_parse, _eval, lambda definitions)
-            if (expressionTokens.Count >= 2)
-            {
-                var firstToken = expressionTokens[0];
-                Console.WriteLine($"[LRS DEBUG] Checking CouldBeFunction for {firstToken.Type}({firstToken.Lexeme}): {LRSFunctionParser.CouldBeFunction(firstToken.Type)}");
-                if (LRSFunctionParser.CouldBeFunction(firstToken.Type))
-                {
-                    return functionParser.ParseFunctionCall(expressionTokens);
-                }
-            }
-            
             // Check for disambiguating colon pattern: verb + colon + adverb
             // Pattern: #:' args (e.g., #:' (1 2;3 4) for count each)
             // This MUST be checked BEFORE the system operators check because
             // the verb token check would otherwise dispatch to the function parser
             if (expressionTokens.Count >= 3)
             {
-                Console.WriteLine($"[LRS DEBUG] Checking disambiguating pattern: token0={expressionTokens[0].Type}, token1={expressionTokens[1].Type}, token2={expressionTokens[2].Type}");
-                Console.WriteLine($"[LRS DEBUG] IsVerbToken(token0)={VerbRegistry.IsVerbToken(expressionTokens[0].Type)}");
-                
                 if (VerbRegistry.IsVerbToken(expressionTokens[0].Type) &&
                     expressionTokens[1].Type == TokenType.COLON &&
                     (expressionTokens[2].Type == TokenType.ADVERB_SLASH ||
                      expressionTokens[2].Type == TokenType.ADVERB_BACKSLASH ||
                      expressionTokens[2].Type == TokenType.ADVERB_TICK))
                 {
-                    Console.WriteLine($"[LRS DEBUG] Found disambiguating colon pattern: {expressionTokens[0].Lexeme}:{expressionTokens[2].Lexeme}");
                     return ParseGenericVerbAdverbWithColon(expressionTokens);
                 }
             }
             
-            // Check for system operators (like _gtime, _ltime, _getenv, etc.)
-            if (expressionTokens.Count >= 2)
-            {
-                var firstToken = expressionTokens[0];
-                if (PureLRSMode && ParserConfig.EnableDebugging)
-                {
-                    Console.WriteLine($"[PURE LRS DEBUG] Checking for verb token: {firstToken.Type}({firstToken.Lexeme}) - IsVerbToken={VerbRegistry.IsVerbToken(firstToken.Type)}");
-                }
-                if (VerbRegistry.IsVerbToken(firstToken.Type))
-                {
-                    if (PureLRSMode && ParserConfig.EnableDebugging)
-                    {
-                        Console.WriteLine($"[PURE LRS DEBUG] Found verb token, delegating to function parser");
-                    }
-                    return functionParser.ParseFunctionCall(expressionTokens);
-                }
-            }
+            // NOTE: Removed premature verb token check that was delegating to function parser
+            // Verbs should be handled naturally through right-to-left dyadic/monadic parsing
+            // This allows "_bd ,5" to parse correctly as: _bd (monadic) applied to (,5 monadic enlist)
             
             // Check for assignments (variable:value pattern)
             // Assignments can appear anywhere in the token list, not just at the start
@@ -1183,10 +1165,19 @@ namespace K3CSharp.Parsing
             {
                 // Parse the arguments as a sub-expression
                 int argPosition = 0;
-                var argParser = new LRSExpressionProcessor(argTokens, BuildParseTree);
+                var argParser = new LRSExpressionProcessor(argTokens, BuildParseTree, this);
                 argNode = argParser.ProcessExpression(ref argPosition);
+                Console.WriteLine($"[LRS DEBUG] ProcessExpression returned: {(argNode == null ? "NULL" : argNode.Type.ToString())}");
                 
-                // If we couldn't parse the arguments, try parsing them as a vector
+                // If we couldn.t parse the arguments, try using the LRSParser directly
+                // This handles complex expressions like (1 2 3;4 5 6) with semicolons
+                if (argNode == null && argTokens.Count > 0)
+                {
+                    argNode = BuildParseTreeFromTokens(argTokens);
+                }
+                
+                // Final fallback: create a vector from atomic tokens only
+                if (argNode == null && argTokens.Count > 0)
                 if (argNode == null && argTokens.Count > 0)
                 {
                     // Create a vector node from the argument tokens
@@ -1210,6 +1201,9 @@ namespace K3CSharp.Parsing
             var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
             adverbNode.Value = new SymbolValue(GetAdverbName(adverbToken.Type));
             adverbNode.Children.Add(verbNode);
+            
+            // Add dummy left argument (0) to match legacy parser AST structure
+            adverbNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(0)));
             
             if (argNode != null)
             {
@@ -1234,17 +1228,26 @@ namespace K3CSharp.Parsing
             var verbNode = CreateNodeFromToken(verbToken);
             
             // Parse arguments (everything after the adverb)
-            var argTokens = expressionTokens.Skip(3).ToList();
+            var argTokens = expressionTokens.Skip(3).ToList(); Console.WriteLine($"[LRS DEBUG] argTokens count={argTokens.Count}, types={string.Join(",", argTokens.Select(t => t.Type))}");
+                Console.WriteLine($"[LRS DEBUG] argTokens count={argTokens.Count}, first={argTokens[0].Type}, last={argTokens[argTokens.Count-1].Type}");
             ASTNode? argNode = null;
             
             if (argTokens.Count > 0)
             {
                 // Parse the arguments as a sub-expression
                 int argPosition = 0;
-                var argParser = new LRSExpressionProcessor(argTokens, BuildParseTree);
+                var argParser = new LRSExpressionProcessor(argTokens, BuildParseTree, this);
                 argNode = argParser.ProcessExpression(ref argPosition);
+                Console.WriteLine($"[LRS DEBUG] ProcessExpression returned: {(argNode == null ? "NULL" : argNode.Type.ToString())}");
                 
-                // If we couldn't parse the arguments, try parsing them as a vector
+                // If we couldn.t parse the arguments, try using the LRSParser directly
+                // This handles complex expressions like (1 2 3;4 5 6) with semicolons
+                if (argNode == null && argTokens.Count > 0)
+                {
+                    argNode = BuildParseTreeFromTokens(argTokens);
+                }
+                
+                // Final fallback: create a vector from atomic tokens only
                 if (argNode == null && argTokens.Count > 0)
                 {
                     // Create a vector node from the argument tokens
@@ -1268,6 +1271,9 @@ namespace K3CSharp.Parsing
             var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
             adverbNode.Value = new SymbolValue(GetAdverbName(adverbToken.Type));
             adverbNode.Children.Add(verbNode);
+            
+            // Add dummy left argument (0) to match legacy parser AST structure
+            adverbNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(0)));
             
             if (argNode != null)
             {
@@ -1409,6 +1415,9 @@ namespace K3CSharp.Parsing
             // Verb: _ci
             var verbNode = ASTNode.MakeLiteral(new SymbolValue("_ci"));
             children.Add(verbNode);
+            
+            // Add dummy left argument (0) to match legacy parser AST structure
+            children.Add(ASTNode.MakeLiteral(new IntegerValue(0)));
             
             // Arguments: 97 94 80
             for (int i = 2; i < expressionTokens.Count; i++)

@@ -107,7 +107,8 @@ namespace K3CSharp.Parsing
             {
                 // If the content has more than 1 expression, generate a list
                 // The evaluator will handle vector collapsing if all elements have the same type
-                return ASTNode.MakeVector(elements);
+                // For semicolon-separated expressions, create a Block (list), not a Vector
+                return new ASTNode(ASTNodeType.Block, null, elements);
             }
             else
             {
@@ -133,7 +134,8 @@ namespace K3CSharp.Parsing
             if (position < tokens.Count && tokens[position].Type == TokenType.RIGHT_BRACKET)
             {
                 position++; // Consume ']'
-                return ASTNode.MakeVector(elements);
+                // For semicolon-separated expressions, create a Block (list), not a Vector
+                return new ASTNode(ASTNodeType.Block, null, elements);
             }
             
             // Check if the first token is a semicolon (indicating a projection)
@@ -251,7 +253,8 @@ namespace K3CSharp.Parsing
                 return ASTNode.MakeVector(projectionElements);
             }
             
-            return ASTNode.MakeVector(elements);
+            // For semicolon-separated expressions, create a Block (list), not a Vector
+                return new ASTNode(ASTNodeType.Block, null, elements);
         }
         
         /// <summary>
@@ -385,6 +388,7 @@ namespace K3CSharp.Parsing
                 return ASTNode.MakeLiteral(new NullValue());
             }
             
+            Console.WriteLine($"[LRS DEBUG] ParseExpressionInGrouping returning: {(result == null ? "NULL" : result.Type.ToString())}");
             return result;
         }
         
@@ -403,6 +407,7 @@ namespace K3CSharp.Parsing
             if (result == null)
                 return ASTNode.MakeLiteral(new NullValue());
                 
+            Console.WriteLine($"[LRS DEBUG] ParseExpressionInGrouping returning: {(result == null ? "NULL" : result.Type.ToString())}");
             return result;
         }
 

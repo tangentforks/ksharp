@@ -12,11 +12,13 @@ namespace K3CSharp.Parsing
     {
         private readonly List<Token> tokens;
         private readonly bool buildParseTree;
+        private readonly LRSParser? parentParser;
         
-        public LRSExpressionProcessor(List<Token> tokens, bool buildParseTree = false)
+        public LRSExpressionProcessor(List<Token> tokens, bool buildParseTree = false, LRSParser? parentParser = null)
         {
             this.tokens = tokens;
             this.buildParseTree = buildParseTree;
+            this.parentParser = parentParser;
         }
 
         /// <summary>
@@ -117,7 +119,7 @@ namespace K3CSharp.Parsing
         /// </summary>
         private ASTNode? ProcessParenthesesExpression(ref int position)
         {
-            var groupingParser = new LRSGroupingParser(tokens, buildParseTree);
+            var groupingParser = new LRSGroupingParser(tokens, buildParseTree, parentParser);
             return groupingParser.ParseParentheses(ref position);
         }
 
@@ -126,7 +128,7 @@ namespace K3CSharp.Parsing
         /// </summary>
         private ASTNode? ProcessBracketExpression(ref int position)
         {
-            var groupingParser = new LRSGroupingParser(tokens, buildParseTree);
+            var groupingParser = new LRSGroupingParser(tokens, buildParseTree, parentParser);
             return groupingParser.ParseBrackets(ref position);
         }
 
@@ -135,7 +137,7 @@ namespace K3CSharp.Parsing
         /// </summary>
         private ASTNode? ProcessBraceExpression(ref int position)
         {
-            var groupingParser = new LRSGroupingParser(tokens, buildParseTree);
+            var groupingParser = new LRSGroupingParser(tokens, buildParseTree, parentParser);
             return groupingParser.ParseBraces(ref position);
         }
 

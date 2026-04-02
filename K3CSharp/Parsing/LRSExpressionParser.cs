@@ -19,10 +19,10 @@ namespace K3CSharp.Parsing
         /// <summary>
         /// Read tokens until we hit a separator (semicolon, newline, EOF, or closing delimiter)
         /// </summary>
-        public List<Token> ReadExpressionTokens(ref int position)
+        public List<Token> ReadExpressionTokens(ref int position, int initialParenLevel = 0, int initialBracketLevel = 0, int initialBraceLevel = 0)
         {
             var expressionTokens = new List<Token>();
-            var delimiterDepth = new DelimiterDepth();
+            var delimiterDepth = new DelimiterDepth(initialParenLevel, initialBracketLevel, initialBraceLevel);
             
             if (ParserConfig.EnableDebugging)
             {
@@ -87,6 +87,13 @@ namespace K3CSharp.Parsing
             public int ParenLevel { get; private set; }
             public int BracketLevel { get; private set; }
             public int BraceLevel { get; private set; }
+            
+            public DelimiterDepth(int initialParenLevel = 0, int initialBracketLevel = 0, int initialBraceLevel = 0)
+            {
+                ParenLevel = initialParenLevel;
+                BracketLevel = initialBracketLevel;
+                BraceLevel = initialBraceLevel;
+            }
             
             public bool IsAtBaseLevel() => ParenLevel == 0 && BracketLevel == 0 && BraceLevel == 0;
             public bool HasNegativeDepth() => ParenLevel < 0 || BracketLevel < 0 || BraceLevel < 0;

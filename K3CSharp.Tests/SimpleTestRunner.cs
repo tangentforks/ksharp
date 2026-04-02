@@ -37,6 +37,13 @@ namespace K3CSharp.Tests
                 PureLRSDiagnosticsRunner.RunDiagnostics();
                 return;
             }
+            
+            // Check for LRS bug analysis mode
+            if (args.Length > 0 && args[0] == "--analyze-lrs-bugs")
+            {
+                LRSBugAnalyzer.AnalyzeLRSBugs();
+                return;
+            }
 
             // Set PROMPT environment variable to "$P$G" for consistency with test expectations
 
@@ -543,6 +550,7 @@ namespace K3CSharp.Tests
                 // Join operator
 
                 ("join_operator.k", "3 5"),
+                ("test_comma_basic.k","1 2"),
 
                 
 
@@ -1599,6 +1607,12 @@ namespace K3CSharp.Tests
                 // More missing tests
 
                 ("amend_test_func_var.k", "11 2 3"),
+
+                // Error trap tests
+                ("trap_dot_add.k", "(0;4 6)"),
+                ("trap_dot_success.k", "(0;1 3)"),
+                ("amend_colon_direct.k", "1 99 3"),
+                ("amend_triadic_monadic.k", ""),
 
                 ("conditional_bracket_test.k", "\"true\""),
 

@@ -23,6 +23,37 @@ namespace K3CSharp
             var function = arguments[2];
             var value = arguments.Count > 3 ? arguments[3] : null;
 
+            // Check for direct value assignment (third argument is colon)
+            if (function is SymbolValue colonSym && colonSym.Value == ":")
+            {
+                if (arguments.Count == 4)
+                {
+                    // Tetradic: .[d; i; :; y] - amend with direct value
+                    // Replace the value at indices with the new value directly
+                    // Convert indices to a path
+                    var colonPath = new List<K3Value>();
+                    if (indices is VectorValue colonIndexVec)
+                    {
+                        colonPath.AddRange(colonIndexVec.Elements);
+                    }
+                    else if (indices is IntegerValue || indices is SymbolValue)
+                    {
+                        colonPath.Add(indices);
+                    }
+                    else if (indices is NullValue)
+                    {
+                        // Empty path - replace the entire value
+                        return value ?? data;
+                    }
+
+                    return SetValueAtPath(data, colonPath, 0, value ?? data);
+                }
+                else
+                {
+                    throw new Exception("Amend with colon requires 4 arguments: .[d; i; :; y]");
+                }
+            }
+
             // For dot-amend, indices form a path into nested structures
             // Convert indices to a path (list of index levels)
             var path = new List<K3Value>();
@@ -293,6 +324,84 @@ namespace K3CSharp
                     if (result.TryGetValue(sym, out var current))
                     {
                         var newVal = AmendAtPath(current.Value, path, pathIndex + 1, function, value);
+                        result[sym] = (newVal, current.Item2);
+                    }
+                    return new DictionaryValue(result);
+                }
+                else
+                {
+                    throw new Exception("Dictionary key must be a symbol");
+                }
+            }
+            else
+            {
+                // Atomic data at a non-terminal path position
+                throw new Exception("Cannot index into atomic value");
+            }
+        }
+
+        private K3Value SetValueAtPath(K3Value data, List<K3Value> path, int pathIndex, K3Value newValue)
+        {
+            if (pathIndex >= path.Count)
+            {
+                // End of path: return the new value
+                return newValue;
+            }
+
+            var index = path[pathIndex];
+
+            if (data is VectorValue list)
+            {
+                if (index is IntegerValue intIdx)
+                {
+                    int idx = (int)intIdx.Value;
+                    if (idx < 0 || idx >= list.Elements.Count)
+                    {
+                        throw new Exception($"Index {idx} out of bounds for list of length {list.Elements.Count}");
+                    }
+                    var result = new List<K3Value>(list.Elements);
+                    result[idx] = SetValueAtPath(result[idx], path, pathIndex + 1, newValue);
+                    return new VectorValue(result);
+                }
+                else if (index is VectorValue idxVec)
+                {
+                    // Multiple indices at this level
+                    var result = new List<K3Value>(list.Elements);
+                    foreach (var subIdx in idxVec.Elements)
+                    {
+                        if (subIdx is IntegerValue subIntIdx)
+                        {
+                            int idx = (int)subIntIdx.Value;
+                            if (idx < 0 || idx >= result.Count)
+                            {
+                                throw new Exception($"Index {idx} out of bounds for list of length {result.Count}");
+                            }
+                            result[idx] = SetValueAtPath(result[idx], path, pathIndex + 1, newValue);
+                        }
+                        else
+                        {
+                            throw new Exception("List indices must be integers");
+                        }
+                    }
+                    return new VectorValue(result);
+                }
+                else
+                {
+                    throw new Exception("List indices must be integers");
+                }
+            }
+            else if (data is DictionaryValue dict)
+            {
+                if (index is SymbolValue sym)
+                {
+                    var result = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue?)>(dict.Entries);
+                    if (!result.ContainsKey(sym))
+                    {
+                        throw new Exception($"Key '{sym.Value}' not found in dictionary");
+                    }
+                    if (result.TryGetValue(sym, out var current))
+                    {
+                        var newVal = SetValueAtPath(current.Value, path, pathIndex + 1, newValue);
                         result[sym] = (newVal, current.Item2);
                     }
                     return new DictionaryValue(result);

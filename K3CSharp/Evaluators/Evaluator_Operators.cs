@@ -1356,7 +1356,7 @@ namespace K3CSharp
             throw new Exception($"Cannot enumerate {a.Type}");
         }
 
-        private K3Value Enlist(K3Value a)
+        public K3Value Enlist(K3Value a)
         {
             var elements = new List<K3Value> { a };
             

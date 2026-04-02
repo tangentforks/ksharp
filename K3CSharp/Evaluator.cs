@@ -1862,6 +1862,12 @@ namespace K3CSharp
                         }
                         else if (arguments.Count == 2)
                         {
+                            // Check for trapped apply pattern: the second argument might be a vector like (f; args; :)
+                            if (arguments[1] is VectorValue vec && vec.Elements.Count == 3 && IsColon(vec.Elements[2]))
+                            {
+                                // Trapped apply: .[f; args; :] pattern detected in comma-enlisted form
+                                return TrappedApply(vec.Elements[0], vec.Elements[1]);
+                            }
                             // Dyadic . is APPLY - use DotApply
                             return DotApply(arguments[0], arguments[1]);
                         }
@@ -1913,7 +1919,8 @@ namespace K3CSharp
                     throw new Exception("= operator requires 1 or 2 arguments");
                 case ",":
                     if (arguments.Count >= 2) return Join(arguments[0], arguments[1]);
-                    throw new Exception(", operator requires 2 arguments");
+                    if (arguments.Count == 1) return Enlist(arguments[0]);
+                    throw new Exception(", operator requires 1 or 2 arguments");
                 // Mathematical functions
                 case "_abs":
                     if (arguments.Count == 1) return MathAbs(arguments[0]);
@@ -1964,6 +1971,13 @@ namespace K3CSharp
                 case "_val":
                     if (arguments.Count == 1) return ValFunction(arguments[0]);
                     throw new Exception("_val requires 1 argument");
+                // System functions
+                case "_eval":
+                    if (arguments.Count == 1) return Verbs.EvalVerbHandler.Evaluate(new[] { arguments[0] });
+                    throw new Exception("_eval requires 1 argument");
+                case "_parse":
+                    if (arguments.Count == 1) return Verbs.ParseVerbHandler.Parse(new[] { arguments[0] });
+                    throw new Exception("_parse requires 1 argument");
                 default:
                     // If not in the switch, it's not a built-in function
                     break;
@@ -2584,6 +2598,11 @@ namespace K3CSharp
                 }
                 if (amendArgs is VectorValue args && args.Elements.Count >= 3)
                 {
+                    // Check for trapped apply: .[f; args; :] pattern - colon is the LAST element (index 2)
+                    if (args.Elements.Count == 3 && IsColon(args.Elements[2]))
+                    {
+                        return TrappedApply(args.Elements[0], args.Elements[1]);
+                    }
                     return AmendFunction(args.Elements);
                 }
             }
@@ -3651,28 +3670,59 @@ namespace K3CSharp
             if (node.Value is not SymbolValue op) throw new Exception("Triadic operator must have a symbol value");
             if (node.Children.Count < 3) throw new Exception("Triadic operator requires 3 arguments");
             
-            var arg1 = Evaluate(node.Children[0]);
-            var arg2 = Evaluate(node.Children[1]);
-            var arg3 = Evaluate(node.Children[2]);
-            
             var opName = op.Value;
+            
+            // Check for trapped apply: .[f; args; :] - second child should be a colon token
+            if (opName == "." && IsColonNode(node.Children[1]))
+            {
+                var arg1 = Evaluate(node.Children[0]);
+                var arg3 = Evaluate(node.Children[2]);
+                return TrappedApply(arg1, arg3);
+            }
+            
+            var arg1Eval = Evaluate(node.Children[0]);
+            var arg2Eval = Evaluate(node.Children[1]);
+            var arg3Eval = Evaluate(node.Children[2]);
             
             // For now, dispatch to existing evaluators for triadic dot and at operations
             // According to the plan, these should dispatch to existing evaluators
             if (opName == ".")
             {
                 // Triadic dot: dispatch to existing evaluator
-                return EvaluateTriadicDot(arg1, arg2, arg3);
+                return EvaluateTriadicDot(arg1Eval, arg2Eval, arg3Eval);
             }
             else if (opName == "@")
             {
                 // Triadic at: dispatch to existing evaluator
-                return EvaluateTriadicAt(arg1, arg2, arg3);
+                return EvaluateTriadicAt(arg1Eval, arg2Eval, arg3Eval);
             }
             else
             {
                 throw new Exception($"Triadic operator '{opName}' not yet implemented");
             }
+        }
+        
+        /// <summary>
+        /// Check if an AST node represents a colon token (for trapped apply detection)
+        /// </summary>
+        private bool IsColonNode(ASTNode node)
+        {
+            // Debug output
+            Console.WriteLine($"[DEBUG] IsColonNode checking: Type={node.Type}, Value={node.Value?.GetType().Name}, ValueContent={node.Value}");
+            
+            // Check if the node is a literal colon symbol
+            if (node.Type == ASTNodeType.Literal && node.Value is SymbolValue sym)
+            {
+                Console.WriteLine($"[DEBUG] Found Literal with SymbolValue: '{sym.Value}'");
+                return sym.Value == ":";
+            }
+            // Also check if it's a single token that is a colon
+            if (node.Value is SymbolValue sym2 && sym2.Value == ":")
+            {
+                Console.WriteLine($"[DEBUG] Found SymbolValue colon directly");
+                return true;
+            }
+            return false;
         }
 
         private K3Value EvaluateTetradicOp(ASTNode node)
@@ -3718,7 +3768,17 @@ namespace K3CSharp
         // Placeholder methods for triadic operations (to be implemented)
         private K3Value EvaluateTriadicDot(K3Value arg1, K3Value arg2, K3Value arg3)
         {
-            throw new Exception("Triadic dot operation not yet implemented");
+            // Check for trapped apply: .[f; args; :]
+            if (IsColon(arg2))
+            {
+                // Trapped apply: behave like dyadic dot apply but never throw exceptions
+                return TrappedApply(arg1, arg3);
+            }
+            
+            // Otherwise, it's a triadic amend operation: .[d; i; f]
+            // where arg1=data, arg2=indices, arg3=function
+            var amendArgs = new List<K3Value> { arg1, arg2, arg3 };
+            return AmendFunction(amendArgs);
         }
 
         private K3Value EvaluateTriadicAt(K3Value arg1, K3Value arg2, K3Value arg3)
@@ -3822,7 +3882,7 @@ namespace K3CSharp
                     "&" => arguments.Length == 1 ? evaluator.Where(arguments[0]) : evaluator.EvaluateDyadicOperatorWithRegistry("&", arguments[0], arguments[1]),
                     "|" => arguments.Length == 1 ? evaluator.Reverse(arguments[0]) : evaluator.EvaluateDyadicOperatorWithRegistry("|", arguments[0], arguments[1]),
                     "~" => arguments.Length == 1 ? evaluator.Match(arguments[0], new IntegerValue(0)) : evaluator.EvaluateDyadicOperatorWithRegistry("~", arguments[0], arguments[1]),
-                    "," => evaluator.Join(arguments[0], arguments[1]),
+                    "," => arguments.Length == 1 ? evaluator.Enlist(arguments[0]) : evaluator.Join(arguments[0], arguments[1]),
                     "." => evaluator.DotApply(arguments[0], arguments[1]),
                     "@" => evaluator.AtIndex(arguments[0], arguments[1]),
                     "#" => arguments.Length == 1 ? evaluator.Count(arguments[0]) : evaluator.EvaluateDyadicOperatorWithRegistry("#", arguments[0], arguments[1]),
