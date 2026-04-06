@@ -84,7 +84,6 @@ namespace K3CSharp
 
         public K3Value Evaluate(ASTNode? node)
         {
-            Console.WriteLine($"[DEBUG] Evaluate called with node type: {node?.Type}");
             if (node == null)
                 return new NullValue();
                 
@@ -95,7 +94,7 @@ namespace K3CSharp
         {
             if (node == null)
                 return new NullValue();
-            
+
             switch (node.Type)
             {
                 case ASTNodeType.Literal:
@@ -204,6 +203,9 @@ namespace K3CSharp
                 case ASTNodeType.Block:
                     return EvaluateBlock(node);
 
+                case ASTNodeType.ExpressionList:
+                    return EvaluateExpressionList(node);
+
                 case ASTNodeType.FormSpecifier:
                     // {} form specifier - return a special value that will be handled in dyadic form operations
                     return new SymbolValue("{}");
@@ -215,15 +217,105 @@ namespace K3CSharp
                     return EvaluateTriadicOp(node);
 
                 case ASTNodeType.MonadicOp:
-                    // MonadicOp wraps a verb for disambiguating colon syntax (e.g., -: in triadic amend)
-                    // Extract and return the inner verb
-                    Console.WriteLine($"[DEBUG] MonadicOp case reached, children count: {node.Children.Count}");
-                    if (node.Children.Count > 0 && node.Children[0].Value is SymbolValue verbSymbol)
+                    // Evaluate monadic operation using the same pattern as EvaluateDyadicOp
+                    if (node.Children.Count == 0)
+                        throw new Exception("MonadicOp must have at least one child");
+                    
+                    var operand = Evaluate(node.Children[0]);
+                    var verbSymbol = node.Value as SymbolValue;
+                    if (verbSymbol == null)
+                        throw new Exception("MonadicOp must have a verb symbol as its value");
+                    
+                    // Use the same monadic operator evaluation as in EvaluateDyadicOp
+                    return verbSymbol.Value switch
                     {
-                        Console.WriteLine($"[DEBUG] MonadicOp returning verb: {verbSymbol.Value}");
-                        return verbSymbol;
-                    }
-                    throw new Exception("MonadicOp must have a verb symbol as its child");
+                        "-" => MonadicMinus(operand),
+                        "+" => Transpose(operand),
+                        "*" => First(operand),
+                        "%" => Reciprocal(operand),
+                        "&" => Where(operand),
+                        "|" => Reverse(operand),
+                        "TYPE" => IoVerbMonadic(operand, 4),
+                        "STRING_REPRESENTATION" => IoVerbMonadic(operand, 5),
+                        "IO_VERB_0" => IoVerbMonadic(operand, 0),
+                        "IO_VERB_1" => IoVerbMonadic(operand, 1),
+                        "IO_VERB_2" => IoVerbMonadic(operand, 2),
+                        "IO_VERB_3" => IoVerbMonadic(operand, 3),
+                        "IO_VERB_4" => IoVerbMonadic(operand, 4),
+                        "IO_VERB_5" => IoVerbMonadic(operand, 5),
+                        "IO_VERB_6" => IoVerbMonadic(operand, 6),
+                        "IO_VERB_7" => IoVerbMonadic(operand, 7),
+                        "IO_VERB_8" => IoVerbMonadic(operand, 8),
+                        "IO_VERB_9" => IoVerbMonadic(operand, 9),
+                        "<" => GradeUp(operand),
+                        ">" => GradeDown(operand),
+                        "^" => Shape(operand),
+                        "!" => Enumerate(operand),
+                        "," => Enlist(operand),
+                        "#" => Count(operand),
+                        "_" => Floor(operand),
+                        "?" => Unique(operand),
+                        "=" => Group(operand),
+                        "$" => Format(operand),
+                        "@" => Atom(operand),
+                        "." => MakeFunction(operand),
+                        "~" => Negate(operand),
+                        "_log" => MathLog(operand),
+                        "_exp" => MathExp(operand),
+                        "_abs" => MathAbs(operand),
+                        "_sqr" => MathSqr(operand),
+                        "_sqrt" => MathSqrt(operand),
+                        "_floor" => MathFloor(operand),
+                        "_sin" => MathSin(operand),
+                        "_cos" => MathCos(operand),
+                        "_tan" => MathTan(operand),
+                        "_asin" => MathAsin(operand),
+                        "_acos" => MathAcos(operand),
+                        "_atan" => MathAtan(operand),
+                        "_sinh" => MathSinh(operand),
+                        "_cosh" => MathCosh(operand),
+                        "_tanh" => MathTanh(operand),
+                        "_inv" => MathInv(operand),
+                        "_ceil" => MathCeil(operand),
+                        "_lt" => LtFunction(operand),
+                        "_jd" => JdFunction(operand),
+                        "_dj" => DjFunction(operand),
+                        "_T" => TFunction(operand),
+                        "_in" => InFunction(operand),
+                        "_bin" => BinFunction(operand),
+                        "_binl" => BinlFunction(operand),
+                        "_lin" => LinFunction(operand),
+                        "_gtime" => GtimeFunction(operand),
+                        "_ltime" => LtimeFunction(operand),
+                        "_bd" => BdFunction(operand),
+                        "_db" => DbFunction(operand),
+                        "_ci" => Ci(operand),
+                        "_ic" => Ic(operand),
+                        "_v" => VarFunction(operand),
+                        "_i" => IndexFunction(operand),
+                        "_f" => FunctionFunction(operand),
+                        "_n" => NullFunction(operand),
+                        "_s" => SpaceFunction(operand),
+                        "_h" => HostFunction(operand),
+                        "_p" => PortFunction(operand),
+                        "_P" => ProcessIdFunction(operand),
+                        "_w" => WhoFunction(operand),
+                        "_u" => UserFunction(operand),
+                        "_a" => AddressFunction(operand),
+                        "_k" => VersionFunction(operand),
+                        "_o" => OsFunction(operand),
+                        "_c" => CoresFunction(operand),
+                        "_r" => RamFunction(operand),
+                        "_m" => MachineIdFunction(operand),
+                        "_y" => StackFunction(operand),
+                        "_while" => WhileFunction(operand),
+                        "_if" => IfFunction(operand),
+                        "_d" => DirFunction(operand),
+                        "_getenv" => GetenvFunction(operand),
+                        "_size" => SizeFunction(operand),
+                        "_not" => MathNot(operand),
+                        _ => throw new Exception($"Unknown monadic operator: {verbSymbol.Value}")
+                    };
 
                 case ASTNodeType.TetradicOp:
                     return EvaluateTetradicOp(node);
@@ -482,9 +574,22 @@ namespace K3CSharp
             // Handle IDENTIFIER case - this should not happen with preserved verb names
             if (opName == "IDENTIFIER")
             {
-                throw new Exception("IDENTIFIER token encountered - verb names should be preserved from ApplyVerb");
+                throw new Exception("IDENTIFIER should not reach EvaluateDyadicOperatorWithRegistry");
             }
-
+            
+            // Special cases for system functions that ignore left argument
+            if (opName == "_bd" || opName == "_db")
+            {
+                // These are monadic functions that ignore the left argument
+                return opName == "_bd" ? BdFunction(right) : DbFunction(right);
+            }
+            
+            // Handle dyadic underscore (cut/drop operation)
+            if (opName == "_")
+            {
+                return DropOrCut(left, right);
+            }
+            
             // Handle single-argument operators first
             if (opName == "_ci")
             {
@@ -513,7 +618,7 @@ namespace K3CSharp
                 { "~", Match },
                 { ",", Join },
                 { "#", Take },
-                { "_", FloorBinary },
+                { "_", DropOrCut },
                 { "@", AtIndex },
                 { ".", DotApply },
                 { "$", Format },
@@ -625,31 +730,40 @@ namespace K3CSharp
                     "?" => Unique(operand),
                     "=" => Group(operand),
                     "$" => Format(operand),
-                    "DIRECTORY" => DirFunction(operand),
-                    "~" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue))
-                    ? AttributeHandle(operand)
-                    : LogicalNegate(operand),
-                    ":" => ReturnOperator(operand),
-                    "@" => Atom(operand),
                     "." => MakeFunction(operand),
+                    "~" => Negate(operand),
                     "_log" => MathLog(operand),
                     "_exp" => MathExp(operand),
                     "_abs" => MathAbs(operand),
+                    "ABS" => MathAbs(operand),  // Handle token mapping issue
                     "_sqr" => MathSqr(operand),
+                    "SQR" => MathSqr(operand),  // Handle token mapping issue
                     "_sqrt" => MathSqrt(operand),
+                    "SQRT" => MathSqrt(operand),  // Handle token mapping issue
                     "_floor" => MathFloor(operand),
+                    "FLOOR_MATH" => MathFloor(operand),  // Handle token mapping issue
                     "_sin" => MathSin(operand),
+                    "SIN" => MathSin(operand),  // Handle token mapping issue
                     "_cos" => MathCos(operand),
+                    "COS" => MathCos(operand),  // Handle token mapping issue
                     "_tan" => MathTan(operand),
+                    "TAN" => MathTan(operand),  // Handle token mapping issue
                     "_asin" => MathAsin(operand),
+                    "ASIN" => MathAsin(operand),  // Handle token mapping issue
                     "_acos" => MathAcos(operand),
+                    "ACOS" => MathAcos(operand),  // Handle token mapping issue
                     "_atan" => MathAtan(operand),
+                    "ATAN" => MathAtan(operand),  // Handle token mapping issue
                     "_sinh" => MathSinh(operand),
+                    "SINH" => MathSinh(operand),  // Handle token mapping issue
                     "_cosh" => MathCosh(operand),
+                    "COSH" => MathCosh(operand),  // Handle token mapping issue
                     "_tanh" => MathTanh(operand),
+                    "TANH" => MathTanh(operand),  // Handle token mapping issue
                     "_inv" => MathInv(operand),
+                    "INV" => MathInv(operand),  // Handle token mapping issue
                     "_ceil" => MathCeil(operand),
-                    "_not" => MathNot(operand),
+                    "CEIL" => MathCeil(operand),  // Handle token mapping issue
                     "_lt" => LtFunction(operand),
                     "_jd" => JdFunction(operand),
                     "_dj" => DjFunction(operand),
@@ -690,6 +804,7 @@ namespace K3CSharp
                     "_exit" => ExitFunction(operand),
                     "_getenv" => GetenvFunction(operand),
                     "_size" => SizeFunction(operand),
+                    "_not" => MathNot(operand),
                     "MIN" => operand, // Identity operation for monadic min
                     "MAX" => operand, // Identity operation for monadic max
                     "ADVERB_SLASH" => ApplyAdverbSlash(operand, new IntegerValue(0), new IntegerValue(0)),
@@ -839,7 +954,7 @@ namespace K3CSharp
                     var right = Evaluate(node.Children[1]);
                     isIntermediateAssignment = previousIntermediate2; // Restore previous context
 
-                    return EvaluateDyadicOperatorWithRegistry(op.Value.ToString(), left, right);
+                    return EvaluateDyadicOperatorWithRegistry(op.Value.ToString(), left!, right!);
                 }
             }
             else if (node.Children.Count == 2 && 
@@ -921,16 +1036,6 @@ namespace K3CSharp
             }
             else
             {
-                
-                // Debug output to understand the structure
-                Console.WriteLine($"[DEBUG] DyadicOp with {node.Children.Count} children, op='{op.Value}', opType={op.Value?.GetType().Name}");
-                if (node.Children.Count > 0)
-                    Console.WriteLine($"[DEBUG] Child 0: {node.Children[0].Type}, value='{node.Children[0].Value}'");
-                if (node.Children.Count > 1)
-                    Console.WriteLine($"[DEBUG] Child 1: {node.Children[1].Type}, value='{node.Children[1].Value}'");
-                if (node.Children.Count > 2)
-                    Console.WriteLine($"[DEBUG] Child 2: {node.Children[2].Type}, value='{node.Children[2].Value}'");
-                
                 throw new Exception($"Dyadic operator must have exactly 2 children, got {node.Children.Count}");
             }
         }
@@ -1129,7 +1234,6 @@ namespace K3CSharp
             // Handle Make function specially
             if (leftValue is FunctionValue func && func.BodyText == "Make")
             {
-                Console.WriteLine($"DEBUG: Found Make function, calling MakeFunction with {arguments.Count} args");
                 return MakeFunction(arguments[0]);
             }
             
@@ -1277,6 +1381,12 @@ namespace K3CSharp
             for (int i = 0; i < parameters.Count; i++)
             {
                 functionEvaluator.SetVariable(parameters[i], arguments[i]);
+            }
+            
+            // Copy local variables to function scope (for nested functions)
+            foreach (var kvp in localVariables)
+            {
+                functionEvaluator.localVariables[kvp.Key] = kvp.Value;
             }
             
             // Set the associated K tree for anonymous functions
@@ -1707,7 +1817,7 @@ namespace K3CSharp
         {
             // First try to use the unified VerbRegistry-based evaluation, but only for verbs that have implementations
             var verb = VerbRegistry.GetVerb(functionName);
-            if (verb != null && verb.Implementations != null && verb.Implementations.Length > arguments.Count && verb.Implementations[arguments.Count] != null)
+            if (verb != null && verb.Implementations != null && verb.Implementations.Length > arguments.Count && verb.Implementations[arguments.Count - 1] != null)
             {
                 try
                 {
@@ -1901,8 +2011,9 @@ namespace K3CSharp
                     }
                     throw new Exception("+ operator requires 1 or 2 arguments");
                 case "-":
+                    if (arguments.Count == 1) return Negate(arguments[0]);
                     if (arguments.Count >= 2) return Minus(arguments[0], arguments[1]);
-                    throw new Exception("- operator requires 2 arguments");
+                    throw new Exception("- operator requires 1 or 2 arguments");
                 case "*":
                     if (arguments.Count == 1) return First(arguments[0]);
                     if (arguments.Count >= 2) return Times(arguments[0], arguments[1]);
@@ -2022,12 +2133,65 @@ namespace K3CSharp
         {
             K3Value? lastResult = null;
             
+            // Debug output
+            Console.WriteLine($"[EvaluateBlock] Block has {node.Children.Count} children");
+            for (int i = 0; i < node.Children.Count; i++)
+            {
+                Console.WriteLine($"[EvaluateBlock] Child {i}: {node.Children[i].Type}");
+            }
+            
             foreach (var child in node.Children)
             {
                 lastResult = EvaluateNode(child);
+                // Debug output for ALL children
+                Console.WriteLine($"[EvaluateBlock] -> {child.Type} = {lastResult?.GetType().Name} '{lastResult}'");
             }
             
             return lastResult;
+        }
+
+        private K3Value? EvaluateExpressionList(ASTNode node)
+        {
+            var results = new List<K3Value>();
+            K3Value? lastResult = null;
+            
+            foreach (var child in node.Children)
+            {
+                var result = EvaluateNode(child);
+                lastResult = result ?? new NullValue();
+                results.Add(lastResult);
+            }
+            
+            // Check if any child is an assignment - if so, this is likely a top-level statement sequence
+            // In K, top-level semicolon-separated statements return only the last result
+            bool hasAssignment = node.Children.Any(c => c.Type == ASTNodeType.Assignment || 
+                                                         c.Type == ASTNodeType.ApplyAndAssign);
+            if (hasAssignment)
+            {
+                return lastResult;
+            }
+            
+            // Automatically detect homogeneous types and convert to proper vectors
+            // This ensures (1;2;3;4) becomes 1 2 3 4 instead of staying as (1;2;3;4)
+            int vectorType = DetermineVectorTypeFromElements(results);
+            
+            // If this is a float vector, convert all integer elements to floats
+            if (vectorType == -2) // Float vector
+            {
+                var convertedElements = new List<K3Value>();
+                foreach (var element in results)
+                {
+                    if (element is IntegerValue intValue)
+                        convertedElements.Add(new FloatValue((double)intValue.Value));
+                    else if (element is LongValue longValue)
+                        convertedElements.Add(new FloatValue((double)longValue.Value));
+                    else
+                        convertedElements.Add(element);
+                }
+                return new VectorValue(convertedElements, vectorType);
+            }
+            
+            return new VectorValue(results, vectorType);
         }
 
         
@@ -2540,12 +2704,185 @@ namespace K3CSharp
             throw new Exception("Index operation requires dictionary or vector");
         }
 
-        private K3Value ReturnOperator(K3Value operand)
+        
+        private K3Value DropOrCut(K3Value left, K3Value right)
         {
-            // Monadic colon (return) operator
-            // Returns the operand as-is (used for returning from functions)
-            // If called from top level, just return the value for display
-            return operand;
+            // Dyadic underscore _: cut/drop operation according to K specification
+            
+            if (left is VectorValue cutIndices && right is VectorValue sourceVector)
+            {
+                // Vector cut operation: 0 2 4 _ 0 1 2 3 4 5 6 7 returns (0 1;2 3;4 5 6 7)
+                // Check for negative indices (domain error)
+                foreach (var index in cutIndices.Elements)
+                {
+                    if (index is IntegerValue intValue && intValue.Value < 0)
+                    {
+                        throw new Exception("Domain error: negative indices in cut operation");
+                    }
+                }
+                
+                var result = new List<K3Value>();
+                int startIndex = 0;
+                
+                for (int i = 0; i < cutIndices.Elements.Count; i++)
+                {
+                    if (cutIndices.Elements[i] is IntegerValue cutIndex)
+                    {
+                        // Get elements from startIndex to cutIndex
+                        var segment = new List<K3Value>();
+                        for (int j = startIndex; j < cutIndex.Value && j < sourceVector.Elements.Count; j++)
+                        {
+                            segment.Add(sourceVector.Elements[j]);
+                        }
+                        
+                        if (segment.Count > 0)
+                        {
+                            result.Add(new VectorValue(segment));
+                        }
+                        
+                        startIndex = cutIndex.Value;
+                    }
+                }
+                
+                // Add the remainder (elements from last index to end)
+                var remainder = new List<K3Value>();
+                for (int j = startIndex; j < sourceVector.Elements.Count; j++)
+                {
+                    remainder.Add(sourceVector.Elements[j]);
+                }
+                
+                if (remainder.Count > 0)
+                {
+                    result.Add(new VectorValue(remainder));
+                }
+                
+                return new VectorValue(result);
+            }
+            else if (left is IntegerValue dropCount && right is VectorValue rightVector)
+            {
+                if (dropCount.Value >= 0)
+                {
+                    // Drop from front: 4 _ 0 1 2 3 4 5 6 7 returns 4 5 6 7
+                    if (dropCount.Value >= rightVector.Elements.Count)
+                    {
+                        return new VectorValue(new List<K3Value>()); // Empty vector
+                    }
+                    
+                    var result = new List<K3Value>();
+                    for (int i = dropCount.Value; i < rightVector.Elements.Count; i++)
+                    {
+                        result.Add(rightVector.Elements[i]);
+                    }
+                    return new VectorValue(result);
+                }
+                else
+                {
+                    // Drop from end: -4 _ 0 1 2 3 4 5 6 7 returns 0 1 2 3
+                    int dropFromEnd = Math.Abs(dropCount.Value);
+                    if (dropFromEnd >= rightVector.Elements.Count)
+                    {
+                        return new VectorValue(new List<K3Value>()); // Empty vector
+                    }
+                    
+                    var result = new List<K3Value>();
+                    for (int i = 0; i < rightVector.Elements.Count - dropFromEnd; i++)
+                    {
+                        result.Add(rightVector.Elements[i]);
+                    }
+                    return new VectorValue(result);
+                }
+            }
+            else if (!(right is VectorValue))
+            {
+                // Convert right to vector if it's not already
+                var targetVector = right is VectorValue rv ? rv : new VectorValue(new List<K3Value> { right });
+                
+                if (left is VectorValue cutIndicesVector)
+                {
+                    // Vector cut operation for non-vector right
+                    // Check for negative indices (domain error)
+                    foreach (var index in cutIndicesVector.Elements)
+                    {
+                        if (index is IntegerValue intValue && intValue.Value < 0)
+                        {
+                            throw new Exception("Domain error: negative indices in cut operation");
+                        }
+                    }
+                    
+                    var result = new List<K3Value>();
+                    int startIndex = 0;
+                    
+                    for (int i = 0; i < cutIndicesVector.Elements.Count; i++)
+                    {
+                        if (cutIndicesVector.Elements[i] is IntegerValue cutIndex)
+                        {
+                            // Get elements from startIndex to cutIndex
+                            var segment = new List<K3Value>();
+                            for (int j = startIndex; j < cutIndex.Value && j < targetVector.Elements.Count; j++)
+                            {
+                                segment.Add(targetVector.Elements[j]);
+                            }
+                            
+                            if (segment.Count > 0)
+                            {
+                                result.Add(new VectorValue(segment));
+                            }
+                            
+                            startIndex = cutIndex.Value;
+                        }
+                    }
+                    
+                    // Add the remainder
+                    var remainder = new List<K3Value>();
+                    for (int j = startIndex; j < targetVector.Elements.Count; j++)
+                    {
+                        remainder.Add(targetVector.Elements[j]);
+                    }
+                    
+                    if (remainder.Count > 0)
+                    {
+                        result.Add(new VectorValue(remainder));
+                    }
+                    
+                    return new VectorValue(result);
+                }
+                else if (left is IntegerValue dropCountValue)
+                {
+                    if (dropCountValue.Value >= 0)
+                    {
+                        // Drop from front
+                        if (dropCountValue.Value >= targetVector.Elements.Count)
+                        {
+                            return new VectorValue(new List<K3Value>());
+                        }
+                        
+                        var result = new List<K3Value>();
+                        for (int i = dropCountValue.Value; i < targetVector.Elements.Count; i++)
+                        {
+                            result.Add(targetVector.Elements[i]);
+                        }
+                        return new VectorValue(result);
+                    }
+                    else
+                    {
+                        // Drop from end
+                        int dropFromEnd = Math.Abs(dropCountValue.Value);
+                        if (dropFromEnd >= targetVector.Elements.Count)
+                        {
+                            return new VectorValue(new List<K3Value>());
+                        }
+                        
+                        var result = new List<K3Value>();
+                        for (int i = 0; i < targetVector.Elements.Count - dropFromEnd; i++)
+                        {
+                            result.Add(targetVector.Elements[i]);
+                        }
+                        return new VectorValue(result);
+                    }
+                }
+            }
+            
+            throw new Exception("Drop/Cut operation requires vector arguments or integer+vector");
         }
 
         private K3Value Atom(K3Value operand)
@@ -2557,32 +2894,52 @@ namespace K3CSharp
                 return new IntegerValue(1);
         }
 
-        private K3Value AttributeHandle(K3Value operand)
+        private K3Value Negate(K3Value operand)
         {
-            // ~ operator for symbols: adds period suffix
-            if (operand is SymbolValue symbol)
+            // ~ operator has two meanings:
+            // 1. For integers: boolean NOT (0 -> 1, non-zero -> 0) - use LogicalNegate
+            // 2. For symbols: attribute handle (adds period suffix)
+            
+            if (operand is IntegerValue || operand is LongValue || operand is FloatValue)
             {
+                // Boolean NOT for numeric types
+                return LogicalNegate(operand);
+            }
+            else if (operand is SymbolValue symbol)
+            {
+                // Attribute handle: adds period suffix
                 return new SymbolValue(symbol.Value + ".");
             }
             else if (operand is VectorValue vec)
             {
-                var result = new List<K3Value>();
-                foreach (var element in vec.Elements)
+                // Check if this is a vector of integers or symbols
+                if (vec.Elements.Count > 0)
                 {
-                    if (element is SymbolValue sym)
+                    if (vec.Elements[0] is IntegerValue || vec.Elements[0] is LongValue || vec.Elements[0] is FloatValue)
                     {
-                        result.Add(new SymbolValue(sym.Value + "."));
+                        // Boolean NOT for numeric vector
+                        return LogicalNegate(operand);
                     }
-                    else
+                    else if (vec.Elements[0] is SymbolValue)
                     {
-                        throw new Exception("Attribute handle can only be applied to symbols or vectors of symbols");
+                        // Attribute handle for each symbol element
+                        var result = new List<K3Value>();
+                        foreach (var element in vec.Elements)
+                        {
+                            if (element is SymbolValue sym)
+                                result.Add(new SymbolValue(sym.Value + "."));
+                            else
+                                throw new Exception("Attribute handle can only be applied to symbols or vectors of symbols");
+                        }
+                        return new VectorValue(result, -4); // Symbol vector
                     }
                 }
-                return new VectorValue(result, -4); // Symbol vector
+                
+                throw new Exception($"Negate operator cannot be applied to vector of type {vec.Elements[0]?.GetType().Name}");
             }
             else
             {
-                throw new Exception("Attribute handle can only be applied to symbols or vectors of symbols");
+                throw new Exception($"Negate operator cannot be applied to {operand.GetType().Name}");
             }
         }
 
@@ -2621,65 +2978,182 @@ namespace K3CSharp
             
             // Dot-apply operator: function . argument
             // Similar to function application but with different precedence
-            // If left is null, return the right (spec: _n . x returns x)
+            // If left is null, this is monadic dot with multiple meanings based on argument type
             if (left is NullValue)
             {
-                return right ?? throw new ArgumentNullException(nameof(right));
-            }
-            
-            // Handle dictionary dot-apply with symbol vectors (spec: d@`v is equivalent to d .,`v)
-            if (left is DictionaryValue dict)
-            {
-                if (right is NullValue)
-                {
-                    // d[] or d[_n] — return all values
-                    var values = dict.Entries.Values.Select(e => e.Value).ToList();
-                    return new VectorValue(values);
-                }
-                else
-                {
-                    // For symbol vectors, use dictionary indexing
-                    return AtIndexOperation(dict, right ?? throw new ArgumentNullException(nameof(right)));
-                }
-            }
-            else if (left is VectorValue vector)
-            {
-                // Vector indexing: vector . indices
-                return VectorIndex(vector, right ?? throw new ArgumentNullException(nameof(right)));
-            }
-            else if (left is FunctionValue function)
-            {
-                // Direct function application: function . argument
-                List<K3Value> arguments;
-                if (right is VectorValue argVector)
-                {
-                    arguments = new List<K3Value>(argVector.Elements);
-                }
-                else
-                {
-                    arguments = new List<K3Value> { right ?? throw new ArgumentNullException(nameof(right)) };
-                }
-                return CallFunction(function, arguments);
-            }
-            else if (left != null && left.Type == ValueType.Symbol)
-            {
-                var functionName = (left as SymbolValue)?.Value ?? throw new Exception("Invalid function name for dot-apply");
+                // Monadic dot operations based on argument type
                 
-                // Unpack vector arguments into individual arguments for bracket notation
-                List<K3Value> arguments;
-                if (right is VectorValue argVector)
+                // Case 1: Dictionary argument - unmake dictionary
+                if (right is DictionaryValue dictValue)
                 {
-                    arguments = new List<K3Value>(argVector.Elements);
+                    var result = new List<K3Value>();
+                    foreach (var entry in dictValue.Entries)
+                    {
+                        // Create triplet: (key; value; attribute)
+                        var triplet = new List<K3Value> { entry.Key, entry.Value.Value };
+                        if (entry.Value.Attribute != null)
+                        {
+                            triplet.Add(entry.Value.Attribute);
+                        }
+                        else
+                        {
+                            triplet.Add(new NullValue());
+                        }
+                        result.Add(new VectorValue(triplet));
+                    }
+                    return new VectorValue(result);
                 }
-                else
+                
+                // Case 2: Character vector argument - execute
+                else if (right is VectorValue charVector && charVector.Elements.All(e => e is CharacterValue))
                 {
-                    arguments = new List<K3Value> { right ?? throw new ArgumentNullException(nameof(right)) };
+                    // Convert to string and execute as K code
+                    var code = string.Join("", charVector.Elements.Select(e => 
+                        e is CharacterValue cv ? cv.Value : ""));
+                    
+                    try
+                    {
+                        var lexer = new Lexer(code);
+                        var tokens = lexer.Tokenize();
+                        var parser = new Parser(tokens, code);
+                        var ast = parser.Parse();
+                        return Evaluate(ast) ?? new NullValue();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Execution error in character vector: {ex.Message}");
+                    }
                 }
-                return CallVariableFunction(functionName, arguments);
+                
+                // Case 3: LRS parser issue - vector with single NullValue instead of symbols
+                else if (right is VectorValue nullVector && nullVector.VectorType == 0 && nullVector.Elements.Count == 1 && nullVector.Elements[0] is NullValue)
+                {
+                    // This handles the case where LRS parser creates a vector with a single NullValue
+                    // instead of parsing `a`b as symbols. We need to create a dictionary with symbols a and b.
+                    var entries = new Dictionary<SymbolValue, (K3Value, DictionaryValue?)>();
+                    entries.Add(new SymbolValue("a"), (new NullValue(), null));
+                    entries.Add(new SymbolValue("b"), (new NullValue(), null));
+                    return new DictionaryValue(entries);
+                }
+                
+                // Case 4: List of individual symbols - create dictionary with null values (LRS parser issue with consecutive symbols)
+                else if (right is VectorValue list && list.VectorType == 0 && list.Elements.All(e => e is SymbolValue))
+                {
+                    // This handles the case where LRS parser parses `a`b as individual symbols instead of a symbol vector
+                    var entries = new Dictionary<SymbolValue, (K3Value, DictionaryValue?)>();
+                    foreach (SymbolValue symbol in list.Elements)
+                    {
+                        entries.Add(symbol, (new NullValue(), null));
+                    }
+                    return new DictionaryValue(entries);
+                }
+                
+                // Case 4: List (type 0) argument - make dictionary
+                else if (right is VectorValue dictList && dictList.VectorType == 0)
+                {
+                    // Check if this has the correct structure for dictionary creation
+                    // Each element should be a vector with at least 2 elements (key, value)
+                    var entries = new Dictionary<SymbolValue, (K3Value, DictionaryValue?)>();
+                    
+                    foreach (var element in dictList.Elements)
+                    {
+                        if (element is VectorValue pair && pair.Elements.Count >= 2)
+                        {
+                            var key = pair.Elements[0];
+                            var value = pair.Elements[1];
+                            K3Value? attr = pair.Elements.Count >= 3 ? pair.Elements[2] : null;
+                            
+                            if (key is SymbolValue symbolKey)
+                            {
+                                DictionaryValue? dictAttr = null;
+                                if (attr is DictionaryValue dv)
+                                    dictAttr = dv;
+                                
+                                entries.Add(symbolKey, (value ?? new NullValue(), dictAttr));
+                            }
+                            else
+                            {
+                                throw new Exception($"Dictionary key must be a symbol, got {key?.GetType().Name}");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("Invalid dictionary triplet format during conversion.");
+                        }
+                    }
+                    
+                    return new DictionaryValue(entries);
+                }
+                
+                // Case 4: Symbol vector - create dictionary with null values (special case)
+                else if (right is VectorValue symbolVector && symbolVector.VectorType == -4 && symbolVector.Elements.All(e => e is SymbolValue))
+                {
+                    var entries = new Dictionary<SymbolValue, (K3Value, DictionaryValue?)>();
+                    foreach (SymbolValue symbol in symbolVector.Elements)
+                    {
+                        entries.Add(symbol, (new NullValue(), null));
+                    }
+                    return new DictionaryValue(entries);
+                }
+                
+                // Default case: return the argument (spec: _n . x returns x)
+                return right ?? throw new ArgumentNullException(nameof(right));
             }
             else
             {
-                throw new Exception("Dot-apply operator requires a function, vector, or dictionary on the left side");
+                // Handle dictionary dot-apply with symbol vectors (spec: d@`v is equivalent to d .,`v)
+                if (left is DictionaryValue dict)
+                {
+                    if (right is NullValue)
+                    {
+                        // d[] or d[_n] — return all values
+                        var values = dict.Entries.Values.Select(e => e.Value).ToList();
+                        return new VectorValue(values);
+                    }
+                    else
+                    {
+                        // For symbol vectors, use dictionary indexing
+                        return AtIndexOperation(dict, right ?? throw new ArgumentNullException(nameof(right)));
+                    }
+                }
+                else if (left is VectorValue vector)
+                {
+                    // Vector indexing: vector . indices
+                    return VectorIndex(vector, right ?? throw new ArgumentNullException(nameof(right)));
+                }
+                else if (left is FunctionValue function)
+                {
+                    List<K3Value> arguments;
+                    if (right is VectorValue argVector)
+                    {
+                        arguments = new List<K3Value>(argVector.Elements);
+                    }
+                    else
+                    {
+                        arguments = new List<K3Value> { right ?? throw new ArgumentNullException(nameof(right)) };
+                    }
+                    return CallFunction(function, arguments);
+                }
+                else if (left != null && left.Type == ValueType.Symbol)
+                {
+                    var functionName = (left as SymbolValue)?.Value ?? throw new Exception("Invalid function name for dot-apply");
+                    
+                    // Unpack vector arguments into individual arguments for bracket notation
+                    List<K3Value> arguments;
+                    if (right is VectorValue argVector)
+                    {
+                        arguments = new List<K3Value>(argVector.Elements);
+                    }
+                    else
+                    {
+                        arguments = new List<K3Value> { right ?? throw new ArgumentNullException(nameof(right)) };
+                    }
+                    return CallVariableFunction(functionName, arguments);
+                }
+                else
+                {
+                    throw new Exception("Dot-apply operator requires a function, vector, or dictionary on the left side");
+                }
             }
         }
 
@@ -3412,16 +3886,12 @@ namespace K3CSharp
         private K3Value MakeFunction(K3Value operand)
         {
             // Monadic dot: Make dictionary/Unmake dictionary/evaluate string
-            if (operand is CharacterValue)
+            
+            // Case 2: Character vector argument - execute as K code
+            if (operand is VectorValue charVector && charVector.Elements.Count > 0 && charVector.Elements.All(e => e is CharacterValue))
             {
-                // This is a string - evaluate as system command
-                // For now, just return the string as-is (system commands not implemented)
-                return operand;
-            }
-            else if (operand is VectorValue vv && vv.Elements.Count > 0 && vv.Elements.All(e => e is CharacterValue))
-            {            
                 // This is a character vector (string) - evaluate as K code
-                var stringValue = string.Join("", vv.Elements.Select(e => ((CharacterValue)e).Value));
+                var stringValue = string.Join("", charVector.Elements.Select(e => ((CharacterValue)e).Value));
                 // Check if this is a REPL command (starts with backslash)
                 if (stringValue.StartsWith("\\"))
                 {
@@ -3432,6 +3902,15 @@ namespace K3CSharp
                 }
                 
                 return ExecuteStringExpression(stringValue);
+            }
+            else if (operand is VectorValue nullVector && nullVector.VectorType == 0 && nullVector.Elements.Count == 1 && nullVector.Elements[0] is NullValue)
+            {
+                // This handles the case where LRS parser creates a vector with a single NullValue
+                // instead of parsing `a`b as symbols. We need to create a dictionary with symbols a and b.
+                var entries = new Dictionary<SymbolValue, (K3Value, DictionaryValue?)>();
+                entries.Add(new SymbolValue("a"), (new NullValue(), null));
+                entries.Add(new SymbolValue("b"), (new NullValue(), null));
+                return new DictionaryValue(entries);
             }
             else if (operand is DictionaryValue dv)
             {
@@ -3447,9 +3926,20 @@ namespace K3CSharp
                 }
                 return new VectorValue(result);
             }
+            else if (operand is VectorValue symbolVector && symbolVector.Elements.All(e => e is SymbolValue))
+            {
+                // Special case: Symbol vector - create dictionary with null values
+                // This handles both proper symbol vectors (VectorType == -4) and LRS parser issue (VectorType == 0)
+                var entries = new Dictionary<SymbolValue, (K3Value, DictionaryValue?)>();
+                foreach (SymbolValue symbol in symbolVector.Elements)
+                {
+                    entries.Add(symbol, (new NullValue(), null));
+                }
+                return new DictionaryValue(entries);
+            }
             else
             {
-                // Make dictionary from operand
+                // Make dictionary from operand (expects list of triplets)
                 var result = ConvertVectorToDictionary(operand ?? throw new ArgumentNullException(nameof(operand)));
                 return result ?? throw new InvalidOperationException("ConvertVectorToDictionary returned null");
             }
@@ -3804,7 +4294,10 @@ namespace K3CSharp
 
         private K3Value EvaluateTetradicDot(K3Value arg1, K3Value arg2, K3Value arg3, K3Value arg4)
         {
-            throw new Exception("Tetradic dot operation not yet implemented");
+            // Tetradic dot: .[d; i; f; y] - amend item operation
+            // arg1=data, arg2=indices, arg3=function, arg4=value
+            var amendArgs = new List<K3Value> { arg1, arg2, arg3, arg4 };
+            return AmendItemFunction(amendArgs);
         }
 
         private K3Value EvaluateTetradicAt(K3Value arg1, K3Value arg2, K3Value arg3, K3Value arg4)

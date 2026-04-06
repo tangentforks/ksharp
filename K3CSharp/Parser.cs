@@ -16,6 +16,7 @@ namespace K3CSharp
         Function,
         FunctionCall,
         Block,
+        ExpressionList,            // Semicolon-separated expressions in parentheses (return all values)
         FormSpecifier,
         ProjectedFunction,
         ApplyAndAssign,

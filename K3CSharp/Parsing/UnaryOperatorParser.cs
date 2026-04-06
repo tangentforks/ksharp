@@ -92,7 +92,7 @@ namespace K3CSharp
             }
             
             // Regular monadic plus
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue("+");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -109,7 +109,7 @@ namespace K3CSharp
         private static ASTNode ParseMonadicMinus(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue("-");
             
             // Ensure we always have at least one child for monadic operators
@@ -129,7 +129,7 @@ namespace K3CSharp
         private static ASTNode ParseMonadicFirst(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue("*");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -147,7 +147,7 @@ namespace K3CSharp
                 return projectedNode;
             }
             
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue("%");
             node.Children.Add(operand);
             return node;
@@ -156,7 +156,7 @@ namespace K3CSharp
         private static ASTNode ParseMonadicPower(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue("^");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -165,7 +165,7 @@ namespace K3CSharp
         private static ASTNode ParseMonadicMin(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue("&");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -174,7 +174,7 @@ namespace K3CSharp
         private static ASTNode ParseMonadicMax(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue("|");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -183,7 +183,7 @@ namespace K3CSharp
         private static ASTNode ParseMonadicMatch(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue("~");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -192,7 +192,7 @@ namespace K3CSharp
         private static ASTNode ParseMonadicNot(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue("~");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -201,7 +201,7 @@ namespace K3CSharp
         private static ASTNode ParseMonadicCount(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue("#");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -210,7 +210,7 @@ namespace K3CSharp
         private static ASTNode ParseMonadicFloor(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue("_");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -219,7 +219,7 @@ namespace K3CSharp
         private static ASTNode ParseMonadicUnique(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue("?");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -228,7 +228,7 @@ namespace K3CSharp
         private static ASTNode ParseMonadicFormat(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue("$");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -237,7 +237,7 @@ namespace K3CSharp
         private static ASTNode ParseMonadicApply(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue("@");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -246,7 +246,7 @@ namespace K3CSharp
         private static ASTNode ParseMonadicParse(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue("_parse");
             if (operand != null) node.Children.Add(operand);
             return node;
@@ -255,7 +255,7 @@ namespace K3CSharp
         private static ASTNode ParseMonadicEval(ParseContext context)
         {
             var operand = ParseBracketArgument(context);
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue("_eval");
             if (operand != null) node.Children.Add(operand);
             return node;

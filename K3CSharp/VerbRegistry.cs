@@ -302,6 +302,7 @@ namespace K3CSharp
                 TokenType.DIVIDE => "%",
                 TokenType.DOT_PRODUCT => ".",
                 TokenType.DOT_APPLY => ".",
+                TokenType.APPLY => "@",
                 TokenType.MUL => "_mul",
                 TokenType.MIN => "&",
                 TokenType.MAX => "|",
@@ -370,6 +371,7 @@ namespace K3CSharp
                 TokenType.GETHINT => "_gethint",
                 TokenType.PARSE => "_parse",
                 TokenType.EVAL => "_eval",
+                TokenType.INV => "_inv",
                 _ => tokenType.ToString()
             };
             
@@ -1005,6 +1007,76 @@ namespace K3CSharp
         {
             var verb = GetVerb(verbName);
             return verb != null && verb.SupportedArities.Contains(arity);
+        }
+
+        /// <summary>
+        /// Context for arity determination following K language specification
+        /// </summary>
+        public class ArityContext
+        {
+            public bool HasLeftOperand { get; set; }
+            public bool HasRightOperand { get; set; }
+            public int ArgumentCount { get; set; }
+            public bool HasDisambiguatingColon { get; set; }
+            public bool HasAdverbOnRight { get; set; }
+            public bool IsArgumentToAmend { get; set; }
+            public bool IsSingleExpressionInParentheses { get; set; }
+            public bool IsAtExpressionStart { get; set; }
+        }
+
+        /// <summary>
+        /// Determine verb arity following K language specification rules
+        /// </summary>
+        /// <param name="verbName">Name of the verb</param>
+        /// <param name="context">Context information for arity determination</param>
+        /// <returns>Determined arity (1=monadic, 2=dyadic, 3=triadic, 4=tetradic)</returns>
+        public static int DetermineVerbArity(string verbName, ArityContext context)
+        {
+            var verb = GetVerb(verbName);
+            if (verb == null) return 0;
+            
+            var supportedArities = verb.SupportedArities;
+            
+            // Rule 1: If the verb only supports one arity return that arity
+            if (supportedArities.Length == 1)
+            {
+                return supportedArities[0];
+            }
+            
+            // Rule 2: If the verb is called with 4 arguments and it supports tetradic use then return tetradic
+            if (context.ArgumentCount == 4 && supportedArities.Contains(4))
+            {
+                return 4;
+            }
+            
+            // Rule 3: If the verb is called with 3 arguments and it supports triadic use then return triadic
+            if (context.ArgumentCount == 3 && supportedArities.Contains(3))
+            {
+                return 3;
+            }
+            
+            // Rule 4: If the verb is called with a right argument and there is no left argument then return monadic
+            if (context.HasRightOperand && !context.HasLeftOperand && supportedArities.Contains(1))
+            {
+                return 1;
+            }
+            
+            // Rule 5: If the verb doesn't have arguments directly and it has a disambiguating colon then return monadic
+            if (!context.HasLeftOperand && !context.HasRightOperand && 
+                (context.HasAdverbOnRight || context.IsArgumentToAmend || context.IsSingleExpressionInParentheses) &&
+                context.HasDisambiguatingColon && supportedArities.Contains(1))
+            {
+                return 1;
+            }
+            
+            // Rule 6: If none of the previous conditions are met then return dyadic
+            if (supportedArities.Contains(2))
+            {
+                return 2;
+            }
+            
+            // Fallback: return the highest supported arity
+            return supportedArities.Max();
         }
 
         /// <summary>

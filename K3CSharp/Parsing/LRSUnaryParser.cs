@@ -57,11 +57,42 @@ namespace K3CSharp.Parsing
             
             // Check if the last token is a delimiter indicating projection
             var lastToken = tokens[tokens.Count - 1];
+            
+            // Special case: if we have a complete parenthesized/bracketed expression,
+            // it's not a projection even if it ends with a delimiter
+            if (lastToken.Type == TokenType.RIGHT_PAREN ||
+                lastToken.Type == TokenType.RIGHT_BRACKET ||
+                lastToken.Type == TokenType.RIGHT_BRACE)
+            {
+                // Check if we have matching opening delimiter earlier in the tokens
+                // This indicates a complete expression, not a projection
+                var openingType = GetMatchingOpeningDelimiter(lastToken.Type);
+                if (openingType != null && tokens.Any(t => t.Type == openingType))
+                {
+                    return false; // Complete expression, not a projection
+                }
+            }
+            
+            // Otherwise, check if it's a projection delimiter
             return lastToken.Type == TokenType.RIGHT_PAREN ||
                    lastToken.Type == TokenType.RIGHT_BRACKET ||
                    lastToken.Type == TokenType.RIGHT_BRACE ||
                    lastToken.Type == TokenType.SEMICOLON ||
                    lastToken.Type == TokenType.NEWLINE;
+        }
+        
+        /// <summary>
+        /// Get the matching opening delimiter for a closing delimiter
+        /// </summary>
+        private TokenType? GetMatchingOpeningDelimiter(TokenType closingType)
+        {
+            return closingType switch
+            {
+                TokenType.RIGHT_PAREN => TokenType.LEFT_PAREN,
+                TokenType.RIGHT_BRACKET => TokenType.LEFT_BRACKET,
+                TokenType.RIGHT_BRACE => TokenType.LEFT_BRACE,
+                _ => null
+            };
         }
         
         /// <summary>
@@ -90,17 +121,43 @@ namespace K3CSharp.Parsing
         private ASTNode? ParseOperandTokens(List<Token> tokens)
         {
             if (tokens.Count == 0) return null;
-            if (tokens.Count == 1) return CreateNodeFromToken(tokens[0]);
+            if (tokens.Count == 1) 
+            {
+                return CreateNodeFromToken(tokens[0]);
+            }
+            
+            // Check if the first token is LEFT_PAREN - handle as grouped expression
+            if (tokens[0].Type == TokenType.LEFT_PAREN)
+            {
+                // Use parent parser to handle the grouped expression
+                var position = 0;
+                var groupedResult = parentParser.ParseSubExpressionForMonadic(tokens, ref position);
+                return groupedResult;
+            }
             
             // For multiple tokens, check if they form a vector (no operators)
-            if (AllTokensAreAtomic(tokens))
+            bool allAtomic = AllTokensAreAtomic(tokens);
+            
+            if (allAtomic)
             {
                 // Create a vector from these atomic tokens
                 return CreateVectorFromTokens(tokens);
             }
             
+            // Check if we have enough tokens for a dyadic operation and the first token supports dyadic
+            bool firstSupportsDyadic = tokens.Count >= 3 && OperatorDetector.SupportsDyadic(tokens[0].Type);
+            
+            if (firstSupportsDyadic)
+            {
+                // Try dyadic operation first when we have enough tokens
+                var position2 = 0;
+                return parentParser.ParseSubExpressionForMonadic(tokens, ref position2);
+            }
+            
             // Check if the first token of the remaining expression is another monadic operator
-            if (tokens.Count >= 1 && LRSMonadicParser.CouldBeMonadicOperator(tokens[0].Type))
+            bool firstIsMonadic = tokens.Count >= 1 && LRSMonadicParser.CouldBeMonadicOperator(tokens[0].Type);
+            
+            if (firstIsMonadic)
             {
                 // This is a nested monadic operation like ^,`a
                 // Parse it recursively using parent parser's mode
@@ -110,8 +167,8 @@ namespace K3CSharp.Parsing
             }
             
             // Otherwise, use parent parser for dyadic operations
-            var position2 = 0;
-            return parentParser.ParseSubExpressionForMonadic(tokens, ref position2);
+            var position3 = 0;
+            return parentParser.ParseSubExpressionForMonadic(tokens, ref position3);
         }
         
         /// <summary>
@@ -141,17 +198,15 @@ namespace K3CSharp.Parsing
         /// </summary>
         private ASTNode CreateVectorFromTokens(List<Token> tokens)
         {
-            // For parse trees, we want to represent vectors as individual elements
-            // not as a Vector node, so ConvertVector can handle them properly
-            // Create a Block node that contains all the atomic elements
-            var blockNode = new ASTNode(ASTNodeType.Block);
+            // Create a proper Vector node for data vectors
+            var elements = new List<ASTNode>();
             foreach (var token in tokens)
             {
                 var atomicNode = CreateNodeFromToken(token);
                 if (atomicNode != null)
-                    blockNode.Children.Add(atomicNode);
+                    elements.Add(atomicNode);
             }
-            return blockNode;
+            return ASTNode.MakeVector(elements);
         }
         
         /// <summary>
@@ -159,7 +214,7 @@ namespace K3CSharp.Parsing
         /// </summary>
         private ASTNode CreateMonadicNode(Token operatorToken, ASTNode operand)
         {
-            var node = new ASTNode(ASTNodeType.DyadicOp);
+            var node = new ASTNode(ASTNodeType.MonadicOp);
             node.Value = new SymbolValue(GetOperatorSymbol(operatorToken.Type));
             node.Children.Add(operand);
             return node;
@@ -170,8 +225,8 @@ namespace K3CSharp.Parsing
         /// </summary>
         private string GetOperatorSymbol(TokenType tokenType)
         {
-            // For monadic operations, we use the operator symbol
-            return VerbRegistry.GetDyadicOperatorSymbol(tokenType);
+            // Use TokenTypeToVerbName to get the correct lowercase-with-underscore verb name
+            return VerbRegistry.TokenTypeToVerbName(tokenType);
         }
         
         /// <summary>
@@ -187,6 +242,10 @@ namespace K3CSharp.Parsing
         /// </summary>
         private ASTNode CreateNodeFromToken(Token token)
         {
+            if (!LRSAtomicParser.IsAtomicToken(token.Type))
+            {
+                throw new Exception($"CreateNodeFromToken called with non-atomic token: {token.Type}({token.Lexeme})");
+            }
             return LRSAtomicParser.ParseAtomicToken(token);
         }
     }

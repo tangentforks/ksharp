@@ -430,29 +430,22 @@ namespace K3CSharp.Parsing
             // If the assignment starts at the beginning of the token list or is preceded by a separator,
             // it's likely terminal. Otherwise, it's likely inline.
             
-            // For now, we'll implement a simplified check based on position in the expression
-            // TODO: Implement proper context analysis using parent parser context
+            // For statement-level assignments (like 'a: 42' standing alone), treat as terminal
+            // For inline assignments (like 'b + a: 42'), treat as inline
             
-            // Simplified heuristic: if the assignment is the first token in a simple expression,
-            // treat it as terminal. This is not perfect but handles common cases.
-            // 
-            // IMPORTANT: For inline assignments (called from ParseSubExpression in dyadic context),
-            // we should always return false so the assignment returns its value, not null.
-            // The caller (ParseSubExpression) can detect this is an inline assignment by checking
-            // if the assignment is at the start of the token list (identifier at position 0).
+            // Simple heuristic: if the assignment is the first token or has a simple pattern, it's terminal
             if (tokens.Count >= 3 && 
                 tokens[0].Type == TokenType.IDENTIFIER && 
                 tokens[1].Type == TokenType.COLON)
             {
                 // This is a simple assignment like 'a: 42'
-                // Check if it's likely inline by looking at the token count
-                // 3 tokens = 'a: 42' - could be terminal or inline
-                // We need more context to determine for sure
-                // For now, assume 3 tokens with simple pattern is inline if called from sub-expression
-                return false; // Assume inline - return the value, not null
+                // If it's exactly 3 tokens (var: value), it's likely a terminal statement
+                // If it's more complex, it might be inline
+                return tokens.Count == 3;
             }
             
-            return tokens.Count <= 3; // Simple heuristic: var: value is terminal
+            // Default to terminal for safety
+            return true;
         }
         
         /// <summary>

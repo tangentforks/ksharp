@@ -144,7 +144,6 @@ namespace K3CSharp
                 TokenType.DOLLAR => new SpecialToken(tokenType, lexeme, position, line, column),
                 TokenType.APPLY => new SpecialToken(tokenType, lexeme, position, line, column),
                 TokenType.DOT_APPLY => new SpecialToken(tokenType, lexeme, position, line, column),
-                TokenType.MAKE => new SpecialToken(tokenType, lexeme, position, line, column),
                 TokenType.ATOM => new SpecialToken(tokenType, lexeme, position, line, column),
                 TokenType.NEWLINE => new SpecialToken(tokenType, lexeme, position, line, column),
                 TokenType.EOF => new SpecialToken(tokenType, lexeme, position, line, column),
@@ -175,7 +174,7 @@ namespace K3CSharp
                 TokenType.MATCH or TokenType.NOT or
                 // Special operators that are monadic
                 TokenType.HASH or TokenType.UNDERSCORE or TokenType.QUESTION or
-                TokenType.DOLLAR or TokenType.APPLY or TokenType.MAKE or TokenType.ATOM or
+                TokenType.DOLLAR or TokenType.APPLY or TokenType.ATOM or
                 // System functions that are monadic
                 TokenType.BD or TokenType.DB or TokenType.GETENV or TokenType.SIZE or
                 TokenType.DRAW or TokenType.NOT or TokenType.INV or

@@ -30,69 +30,48 @@ namespace K3CSharp.Parsing
         /// <returns>Index of dyadic operator, or -1 if none found</returns>
         public int FindRightmostOperator(List<Token> tokens)
         {
-            bool pureLRSMode = parentParser?.PureLRSMode ?? false;
+            // LRS RULE: Always find LEFTMOST operator for true right-to-left evaluation
+            // This ensures expressions like "5 + 2 * 3" parse as "5 + (2 * 3)" = 11
+            // The leftmost operator splits: left side is atomic, right side is recursively parsed
             
-            if (pureLRSMode)
+            int depth = 0;
+            
+            for (int i = 0; i < tokens.Count; i++)
             {
-                // PURE LRS MODE: Find LEFTMOST operator with grouping depth tracking
-                // K uses right-to-left evaluation, so we split at the leftmost operator
-                // to ensure the right side is evaluated first.
-                // For example: 1 + 2 * 3 splits at + (leftmost), giving 1 + (2*3) = 1 + 6 = 7
+                var currentToken = tokens[i];
                 
-                int depth = 0;
-                
-                for (int i = 0; i < tokens.Count; i++)
+                // Track grouping depth
+                if (currentToken.Type == TokenType.LEFT_PAREN || 
+                    currentToken.Type == TokenType.LEFT_BRACKET || 
+                    currentToken.Type == TokenType.LEFT_BRACE)
                 {
-                    var currentToken = tokens[i];
-                    
-                    // Track grouping depth
-                    if (currentToken.Type == TokenType.LEFT_PAREN || 
-                        currentToken.Type == TokenType.LEFT_BRACKET || 
-                        currentToken.Type == TokenType.LEFT_BRACE)
-                    {
-                        depth++;
-                        continue;
-                    }
-                    else if (currentToken.Type == TokenType.RIGHT_PAREN || 
-                             currentToken.Type == TokenType.RIGHT_BRACKET || 
-                             currentToken.Type == TokenType.RIGHT_BRACE)
-                    {
-                        depth--;
-                        continue;
-                    }
-                    
-                    // Only consider operators at depth 0 (not inside grouping constructs)
-                    if (depth == 0 && IsDyadicOperatorDirect(currentToken.Type))
-                    {
-                        // NEW: Check if next token is an adverb (verb+adverb pattern)
-                        if (i + 1 < tokens.Count && IsAdverbToken(tokens[i + 1].Type))
-                        {
-                            // This is a verb+adverb pattern - skip both
-                            i++; // Skip the adverb too
-                            continue;
-                        }
-                        
-                        // This is a standalone dyadic operator at depth 0 - return it
-                        return i;
-                    }
+                    depth++;
+                    continue;
+                }
+                else if (currentToken.Type == TokenType.RIGHT_PAREN || 
+                         currentToken.Type == TokenType.RIGHT_BRACKET || 
+                         currentToken.Type == TokenType.RIGHT_BRACE)
+                {
+                    depth--;
+                    continue;
                 }
                 
-                return -1;
-            }
-            else
-            {
-                // SAFE LRS MODE (with fallback): Find RIGHTMOST operator (original behavior)
-                // This ensures compatibility with legacy parser fallback
-                for (int i = tokens.Count - 1; i >= 0; i--)
+                // Only consider operators at depth 0 (not inside grouping constructs)
+                if (depth == 0 && IsDyadicOperatorDirect(currentToken.Type))
                 {
-                    if (IsDyadicOperatorDirect(tokens[i].Type))
+                    // Skip verb+adverb patterns
+                    if (i + 1 < tokens.Count && IsAdverbToken(tokens[i + 1].Type))
                     {
-                        return i;
+                        i++; // Skip the adverb too
+                        continue;
                     }
+                    
+                    // Return leftmost operator for LRS right-to-left evaluation
+                    return i;
                 }
-                
-                return -1;
             }
+            
+            return -1;
         }
         
         /// <summary>
@@ -106,7 +85,15 @@ namespace K3CSharp.Parsing
             // with dyadic support is automatically recognized
             var verbName = VerbRegistry.TokenTypeToVerbName(tokenType);
             var verb = VerbRegistry.GetVerb(verbName);
-            return verb?.SupportedArities.Contains(2) ?? false;
+            var result = verb?.SupportedArities.Contains(2) ?? false;
+            
+            // Debug for DOT_APPLY
+            if (tokenType == TokenType.DOT_APPLY)
+            {
+                Console.WriteLine($"[IsDyadicOperatorDirect] DOT_APPLY: verbName='{verbName}', verb={verb?.Name}, result={result}");
+            }
+            
+            return result;
         }
         
         /// <summary>
@@ -149,7 +136,17 @@ namespace K3CSharp.Parsing
                 if (rightNode == null)
                     rightNode = ASTNode.MakeLiteral(new NullValue());
                 
-                return CreateDyadicNode(opToken, leftNode, rightNode);
+                // Check if this should be a monadic operation (no left operand)
+                if (leftTokens.Count == 0 && OperatorDetector.SupportsMonadic(opToken.Type))
+                {
+                    // Create monadic node when there's no left operand
+                    return CreateMonadicNode(opToken, rightNode);
+                }
+                else
+                {
+                    // Create dyadic node when there are both operands
+                    return CreateDyadicNode(opToken, leftNode, rightNode);
+                }
             }
             else
             {
@@ -163,7 +160,17 @@ namespace K3CSharp.Parsing
                 if (rightNode == null)
                     rightNode = ASTNode.MakeLiteral(new NullValue());
                 
-                return CreateDyadicNode(opToken, leftNode, rightNode);
+                // Check if this should be a monadic operation (no left operand)
+                if (leftTokens.Count == 0 && OperatorDetector.SupportsMonadic(opToken.Type))
+                {
+                    // Create monadic node when there's no left operand
+                    return CreateMonadicNode(opToken, rightNode);
+                }
+                else
+                {
+                    // Create dyadic node when there are both operands
+                    return CreateDyadicNode(opToken, leftNode, rightNode);
+                }
             }
         }
         
@@ -209,7 +216,86 @@ namespace K3CSharp.Parsing
             
             bool pureLRSMode = parentParser?.PureLRSMode ?? false;
             
-            // Pure LRS mode: Check for grouping constructs first
+            // Check for nested grouping constructs with semicolon-separated expressions
+            // This handles dictionary creation cases like ((`a;1);(`b;2)) where semicolons
+            // appear at depth >= 1 (inside parentheses), not simple cases like (1;2;3)
+            if (tokens.Count >= 7)  // Minimum: ( ( x ; y ) ; ( z ; w ) )
+            {
+                var firstToken = tokens[0];
+                
+                if (firstToken.Type == TokenType.LEFT_PAREN || 
+                    firstToken.Type == TokenType.LEFT_BRACKET || 
+                    firstToken.Type == TokenType.LEFT_BRACE)
+                {
+                    // Check for semicolons at depth > 1 (inside nested groupings)
+                    bool hasDeepSemicolon = false;
+                    int depth = 0;
+                    TokenType openType = firstToken.Type;
+                    TokenType closeType = openType == TokenType.LEFT_PAREN ? TokenType.RIGHT_PAREN :
+                                         openType == TokenType.LEFT_BRACKET ? TokenType.RIGHT_BRACKET :
+                                         TokenType.RIGHT_BRACE;
+                    
+                    for (int i = 0; i < tokens.Count; i++)
+                    {
+                        var token = tokens[i];
+                        
+                        if (token.Type == openType) 
+                        {
+                            depth++;
+                        }
+                        else if (token.Type == closeType) 
+                        {
+                            depth--;
+                        }
+                        else if (token.Type == TokenType.SEMICOLON && depth >= 1)
+                        {
+                            // Semicolon at depth >= 1 means it's inside parentheses (for nested structures like matrices)
+                            hasDeepSemicolon = true;
+                        }
+                        
+                        // Early exit if we find a deep semicolon
+                        if (hasDeepSemicolon) break;
+                    }
+                    
+                    // Verify it's a complete grouping and has deep semicolons
+                    if (hasDeepSemicolon)
+                    {
+                        // Recalculate depth to verify structure
+                        depth = 0;
+                        for (int i = 0; i < tokens.Count; i++)
+                        {
+                            var token = tokens[i];
+                            
+                            if (token.Type == openType) depth++;
+                            else if (token.Type == closeType) depth--;
+                            
+                            // If we close at the last token, this is a complete grouping
+                            if (depth == 0 && i == tokens.Count - 1)
+                            {
+                                // Use grouping parser for nested semicolon-containing expressions
+                                var subGroupingParser = new LRSGroupingParser(tokens, parentParser?.BuildParseTree ?? false, parentParser);
+                                int pos = 0;
+                                try
+                                {
+                                    if (openType == TokenType.LEFT_PAREN)
+                                        return subGroupingParser.ParseParentheses(ref pos);
+                                    else if (openType == TokenType.LEFT_BRACKET)
+                                        return subGroupingParser.ParseBrackets(ref pos);
+                                    else if (openType == TokenType.LEFT_BRACE)
+                                        return subGroupingParser.ParseBraces(ref pos);
+                                }
+                                catch
+                                {
+                                    // Fall through to default handling
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Pure LRS mode: Check for single-token grouping constructs
             if (pureLRSMode && tokens.Count == 1)
             {
                 var token = tokens[0];
@@ -290,8 +376,48 @@ namespace K3CSharp.Parsing
                 }
             }
             
+            // Check for implicit vector creation (sequences of atomic literals like "1 2 3")
+            // This must happen before dyadic parsing to handle vector left arguments to operators
+            if (tokens.Count >= 2)
+            {
+                var implicitVector = TryCreateImplicitVector(tokens);
+                if (implicitVector != null)
+                    return implicitVector;
+            }
+            
             // Try dyadic operation (monadic parsing is handled at main LRS level)
             return ParseDyadicOperation(tokens);
+        }
+        
+        /// <summary>
+        /// Try to create an implicit vector from a sequence of atomic literals
+        /// Returns null if tokens don't form a valid implicit vector
+        /// </summary>
+        private ASTNode? TryCreateImplicitVector(List<Token> tokens)
+        {
+            if (tokens.Count < 2)
+                return null;
+            
+            var elements = new List<ASTNode>();
+            
+            foreach (var token in tokens)
+            {
+                // Check if token is an atomic literal
+                if (!LRSAtomicParser.IsAtomicToken(token.Type))
+                    return null; // Not all atomic - can't be implicit vector
+                
+                // Parse the token and add to elements
+                var node = LRSAtomicParser.ParseAtomicToken(token);
+                if (node == null)
+                    return null;
+                
+                elements.Add(node);
+            }
+            
+            // Create vector for all implicit collections
+            // K semantics: space-separated literals create vectors (homogeneous or mixed)
+            // The evaluator will determine the proper K3Value type based on element types
+            return ASTNode.MakeVector(elements);
         }
         
         /// <summary>
@@ -323,6 +449,17 @@ namespace K3CSharp.Parsing
         private ASTNode CreateDyadicNode(Token opToken, ASTNode left, ASTNode right)
         {
             return ASTNode.MakeDyadicOp(opToken.Type, left, right);
+        }
+        
+        /// <summary>
+        /// Create AST node for monadic operation
+        /// </summary>
+        private ASTNode CreateMonadicNode(Token opToken, ASTNode operand)
+        {
+            var node = new ASTNode(ASTNodeType.MonadicOp);
+            node.Value = new SymbolValue(VerbRegistry.TokenTypeToVerbName(opToken.Type));
+            node.Children.Add(operand);
+            return node;
         }
         
         /// <summary>

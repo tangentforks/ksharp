@@ -43,8 +43,7 @@ namespace K3CSharp
         QUESTION,       // ? unique operator
         APPLY,          // @ apply operator
         ATOM,           // @ atom operator (monadic)
-        DOT_APPLY,      // . dot-apply operator (dyadic)
-        MAKE,           // . make operator (monadic)
+        DOT_APPLY,      // . dot-apply operator (general - parser determines arity)
         ADVERB_SLASH,   // / adverb
         ADVERB_BACKSLASH, // \ adverb  
         ADVERB_TICK,    // ' adverb

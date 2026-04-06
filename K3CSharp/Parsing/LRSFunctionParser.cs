@@ -55,7 +55,7 @@ namespace K3CSharp.Parsing
                 return HandleSystemFunction(funcToken, argTokens);
             }
             
-            // Check if this is a system operator (like _gtime, _ltime, _getenv, etc.)
+            // Check if this is a system operator (like _gtime, _ltime, _getenv, _db, _bd, etc.)
             if (IsSystemOperator(funcToken.Type))
             {
                 var argTokens = tokens.Count > 1 ? tokens.GetRange(1, tokens.Count - 1) : new List<Token>();
@@ -216,7 +216,7 @@ namespace K3CSharp.Parsing
         
         /// <summary>
         /// Check if token type represents a system operator (like _gtime, _ltime, etc.)
-        /// System operators are registered as VerbType.Operator with names starting with "_"
+        /// System operators are registered as VerbType.SystemFunction with names starting with "_"
         /// AND must support monadic arity (function-style calls like _gtime 0)
         /// </summary>
         private bool IsSystemOperator(TokenType tokenType)
@@ -224,10 +224,9 @@ namespace K3CSharp.Parsing
             var verbName = VerbRegistry.TokenTypeToVerbName(tokenType);
             var verb = VerbRegistry.GetVerb(verbName);
             
-            // System operators are operators with names starting with "_"
+            // System operators are system functions 
             // AND must support monadic arity (function-style calls)
-            return verb?.Type == VerbType.Operator && 
-                   verbName.StartsWith("_") && 
+            return verb?.Type == VerbType.SystemFunction && 
                    verb.SupportedArities.Contains(1);
         }
         

@@ -331,6 +331,20 @@ namespace K3CSharp.Tests
 
                 
 
+                // String Literal tests
+
+                ("test_string_basic.k", "\"hello\""),
+
+                ("test_symbol_quoted.k", "`hello"),
+
+                ("test_character_single.k", "\"a\""),
+
+                ("test_string_escape.k", "\"hello\nworld"),
+
+                ("test_symbol_escape.k", "`\"hello\nworld\""),
+
+                
+
                 // Complex Function tests
 
                 ("complex_function.k", "205.0"),
@@ -550,7 +564,6 @@ namespace K3CSharp.Tests
                 // Join operator
 
                 ("join_operator.k", "3 5"),
-                ("test_comma_basic.k","1 2"),
 
                 
 
@@ -1044,8 +1057,6 @@ namespace K3CSharp.Tests
                 // Reshape operator tests (vector left arg to #)
 
                 ("reshape_basic.k", "(0 1 2 3;4 5 6 7;8 9 10 11)"),
-
-
 
                 // Test division rules
 

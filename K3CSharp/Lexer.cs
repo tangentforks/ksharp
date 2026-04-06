@@ -410,29 +410,12 @@ namespace K3CSharp
                         Advance();
                         Advance();
                     }
-                    // Check for modified assignment operators (e.g., +:, -:, *:, etc.)
-                    // But NOT when : is used as monadic disambiguation marker (e.g., #:, !:, etc.)
+                    // Always treat colon as separate token - let parser handle disambiguation based on context
                     else if (position > 0 && IsOperatorChar(input[position - 1]) && input[position] == ':')
                     {
-                        var opChar = input[position - 1];
-                        var opToken = tokens[tokens.Count - 1];
-                        
-                        // Check if this is a monadic disambiguation case
-                        // If the operator is a verb glyph that can be monadic/dyadic, treat : as separate token
-                        if ("#!%&|<>=^,_?#~".Contains(opChar))
-                        {
-                            // This is a monadic disambiguation marker, keep tokens separate
-                            tokens.Add(new Token(TokenType.COLON, ":", position));
-                            Advance();
-                        }
-                        else
-                        {
-                            // This is a modified assignment operator
-                            tokens.RemoveAt(tokens.Count - 1);
-                            var modifiedOp = $"{opChar}:";
-                            tokens.Add(new Token(TokenType.ASSIGNMENT, modifiedOp, position - 1));
-                            Advance();
-                        }
+                        // Always add colon as separate token
+                        tokens.Add(new Token(TokenType.COLON, ":", position));
+                        Advance();
                     }
                     else
                     {

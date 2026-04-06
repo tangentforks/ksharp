@@ -680,6 +680,9 @@ namespace K3CSharp
 
         private K3Value Take(K3Value count, K3Value data)
         {
+            // Debug: Log the type of count being passed
+            Console.WriteLine($"[DEBUG Take] count type: {count?.Type}, data type: {data?.Type}");
+            
             if (count is IntegerValue intCount)
             {
                 if (data is VectorValue dataVec)
@@ -712,18 +715,18 @@ namespace K3CSharp
                     
                     for (int i = 0; i < actualCount; i++)
                     {
-                        result.Add(data);
+                        result.Add(data!);
                     }
                     
                     // Determine vector type from scalar type
-                    int vectorType = GetScalarVectorType(data);
+                    int vectorType = GetScalarVectorType(data!);
                     return new VectorValue(result, vectorType);
                 }
             }
             else if (count is LongValue longCount)
             {
                 // Handle long count by converting to integer
-                return Take(new IntegerValue((int)longCount.Value), data);
+                return Take(new IntegerValue((int)longCount.Value), data!);
             }
             else if (count is VectorValue shapeVec)
             {
@@ -741,7 +744,7 @@ namespace K3CSharp
                 if (data is VectorValue dataVec2)
                     flatData.AddRange(dataVec2.Elements);
                 else
-                    flatData.Add(data);
+                    flatData.Add(data!);
 
                 // Build the reshaped result from innermost dimension outward
                 // For 2+ dimensions, recursively build nested vectors
@@ -929,7 +932,7 @@ namespace K3CSharp
             throw new Exception($"Cannot compare {a.Type} and {b.Type} with >");
         }
 
-        private K3Value Negate(K3Value a)
+        private K3Value ArithmeticNegate(K3Value a)
         {
             if (a is IntegerValue intA)
                 return new IntegerValue(-intA.Value);
@@ -1302,6 +1305,12 @@ namespace K3CSharp
             }
             else if (a is SymbolValue sym)
             {
+                // Handle empty symbol as root K-tree enumeration
+                if (sym.Value == "")
+                {
+                    return kTree.GetRootKeys();
+                }
+                
                 // Handle symbol as a path to a dictionary
                 var dictValue = GetVariableValue(sym.Value);
                 if (dictValue is DictionaryValue dict)

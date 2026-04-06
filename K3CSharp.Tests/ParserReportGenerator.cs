@@ -123,7 +123,7 @@ namespace K3CSharp.Tests
             writer.WriteLine($"- Incomplete Token Consumption: {report.IncompleteResults}");
             writer.WriteLine($"- Total Fallbacks to Legacy: {report.TotalFailures}");
             writer.WriteLine($"- Incorrect Results: {report.TotalIncorrectResults}");
-            writer.WriteLine($"- LRS Success Rate: {((testResults.Count - report.TotalFailures) * 100.0 / testResults.Count):F1}%");
+            writer.WriteLine($"- LRS is handling: {((testResults.Count - report.TotalFailures) * 100.0 / testResults.Count):F1}%");
             writer.WriteLine();
             
             // Top Failure Patterns
@@ -287,7 +287,7 @@ namespace K3CSharp.Tests
             writer.WriteLine("LRS Parser Statistics:");
             writer.WriteLine($"- NULL Results: {report.TotalFailures}");
             writer.WriteLine($"- Incorrect Results: {report.TotalIncorrectResults}");
-            writer.WriteLine($"- LRS Success Rate: {((testResults.Count - report.TotalFailures) * 100.0 / testResults.Count):F1}%");
+            writer.WriteLine($"- LRS is handling: {((testResults.Count - report.TotalFailures) * 100.0 / testResults.Count):F1}%");
             writer.WriteLine();
             
             if (report.FailurePatterns.Any())

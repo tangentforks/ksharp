@@ -31,9 +31,9 @@
 ║ adverb_scan_with_initialization.k                  │ 2 *\ 1 2 3           │ 2 2 4 12             │                      ║
 ║ anonymous_function_double_param.k                  │ {[op1;op2] op1 * op2} │ {[op1;op2] op1 ...   │                      ║
 ║ anonymous_function_empty.k                         │ {}                   │ {}                   │                      ║
-║ anonymous_function_over_adverb.k                   │ {x*%y}/10 20 30      │ Error: Function...   │ 0.01666667           ║
-║ anonymous_function_scan_adverb.k                   │ {x*%y}\10 20 30      │ Error: Function...   │ (10;0.5;0.01666...   ║
-║ test_projected_function.k                          │ %  // This should create a projected function │ %                    │                      ║
+║ anonymous_function_over_adverb.k                   │ {x*%y}/10 20 30      │ 0.01666667           │                      ║
+║ anonymous_function_scan_adverb.k                   │ {x*%y}\10 20 30      │ (10;0.5;0.01666...   │                      ║
+║ test_projected_function.k                          │ %  // This should create a projected function │ `"%"                 │ %                    ║
 ║ atom_scalar.k                                      │ @42                  │ 1                    │                      ║
 ║ atom_vector.k                                      │ @1 2 3               │ 0                    │                      ║
 ║ lrs_atomic_parser_basic.k                          │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
@@ -45,9 +45,16 @@
 ║ attribute_handle_vector.k                          │ ~(`a`b`c)            │ `a.`b.`c.            │                      ║
 ║ character_single.k                                 │ "f"                  │ "f"                  │                      ║
 ║ character_vector.k                                 │ "hello"              │ "hello"              │                      ║
-║ complex_function.k                                 │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2} │ 205.0                │                      ║
+║ test_string_basic.k                                │ "hello"              │ "hello"              │                      ║
+║ test_symbol_quoted.k                               │ `"hello"             │ `hello               │                      ║
+║ test_character_single.k                            │ "a"                  │ "a"                  │                      ║
+║ test_string_escape.k                               │ "hello               │ Error: Untermin...   │ "hello
+world         ║
+║ test_symbol_escape.k                               │ `"hello\nworld"      │ `"hello
+world"       │                      ║
+║ complex_function.k                                 │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2} │                      │ 205.0                ║
 ║ count_operator.k                                   │ # (1 2 3)            │ 3                    │                      ║
-║ cut_vector.k                                       │ (0 2 4) _ (0 1 2 3 4 5 6 7) │ (0 1;2 3;4 5 6 7)    │                      ║
+║ cut_vector.k                                       │ (0 2 4) _ (0 1 2 3 4 5 6 7) │ Error: Drop/Cut...   │ (0 1;2 3;4 5 6 7)    ║
 ║ dictionary_empty.k                                 │ .()                  │ .()                  │                      ║
 ║ dictionary_index.k                                 │ (.((`a;1);(`b;2))) @ `a │ 1                    │                      ║
 ║ dictionary_index_attr.k                            │ (.((`a;1);(`b;2;.((`c;3);(`d;4))))) @ `b. │ .((`c;3;);(`d;4;))   │                      ║
@@ -56,17 +63,17 @@
 ║ dictionary_make_symbol_vector.k                    │ .,`a`b               │ .,(`a;`b;)           │                      ║
 ║ dictionary_multiple.k                              │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
 ║ dictionary_null_attributes.k                       │ .((`a;1);(`b;2))     │ .((`a;1;);(`b;2;))   │                      ║
-║ dictionary_single.k                                │ .,(`a;`b)            │ .,(`a;`b;)           │                      ║
+║ dictionary_single.k                                │ .,(`a;`b)            │ .((`a;;);(`b;;))     │ .,(`a;`b;)           ║
 ║ dictionary_type.k                                  │ 4:.((`a;1);(`b;2))   │ 5                    │                      ║
 ║ dictionary_with_null_value.k                       │ .((`a;1);(`b;_n);(`c;3)) │ .((`a;1;);(`b;;...   │                      ║
 ║ dictionary_period_index_all_attributes.k           │ d: .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer))));d[.] │ (.((`format;,`n...   │                      ║
-║ test_minimal_dict.k                                │ d: .,(`a;1;.,(`x;2));d[.] │ ,.,(`x;2;)           │                      ║
+║ test_minimal_dict.k                                │ d: .,(`a;1;.,(`x;2));d[.] │ ,.((`a;;);(`b;;))    │ ,.,(`x;2;)           ║
 ║ test_simple_period.k                               │ d: .((`a;1);(`b;2;.((`x;2);(`y;3))));d[.] │ ,.((`x;2;);(`y;...   │                      ║
 ║ test_attr_access.k                                 │ d: .((`a;1);(`b;2;.((`x;2);(`y;3))));d[`b.] │ .((`x;2;);(`y;3;))   │                      ║
 ║ test_dict_create.k                                 │ d: .((`a;1);(`b;2;.((`x;2);(`y;3))));d │ .((`a;1;);(`b;2...   │                      ║
 ║ test_dict_with_attr.k                              │ .((`a;1);(`b;2;.((`x;2);(`y;3)))) │ .((`a;1;);(`b;2...   │                      ║
 ║ test_show_dict.k                                   │ d: .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer))));d │ .((`col01;11 12...   │                      ║
-║ test_simple_dict_create.k                          │ .,(`a;1)             │ .,(`a;1;)            │                      ║
+║ test_simple_dict_create.k                          │ .,(`a;1)             │ .((`a;;);(`b;;))     │ .,(`a;1;)            ║
 ║ test_specific_attr.k                               │ d: .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer))));d[`col01.] │ .((`format;,`n;...   │                      ║
 ║ test_specific_attr_fixed.k                         │ d: .((`col01; 11 12 13 14 15;.((`format;,`"n");(`name;`ID)));(`col02; `yellow`white`blue`red`black;.((`format;,`"c");(`name;`Color)));(`col03; ("Home Depot";"Lowes";"Ace";"Neighborhood Paints";"Supply Co.");.((`format;,`"c");(`name;`Retailer))));d[`col01.] │ .((`format;,`n;...   │                      ║
 ║ empty_char_vector.k                                │ 0#"abc"              │ ""                   │                      ║
@@ -101,18 +108,18 @@
 ║ float_exponential_large.k                          │ 1e15                 │ 1e+015               │                      ║
 ║ float_exponential_small.k                          │ 1e-20                │ 1e-020               │                      ║
 ║ float_types.k                                      │ 3.14                 │ 3.14                 │                      ║
-║ function_add7.k                                    │ add7:{[arg1] arg1+7} │ 12                   │                      ║
-║ function_call_anonymous.k                          │ {[arg1] arg1+6} . 7  │ 13                   │                      ║
-║ function_call_chain.k                              │ mul:{[op1;op2] op1 * op2} │ 20                   │                      ║
-║ function_call_double.k                             │ mul:{[op1;op2] op1 * op2} │ 32                   │                      ║
-║ function_call_simple.k                             │ add7:{[arg1] arg1+7} │ 12                   │                      ║
-║ function_foo_chain.k                               │ mul:{[op1;op2] op1 * op2} │ 20                   │                      ║
-║ function_mul.k                                     │ mul:{[op1;op2] op1 * op2} │ 32                   │                      ║
+║ function_add7.k                                    │ add7:{[arg1] arg1+7} │                      │ 12                   ║
+║ function_call_anonymous.k                          │ {[arg1] arg1+6} . 7  │ 7                    │ 13                   ║
+║ function_call_chain.k                              │ mul:{[op1;op2] op1 * op2} │ Error: Cannot s...   │ 20                   ║
+║ function_call_double.k                             │ mul:{[op1;op2] op1 * op2} │                      │ 32                   ║
+║ function_call_simple.k                             │ add7:{[arg1] arg1+7} │                      │ 12                   ║
+║ function_foo_chain.k                               │ mul:{[op1;op2] op1 * op2} │ Error: Cannot s...   │ 20                   ║
+║ function_mul.k                                     │ mul:{[op1;op2] op1 * op2} │                      │ 32                   ║
 ║ lambda_string_assign.k                             │ {a:"hello";a}[]      │ "hello"              │                      ║
-║ lambda_string_literal.k                            │ {"hello"}[]          │ "hello"              │                      ║
-║ lambda_symbol_literal.k                            │ {`abc}[]             │ `abc                 │                      ║
-║ named_function_over.k                              │ f:{x*%y};f/10 20 30  │ Error: Function...   │ 0.01666667           ║
-║ named_function_scan.k                              │ f:{x*%y};f\10 20 30  │ Error: Function...   │ (10;0.5;0.01666...   ║
+║ lambda_string_literal.k                            │ {"hello"}[]          │ Error: Function...   │ "hello"              ║
+║ lambda_symbol_literal.k                            │ {`abc}[]             │ Error: Function...   │ `abc                 ║
+║ named_function_over.k                              │ f:{x*%y};f/10 20 30  │ 0.01666667           │                      ║
+║ named_function_scan.k                              │ f:{x*%y};f\10 20 30  │ (10;0.5;0.01666...   │                      ║
 ║ where_generate_scalar.k                            │ &4                   │ 0 0 0 0              │                      ║
 ║ grade_down_operator.k                              │ > (3 11 9 9 4)       │ 1 2 3 4 0            │                      ║
 ║ grade_up_operator.k                                │ < (3 11 9 9 4)       │ 0 4 2 3 1            │                      ║
@@ -120,7 +127,6 @@
 ║ integer_types_int.k                                │ 42                   │ 42                   │                      ║
 ║ integer_types_long.k                               │ 123456789j           │ 123456789j           │                      ║
 ║ join_operator.k                                    │ 3 , 5                │ 3 5                  │                      ║
-║ test_comma_basic.k                                 │ [File not found]     │ File not found       │ 1 2                  ║
 ║ less_than_operator.k                               │ 3 < 5                │ 1                    │                      ║
 ║ math_abs.k                                         │ _abs -5              │ 5                    │                      ║
 ║ math_exp.k                                         │ _exp 2               │ 7.389056             │                      ║
@@ -146,7 +152,7 @@
 ║ math_trig_pi.k                                     │ _cos 3.141592653589793 │ -1.0                 │                      ║
 ║ maximum_operator.k                                 │ 3 | 5                │ 5                    │                      ║
 ║ minimum_operator.k                                 │ 3 & 5                │ 3                    │                      ║
-║ mixed_list_with_null.k                             │ (1;_n;`test;42.5)    │ (1;;`test;42.5)      │                      ║
+║ mixed_list_with_null.k                             │ (1;_n;`test;42.5)    │ 1.0  `test 42.5      │ (1;;`test;42.5)      ║
 ║ mixed_vector_empty_position.k                      │ (1;;2)               │ (1;;2)               │                      ║
 ║ mixed_vector_multiple_empty.k                      │ (1;;;3)              │ (1;;;3)              │                      ║
 ║ mixed_vector_whitespace_position.k                 │ (1; ;2)              │ (1;;2)               │                      ║
@@ -171,22 +177,22 @@
 ║ overflow_regular_int.k                             │ 2147483637 + 20      │ -2147483639          │                      ║
 ║ underflow_regular_int.k                            │ -2147483639 - 40     │ 2147483617           │                      ║
 ║ parentheses_basic.k                                │ 1 + 2 * 3            │ 7                    │                      ║
-║ parentheses_grouping.k                             │ (1 + 2) * 3          │ 9                    │                      ║
+║ parentheses_grouping.k                             │ (1 + 2) * 3          │ Error: Cannot m...   │ 9                    ║
 ║ debug_mult_only.k                                  │ 3 * 7                │ 21                   │                      ║
 ║ debug_no_outer_paren.k                             │ 1 + 2 * 3 + 4        │ 15                   │                      ║
 ║ debug_left_paren.k                                 │ (1 + 2)              │ 3                    │                      ║
-║ debug_simple_mult.k                                │ (1 + 2) * (3 + 4)    │ 21                   │                      ║
-║ debug_double_nested.k                              │ ((1+2)*(3+4))        │ 21                   │                      ║
-║ parentheses_nested.k                               │ (1 + (2 * 3))        │ 7                    │                      ║
-║ parentheses_nested1.k                              │ ((1 + 2) * (3 + 4))  │ 21                   │                      ║
-║ parentheses_nested2.k                              │ (10 % (2 + (3 * 4))) │ 0.7142857            │                      ║
-║ parentheses_nested3.k                              │ (((1 + 2) + 3) * 4)  │ 24                   │                      ║
+║ debug_simple_mult.k                                │ (1 + 2) * (3 + 4)    │ Error: Cannot m...   │ 21                   ║
+║ debug_double_nested.k                              │ ((1+2)*(3+4))        │ Error: Cannot m...   │ 21                   ║
+║ parentheses_nested.k                               │ (1 + (2 * 3))        │ Error: Cannot a...   │ 7                    ║
+║ parentheses_nested1.k                              │ ((1 + 2) * (3 + 4))  │ Error: Cannot m...   │ 21                   ║
+║ parentheses_nested2.k                              │ (10 % (2 + (3 * 4))) │ Error: Cannot d...   │ 0.7142857            ║
+║ parentheses_nested3.k                              │ (((1 + 2) + 3) * 4)  │ Error: Cannot m...   │ 24                   ║
 ║ parentheses_nested4.k                              │ (1 + (2 + (3 + (4 + 5)))) │ 15                   │                      ║
-║ parentheses_nested5.k                              │ ((1 * 2) + (3 * (4 + 5))) │ 29                   │                      ║
-║ parentheses_precedence.k                           │ 1 + (2 * 3)          │ 7                    │                      ║
+║ parentheses_nested5.k                              │ ((1 * 2) + (3 * (4 + 5))) │ Error: Cannot a...   │ 29                   ║
+║ parentheses_precedence.k                           │ 1 + (2 * 3)          │ Error: Cannot a...   │ 7                    ║
 ║ parenthesized_vector.k                             │ (1;2;3;4)            │ 1 2 3 4              │                      ║
 ║ list_null_consecutive_semicolons.k                 │ (1;;2)               │ (1;;2)               │                      ║
-║ list_null_multiple_semicolons.k                    │ (;;)                 │ (;;)                 │                      ║
+║ list_null_multiple_semicolons.k                    │ (;;)                 │ (;)                  │ (;;)                 ║
 ║ list_null_empty_parens.k                           │ ()                   │ ()                   │                      ║
 ║ power_operator.k                                   │ 2 ^ 3                │ 8                    │                      ║
 ║ precedence_chain1.k                                │ 10 + 20 * 30 + 40    │ 1410                 │                      ║
@@ -252,7 +258,7 @@
 ║ simple_multiplication.k                            │ 4 * 3                │ 12                   │                      ║
 ║ simple_nested_test.k                               │ (1 2 3)              │ 1 2 3                │                      ║
 ║ minus_integer.k                                    │ a:5                  │ 2                    │                      ║
-║ test_triadic_dot.k                                 │ .[1 2 3;1;-:]        │ Error: Both LRS...   │ 1 -2 3               ║
+║ test_triadic_dot.k                                 │ .[1 2 3;1;-:]        │ 1 0 3                │ 1 -2 3               ║
 ║ test_adverb_aware_evaluation.k                     │ +/ 1 2 3             │ 6                    │                      ║
 ║ special_float_neg_inf.k                            │ -0i                  │ -0i                  │                      ║
 ║ special_float_null.k                               │ 0n                   │ 0n                   │                      ║
@@ -311,7 +317,7 @@
 ║ take_operator_empty_symbol.k                       │ 0#``                 │ 0#`                  │                      ║
 ║ take_operator_overflow.k                           │ 10#1 2 3             │ 1 2 3 1 2 3 1 2...   │                      ║
 ║ take_operator_scalar.k                             │ 3#42                 │ 42 42 42             │                      ║
-║ reshape_basic.k                                    │ 3 4 # !12            │ (0 1 2 3;4 5 6 ...   │                      ║
+║ reshape_basic.k                                    │ 3 4 # !12            │ ((;;;);(;;;);(;...   │ (0 1 2 3;4 5 6 ...   ║
 ║ division_float_4_2.0.k                             │ 4 % 2.0              │ 2.0                  │                      ║
 ║ division_float_5_2.5.k                             │ 5 % 2.5              │ 2.0                  │                      ║
 ║ division_int_4_2.k                                 │ 4 % 2                │ 2.0                  │                      ║
@@ -323,13 +329,13 @@
 ║ enumerate.k                                        │ ! 2                  │ 0 1                  │                      ║
 ║ grade_down_no_parens.k                             │ > 3 11 9 9 4         │ 1 2 3 4 0            │                      ║
 ║ grade_up_no_parens.k                               │ < 3 11 9 9 4         │ 0 4 2 3 1            │                      ║
-║ mixed_types.k                                      │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
+║ mixed_types.k                                      │ (42; 3.14; "hello"; `symbol) │ 42.0 3.14 "hell...   │ (42;3.14;"hello...   ║
 ║ multiline_function_single.k                        │ test: {[x] a:x*2; a+10} │ 20                   │                      ║
 ║ null_vector.k                                      │ (;1;2)               │ (;1;2)               │                      ║
 ║ scoping_single.k                                   │ globalVar: 100       │ 60                   │                      ║
-║ semicolon_simple.k                                 │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
+║ semicolon_simple.k                                 │ (3 + 4; 5 + 6; -20.45) │ 7.0 11.0 -20.45      │ (7;11;-20.45)        ║
 ║ semicolon_vars.k                                   │ a: 10                │ 30 200 -10           │                      ║
-║ semicolon_vector.k                                 │ a: 1 2               │ (7;3 4;-20.45)       │                      ║
+║ semicolon_vector.k                                 │ a: 1 2               │ 7.0 3 4 -20.45       │ (7;3 4;-20.45)       ║
 ║ test_semicolon.k                                   │ 1 2; 3 4             │ 3 4                  │                      ║
 ║ simple_scalar_div.k                                │ 5 % 2                │ 2.5                  │                      ║
 ║ single_no_semicolon.k                              │ (42)                 │ 42                   │                      ║
@@ -412,19 +418,19 @@
 ║ form_integer_charvector.k                          │ 0$"42"               │ 42                   │                      ║
 ║ form_character_charvector.k                        │ " "$"aaa"            │ "aaa"                │                      ║
 ║ dot_execute_variables.k                            │ a:1.5                │ 0.6                  │                      ║
-║ format_braces_expressions.k                        │ a:5                  │ 8 15 2               │                      ║
-║ format_braces_nested_expr.k                        │ x:10                 │ (12 20;(7;3.333...   │                      ║
-║ format_braces_complex.k                            │ a:1.5                │ 8.25 12.0 9.0        │                      ║
+║ format_braces_expressions.k                        │ a:5                  │ Error: Invalid ...   │ 8 15 2               ║
+║ format_braces_nested_expr.k                        │ x:10                 │ Error: Invalid ...   │ (12 20;(7;3.333...   ║
+║ format_braces_complex.k                            │ a:1.5                │ Error: Invalid ...   │ 8.25 12.0 9.0        ║
 ║ format_braces_string.k                             │ name:"John"          │ ("John";"is";25...   │                      ║
 ║ format_braces_mixed_type.k                         │ num:42;txt:"hello";sym:`test;{}$("num";"txt";"sym";"num+5";"txt,\"world\"") │ (42;"hello";`te...   │                      ║
-║ format_braces_simple.k                             │ a:5                  │ 8                    │                      ║
+║ format_braces_simple.k                             │ a:5                  │ Error: Invalid ...   │ 8                    ║
 ║ format_braces_arith.k                              │ a:5;b:3;x:10;y:2;{}$("a+b";"a*b";"a-b";"x+y";"x*y";"x%b") │ (8;15;2;12;20;3...   │                      ║
-║ format_braces_nested_arith.k                       │ a:5                  │ (7 10;(2;2.5);5...   │                      ║
-║ format_braces_float.k                              │ a:1.5                │ 4.0 3.75 0.6 -1.0    │                      ║
-║ format_braces_mixed_arith.k                        │ x:10                 │ 17.5 32.5 4.5        │                      ║
-║ format_braces_example.k                            │ a:5                  │ 8 9                  │                      ║
-║ format_braces_function_calls.k                     │ sum:{[a;b] a+b}      │ 5 20 12              │                      ║
-║ format_braces_nested_function_calls.k              │ sum:{[a;b] a+b}      │ 5 8 25               │                      ║
+║ format_braces_nested_arith.k                       │ a:5                  │ Error: Invalid ...   │ (7 10;(2;2.5);5...   ║
+║ format_braces_float.k                              │ a:1.5                │ Error: Invalid ...   │ 4.0 3.75 0.6 -1.0    ║
+║ format_braces_mixed_arith.k                        │ x:10                 │ Error: Invalid ...   │ 17.5 32.5 4.5        ║
+║ format_braces_example.k                            │ a:5                  │ Error: Invalid ...   │ 8 9                  ║
+║ format_braces_function_calls.k                     │ sum:{[a;b] a+b}      │ Error: Invalid ...   │ 5 20 12              ║
+║ format_braces_nested_function_calls.k              │ sum:{[a;b] a+b}      │ Error: Invalid ...   │ 5 8 25               ║
 ║ log.k                                              │ _log 10              │ 2.302585             │                      ║
 ║ time_t.k                                           │ r:_t                 │ .((`type;1;);(`...   │                      ║
 ║ rand_draw_select.k                                 │ r:10 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;-1;);(...   │                      ║
@@ -439,7 +445,7 @@
 ║ time_dj.k                                          │ _dj 0                │ 20350101             │                      ║
 ║ time_ltime.k                                       │ _ltime 0             │ 20341231 190000      │                      ║
 ║ in.k                                               │ 4 _in 1 7 2 4 6 3    │ 1                    │                      ║
-║ assignment_lrs_return_value.k                      │ b:2*a:47;(a;b)       │ 47 94                │                      ║
+║ assignment_lrs_return_value.k                      │ b:2*a:47;(a;b)       │ Error: Cannot m...   │ 47 94                ║
 ║ list_dv_basic.k                                    │ 3 4 4 5 _dv 4        │ 3 5                  │                      ║
 ║ list_dv_nomatch.k                                  │ 3 4 4 5 _dv 6        │ 3 4 4 5              │                      ║
 ║ list_di_basic.k                                    │ 3 2 4 5 _di 1        │ 3 4 5                │                      ║
@@ -458,22 +464,22 @@
 ║ test_monadic_colon.k                               │ : 42                 │ 42                   │                      ║
 ║ test_sm_basic.k                                    │ `foo _sm `foo        │ 1                    │                      ║
 ║ test_sm_simple.k                                   │ `a _sm `a            │ 1                    │                      ║
-║ test_ss_basic.k                                    │ "hello world" _ss "world" │ ,6                   │                      ║
+║ test_ss_basic.k                                    │ "hello world" _ss "world" │ ("hello world";...   │ ,6                   ║
 ║ statement_assignment_basic.k                       │ a: 42                │                      │                      ║
-║ statement_assignment_inline.k                      │ 1 + a: 42            │ 43                   │                      ║
-║ statement_conditional_basic.k                      │ :[1;2;3]             │ 2                    │                      ║
-║ statement_do_basic.k                               │ i:0;do[3;i+:1];i     │ 1                    │ 3                    ║
-║ statement_do_simple.k                              │ i:0;do[3;i+:1]       │                      │                      ║
+║ statement_assignment_inline.k                      │ 1 + a: 42            │ Error: Cannot a...   │ 43                   ║
+║ statement_conditional_basic.k                      │ :[1;2;3]             │ Error: Index op...   │ 2                    ║
+║ statement_do_basic.k                               │ i:0;do[3;i+:1];i     │ Error: Unknown ...   │ 3                    ║
+║ statement_do_simple.k                              │ i:0;do[3;i+:1]       │ Error: Unknown ...   │                      ║
 ║ semicolon_vars_test.k                              │ a: 10                │                      │                      ║
-║ apply_and_assign_simple.k                          │ i:0;i+:1;i           │ 0                    │ 1                    ║
-║ apply_and_assign_multiline.k                       │ i:0                  │ 0                    │ 1                    ║
-║ io_read_basic.k                                    │ 0:`test              │ ,"0 1 2 255"         │ ("line1";"line2...   ║
+║ apply_and_assign_simple.k                          │ i:0;i+:1;i           │ Error: Unknown ...   │ 1                    ║
+║ apply_and_assign_multiline.k                       │ i:0                  │ Error: Unknown ...   │ 1                    ║
+║ io_read_basic.k                                    │ 0:`test              │ ()                   │ ("line1";"line2...   ║
 ║ io_write_basic.k                                   │ `testW 0: ("line1";"line2";"line3");0:`testW │ ("line1";"line2...   │                      ║
 ║ io_append_simple.k                                 │ `testfile 5: "hello" │                      │                      ║
 ║ io_append_basic.k                                  │ `test 5: "hello"     │                      │                      ║
 ║ io_append_multiple.k                               │ `test 5: "hello"; `test 5: "world"; `test 5: 1 2 3 │                      │                      ║
-║ io_read_bytes_basic.k                              │ `test 0:,"hello";6:`test │ "\357\273\277he...   │ hello                ║
-║ io_read_bytes_empty.k                              │ `empty 0:(); 6:`empty │ "\357\273\277"       │ ""                   ║
+║ io_read_bytes_basic.k                              │ `test 0:,"hello";6:`test │ "\357\273\277\r\n"   │ hello                ║
+║ io_read_bytes_empty.k                              │ `empty 0:(); 6:`empty │ "\357\273\277\r\n"   │ ""                   ║
 ║ io_write_bytes_basic.k                             │ `test 6:,"ABC"       │                      │                      ║
 ║ io_write_bytes_overwrite.k                         │ `test 6:,"ABC"; `test 6:,"XYZ" │                      │                      ║
 ║ io_write_bytes_binary.k                            │ `test 6:(0 1 2 255)  │                      │                      ║
@@ -484,19 +490,19 @@
 ║ search_lin_intersection.k                          │ 1 3 5 7 9 _lin 1 2 3 4 5 │ 1 1 1 0 0            │                      ║
 ║ amend_item_basic.k                                 │ @[1 2 3; 1; +; 10]   │ 1 12 3               │                      ║
 ║ amend_item_multiple.k                              │ @[1 2 3; 0 2; +; 10] │ 11 2 13              │                      ║
-║ amend_item_monadic.k                               │ @[1 2 3; 1; {x*2}]   │ 1 4 3                │                      ║
+║ amend_item_monadic.k                               │ @[1 2 3; 1; {x*2}]   │ Error: Function...   │ 1 4 3                ║
 ║ amend_test.k                                       │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10)  // Amend: add 10 to elements at indices 0 and 2 │ (1 2 13 4 5;6 7...   │                      ║
 ║ find_basic.k                                       │ 9 8 7 6 5 4 3 ? 7  // Find operator - basic functionality │ 2                    │                      ║
 ║ find_notfound.k                                    │ 9 8 7 6 5 4 3 ? 1  // Find operator - not found case │ 7                    │                      ║
-║ format_float_precision_vector_simple.k             │ 10.1$(1.5;2.5)       │ ("       1.5";"...   │                      ║
+║ format_float_precision_vector_simple.k             │ 10.1$(1.5;2.5)       │ Error: Characte...   │ ("       1.5";"...   ║
 ║ format_float_precision_mixed_vector.k              │ 7.2$(1.5;2.7;3.14159;4.2) │ ("   1.50";"   ...   │                      ║
 ║ format_pad_mixed_vector.k                          │ 10$(1;2;3)           │ ("         1";"...   │                      ║
 ║ format_pad_negative_mixed_vector.k                 │ -10$(1;2;3)          │ ("1         ";"...   │                      ║
 ║ vector_notation_empty.k                            │ ()                   │ ()                   │                      ║
-║ vector_notation_functions.k                        │ double: {[x] x * 2}  │ 10 20 30             │                      ║
-║ vector_notation_mixed_types.k                      │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
+║ vector_notation_functions.k                        │ double: {[x] x * 2}  │ (({[x] x * 2};5...   │ 10 20 30             ║
+║ vector_notation_mixed_types.k                      │ (42; 3.14; "hello"; `symbol) │ 42.0 3.14 "hell...   │ (42;3.14;"hello...   ║
 ║ vector_notation_nested.k                           │ ((1 + 2); (3 + 4); (5 + 6)) │ 3 7 11               │                      ║
-║ vector_notation_semicolon.k                        │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
+║ vector_notation_semicolon.k                        │ (3 + 4; 5 + 6; -20.45) │ 7.0 11.0 -20.45      │ (7;11;-20.45)        ║
 ║ vector_notation_single_group.k                     │ (42)                 │ 42                   │                      ║
 ║ vector_notation_space.k                            │ 1 2 3 4 5            │ 1 2 3 4 5            │                      ║
 ║ vector_notation_variables.k                        │ a: 10                │ 30 200 -10           │                      ║
@@ -520,43 +526,43 @@
 ║ amend_apply.k                                      │ (.) . (((1 2 3 4 5);(6 7 8 9 10)); 0 2; +; 10) │ (1 2 13 4 5;6 7...   │                      ║
 ║ amend_dot_test.k                                   │ .[1 2 3; 1; +; 10]   │ 1 12 3               │                      ║
 ║ amend_parenthesized.k                              │ (.) . (1 2 3; 0; +; 10) │ 11 2 3               │                      ║
-║ amend_test_anonymous_func.k                        │ f:{x+y}              │ 11 2 3               │                      ║
-║ amend_test_func_var.k                              │ f:{x+y}              │ 11 2 3               │                      ║
-║ trap_dot_add.k                                     │ .[+;(1 2;3 4);:]     │ (0;4 6)              │                      ║
-║ trap_dot_success.k                                 │ a:3 2 1              │ (0;1 3)              │                      ║
+║ amend_test_anonymous_func.k                        │ f:{x+y}              │ Error: Function...   │ 11 2 3               ║
+║ amend_test_func_var.k                              │ f:{x+y}              │ Error: Function...   │ 11 2 3               ║
+║ trap_dot_add.k                                     │ .[+;(1 2;3 4);:]     │ Error: Tetradic...   │ (0;4 6)              ║
+║ trap_dot_success.k                                 │ a:3 2 1              │ Error: Tetradic...   │ (0;1 3)              ║
 ║ amend_colon_direct.k                               │ .[1 2 3; 1; :; 99]  // Amend with colon: replace element at index 1 with 99 │ 1 99 3               │                      ║
-║ amend_triadic_monadic.k                            │ .[1 2 3; 1; -:]  // Triadic amend: apply monadic neg to element at index 1 │ Error: Both LRS...   │ 1 -2 3               ║
-║ conditional_bracket_test.k                         │ :[1 < 2; "true"; "false"]  // Test conditional evaluation with bracket notation │ "true"               │                      ║
-║ conditional_false.k                                │ :[0; "true"; "false"]  // Conditional evaluation - condition false │ "false"              │                      ║
-║ conditional_simple_test.k                          │ :[1; "true"; "false"] │ "true"               │                      ║
-║ conditional_true.k                                 │ :[1; "true"; "false"]  // Conditional evaluation - condition true │ "true"               │                      ║
+║ amend_triadic_monadic.k                            │ .[1 2 3; 1; -:]  // Triadic amend: apply monadic neg to element at index 1 │ 1 0 3                │ 1 -2 3               ║
+║ conditional_bracket_test.k                         │ :[1 < 2; "true"; "false"]  // Test conditional evaluation with bracket notation │ Error: Index op...   │ "true"               ║
+║ conditional_false.k                                │ :[0; "true"; "false"]  // Conditional evaluation - condition false │ Error: Index op...   │ "false"              ║
+║ conditional_simple_test.k                          │ :[1; "true"; "false"] │ Error: Index op...   │ "true"               ║
+║ conditional_true.k                                 │ :[1; "true"; "false"]  // Conditional evaluation - condition true │ Error: Index op...   │ "true"               ║
 ║ dictionary_null_index.k                            │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
 ║ dictionary_unmake.k                                │ d: .((`a;1);(`b;2)); result:. d; result │ ((`a;1;);(`b;2;))    │                      ║
 ║ do_bracket_test.k                                  │ do[3; 42]  // Do function with bracket notation │                      │                      ║
-║ do_loop.k                                          │ i: 0; do[3; i+: 1]  // Do loop - increment i 3 times │                      │                      ║
+║ do_loop.k                                          │ i: 0; do[3; i+: 1]  // Do loop - increment i 3 times │ Error: Unknown ...   │                      ║
 ║ do_simple.k                                        │ do[3; 42]  // Do loop - simple test │                      │                      ║
-║ dyadic_divide_bracket.k                            │ %[20; 4]  // Dyadic division with bracket notation │ 5.0                  │                      ║
-║ dyadic_minus_bracket.k                             │ -[10; 3]  // Dyadic subtraction with bracket notation │ 7                    │                      ║
-║ dyadic_multiply_bracket.k                          │ *[4; 6]  // Dyadic multiplication with bracket notation │ 24                   │                      ║
-║ dyadic_plus_bracket.k                              │ +[3; 5]  // Dyadic addition with bracket notation │ 8                    │                      ║
-║ dyadic_divide_dot_apply.k                          │ (%) . (20; 4)  // Dyadic division with dot-apply notation │ 5.0                  │                      ║
-║ dyadic_minus_dot_apply.k                           │ (-) . (10; 3)  // Dyadic subtraction with dot-apply notation │ 7                    │                      ║
-║ dyadic_multiply_dot_apply.k                        │ (*) . (4; 6)  // Dyadic multiplication with dot-apply notation │ 24                   │                      ║
-║ dyadic_plus_dot_apply.k                            │ (+) . (3; 5)  // Dyadic addition with dot-apply notation │ 8                    │                      ║
-║ empty_brackets_dictionary.k                        │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
-║ empty_brackets_vector.k                            │ v: 1 2 3 4           │ 1 2 3 4              │                      ║
-║ format_braces_complex_expressions.k                │ sum:{[a;b] a+b}      │ 14 20 10             │                      ║
+║ dyadic_divide_bracket.k                            │ %[20; 4]  // Dyadic division with bracket notation │ Error: Index op...   │ 5.0                  ║
+║ dyadic_minus_bracket.k                             │ -[10; 3]  // Dyadic subtraction with bracket notation │ Error: Index op...   │ 7                    ║
+║ dyadic_multiply_bracket.k                          │ *[4; 6]  // Dyadic multiplication with bracket notation │ Error: Index op...   │ 24                   ║
+║ dyadic_plus_bracket.k                              │ +[3; 5]  // Dyadic addition with bracket notation │ Error: Index op...   │ 8                    ║
+║ dyadic_divide_dot_apply.k                          │ (%) . (20; 4)  // Dyadic division with dot-apply notation │                      │ 5.0                  ║
+║ dyadic_minus_dot_apply.k                           │ (-) . (10; 3)  // Dyadic subtraction with dot-apply notation │                      │ 7                    ║
+║ dyadic_multiply_dot_apply.k                        │ (*) . (4; 6)  // Dyadic multiplication with dot-apply notation │                      │ 24                   ║
+║ dyadic_plus_dot_apply.k                            │ (+) . (3; 5)  // Dyadic addition with dot-apply notation │                      │ 8                    ║
+║ empty_brackets_dictionary.k                        │ d: .((`a;1);(`b;2))  │ ()                   │ 1 2                  ║
+║ empty_brackets_vector.k                            │ v: 1 2 3 4           │ ()                   │ 1 2 3 4              ║
+║ format_braces_complex_expressions.k                │ sum:{[a;b] a+b}      │ Error: Invalid ...   │ 14 20 10             ║
 ║ format_float_precision_complex_mixed.k             │ 10.3$(1.234;2.567;3.890;4.123) │ ("     1.234";"...   │                      ║
 ║ format_float_vector.k                              │ 0.0$(1;2.5;3.14;42)  │ (,"1";,"2";,"3"...   │                      ║
 ║ format_int_vector.k                                │ 0$(1;2.5;3.14;42)    │ ("";"";"";"")        │                      ║
 ║ form_0_string.k                                    │ 0$"123"              │ 123                  │                      ║
-║ form_0_vector.k                                    │ 0$("123";"456")      │ 123 456              │                      ║
+║ form_0_vector.k                                    │ 0$("123";"456")      │ ""                   │ 123 456              ║
 ║ form_0_float_string.k                              │ 0.0$"3.14"           │ 3.14                 │                      ║
 ║ form_0_float_vector.k                              │ 0.0$("3.14";"1e48";"1.4e-27") │ 3.14 1e+048 1.4...   │                      ║
 ║ form_symbol_string.k                               │ `$"abc"              │ `abc                 │                      ║
-║ form_symbol_vector.k                               │ `$("abc";"de";"f")   │ `abc`de`f            │                      ║
-║ form_braces_string_new.k                           │ {}$"{y*z+x}"         │ {y*z+x}              │                      ║
-║ form_braces_complex_new.k                          │ {}$("{y*z+x}";"{[t;a;v;s] s+(v*t)+.5*a*t*t}") │ ({y*z+x};{[t;a;...   │                      ║
+║ form_symbol_vector.k                               │ `$("abc";"de";"f")   │ Error: Invalid ...   │ `abc`de`f            ║
+║ form_braces_string_new.k                           │ {}$"{y*z+x}"         │ Error: Invalid ...   │ {y*z+x}              ║
+║ form_braces_complex_new.k                          │ {}$("{y*z+x}";"{[t;a;v;s] s+(v*t)+.5*a*t*t}") │ Error: Invalid ...   │ ({y*z+x};{[t;a;...   ║
 ║ format_string_pad_left.k                           │ 10$"hello"           │ "     hello"         │                      ║
 ║ format_string_pad_right.k                          │ -10$"test"           │ "test      "         │                      ║
 ║ format_vector_int.k                                │ 0$(1;2;3)            │ ("";"";"")           │                      ║
@@ -567,9 +573,9 @@
 ║ in_basic.k                                         │ 4 _in 1 7 2 4 6 3    │ 1                    │                      ║
 ║ in_notfound.k                                      │ 10 _in 1 7 2 4 6 3   │ 0                    │                      ║
 ║ in_simple.k                                        │ 5 _in 1 2 3          │ 0                    │                      ║
-║ isolated.k                                         │ a:1.5                │ 0.6                  │                      ║
+║ isolated.k                                         │ a:1.5                │ Error: Invalid ...   │ 0.6                  ║
 ║ modulo.k                                           │ a:1.5                │ 0.6                  │                      ║
-║ monadic_format_mixed_vector.k                      │ $(1;2.5;"hello";`symbol) │ (,"1";"2.5";"he...   │                      ║
+║ monadic_format_mixed_vector.k                      │ $(1;2.5;"hello";`symbol) │ ("1.0";"2.5";"h...   │ (,"1";"2.5";"he...   ║
 ║ over_plus_empty.k                                  │ +/!0                 │ 0                    │                      ║
 ║ simple_division.k                                  │ 8 % 2                │ 4.0                  │                      ║
 ║ simple_subtraction.k                               │ 5 - 3                │ 2                    │                      ║
@@ -578,17 +584,17 @@
 ║ k_tree_retrieve_absolute_foo.k                     │ .k.foo: 42           │ 42                   │                      ║
 ║ k_tree_retrieval_relative.k                        │ .k.foo: 42           │ 42                   │                      ║
 ║ k_tree_enumerate.k                                 │ !`                   │ `k`t                 │                      ║
-║ k_tree_current_branch.k                            │ _d                   │ `.k                  │                      ║
+║ k_tree_current_branch.k                            │ _d                   │ `_d                  │ `.k                  ║
 ║ k_tree_dictionary_indexing.k                       │ .k.foo: 42           │ 42                   │                      ║
 ║ k_tree_nested_indexing.k                           │ .k.dd: .((`a;1);(`b;2);(`c;3)) │ 2                    │                      ║
-║ k_tree_verify_root.k                               │ .k                   │                      │                      ║
+║ k_tree_verify_root.k                               │ .k                   │ .()                  │                      ║
 ║ k_tree_flip_dictionary.k                           │ .+(`a`b`c;1 2 3)     │ .((`a;1;);(`b;2...   │                      ║
 ║ k_tree_null_to_dict_conversion.k                   │ .k.foo: 42           │ .,(`foo;42;)         │                      ║
 ║ k_tree_dictionary_assignment.k                     │ .k.dd: .((`a;1);(`b;2);(`c;3)) │ .((`a;1;);(`b;2...   │                      ║
 ║ k_tree_test_bracket_indexing.k                     │ d: .((`a;1);(`b;2);(`c;3)) │ 2                    │                      ║
 ║ k_tree_flip_test.k                                 │ +(`a`b`c;1 2 3)      │ ((`a;1);(`b;2);...   │                      ║
 ║ vector_null_index.k                                │ v: 1 2 3 4           │ 1 2 3 4              │                      ║
-║ while_bracket_test.k                               │ i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation │                      │                      ║
+║ while_bracket_test.k                               │ i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation │ Error: Unknown ...   │                      ║
 ║ while_safe_test.k                                  │ i: 0                 │                      │                      ║
 ║ while_simple_test.k                                │ while[0; 42]         │                      │                      ║
 ║ serialization_bd_db_integer.k                      │ _bd 42               │ "\001\000\000\0...   │                      ║
@@ -602,7 +608,7 @@
 ║ serialization_bd_db_symbolvector.k                 │ _bd `a`b`c           │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_list.k                         │ _bd (1;2.5;"a")      │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_dictionary.k                   │ _bd .((`a;`"1");(`b;`"2")) │ "\001\000\000\0...   │                      ║
-║ serialization_bd_db_anonymousfunction.k            │ _bd {[x] x+1}        │ "\001\000\000\0...   │                      ║
+║ serialization_bd_db_anonymousfunction.k            │ _bd {[x] x+1}        │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_db_roundtrip_integer.k            │ _db _bd 42           │ 42                   │                      ║
 ║ serialization_bd_db_roundtrip_list.k               │ _db _bd (1;2.5;"a")  │ (1;2.5;"a")          │                      ║
 ║ serialization_bd_ic_symbol.k                       │ _ic _bd `A           │ 1 0 0 0 6 0 0 0...   │                      ║
@@ -649,7 +655,7 @@
 ║ serialization_bd_integer_edge_1.k                  │ _bd 1                │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_-1.k                 │ _bd -1               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_2147483647.k         │ _bd 2147483647       │ "\001\000\000\0...   │                      ║
-║ serialization_bd_integer_edge_-2147483648.k        │ _bd -2147483648      │ "\001\000\000\0...   │                      ║
+║ serialization_bd_integer_edge_-2147483648.k        │ _bd -2147483648      │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_integer_edge_0N.k                 │ _bd 0N               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_0I.k                 │ _bd 0I               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_-0I.k                │ _bd -0I              │ "\001\000\000\0...   │                      ║
@@ -684,7 +690,7 @@
 ║ serialization_bd_character_edge_001.k              │ _bd "\001"           │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_character_edge_377.k              │ _bd "\377"           │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_character_edge_backspace.k        │ _bd "\b"             │ "\001\000\000\0...   │                      ║
-║ serialization_bd_charactervector_edge_empty.k      │ _bd ""               │ "\001\000\000\0...   │                      ║
+║ serialization_bd_charactervector_edge_empty.k      │ _bd ""               │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_charactervector_edge_a.k          │ _bd "a"              │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_charactervector_edge_hello.k      │ _bd "hello"          │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_charactervector_edge_whitespace.k │ _bd "\n\t\r"         │ "\001\000\000\0...   │                      ║
@@ -697,10 +703,10 @@
 ║ serialization_bd_list_edge_mixed.k                 │ _bd (1;2.5;"a")      │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_list_edge_complex.k               │ _bd (_n;`symbol;{[]}) │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_list_edge_nested.k                │ _bd ((1;2);(3;4))    │ "\001\000\000\0...   │                      ║
-║ serialization_bd_list_edge_dicts.k                 │ _bd (.,(`a;1);.,(`b;2)) │ "\001\000\000\0...   │                      ║
+║ serialization_bd_list_edge_dicts.k                 │ _bd (.,(`a;1);.,(`b;2)) │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_anonymousfunction_random_1.k      │ _bd {[x] x+7;x$1;x<=2} │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_anonymousfunction_random_2.k      │ _bd {[] 0|4;0&3}     │ "\001\000\000\0...   │                      ║
-║ serialization_bd_anonymousfunction_random_3.k      │ _bd {[xyz] xy|3}     │ "\001\000\000\0...   │                      ║
+║ serialization_bd_anonymousfunction_random_3.k      │ _bd {[xyz] xy|3}     │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_floatvector_random_1.k            │ _bd 196825.27335627712 -326371.90292283031 -214498.92985862558 11655.819143220946 │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_floatvector_random_2.k            │ _bd 148812.33236087282 │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_floatvector_random_3.k            │ _bd 585267.57816312299 -569668.94176055992 37200.312770306708 397004.01885714347 │ "\001\000\000\0...   │                      ║
@@ -714,10 +720,10 @@
 ║ test_symbol_vector_with_quoted.k                   │ `a `b `"." `c        │ `a`b`"."`c           │                      ║
 ║ serialization_bd_dictionary_with_symbol_vectors.k  │ _bd .((`colA;`a `b `c);(`colB;`dd `eee `ffff)) │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_dictionary_with_vectors.k         │ _bd .((`col1;1 2 3 4);(`col2;5 6 7 8)) │ "\001\000\000\0...   │                      ║
-║ serialization_bd_list_with_explicit_nulls.k        │ _bd ((`a;`"1";);(`b;`"2";)) │ "\001\000\000\0...   │                      ║
+║ serialization_bd_list_with_explicit_nulls.k        │ _bd ((`a;`"1";);(`b;`"2";)) │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_list_with_vectors.k               │ _bd ((`col1;1 2 3 4);(`col2;5 6 7 8)) │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_list_with_symbol_vectors.k        │ _bd ((`colA;`a `b `c);(`colB;`dd `eee `ffff)) │ "\001\000\000\0...   │                      ║
-║ bd_dict_single_entry.k                             │ _bd .,(`a;1)         │ "\001\000\000\0...   │                      ║
+║ bd_dict_single_entry.k                             │ _bd .,(`a;1)         │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ db_dict_larger.k                                   │ _db _bd .((`a;1);(`b;2;);(`c;3;);(`d;4;)) │ .((`a;1;);(`b;2...   │                      ║
 ║ db_dict_mixed_types.k                              │ _db _bd .((`key1;`value1;);(`key2;42;);(`key3;3.14)) │ .((`key1;`value...   │                      ║
 ║ db_float_vector_longer.k                           │ _db _bd 1.1 2.2 3.3 4.4 5.5 │ 1.1 2.2 3.3 4.4...   │                      ║
@@ -736,14 +742,14 @@
 ║ bd_symbol_vector_longer.k                          │ _bd `hello`world`test │ "\001\000\000\0...   │                      ║
 ║ bd_enlist_single_symbol.k                          │ _bd ,`test           │ "\001\000\000\0...   │                      ║
 ║ math_and_basic.k                                   │ 5 _and 3             │ 1                    │                      ║
-║ math_and_vector.k                                  │ (5 6 3) _and (1 2 3) │ 1 2 3                │                      ║
+║ math_and_vector.k                                  │ (5 6 3) _and (1 2 3) │ Error: _and can...   │ 1 2 3                ║
 ║ math_ceil_basic.k                                  │ _ceil 4.7            │ 5.0                  │                      ║
 ║ math_ceil_integer.k                                │ _ceil 5              │ 5.0                  │                      ║
 ║ math_ceil_negative.k                               │ _ceil -3.2           │ -3.0                 │                      ║
 ║ math_ceil_vector.k                                 │ _ceil 1.2 2.7 3.5    │ 2.0 3.0 4.0          │                      ║
 ║ math_div_float.k                                   │ 7 _div 2             │ 3                    │                      ║
 ║ math_div_integer.k                                 │ 7 _div 3             │ 2                    │                      ║
-║ math_div_vector.k                                  │ (7 14 21) _div 3     │ 2 4 7                │                      ║
+║ math_div_vector.k                                  │ (7 14 21) _div 3     │ Error: _div can...   │ 2 4 7                ║
 ║ math_dot_basic.k                                   │ 1 2 3 _dot 4 5 6     │ 32                   │                      ║
 ║ math_dot_matrix_matrix.k                           │ (1 2 3;4 5 6) _dot (7 8 9;10 11 12) │ 47 71 99             │                      ║
 ║ math_dot_matrix_2x2.k                              │ (1 2;3 4) _dot (5 6;7 8) │ 26 44                │                      ║
@@ -755,10 +761,10 @@
 ║ adverb_complex_string_each_left.k                  │ (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),/:\:"  " │ ((("hello";"wor...   │                      ║
 ║ join_each_left.k                                   │ (1 2 3),\: (4 5 6)   │ (1 4 5 6;2 4 5 ...   │                      ║
 ║ test_nested_adverb.k                               │ 1 2 3 ,/:\: 4 5 6    │ ((1 4;1 5;1 6);...   │                      ║
-║ math_lsq_non_square.k                              │ (7 8 9) _lsq (1 2 3;4 5 6) │ -1.0 2.0             │                      ║
-║ math_lsq_high_rank.k                               │ (10 11 12 13) _lsq (1 2 3 4;2 3 4 5) │ -8.0 9.0             │                      ║
-║ math_lsq_complex.k                                 │ (7.5 8.0 9.5) _lsq (1.5 2.0 3.0;4.5 5.5 6.0) │ 0.1232877 1.506849   │                      ║
-║ math_lsq_regression.k                              │ (1 2 3.0) _lsq (1 1 1.0;1 2 4.0) │ 0.5 0.6428571        │                      ║
+║ math_lsq_non_square.k                              │ (7 8 9) _lsq (1 2 3;4 5 6) │ Error: _lsq req...   │ -1.0 2.0             ║
+║ math_lsq_high_rank.k                               │ (10 11 12 13) _lsq (1 2 3 4;2 3 4 5) │ Error: _lsq req...   │ -8.0 9.0             ║
+║ math_lsq_complex.k                                 │ (7.5 8.0 9.5) _lsq (1.5 2.0 3.0;4.5 5.5 6.0) │ Error: _lsq req...   │ 0.1232877 1.506849   ║
+║ math_lsq_regression.k                              │ (1 2 3.0) _lsq (1 1 1.0;1 2 4.0) │ Error: _lsq req...   │ 0.5 0.6428571        ║
 ║ math_mul_basic.k                                   │ 1 2 3                │ 1 2 3                │                      ║
 ║ math_not_basic.k                                   │ _not 5               │ -6                   │                      ║
 ║ math_not_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
@@ -766,17 +772,17 @@
 ║ math_or_vector.k                                   │ 1 2 3                │ 1 2 3                │                      ║
 ║ math_rot_basic.k                                   │ 8 _rot 2             │ 32                   │                      ║
 ║ math_shift_basic.k                                 │ 8 _shift 2           │ 32                   │                      ║
-║ math_shift_vector.k                                │ (8 16 32 64) _shift 2 │ 32 64 128 256        │                      ║
+║ math_shift_vector.k                                │ (8 16 32 64) _shift 2 │ Error: _shift c...   │ 32 64 128 256        ║
 ║ math_xor_basic.k                                   │ 5 _xor 3             │ 6                    │                      ║
 ║ math_xor_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
-║ ffi_hint_system.k                                  │ 42 _sethint `uint    │ 42                   │                      ║
+║ ffi_hint_system.k                                  │ 42 _sethint `uint    │ Error: Verb 'SE...   │ 42                   ║
 ║ ffi_simple_assembly.k                              │ str:"System.Private.CoreLib" 2: `System.String; str │ `._dotnet.Syste...   │                      ║
 ║ ffi_assembly_load.k                                │ "System.Private.CoreLib" 2: `System.String │ `._dotnet.Syste...   │                      ║
-║ ffi_type_marshalling.k                             │ f:3.14159;f _sethint `float;s:"hello";s _sethint `string;l:1 2 3 4 5;l: _sethint `list // This needs to be split at some point │ Error: Undefine...   │ 1 2 3 4 5            ║
-║ ffi_object_management.k                            │ str: "hello";str _sethint `object; str . ToUpper │ Error: Undefine...   │ HELLO                ║
-║ ffi_constructor.k                                  │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex │ .((`real;2.0;);...   │                      ║
-║ ffi_dispose.k                                      │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex │ `obj1                │ Disposed             ║
-║ ffi_complete_workflow.k                            │ // Complete FFI Workflow Test │ .((`real;2.0;);...   │                      ║
+║ ffi_type_marshalling.k                             │ f:3.14159;f _sethint `float;s:"hello";s _sethint `string;l:1 2 3 4 5;l: _sethint `list // This needs to be split at some point │ Error: Verb 'SE...   │ 1 2 3 4 5            ║
+║ ffi_object_management.k                            │ str: "hello";str _sethint `object; str . ToUpper │ Error: Verb 'SE...   │ HELLO                ║
+║ ffi_constructor.k                                  │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex │ Error: Index op...   │ .((`real;2.0;);...   ║
+║ ffi_dispose.k                                      │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex │ Error: Unknown ...   │ Disposed             ║
+║ ffi_complete_workflow.k                            │ // Complete FFI Workflow Test │ Error: Index op...   │ .((`real;2.0;);...   ║
 ║ idioms_01_575_kronecker_delta.k                    │ x:0 0 1 1            │ 1 0 0 1              │                      ║
 ║ idioms_01_571_xbutnoty.k                           │ x:0 1 0 1            │ 0 1 0 0              │                      ║
 ║ idioms_01_570_implies.k                            │ x:0 1 0 1            │ 1 0 1 1              │                      ║
@@ -791,11 +797,11 @@
 ║ idioms_01_357_match.k                              │ x:("abc";`sy;1 3 -7) │ 1                    │                      ║
 ║ idioms_01_328_number_items.k                       │ #"abcd"              │ 4                    │                      ║
 ║ idioms_01_411_number_rows.k                        │ x:2 7#" "            │ 2                    │                      ║
-║ idioms_01_445_number_columns.k                     │ x:4 3#!12            │ 3                    │                      ║
+║ idioms_01_445_number_columns.k                     │ x:4 3#!12            │                      │ 3                    ║
 ║ test_parse_verb.k                                  │ _parse "1 + 2"       │ (`"+";,1;,2)         │                      ║
 ║ test_eval_verb.k                                   │ _eval ("+", 1, 2)    │ 3                    │                      ║
 ║ test_parse_eval_together.k                         │ parse_tree: _parse "1 + 2"; _eval parse_tree │ 3                    │                      ║
-║ idioms_01_388_drop_rows.k                          │ x:6 3#!18            │ (6 7 8;9 10 11;...   │                      ║
+║ idioms_01_388_drop_rows.k                          │ x:6 3#!18            │ ((;;);(;;);(;;)...   │ (6 7 8;9 10 11;...   ║
 ║ idioms_01_154_range.k                              │ x:"wirlsisl"         │ "wirls"              │                      ║
 ║ idioms_01_70_remove_duplicates.k                   │ x:("to";"be";"or";"not";"to";"be") │ ("to";"be";"or"...   │                      ║
 ║ idioms_01_143_indices_distinct.k                   │ x:"ajhajhja"         │ (0 3 7;1 4 6;2 5)    │                      ║
@@ -803,36 +809,36 @@
 ║ idioms_01_232_is_row_in.k                          │ x:("aaa";"bbb";"ooo";"ppp";"kkk") │ 1                    │                      ║
 ║ idioms_01_559_first_marker.k                       │ x:0 0 1 0 1 0 0 1 1 0 │ 2                    │                      ║
 ║ idioms_01_78_eval_number.k                         │ x:"1998 51"          │ 1998 51              │                      ║
-║ idioms_01_88_name_variable.k                       │ x:"test"             │ Error: Error ev...   │ (0 1 2;3 4 5)        ║
+║ idioms_01_88_name_variable.k                       │ x:"test"             │ Error: Invalid ...   │ (0 1 2;3 4 5)        ║
 ║ idioms_01_96_conditional_execution.k               │ @[+/;!6;:]           │ 0 15                 │                      ║
-║ idioms_01_493_choose_boolean.k                     │ x:"abcdef"           │ "xyz"                │                      ║
+║ idioms_01_493_choose_boolean.k                     │ x:"abcdef"           │ Error: Index op...   │ "xyz"                ║
 ║ idioms_01_434_replace_first.k                      │ x:"abbccdefcdab"     │ "tbbccdefcdab"       │                      ║
-║ idioms_01_433_replace_last.k                       │ x:"abbccdefcdab"     │ "abbccdefcdat"       │                      ║
-║ idioms_01_406_add_last.k                           │ x:1 2 3 4 5          │ 1 2 3 4 105          │                      ║
+║ idioms_01_433_replace_last.k                       │ x:"abbccdefcdab"     │ Error: Cannot a...   │ "abbccdefcdat"       ║
+║ idioms_01_406_add_last.k                           │ x:1 2 3 4 5          │ Error: Cannot a...   │ 1 2 3 4 105          ║
 ║ idioms_01_449_limit_between.k                      │ x:(58 9 37 84 39 99;60 30 45 97 77 35;49 87 82 79 8 30;46 61 20 51 12 34;31 51 29 35 17 89) // 5 6 _draw 100 │ (58 30 37 70 39...   │                      ║
 ║ idioms_01_495_indices_occurrences.k                │ x:"abcdefgab"        │ ()                   │ 0 2 5 7              ║
 ║ idioms_01_504_replace_satisfying.k                 │ x:1 0 0 0 1 0 1 1 0 1 │ " bcd f  i "         │ " bcd f i "          ║
-║ idioms_01_569_change_to_one.k                      │ y:10 5 7 12 20       │ 10 1 7 1 1           │                      ║
+║ idioms_01_569_change_to_one.k                      │ y:10 5 7 12 20       │ Error: Cannot r...   │ 10 1 7 1 1           ║
 ║ idioms_01_556_all_indices.k                        │ x:2 2 2 2            │ Error: Take cou...   │ 0 1 2 3              ║
-║ idioms_01_535_avoid_parentheses.k                  │ x:1 2 3 4 5          │ 1 5                  │ 5 1                  ║
-║ idioms_01_591_reshape_2column.k                    │ x:"abcdefgh"         │ ()                   │ ("ab";"cd";"ef"...   ║
+║ idioms_01_535_avoid_parentheses.k                  │ x:1 2 3 4 5          │ (;1)                 │ 5 1                  ║
+║ idioms_01_591_reshape_2column.k                    │ x:"abcdefgh"         │ Error: Take cou...   │ ("ab";"cd";"ef"...   ║
 ║ idioms_01_595_one_row_matrix.k                     │ x:2 3 5 7 11         │ ,2 3 5 7 11          │                      ║
 ║ idioms_01_616_scalar_from_vector.k                 │ x:,8                 │ 8                    │                      ║
 ║ idioms_01_509_remove_y.k                           │ x:"abcdeabc"         │ "bcdebc"             │                      ║
 ║ idioms_01_510_remove_blanks.k                      │ x:" bcde bc"         │ "bcdebc"             │                      ║
 ║ idioms_01_496_remove_punctuation.k                 │ x:"oh! no, stop it. you will?" │ Error: Undefine...   │ "oh no stop it ...   ║
-║ idioms_01_177_string_search.k                      │ x:"st"               │ 11 20 32             │                      ║
+║ idioms_01_177_string_search.k                      │ x:"st"               │ ("indices of st...   │ 11 20 32             ║
 ║ idioms_01_45_binary_representation.k               │ x:16                 │ 1 0 0 0 0            │                      ║
 ║ idioms_01_84_scalar_boolean.k                      │ x:1 0 0 1 1 1 0 1    │ 157                  │                      ║
 ║ idioms_01_129_arctangent.k                         │ x:_sqrt[3]           │ 0.5235988            │                      ║
-║ idioms_01_561_numeric_code.k                       │ x:" aA0"             │ 32 97 65 48          │                      ║
-║ idioms_01_241_sum_subsets.k                        │ x:1+3 4#!12          │ (4 6 4;12 14 12...   │                      ║
+║ idioms_01_561_numeric_code.k                       │ x:" aA0"             │ Error: Index op...   │ 32 97 65 48          ║
+║ idioms_01_241_sum_subsets.k                        │ x:1+3 4#!12          │ Error: Cannot a...   │ (4 6 4;12 14 12...   ║
 ║ idioms_01_61_cyclic_counter.k                      │ x:!10                │ 1 2 3 4 5 6 7 8...   │                      ║
 ║ idioms_01_384_drop_1st_postpend.k                  │ x:3 4 5 6            │ 4 5 6 0              │                      ║
 ║ idioms_01_385_drop_last_prepend.k                  │ x:3 4 5 6            │ 0 3 4 5              │                      ║
-║ idioms_01_178_first_occurrence.k                   │ x:"st"               │ Error: Both LRS...   │ 12                   ║
-║ idioms_01_447_conditional_drop.k                   │ x:4 3#!12            │ (0 1 2;3 4 5;6 ...   │                      ║
-║ idioms_01_448_conditional_drop_last.k              │ x:4 3#!12            │ (0 1 2;3 4 5;6 ...   │ (0 1 2;3 4 5;6 ...   ║
+║ idioms_01_178_first_occurrence.k                   │ x:"st"               │ "index of first...   │ 12                   ║
+║ idioms_01_447_conditional_drop.k                   │ x:4 3#!12            │ Error: Drop/Cut...   │ (0 1 2;3 4 5;6 ...   ║
+║ idioms_01_448_conditional_drop_last.k              │ x:4 3#!12            │ Error: Drop/Cut...   │ (0 1 2;3 4 5;6 ...   ║
 ║ idioms_01_549_alphabetic_comparison.k              │ "a"<"b"              │ 1                    │                      ║
 ║ ktree_enumerate_relative_name.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)) │ `keyA`keyB           │                      ║
 ║ ktree_enumerate_relative_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)) │ `keyA`keyB           │                      ║
@@ -846,55 +852,186 @@
 ║ ktree_dot_apply_absolute_name.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)) │ 1 3 5                │                      ║
 ║ ktree_dot_apply_relative_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `d . `keyA │ 1 2 3                │                      ║
 ║ ktree_dot_apply_absolute_path.k                    │ d:.((`keyA;1 2 3;);(`keyB;1 3 5)); `.k.d . `keyB │ 1 3 5                │                      ║
-║ test_semicolon_parsing.k                           │ x: (1;2;3)           │                      │                      ║
-║ test_parse_monadic_star.k                          │ _parse "*1 2 3 4"    │ (`"*:";)             │ (`"*:";1 2 3 4)      ║
+║ test_semicolon_parsing.k                           │ x: (1;2;3)           │ 1 2 3                │                      ║
+║ test_parse_monadic_star.k                          │ _parse "*1 2 3 4"    │ Error: Parse er...   │ (`"*:";1 2 3 4)      ║
 ║ parse_atomic_value_no_verb.k                       │ _parse "`a"          │ ,`a                  │                      ║
-║ parse_projection_dyadic_plus.k                     │ _parse "(+)"         │ (`"+";,`"(";,`")")   │ `"+"`"::"`"::"       ║
+║ parse_projection_dyadic_plus.k                     │ _parse "(+)"         │ Error: Parse er...   │ `"+"`"::"`"::"       ║
 ║ parse_projection_dyadic_plus_fixed_left.k          │ _parse "1+"          │ Error: Parse er...   │ (`"+";,1;`"::")      ║
 ║ parse_projection_dyadic_plus_fixed_right.k         │ _parse "+[;2]"       │ (`"@";,`"+";,2)      │ (`"+";`"::";,2)      ║
-║ parse_monadic_shape_atomic.k                       │ _parse "^,`a"        │ (`",";,`"^";,`a)     │ (`"^:";(`",:";,...   ║
+║ parse_monadic_shape_atomic.k                       │ _parse "^,`a"        │ Error: Parse er...   │ (`"^:";(`",:";,...   ║
 ║ eval_dyadic_plus.k                                 │ _eval (`"+";5 6 7 8;1 2 3 4) │ 6 8 10 12            │                      ║
 ║ eval_monadic_star_nested.k                         │ _eval (`"*";2;(`"+";4;7)) │ 22                   │                      ║
-║ eval_dot_execute_path.k                            │ v:`e`f               │ `a`b`c`d`e`f         │                      ║
+║ eval_dot_execute_path.k                            │ v:`e`f               │ Error: Variable...   │ `a`b`c`d`e`f         ║
 ║ eval_dot_repl_dir.k                                │ ."\\d ^";.d:_d;."\\d .k";(.d;_d) │ ``.k                 │                      ║
 ║ eval_dot_parse_and_eval.k                          │ a:7                  │ 11                   │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 825/857 tests passed (96.3%)                                                                               ║
+║ SUMMARY: 725/861 tests passed (84.2%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
-Test: anonymous_function_over_adverb.k
-Input: {x*%y}/10 20 30
-Expected: 0.01666667
-Actual: Error: Function execution not yet implemented: x*%y
+Test: test_projected_function.k
+Input: %  // This should create a projected function
+Expected: %
+Actual: `"%"
 ──────────────────────────────────────────────────────────────────────────
-Test: anonymous_function_scan_adverb.k
-Input: {x*%y}\10 20 30
-Expected: (10;0.5;0.01666667)
-Actual: Error: Function execution not yet implemented: x*%y
+Test: test_string_escape.k
+Input: "hello
+Expected: "hello
+world
+Actual: Error: Unterminated string literal
 ──────────────────────────────────────────────────────────────────────────
-Test: named_function_over.k
-Input: f:{x*%y};f/10 20 30
-Expected: 0.01666667
-Actual: Error: Function execution not yet implemented: x*%y
+Test: complex_function.k
+Input: distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2}
+Expected: 205.0
+Actual: 
 ──────────────────────────────────────────────────────────────────────────
-Test: named_function_scan.k
-Input: f:{x*%y};f\10 20 30
-Expected: (10;0.5;0.01666667)
-Actual: Error: Function execution not yet implemented: x*%y
+Test: cut_vector.k
+Input: (0 2 4) _ (0 1 2 3 4 5 6 7)
+Expected: (0 1;2 3;4 5 6 7)
+Actual: Error: Drop/Cut operation requires vector arguments or integer+vector
 ──────────────────────────────────────────────────────────────────────────
-Test: test_comma_basic.k
-Input: [File not found]
-Expected: 1 2
-Actual: File not found
+Test: dictionary_single.k
+Input: .,(`a;`b)
+Expected: .,(`a;`b;)
+Actual: .((`a;;);(`b;;))
+──────────────────────────────────────────────────────────────────────────
+Test: test_minimal_dict.k
+Input: d: .,(`a;1;.,(`x;2));d[.]
+Expected: ,.,(`x;2;)
+Actual: ,.((`a;;);(`b;;))
+──────────────────────────────────────────────────────────────────────────
+Test: test_simple_dict_create.k
+Input: .,(`a;1)
+Expected: .,(`a;1;)
+Actual: .((`a;;);(`b;;))
+──────────────────────────────────────────────────────────────────────────
+Test: function_add7.k
+Input: add7:{[arg1] arg1+7}
+Expected: 12
+Actual: 
+──────────────────────────────────────────────────────────────────────────
+Test: function_call_anonymous.k
+Input: {[arg1] arg1+6} . 7
+Expected: 13
+Actual: 7
+──────────────────────────────────────────────────────────────────────────
+Test: function_call_chain.k
+Input: mul:{[op1;op2] op1 * op2}
+Expected: 20
+Actual: Error: Cannot subtract Null and Integer
+──────────────────────────────────────────────────────────────────────────
+Test: function_call_double.k
+Input: mul:{[op1;op2] op1 * op2}
+Expected: 32
+Actual: 
+──────────────────────────────────────────────────────────────────────────
+Test: function_call_simple.k
+Input: add7:{[arg1] arg1+7}
+Expected: 12
+Actual: 
+──────────────────────────────────────────────────────────────────────────
+Test: function_foo_chain.k
+Input: mul:{[op1;op2] op1 * op2}
+Expected: 20
+Actual: Error: Cannot subtract Null and Integer
+──────────────────────────────────────────────────────────────────────────
+Test: function_mul.k
+Input: mul:{[op1;op2] op1 * op2}
+Expected: 32
+Actual: 
+──────────────────────────────────────────────────────────────────────────
+Test: lambda_string_literal.k
+Input: {"hello"}[]
+Expected: "hello"
+Actual: Error: Function execution error: Expected '}' after function body
+──────────────────────────────────────────────────────────────────────────
+Test: lambda_symbol_literal.k
+Input: {`abc}[]
+Expected: `abc
+Actual: Error: Function execution error: Expected '}' after function body
+──────────────────────────────────────────────────────────────────────────
+Test: mixed_list_with_null.k
+Input: (1;_n;`test;42.5)
+Expected: (1;;`test;42.5)
+Actual: 1.0  `test 42.5
+──────────────────────────────────────────────────────────────────────────
+Test: parentheses_grouping.k
+Input: (1 + 2) * 3
+Expected: 9
+Actual: Error: Cannot multiply Null and Integer
+──────────────────────────────────────────────────────────────────────────
+Test: debug_simple_mult.k
+Input: (1 + 2) * (3 + 4)
+Expected: 21
+Actual: Error: Cannot multiply Null and Null
+──────────────────────────────────────────────────────────────────────────
+Test: debug_double_nested.k
+Input: ((1+2)*(3+4))
+Expected: 21
+Actual: Error: Cannot multiply Null and Null
+──────────────────────────────────────────────────────────────────────────
+Test: parentheses_nested.k
+Input: (1 + (2 * 3))
+Expected: 7
+Actual: Error: Cannot add Integer and Null
+──────────────────────────────────────────────────────────────────────────
+Test: parentheses_nested1.k
+Input: ((1 + 2) * (3 + 4))
+Expected: 21
+Actual: Error: Cannot multiply Null and Null
+──────────────────────────────────────────────────────────────────────────
+Test: parentheses_nested2.k
+Input: (10 % (2 + (3 * 4)))
+Expected: 0.7142857
+Actual: Error: Cannot divide Integer and Null
+──────────────────────────────────────────────────────────────────────────
+Test: parentheses_nested3.k
+Input: (((1 + 2) + 3) * 4)
+Expected: 24
+Actual: Error: Cannot multiply Null and Integer
+──────────────────────────────────────────────────────────────────────────
+Test: parentheses_nested5.k
+Input: ((1 * 2) + (3 * (4 + 5)))
+Expected: 29
+Actual: Error: Cannot add Null and Null
+──────────────────────────────────────────────────────────────────────────
+Test: parentheses_precedence.k
+Input: 1 + (2 * 3)
+Expected: 7
+Actual: Error: Cannot add Integer and Null
+──────────────────────────────────────────────────────────────────────────
+Test: list_null_multiple_semicolons.k
+Input: (;;)
+Expected: (;;)
+Actual: (;)
 ──────────────────────────────────────────────────────────────────────────
 Test: test_triadic_dot.k
 Input: .[1 2 3;1;-:]
 Expected: 1 -2 3
-Actual: Error: Both LRS and legacy parsers failed for: .[1 2 3;1;-:]. Legacy error: Unexpected token: ASSIGNMENT(-:)
+Actual: 1 0 3
+──────────────────────────────────────────────────────────────────────────
+Test: reshape_basic.k
+Input: 3 4 # !12
+Expected: (0 1 2 3;4 5 6 7;8 9 10 11)
+Actual: ((;;;);(;;;);(;;;))
+──────────────────────────────────────────────────────────────────────────
+Test: mixed_types.k
+Input: (42; 3.14; "hello"; `symbol)
+Expected: (42;3.14;"hello";`symbol)
+Actual: 42.0 3.14 "hello" `symbol
+──────────────────────────────────────────────────────────────────────────
+Test: semicolon_simple.k
+Input: (3 + 4; 5 + 6; -20.45)
+Expected: (7;11;-20.45)
+Actual: 7.0 11.0 -20.45
+──────────────────────────────────────────────────────────────────────────
+Test: semicolon_vector.k
+Input: a: 1 2
+Expected: (7;3 4;-20.45)
+Actual: 7.0 3 4 -20.45
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
@@ -906,60 +1043,415 @@ Input: #:' (1 2 3;1 2 3 4 5; 1 2)
 Expected: 3 5 2
 Actual: ()
 ──────────────────────────────────────────────────────────────────────────
+Test: format_braces_expressions.k
+Input: a:5
+Expected: 8 15 2
+Actual: Error: Invalid format specifier: 
+──────────────────────────────────────────────────────────────────────────
+Test: format_braces_nested_expr.k
+Input: x:10
+Expected: (12 20;(7;3.333333))
+Actual: Error: Invalid format specifier: 
+──────────────────────────────────────────────────────────────────────────
+Test: format_braces_complex.k
+Input: a:1.5
+Expected: 8.25 12.0 9.0
+Actual: Error: Invalid format specifier: 
+──────────────────────────────────────────────────────────────────────────
+Test: format_braces_simple.k
+Input: a:5
+Expected: 8
+Actual: Error: Invalid format specifier: 
+──────────────────────────────────────────────────────────────────────────
+Test: format_braces_nested_arith.k
+Input: a:5
+Expected: (7 10;(2;2.5);5 -1)
+Actual: Error: Invalid format specifier: 
+──────────────────────────────────────────────────────────────────────────
+Test: format_braces_float.k
+Input: a:1.5
+Expected: 4.0 3.75 0.6 -1.0
+Actual: Error: Invalid format specifier: 
+──────────────────────────────────────────────────────────────────────────
+Test: format_braces_mixed_arith.k
+Input: x:10
+Expected: 17.5 32.5 4.5
+Actual: Error: Invalid format specifier: 
+──────────────────────────────────────────────────────────────────────────
+Test: format_braces_example.k
+Input: a:5
+Expected: 8 9
+Actual: Error: Invalid format specifier: 
+──────────────────────────────────────────────────────────────────────────
+Test: format_braces_function_calls.k
+Input: sum:{[a;b] a+b}
+Expected: 5 20 12
+Actual: Error: Invalid format specifier: 
+──────────────────────────────────────────────────────────────────────────
+Test: format_braces_nested_function_calls.k
+Input: sum:{[a;b] a+b}
+Expected: 5 8 25
+Actual: Error: Invalid format specifier: 
+──────────────────────────────────────────────────────────────────────────
+Test: assignment_lrs_return_value.k
+Input: b:2*a:47;(a;b)
+Expected: 47 94
+Actual: Error: Cannot multiply Integer and Null
+──────────────────────────────────────────────────────────────────────────
+Test: test_ss_basic.k
+Input: "hello world" _ss "world"
+Expected: ,6
+Actual: ("hello world";`_ss;"world")
+──────────────────────────────────────────────────────────────────────────
+Test: statement_assignment_inline.k
+Input: 1 + a: 42
+Expected: 43
+Actual: Error: Cannot add Integer and Null
+──────────────────────────────────────────────────────────────────────────
+Test: statement_conditional_basic.k
+Input: :[1;2;3]
+Expected: 2
+Actual: Error: Index operation requires dictionary or vector
+──────────────────────────────────────────────────────────────────────────
 Test: statement_do_basic.k
 Input: i:0;do[3;i+:1];i
 Expected: 3
-Actual: 1
+Actual: Error: Unknown monadic operator: :
+──────────────────────────────────────────────────────────────────────────
+Test: statement_do_simple.k
+Input: i:0;do[3;i+:1]
+Expected: 
+Actual: Error: Unknown monadic operator: :
 ──────────────────────────────────────────────────────────────────────────
 Test: apply_and_assign_simple.k
 Input: i:0;i+:1;i
 Expected: 1
-Actual: 0
+Actual: Error: Unknown monadic operator: :
 ──────────────────────────────────────────────────────────────────────────
 Test: apply_and_assign_multiline.k
 Input: i:0
 Expected: 1
-Actual: 0
+Actual: Error: Unknown monadic operator: :
 ──────────────────────────────────────────────────────────────────────────
 Test: io_read_basic.k
 Input: 0:`test
 Expected: ("line1";"line2";"line3")
-Actual: ,"0 1 2 255"
+Actual: ()
 ──────────────────────────────────────────────────────────────────────────
 Test: io_read_bytes_basic.k
 Input: `test 0:,"hello";6:`test
 Expected: hello
-Actual: "\357\273\277hello\r\n"
+Actual: "\357\273\277\r\n"
 ──────────────────────────────────────────────────────────────────────────
 Test: io_read_bytes_empty.k
 Input: `empty 0:(); 6:`empty
 Expected: ""
-Actual: "\357\273\277"
+Actual: "\357\273\277\r\n"
+──────────────────────────────────────────────────────────────────────────
+Test: amend_item_monadic.k
+Input: @[1 2 3; 1; {x*2}]
+Expected: 1 4 3
+Actual: Error: Function node must contain a FunctionValue
+──────────────────────────────────────────────────────────────────────────
+Test: format_float_precision_vector_simple.k
+Input: 10.1$(1.5;2.5)
+Expected: ("       1.5";"       2.5")
+Actual: Error: CharacterValue can only be created with single characters, but got string of length 0: ''. Use VectorValue for multi-character strings.
+──────────────────────────────────────────────────────────────────────────
+Test: vector_notation_functions.k
+Input: double: {[x] x * 2}
+Expected: 10 20 30
+Actual: (({[x] x * 2};5);({[x] x * 2};10);({[x] x * 2};15))
+──────────────────────────────────────────────────────────────────────────
+Test: vector_notation_mixed_types.k
+Input: (42; 3.14; "hello"; `symbol)
+Expected: (42;3.14;"hello";`symbol)
+Actual: 42.0 3.14 "hello" `symbol
+──────────────────────────────────────────────────────────────────────────
+Test: vector_notation_semicolon.k
+Input: (3 + 4; 5 + 6; -20.45)
+Expected: (7;11;-20.45)
+Actual: 7.0 11.0 -20.45
+──────────────────────────────────────────────────────────────────────────
+Test: amend_test_anonymous_func.k
+Input: f:{x+y}
+Expected: 11 2 3
+Actual: Error: Function execution error: Expected '}' after function body
+──────────────────────────────────────────────────────────────────────────
+Test: amend_test_func_var.k
+Input: f:{x+y}
+Expected: 11 2 3
+Actual: Error: Function execution error: Expected '}' after function body
+──────────────────────────────────────────────────────────────────────────
+Test: trap_dot_add.k
+Input: .[+;(1 2;3 4);:]
+Expected: (0;4 6)
+Actual: Error: Tetradic operator requires 4 arguments
+──────────────────────────────────────────────────────────────────────────
+Test: trap_dot_success.k
+Input: a:3 2 1
+Expected: (0;1 3)
+Actual: Error: Tetradic operator requires 4 arguments
 ──────────────────────────────────────────────────────────────────────────
 Test: amend_triadic_monadic.k
 Input: .[1 2 3; 1; -:]  // Triadic amend: apply monadic neg to element at index 1
 Expected: 1 -2 3
-Actual: Error: Both LRS and legacy parsers failed for: .[1 2 3; 1; -:]. Legacy error: Unexpected token: ASSIGNMENT(-:)
+Actual: 1 0 3
+──────────────────────────────────────────────────────────────────────────
+Test: conditional_bracket_test.k
+Input: :[1 < 2; "true"; "false"]  // Test conditional evaluation with bracket notation
+Expected: "true"
+Actual: Error: Index operation requires dictionary or vector
+──────────────────────────────────────────────────────────────────────────
+Test: conditional_false.k
+Input: :[0; "true"; "false"]  // Conditional evaluation - condition false
+Expected: "false"
+Actual: Error: Index operation requires dictionary or vector
+──────────────────────────────────────────────────────────────────────────
+Test: conditional_simple_test.k
+Input: :[1; "true"; "false"]
+Expected: "true"
+Actual: Error: Index operation requires dictionary or vector
+──────────────────────────────────────────────────────────────────────────
+Test: conditional_true.k
+Input: :[1; "true"; "false"]  // Conditional evaluation - condition true
+Expected: "true"
+Actual: Error: Index operation requires dictionary or vector
+──────────────────────────────────────────────────────────────────────────
+Test: do_loop.k
+Input: i: 0; do[3; i+: 1]  // Do loop - increment i 3 times
+Expected: 
+Actual: Error: Unknown monadic operator: :
+──────────────────────────────────────────────────────────────────────────
+Test: dyadic_divide_bracket.k
+Input: %[20; 4]  // Dyadic division with bracket notation
+Expected: 5.0
+Actual: Error: Index operation requires dictionary or vector
+──────────────────────────────────────────────────────────────────────────
+Test: dyadic_minus_bracket.k
+Input: -[10; 3]  // Dyadic subtraction with bracket notation
+Expected: 7
+Actual: Error: Index operation requires dictionary or vector
+──────────────────────────────────────────────────────────────────────────
+Test: dyadic_multiply_bracket.k
+Input: *[4; 6]  // Dyadic multiplication with bracket notation
+Expected: 24
+Actual: Error: Index operation requires dictionary or vector
+──────────────────────────────────────────────────────────────────────────
+Test: dyadic_plus_bracket.k
+Input: +[3; 5]  // Dyadic addition with bracket notation
+Expected: 8
+Actual: Error: Index operation requires dictionary or vector
+──────────────────────────────────────────────────────────────────────────
+Test: dyadic_divide_dot_apply.k
+Input: (%) . (20; 4)  // Dyadic division with dot-apply notation
+Expected: 5.0
+Actual: 
+──────────────────────────────────────────────────────────────────────────
+Test: dyadic_minus_dot_apply.k
+Input: (-) . (10; 3)  // Dyadic subtraction with dot-apply notation
+Expected: 7
+Actual: 
+──────────────────────────────────────────────────────────────────────────
+Test: dyadic_multiply_dot_apply.k
+Input: (*) . (4; 6)  // Dyadic multiplication with dot-apply notation
+Expected: 24
+Actual: 
+──────────────────────────────────────────────────────────────────────────
+Test: dyadic_plus_dot_apply.k
+Input: (+) . (3; 5)  // Dyadic addition with dot-apply notation
+Expected: 8
+Actual: 
+──────────────────────────────────────────────────────────────────────────
+Test: empty_brackets_dictionary.k
+Input: d: .((`a;1);(`b;2))
+Expected: 1 2
+Actual: ()
+──────────────────────────────────────────────────────────────────────────
+Test: empty_brackets_vector.k
+Input: v: 1 2 3 4
+Expected: 1 2 3 4
+Actual: ()
+──────────────────────────────────────────────────────────────────────────
+Test: format_braces_complex_expressions.k
+Input: sum:{[a;b] a+b}
+Expected: 14 20 10
+Actual: Error: Invalid format specifier: 
+──────────────────────────────────────────────────────────────────────────
+Test: form_0_vector.k
+Input: 0$("123";"456")
+Expected: 123 456
+Actual: ""
+──────────────────────────────────────────────────────────────────────────
+Test: form_symbol_vector.k
+Input: `$("abc";"de";"f")
+Expected: `abc`de`f
+Actual: Error: Invalid format specifier: `
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_string_new.k
+Input: {}$"{y*z+x}"
+Expected: {y*z+x}
+Actual: Error: Invalid format specifier: 
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_complex_new.k
+Input: {}$("{y*z+x}";"{[t;a;v;s] s+(v*t)+.5*a*t*t}")
+Expected: ({y*z+x};{[t;a;v;s] s+(v*t)+.5*a*t*t})
+Actual: Error: Invalid format specifier: 
+──────────────────────────────────────────────────────────────────────────
+Test: isolated.k
+Input: a:1.5
+Expected: 0.6
+Actual: Error: Invalid format specifier: 
+──────────────────────────────────────────────────────────────────────────
+Test: monadic_format_mixed_vector.k
+Input: $(1;2.5;"hello";`symbol)
+Expected: (,"1";"2.5";"hello";"symbol")
+Actual: ("1.0";"2.5";"hello";"symbol")
+──────────────────────────────────────────────────────────────────────────
+Test: k_tree_current_branch.k
+Input: _d
+Expected: `.k
+Actual: `_d
+──────────────────────────────────────────────────────────────────────────
+Test: k_tree_verify_root.k
+Input: .k
+Expected: 
+Actual: .()
+──────────────────────────────────────────────────────────────────────────
+Test: while_bracket_test.k
+Input: i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation
+Expected: 
+Actual: Error: Unknown monadic operator: :
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_db_anonymousfunction.k
+Input: _bd {[x] x+1}
+Expected: "\001\000\000\000\017\000\000\000\n\000\000\000\000{[x] x+1}\000"
+Actual: "\001\000\000\000\021\000\000\000\n\000\000\000\000{[x] x + 1}\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_integer_edge_-2147483648.k
+Input: _bd -2147483648
+Expected: "\001\000\000\000\b\000\000\000\001\000\000\000\001\000\000\200"
+Actual: "\001\000\000\000\b\000\000\000\001\000\000\000\000\000\000\200"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_charactervector_edge_empty.k
+Input: _bd ""
+Expected: "\001\000\000\000\t\000\000\000\375\377\377\377\000\000\000\000\000"
+Actual: "\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_list_edge_dicts.k
+Input: _bd (.,(`a;1);.,(`b;2))
+Expected: "\001\000\000\000X\000\000\000\000\000\000\000\002\000\000\000\005\000\000\000\001\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\001\000\000\000\001\000\000\000\006\000\000\000\000\000\000\000\005\000\000\000\001\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\001\000\000\000\002\000\000\000\006\000\000\000\000\000\000\000"
+Actual: "\001\000\000\000\230\000\000\000\000\000\000\000\002\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\006\000\000\000\000\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\006\000\000\000\000\000\000\000\006\000\000\000\000\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\006\000\000\000\000\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\006\000\000\000\000\000\000\000\006\000\000\000\000\000\000\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_anonymousfunction_random_3.k
+Input: _bd {[xyz] xy|3}
+Expected: "\001\000\000\000\024\000\000\000\n\000\000\000.k\000{[xyz] xy|3}\000"
+Actual: "\001\000\000\000\023\000\000\000\n\000\000\000\000{[xyz] xy |3}\000"
+──────────────────────────────────────────────────────────────────────────
+Test: serialization_bd_list_with_explicit_nulls.k
+Input: _bd ((`a;`"1";);(`b;`"2";))
+Expected: "\001\000\000\000H\000\000\000\000\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\004\000\000\0001\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\004\000\000\0002\000\000\000\006\000\000\000\000\000\000\000"
+Actual: "\001\000\000\000(\000\000\000\000\000\000\000\002\000\000\000\374\377\377\377\002\000\000\000a\0001\000\000\000\000\000\374\377\377\377\002\000\000\000b\0002\000\000\000\000\000"
+──────────────────────────────────────────────────────────────────────────
+Test: bd_dict_single_entry.k
+Input: _bd .,(`a;1)
+Expected: "\001\000\000\000(\000\000\000\005\000\000\000\001\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\001\000\000\000\001\000\000\000\006\000\000\000\000\000\000\000"
+Actual: "\001\000\000\000H\000\000\000\005\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\006\000\000\000\000\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\006\000\000\000\000\000\000\000\006\000\000\000\000\000\000\000"
+──────────────────────────────────────────────────────────────────────────
+Test: math_and_vector.k
+Input: (5 6 3) _and (1 2 3)
+Expected: 1 2 3
+Actual: Error: _and can only be applied to int/long values or vectors
+──────────────────────────────────────────────────────────────────────────
+Test: math_div_vector.k
+Input: (7 14 21) _div 3
+Expected: 2 4 7
+Actual: Error: _div can only be applied to int/long values or int/long vectors
+──────────────────────────────────────────────────────────────────────────
+Test: math_lsq_non_square.k
+Input: (7 8 9) _lsq (1 2 3;4 5 6)
+Expected: -1.0 2.0
+Actual: Error: _lsq requires x to be a vector and y to be a list of vectors
+──────────────────────────────────────────────────────────────────────────
+Test: math_lsq_high_rank.k
+Input: (10 11 12 13) _lsq (1 2 3 4;2 3 4 5)
+Expected: -8.0 9.0
+Actual: Error: _lsq requires x to be a vector and y to be a list of vectors
+──────────────────────────────────────────────────────────────────────────
+Test: math_lsq_complex.k
+Input: (7.5 8.0 9.5) _lsq (1.5 2.0 3.0;4.5 5.5 6.0)
+Expected: 0.1232877 1.506849
+Actual: Error: _lsq requires x to be a vector and y to be a list of vectors
+──────────────────────────────────────────────────────────────────────────
+Test: math_lsq_regression.k
+Input: (1 2 3.0) _lsq (1 1 1.0;1 2 4.0)
+Expected: 0.5 0.6428571
+Actual: Error: _lsq requires x to be a vector and y to be a list of vectors
+──────────────────────────────────────────────────────────────────────────
+Test: math_shift_vector.k
+Input: (8 16 32 64) _shift 2
+Expected: 32 64 128 256
+Actual: Error: _shift can only be applied to int/long values
+──────────────────────────────────────────────────────────────────────────
+Test: ffi_hint_system.k
+Input: 42 _sethint `uint
+Expected: 42
+Actual: Error: Verb 'SETHINT' found in registry but not implemented in EvaluateDyadicOperatorWithRegistry
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_type_marshalling.k
 Input: f:3.14159;f _sethint `float;s:"hello";s _sethint `string;l:1 2 3 4 5;l: _sethint `list // This needs to be split at some point
 Expected: 1 2 3 4 5
-Actual: Error: Undefined variable: _sethint
+Actual: Error: Verb 'SETHINT' found in registry but not implemented in EvaluateDyadicOperatorWithRegistry
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_object_management.k
 Input: str: "hello";str _sethint `object; str . ToUpper
 Expected: HELLO
-Actual: Error: Undefined variable: _sethint
+Actual: Error: Verb 'SETHINT' found in registry but not implemented in EvaluateDyadicOperatorWithRegistry
+──────────────────────────────────────────────────────────────────────────
+Test: ffi_constructor.k
+Input: complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
+Expected: .((`real;2.0;);(`imag;3.0;);(`instance;`Imaginary`Real`get_Imaginary`get_Real`_this`Abs`Equals`GetHashCode`ToString`GetType;);(`type;`name`fullname`namespace`assembly`isclass`isinterface`isenum`isabstract`ispublic`isstatic`.ctor`constructor`FromPolarCoordinates`Negate`Add`Subtract`Multiply`Divide`op_UnaryNegation`op_Addition`op_Subtraction`op_Multiply`op_Division`Abs`Conjugate`Reciprocal`op_Equality`op_Inequality`Sin`Sinh`Asin`Cos`Cosh`Acos`Tan`Tanh`Atan`IsFinite`IsInfinity`IsNaN`Log`Log10`Exp`Sqrt`Pow`op_Explicit`op_Implicit`op_Decrement`op_Increment`CreateChecked`CreateSaturating`CreateTruncating`IsComplexNumber`IsEvenInteger`IsImaginaryNumber`IsInteger`IsNegative`IsNegativeInfinity`IsNormal`IsOddInteger`IsPositive`IsPositiveInfinity`IsRealNumber`IsSubnormal`MaxMagnitude`MinMagnitude`Parse`TryParse`op_UnaryPlus`get_Real`get_Imaginary`get_Magnitude`get_Phase`Equals`GetHashCode`ToString`TryFormat`GetType`Real`Imaginary`Magnitude`Phase`Zero`One`ImaginaryOne`NaN`Infinity;))
+Actual: Error: Index operation requires dictionary or vector
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_dispose.k
 Input: complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
 Expected: Disposed
-Actual: `obj1
+Actual: Error: Unknown monadic operator: _dispose
+──────────────────────────────────────────────────────────────────────────
+Test: ffi_complete_workflow.k
+Input: // Complete FFI Workflow Test
+Expected: .((`real;2.0;);(`imag;3.0;);(`magnitude;3.605551;);(`instance;`Imaginary`Real`get_Imaginary`get_Real`_this`Abs`Equals`GetHashCode`ToString`GetType;);(`type;`name`fullname`namespace`assembly`isclass`isinterface`isenum`isabstract`ispublic`isstatic`.ctor`constructor`FromPolarCoordinates`Negate`Add`Subtract`Multiply`Divide`op_UnaryNegation`op_Addition`op_Subtraction`op_Multiply`op_Division`Abs`Conjugate`Reciprocal`op_Equality`op_Inequality`Sin`Sinh`Asin`Cos`Cosh`Acos`Tan`Tanh`Atan`IsFinite`IsInfinity`IsNaN`Log`Log10`Exp`Sqrt`Pow`op_Explicit`op_Implicit`op_Decrement`op_Increment`CreateChecked`CreateSaturating`CreateTruncating`IsComplexNumber`IsEvenInteger`IsImaginaryNumber`IsInteger`IsNegative`IsNegativeInfinity`IsNormal`IsOddInteger`IsPositive`IsPositiveInfinity`IsRealNumber`IsSubnormal`MaxMagnitude`MinMagnitude`Parse`TryParse`op_UnaryPlus`get_Real`get_Imaginary`get_Magnitude`get_Phase`Equals`GetHashCode`ToString`TryFormat`GetType`Real`Imaginary`Magnitude`Phase`Zero`One`ImaginaryOne`NaN`Infinity;))
+Actual: Error: Index operation requires dictionary or vector
+──────────────────────────────────────────────────────────────────────────
+Test: idioms_01_445_number_columns.k
+Input: x:4 3#!12
+Expected: 3
+Actual: 
+──────────────────────────────────────────────────────────────────────────
+Test: idioms_01_388_drop_rows.k
+Input: x:6 3#!18
+Expected: (6 7 8;9 10 11;12 13 14;15 16 17)
+Actual: ((;;);(;;);(;;);(;;))
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_88_name_variable.k
 Input: x:"test"
 Expected: (0 1 2;3 4 5)
-Actual: Error: Error evaluating string expression 'var': Undefined variable: var
+Actual: Error: Invalid dictionary triplet format during conversion.
+──────────────────────────────────────────────────────────────────────────
+Test: idioms_01_493_choose_boolean.k
+Input: x:"abcdef"
+Expected: "xyz"
+Actual: Error: Index operation requires dictionary or vector
+──────────────────────────────────────────────────────────────────────────
+Test: idioms_01_433_replace_last.k
+Input: x:"abbccdefcdab"
+Expected: "abbccdefcdat"
+Actual: Error: Cannot add Integer and Null
+──────────────────────────────────────────────────────────────────────────
+Test: idioms_01_406_add_last.k
+Input: x:1 2 3 4 5
+Expected: 1 2 3 4 105
+Actual: Error: Cannot add Integer and Null
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_495_indices_occurrences.k
 Input: x:"abcdefgab"
@@ -971,6 +1463,11 @@ Input: x:1 0 0 0 1 0 1 1 0 1
 Expected: " bcd f i "
 Actual: " bcd f  i "
 ──────────────────────────────────────────────────────────────────────────
+Test: idioms_01_569_change_to_one.k
+Input: y:10 5 7 12 20
+Expected: 10 1 7 1 1
+Actual: Error: Cannot raise Integer to power of Null
+──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_556_all_indices.k
 Input: x:2 2 2 2
 Expected: 0 1 2 3
@@ -979,37 +1476,62 @@ Actual: Error: Take count must be an integer
 Test: idioms_01_535_avoid_parentheses.k
 Input: x:1 2 3 4 5
 Expected: 5 1
-Actual: 1 5
+Actual: (;1)
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_591_reshape_2column.k
 Input: x:"abcdefgh"
 Expected: ("ab";"cd";"ef";"gh")
-Actual: ()
+Actual: Error: Take count must be an integer
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_496_remove_punctuation.k
 Input: x:"oh! no, stop it. you will?"
 Expected: "oh no stop it you will"
 Actual: Error: Undefined variable: dvl
 ──────────────────────────────────────────────────────────────────────────
+Test: idioms_01_177_string_search.k
+Input: x:"st"
+Expected: 11 20 32
+Actual: ("indices of start of string x in string y";`_ss;"st")
+──────────────────────────────────────────────────────────────────────────
+Test: idioms_01_561_numeric_code.k
+Input: x:" aA0"
+Expected: 32 97 65 48
+Actual: Error: Index operation requires dictionary or vector
+──────────────────────────────────────────────────────────────────────────
+Test: idioms_01_241_sum_subsets.k
+Input: x:1+3 4#!12
+Expected: (4 6 4;12 14 12;20 22 20)
+Actual: Error: Cannot add Null values
+──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_178_first_occurrence.k
 Input: x:"st"
 Expected: 12
-Actual: Error: Both LRS and legacy parsers failed for: *y _ss x. Legacy error: _ss: Expected semicolon after left operand
+Actual: "index of first occurrence of string x in string y"
+──────────────────────────────────────────────────────────────────────────
+Test: idioms_01_447_conditional_drop.k
+Input: x:4 3#!12
+Expected: (0 1 2;3 4 5;6 7 8;9 10 11)
+Actual: Error: Drop/Cut operation requires vector arguments or integer+vector
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_448_conditional_drop_last.k
 Input: x:4 3#!12
 Expected: (0 1 2;3 4 5;6 7 8)
-Actual: (0 1 2;3 4 5;6 7 8;9 10 11)
+Actual: Error: Drop/Cut operation requires vector arguments or integer+vector
+──────────────────────────────────────────────────────────────────────────
+Test: test_semicolon_parsing.k
+Input: x: (1;2;3)
+Expected: 
+Actual: 1 2 3
 ──────────────────────────────────────────────────────────────────────────
 Test: test_parse_monadic_star.k
 Input: _parse "*1 2 3 4"
 Expected: (`"*:";1 2 3 4)
-Actual: (`"*:";)
+Actual: Error: Parse error: Node type MonadicOp not supported in parse tree conversion
 ──────────────────────────────────────────────────────────────────────────
 Test: parse_projection_dyadic_plus.k
 Input: _parse "(+)"
 Expected: `"+"`"::"`"::"
-Actual: (`"+";,`"(";,`")")
+Actual: Error: Parse error: Failed to parse expression
 ──────────────────────────────────────────────────────────────────────────
 Test: parse_projection_dyadic_plus_fixed_left.k
 Input: _parse "1+"
@@ -1024,5 +1546,10 @@ Actual: (`"@";,`"+";,2)
 Test: parse_monadic_shape_atomic.k
 Input: _parse "^,`a"
 Expected: (`"^:";(`",:";,`a))
-Actual: (`",";,`"^";,`a)
+Actual: Error: Parse error: Node type MonadicOp not supported in parse tree conversion
+──────────────────────────────────────────────────────────────────────────
+Test: eval_dot_execute_path.k
+Input: v:`e`f
+Expected: `a`b`c`d`e`f
+Actual: Error: Variable not found: v
 ──────────────────────────────────────────────────────────────────────────

@@ -114,7 +114,6 @@ namespace K3CSharp
                 TokenType.DOLLAR => SpecialType.Format,
                 TokenType.APPLY => SpecialType.Apply,
                 TokenType.DOT_APPLY => SpecialType.DotApply,
-                TokenType.MAKE => SpecialType.Make,
                 TokenType.ATOM => SpecialType.Atom,
                 TokenType.NEWLINE => SpecialType.Newline,
                 TokenType.EOF => SpecialType.Eof,
@@ -131,7 +130,6 @@ namespace K3CSharp
             SpecialType.Format => "$",
             SpecialType.Apply => "@",
             SpecialType.DotApply => ".",
-            SpecialType.Make => ".",
             SpecialType.Atom => "@",
             SpecialType.Newline => "\n",
             SpecialType.Eof => "EOF",
@@ -154,7 +152,7 @@ namespace K3CSharp
 
     public enum SpecialType
     {
-        Count, Floor, Unique, Format, Apply, DotApply, Make, Atom,
+        Count, Floor, Unique, Format, Apply, DotApply, Atom,
         Newline, Eof
     }
 }

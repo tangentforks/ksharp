@@ -38,14 +38,16 @@ namespace K3CSharp.Parsing
         
         public LRSParserWrapper(List<Token> tokens, string sourceText, bool enableFallback = true, bool useLRSParser = true)
         {
-            this.tokens = tokens;
+            // Preprocess tokens to combine K-tree dotted notation (.k.d -> single IDENTIFIER token)
+            var processedTokens = PreprocessDottedPaths(tokens, sourceText);
+            this.tokens = processedTokens;
             this.sourceText = sourceText;
             this.enableFallback = enableFallback;
             this.useLRSParser = useLRSParser;
             
             if (useLRSParser)
             {
-                this.lrsParser = new LRSParser(tokens);
+                this.lrsParser = new LRSParser(processedTokens);
                 // Enable Pure LRS mode when fallback is disabled
                 if (this.lrsParser != null)
                 {
@@ -54,6 +56,118 @@ namespace K3CSharp.Parsing
             }
         }
         
+        /// <summary>
+        /// Preprocess tokens to combine adjacent DOT_APPLY + IDENTIFIER sequences
+        /// into single IDENTIFIER tokens with dotted notation (e.g., .k.d becomes a single Variable ".k.d")
+        /// Only applies when the DOT_APPLY and IDENTIFIER are adjacent (no space between them).
+        /// </summary>
+        private static List<Token> PreprocessDottedPaths(List<Token> tokens, string sourceText)
+        {
+            var result = new List<Token>();
+            int i = 0;
+            
+            while (i < tokens.Count)
+            {
+                // Check for DOT_APPLY followed by adjacent IDENTIFIER pattern
+                if (tokens[i].Type == TokenType.DOT_APPLY && 
+                    i + 1 < tokens.Count &&
+                    (tokens[i + 1].Type == TokenType.IDENTIFIER || tokens[i + 1].Type == TokenType.SYMBOL))
+                {
+                    // Check adjacency: dot position + 1 == next token position
+                    bool isAdjacent = (tokens[i].Position + tokens[i].Lexeme.Length) == tokens[i + 1].Position;
+                    
+                    if (isAdjacent)
+                    {
+                        // Build the dotted path
+                        var dottedPath = "." + tokens[i + 1].Lexeme;
+                        int startPos = tokens[i].Position;
+                        int j = i + 2;
+                        
+                        // Continue consuming .identifier sequences
+                        while (j + 1 < tokens.Count && 
+                               tokens[j].Type == TokenType.DOT_APPLY &&
+                               (tokens[j + 1].Type == TokenType.IDENTIFIER || tokens[j + 1].Type == TokenType.SYMBOL) &&
+                               (tokens[j].Position + tokens[j].Lexeme.Length) == tokens[j + 1].Position)
+                        {
+                            dottedPath += "." + tokens[j + 1].Lexeme;
+                            j += 2;
+                        }
+                        
+                        // Create a single IDENTIFIER token with the full dotted path
+                        result.Add(new Token(TokenType.IDENTIFIER, dottedPath, startPos));
+                        i = j;
+                        continue;
+                    }
+                }
+                
+                result.Add(tokens[i]);
+                i++;
+            }
+            
+            return result;
+        }
+        
+        /// <summary>
+        /// Check if expression should use legacy parser based on complexity patterns
+        /// </summary>
+        private bool ShouldFallbackToLegacy(string sourceText, List<Token> tokens)
+        {
+            // Fallback for adverb-heavy expressions
+            if (sourceText.Contains("'") || sourceText.Contains("/") || sourceText.Contains("\\"))
+            {
+                // Allow simple triadic dot operations but fallback on complex adverbs
+                if (!(sourceText.Contains(".[") && sourceText.Contains(";-:") && sourceText.Count(c => c == ';') <= 2))
+                {
+                    return true;
+                }
+            }
+            
+            // Fallback for dictionary operations
+            if (sourceText.Contains("@") && sourceText.Contains("`"))
+            {
+                return true;
+            }
+            
+            // Fallback for complex expressions with many tokens
+            if (tokens.Count > 30)
+            {
+                return true;
+            }
+            
+            // Fallback for expressions with nested brackets/parentheses
+            int nestingLevel = 0;
+            foreach (var token in tokens)
+            {
+                if (token.Type == TokenType.LEFT_BRACKET || token.Type == TokenType.LEFT_PAREN || token.Type == TokenType.LEFT_BRACE)
+                {
+                    nestingLevel++;
+                }
+                else if (token.Type == TokenType.RIGHT_BRACKET || token.Type == TokenType.RIGHT_PAREN || token.Type == TokenType.RIGHT_BRACE)
+                {
+                    nestingLevel--;
+                }
+                
+                if (nestingLevel > 3) // Deep nesting
+                {
+                    return true;
+                }
+            }
+            
+            // Fallback for eval expressions (complex parsing)
+            if (sourceText.Contains("_eval") || sourceText.Contains("_parse"))
+            {
+                return true;
+            }
+            
+            // Fallback for attribute operations on complex structures
+            if (sourceText.Contains("~") && (sourceText.Contains("(") || sourceText.Contains("`")))
+            {
+                return true;
+            }
+            
+            return false;
+        }
+
         /// <summary>
         /// Parse using LRS strategy with fallback to legacy parser
         /// </summary>
@@ -65,17 +179,131 @@ namespace K3CSharp.Parsing
                 return new Parser(tokens, sourceText).Parse();
             }
             
+            // Check if we should fallback to legacy based on complexity patterns
+            if (ShouldFallbackToLegacy(sourceText, tokens))
+            {
+                return FallbackToLegacyParser();
+            }
+            
             try
             {
+                // Debug: check which path we'll take
+                if (sourceText.Contains("d:."))
+                {
+                    Console.WriteLine($"[Parse] ENTER: enableFallback={enableFallback}, source='{sourceText.Substring(0, Math.Min(30, sourceText.Length))}'");
+                }
+                
                 // Pure LRS mode: Handle multiple semicolon-separated expressions
                 if (!enableFallback)
                 {
+                    if (sourceText.Contains("d:."))
+                        Console.WriteLine("[Parse] Taking Pure LRS path -> ParseMultipleExpressions");
                     return ParseMultipleExpressions();
                 }
                 
-                // Safe LRS mode: Single expression with fallback
+                // Safe LRS mode: Handle multiple expressions with fallback
+                if (sourceText.Contains("d:."))
+                    Console.WriteLine("[Parse] Taking Safe LRS path");
                 var position = 0;
-                var result = lrsParser?.ParseExpression(ref position);
+                ASTNode? result = null;
+                var expressions = new List<ASTNode>();
+                
+                // Check if this contains multiple TOP-LEVEL expressions (semicolons not inside parentheses/brackets/braces)
+                // Semicolons inside grouping constructs are handled by the grouping parser, not as expression separators
+                bool hasMultipleExpressions = false;
+                int nestingLevel = 0;
+                foreach (var token in tokens)
+                {
+                    if (token.Type == TokenType.LEFT_PAREN || token.Type == TokenType.LEFT_BRACKET || token.Type == TokenType.LEFT_BRACE)
+                    {
+                        nestingLevel++;
+                    }
+                    else if (token.Type == TokenType.RIGHT_PAREN || token.Type == TokenType.RIGHT_BRACKET || token.Type == TokenType.RIGHT_BRACE)
+                    {
+                        nestingLevel--;
+                    }
+                    else if (token.Type == TokenType.SEMICOLON && nestingLevel == 0)
+                    {
+                        // Semicolon at top level indicates multiple expressions
+                        hasMultipleExpressions = true;
+                        break;
+                    }
+                }
+                
+                if (hasMultipleExpressions)
+                {
+                    // Parse multiple expressions for semicolon-separated statements
+                    while (position < tokens.Count)
+                    {
+                        // Skip whitespace and separators
+                        while (position < tokens.Count && 
+                               (tokens[position].Type == TokenType.NEWLINE || 
+                                tokens[position].Type == TokenType.SEMICOLON))
+                        {
+                            if (tokens[position].Type == TokenType.SEMICOLON)
+                            {
+                                // Add null for empty expression between semicolons
+                                expressions.Add(ASTNode.MakeLiteral(new NullValue()));
+                            }
+                            position++;
+                        }
+                        
+                        if (position >= tokens.Count) break;
+                        
+                        // Parse single expression
+                        if (sourceText.Contains("d:."))
+                        {
+                            Console.WriteLine($"[SafeLRS] Parsing expression at position {position}, token={tokens[position].Type}({tokens[position].Lexeme})");
+                        }
+                        var exprResult = lrsParser?.ParseExpression(ref position);
+                        if (sourceText.Contains("d:."))
+                        {
+                            Console.WriteLine($"[SafeLRS] ParseExpression returned: {exprResult?.Type} (position now {position})");
+                        }
+                        if (exprResult != null)
+                        {
+                            expressions.Add(exprResult);
+                        }
+                        else
+                        {
+                            // Failed to parse expression, break out
+                            if (sourceText.Contains("d:."))
+                            {
+                                Console.WriteLine($"[SafeLRS] ParseExpression returned NULL, breaking");
+                            }
+                            break;
+                        }
+                    }
+                    
+                    // Create result following K semantics: wrap multiple expressions in Block node
+                    // for sequential evaluation. The evaluator will execute each expression
+                    // in order and return the last value.
+                    if (sourceText.Contains("d:."))
+                    {
+                        Console.WriteLine($"[SafeLRS] expressions.Count = {expressions.Count}");
+                    }
+                    if (expressions.Count == 1)
+                    {
+                        result = expressions[0]; // Single expression - return directly
+                    }
+                    else if (expressions.Count > 1)
+                    {
+                        // Multiple expressions: wrap in Block node for sequential evaluation
+                        if (sourceText.Contains("d:."))
+                            Console.WriteLine("[SafeLRS] Creating Block node for multiple expressions");
+                        var blockNode = new ASTNode(ASTNodeType.Block);
+                        foreach (var expr in expressions)
+                        {
+                            blockNode.Children.Add(expr);
+                        }
+                        result = blockNode;
+                    }
+                }
+                else
+                {
+                    // Single expression parsing
+                    result = lrsParser?.ParseExpression(ref position);
+                }
                 
                 // Record failure if LRS parsing failed
                 if (result == null)
@@ -108,7 +336,21 @@ namespace K3CSharp.Parsing
                 }
                 
                 // Validate result
-                if (result != null && position >= tokens.Count)
+                // Check if remaining tokens are just whitespace/newlines
+                bool onlyWhitespaceRemaining = true;
+                if (position < tokens.Count)
+                {
+                    for (int i = position; i < tokens.Count; i++)
+                    {
+                        if (tokens[i].Type != TokenType.NEWLINE && tokens[i].Type != TokenType.EOF)
+                        {
+                            onlyWhitespaceRemaining = false;
+                            break;
+                        }
+                    }
+                }
+                
+                if (result != null && (position >= tokens.Count || onlyWhitespaceRemaining))
                 {
                     return result;
                 }
@@ -129,6 +371,12 @@ namespace K3CSharp.Parsing
                 // If LRS parsing didn't consume all tokens, fall back
                 if (enableFallback)
                 {
+                    // Debug for ktree tests
+                    if (sourceText.Contains("d:."))
+                    {
+                        Console.WriteLine($"[SafeLRS] Checking fallback: position={position}, tokens.Count={tokens.Count}, result={result?.Type}");
+                    }
+                    
                     // Track incomplete consumption cases separately
                     if (result != null && position < tokens.Count)
                     {
@@ -157,9 +405,11 @@ namespace K3CSharp.Parsing
                 
                 throw new Exception($"LRS parser failed to parse complete expression: {sourceText}");
             }
-            catch when (enableFallback)
+            catch (Exception ex) when (enableFallback)
             {
                 // Fallback to legacy parser on any error
+                Console.WriteLine($"[DEBUG] LRS parser failed with error: {ex.Message}");
+                Console.WriteLine($"[DEBUG] Stack trace: {ex.StackTrace}");
                 return FallbackToLegacyParser();
             }
         }
@@ -347,6 +597,9 @@ namespace K3CSharp.Parsing
             var position = 0;
             var expressions = new List<ASTNode>();
             
+            // Debug: always print for this method
+            Console.WriteLine($"[ParseMultiple] ENTER: sourceText='{sourceText}'");
+            
             // Skip leading whitespace-only lines (top-level only)
             // Per K spec: whitespace-only lines at top level are ignored
             while (position < tokens.Count && 
@@ -360,6 +613,12 @@ namespace K3CSharp.Parsing
             // CRITICAL: Sequential evaluation for stateful operations (assignments, I/O, side effects)
             while (position < tokens.Count)
             {
+                // Debug for ktree tests
+                if (sourceText.Contains("d:.((`keyA"))
+                {
+                    Console.WriteLine($"[ParseMultiple] Position {position}/{tokens.Count}, Token: {tokens[position].Type}({tokens[position].Lexeme})");
+                    Console.WriteLine($"[ParseMultiple] expressions.Count = {expressions.Count}");
+                }
                 // Check for EOF
                 if (tokens[position].Type == TokenType.EOF)
                     break;
@@ -477,6 +736,13 @@ namespace K3CSharp.Parsing
             {
                 blockNode.Children.Add(expr);
             }
+            
+            // Debug for ktree tests
+            if (sourceText.Contains("d:.((`keyA"))
+            {
+                Console.WriteLine($"[ParseMultiple] RETURNING Block with {expressions.Count} expressions");
+            }
+            
             return blockNode;
         }
     }

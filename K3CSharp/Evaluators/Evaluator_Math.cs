@@ -671,13 +671,16 @@ namespace K3CSharp
         private K3Value MathMul(K3Value left, K3Value right)
         {
             // Generic matrix multiplication for any size matrices
-            if (left is VectorValue leftVec && right is VectorValue rightVec)
+            if (left is VectorValue leftVec2 && right is VectorValue rightVec2)
             {
                 // Check if both are matrices (vectors of vectors)
-                if (IsMatrix(leftVec) && IsMatrix(rightVec))
+                bool leftIsMatrix = IsMatrix(leftVec2);
+                bool rightIsMatrix = IsMatrix(rightVec2);
+                
+                if (leftIsMatrix && rightIsMatrix)
                 {
-                    var leftMatrix = ExtractMatrix(leftVec);
-                    var rightMatrix = ExtractMatrix(rightVec);
+                    var leftMatrix = ExtractMatrix(leftVec2);
+                    var rightMatrix = ExtractMatrix(rightVec2);
                     
                     // Check dimensions: left columns must equal right rows
                     if (leftMatrix[0].Length != rightMatrix.Length)
@@ -686,10 +689,10 @@ namespace K3CSharp
                     }
                     
                     // Determine result type based on input types
-                    bool leftHasFloat = leftVec.Elements.Any(e => e is FloatValue);
-                    bool rightHasFloat = rightVec.Elements.Any(e => e is FloatValue);
-                    bool leftHasLong = leftVec.Elements.Any(e => e is LongValue);
-                    bool rightHasLong = rightVec.Elements.Any(e => e is LongValue);
+                    bool leftHasFloat = leftVec2.Elements.Any(e => e is FloatValue);
+                    bool rightHasFloat = rightVec2.Elements.Any(e => e is FloatValue);
+                    bool leftHasLong = leftVec2.Elements.Any(e => e is LongValue);
+                    bool rightHasLong = rightVec2.Elements.Any(e => e is LongValue);
                     
                     // Perform matrix multiplication: C = A * B
                     var result = new double[leftMatrix.Length][];

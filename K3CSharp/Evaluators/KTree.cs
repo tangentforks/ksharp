@@ -31,8 +31,8 @@ namespace K3CSharp
             // Initialize the root dictionary
             root = new DictionaryValue();
             
-            // Create the .k variable with initial value null (_n)
-            root.Entries[new SymbolValue("k")] = (new NullValue(), null!);
+            // Create the .k branch as a dictionary (default namespace for user variables)
+            root.Entries[new SymbolValue("k")] = (new DictionaryValue(), null!);
             
             // Add the .t variable to root with default value 0
             root.Entries[new SymbolValue("t")] = (new IntegerValue(0), null!);

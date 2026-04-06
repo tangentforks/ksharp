@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace K3CSharp.Parsing
 {
@@ -107,8 +108,8 @@ namespace K3CSharp.Parsing
             {
                 // If the content has more than 1 expression, generate a list
                 // The evaluator will handle vector collapsing if all elements have the same type
-                // For semicolon-separated expressions, create a Block (list), not a Vector
-                return new ASTNode(ASTNodeType.Block, null, elements);
+                // For semicolon-separated expressions, create an ExpressionList (return all values)
+                return new ASTNode(ASTNodeType.ExpressionList, null, elements);
             }
             else
             {
@@ -287,15 +288,24 @@ namespace K3CSharp.Parsing
             if (position >= tokens.Count || tokens[position].Type != TokenType.LEFT_BRACE)
                 throw new Exception("Expected '{'");
                 
+            int braceStartPos = position; // Remember start position for original text extraction
             position++; // Consume '{'
             
             // Parse function body
-            var body = ParseFunctionBody(ref position);
+            var body = ParseFunctionBody(ref position, braceStartPos);
             
             if (position >= tokens.Count || tokens[position].Type != TokenType.RIGHT_BRACE)
                 throw new Exception("Unclosed braces - expected '}'");
                 
             position++; // Consume '}'
+            
+            // Update the function's original source text to include the closing brace
+            if (body.Type == ASTNodeType.Function && body.Value is FunctionValue funcVal)
+            {
+                // Create new FunctionValue with updated source text that includes closing brace
+                string updatedSourceText = funcVal.OriginalSourceText + "}";
+                body.Value = new FunctionValue(funcVal.BodyText, funcVal.Parameters, funcVal.PreParsedTokens, updatedSourceText, funcVal.Hint);
+            }
             
             return body;
         }
@@ -307,7 +317,9 @@ namespace K3CSharp.Parsing
         private ASTNode? ParseExpressionInGrouping(ref int position)
         {
             if (position >= tokens.Count)
+            {
                 return ASTNode.MakeLiteral(new NullValue()); // Return K NullValue for empty
+            }
             
             var token = tokens[position];
             
@@ -361,7 +373,9 @@ namespace K3CSharp.Parsing
             
             // If no tokens collected, return null
             if (exprTokens.Count == 0)
+            {
                 return ASTNode.MakeLiteral(new NullValue());
+            }
             
             // Delegate to parent LRS parser for proper expression parsing
             // Parent parser will handle nested parentheses recursively
@@ -388,7 +402,6 @@ namespace K3CSharp.Parsing
                 return ASTNode.MakeLiteral(new NullValue());
             }
             
-            Console.WriteLine($"[LRS DEBUG] ParseExpressionInGrouping returning: {(result == null ? "NULL" : result.Type.ToString())}");
             return result;
         }
         
@@ -407,7 +420,6 @@ namespace K3CSharp.Parsing
             if (result == null)
                 return ASTNode.MakeLiteral(new NullValue());
                 
-            Console.WriteLine($"[LRS DEBUG] ParseExpressionInGrouping returning: {(result == null ? "NULL" : result.Type.ToString())}");
             return result;
         }
 
@@ -415,9 +427,10 @@ namespace K3CSharp.Parsing
         /// Parse function body with optional parameters
         /// Creates proper Function AST node with FunctionValue
         /// </summary>
-        private ASTNode ParseFunctionBody(ref int position)
+        private ASTNode ParseFunctionBody(ref int position, int braceStartPos)
         {
             var parameters = new List<string>();
+            var bodyStartPos = position; // Remember start position for body text extraction
             
             // Parse parameter list if present
             if (position < tokens.Count && tokens[position].Type == TokenType.LEFT_BRACKET)
@@ -452,18 +465,170 @@ namespace K3CSharp.Parsing
             var body = ParseExpressionInGrouping(ref position);
             var bodyNode = body ?? ASTNode.MakeLiteral(new NullValue());
             
+            // Extract complete original source text from opening brace to current position
+            string originalSourceText = ExtractOriginalSourceText(braceStartPos, position);
+            
             // Create Function AST node with FunctionValue
-            // Note: FunctionValue stores body as text, but we also store the parsed AST in the node's Children
             var functionNode = new ASTNode(ASTNodeType.Function);
             
-            // Store the body text (simplified representation for now)
-            string bodyText = "parsed_lambda_body";
-            functionNode.Value = new FunctionValue(bodyText, parameters, null!, bodyText);
+            // Extract only the function body part (after parameters) from original source
+            string bodyText = ExtractBodyFromOriginalSource(originalSourceText);
+            var functionValue = new FunctionValue(bodyText, parameters, null!, originalSourceText);
+            functionNode.Value = functionValue;
+            
+            // Pre-cache the parsed body AST to avoid re-parsing issues
+            functionValue.CacheAst(bodyNode);
             
             // Store the actual parsed body AST as a child node for evaluation
             functionNode.Children.Add(bodyNode);
             
             return functionNode;
         }
-    }
+        
+        /// <summary>
+        /// Extract function body from original source text (excluding parameter list)
+        /// </summary>
+        /// <param name="originalSourceText">Original source including parameters</param>
+        /// <returns>Function body text only</returns>
+        private string ExtractBodyFromOriginalSource(string originalSourceText)
+        {
+            // Find the closing bracket ']' of the parameter list
+            var bracketIndex = originalSourceText.IndexOf(']');
+            if (bracketIndex >= 0)
+            {
+                // Return everything after the closing bracket
+                return originalSourceText.Substring(bracketIndex + 1).Trim();
+            }
+            
+            // If no parameter list found, return the entire text (for parameterless functions)
+            return originalSourceText.Trim();
+        }
+        
+        /// <summary>
+        /// Extract body text from AST node for execution
+        /// </summary>
+        /// <param name="bodyNode">The parsed body AST node</param>
+        /// <returns>Body text reconstructed from AST</returns>
+        private string ExtractBodyTextFromAST(ASTNode bodyNode)
+        {
+            // Debug: Print the AST structure
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] ExtractBodyTextFromAST: Type={bodyNode.Type}, Children={bodyNode.Children.Count}");
+            
+            if (bodyNode.Type == ASTNodeType.Literal && bodyNode.Value != null)
+            {
+                return bodyNode.Value.ToString();
+            }
+            else if (bodyNode.Type == ASTNodeType.DyadicOp && bodyNode.Children.Count >= 2)
+            {
+                var left = ExtractBodyTextFromAST(bodyNode.Children[0]);
+                var op = bodyNode.Value?.ToString() ?? "";
+                var right = ExtractBodyTextFromAST(bodyNode.Children[1]);
+                return $"{left}{op}{right}";
+            }
+            else if (bodyNode.Type == ASTNodeType.MonadicOp && bodyNode.Children.Count >= 1)
+            {
+                var op = bodyNode.Value?.ToString() ?? "";
+                var operand = ExtractBodyTextFromAST(bodyNode.Children[0]);
+                return $"{op}{operand}";
+            }
+            else if (bodyNode.Type == ASTNodeType.Variable && bodyNode.Value != null)
+            {
+                return bodyNode.Value.ToString();
+            }
+            else if (bodyNode.Type == ASTNodeType.Block && bodyNode.Children.Count > 0)
+            {
+                // For block nodes, join all children with spaces
+                var parts = new List<string>();
+                foreach (var child in bodyNode.Children)
+                {
+                    parts.Add(ExtractBodyTextFromAST(child));
+                }
+                return string.Join(" ", parts);
+            }
+            
+            return "";
+        }
+        
+        /// <summary>
+        /// Extract original source text from token range
+        /// </summary>
+        /// <param name="startPos">Start position (including opening brace)</param>
+        /// <param name="endPos">End position (before closing brace)</param>
+        /// <returns>Original source text with proper K formatting</returns>
+        private string ExtractOriginalSourceText(int startPos, int endPos)
+        {
+            var sourceText = new StringBuilder();
+            
+            for (int i = startPos; i < endPos; i++)
+            {
+                var token = tokens[i];
+                var nextToken = i < endPos - 1 ? tokens[i + 1] : null;
+                
+                sourceText.Append(token.Lexeme);
+                
+                // Add space only in specific cases for K syntax:
+                // 1. After identifiers/numbers, except before brackets, semicolons, or closing brace
+                // 2. After operators, except before brackets, semicolons, or closing brace
+                // 3. After closing bracket, except before closing brace
+                // 4. NOT after opening brace
+                // 5. NOT after semicolons
+                // 6. NOT before closing bracket or brace
+                if (nextToken != null)
+                {
+                    bool addSpace = false;
+                    
+                    if (token.Type == TokenType.IDENTIFIER || 
+                        token.Type == TokenType.INTEGER || 
+                        token.Type == TokenType.FLOAT ||
+                        token.Type == TokenType.LONG)
+                    {
+                        // Add space after identifiers/numbers, except before brackets, semicolons, or closing brace
+                        addSpace = nextToken.Type != TokenType.LEFT_BRACKET &&
+                                  nextToken.Type != TokenType.RIGHT_BRACKET &&
+                                  nextToken.Type != TokenType.RIGHT_BRACE &&
+                                  nextToken.Type != TokenType.RIGHT_PAREN &&
+                                  nextToken.Type != TokenType.SEMICOLON;
+                    }
+                    else if (IsOperator(token.Type))
+                    {
+                        // Add space after operators, except before brackets, semicolons, or closing brace
+                        addSpace = nextToken.Type != TokenType.LEFT_BRACKET &&
+                                  nextToken.Type != TokenType.RIGHT_BRACKET &&
+                                  nextToken.Type != TokenType.RIGHT_BRACE &&
+                                  nextToken.Type != TokenType.RIGHT_PAREN &&
+                                  nextToken.Type != TokenType.SEMICOLON;
+                    }
+                    else if (token.Type == TokenType.RIGHT_BRACKET)
+                    {
+                        // Add space after closing bracket, except before closing brace
+                        addSpace = nextToken.Type != TokenType.RIGHT_BRACE &&
+                                  nextToken.Type != TokenType.RIGHT_PAREN;
+                    }
+                    
+                    if (addSpace)
+                    {
+                        sourceText.Append(' ');
+                    }
+                }
+            }
+            
+            return sourceText.ToString();
+        }
+        
+        /// <summary>
+        /// Check if a token type represents an operator
+        /// </summary>
+        private bool IsOperator(TokenType tokenType)
+        {
+            return tokenType == TokenType.PLUS ||
+                   tokenType == TokenType.MINUS ||
+                   tokenType == TokenType.MULTIPLY ||
+                   tokenType == TokenType.DIVIDE ||
+                   tokenType == TokenType.MODULUS ||
+                   tokenType == TokenType.POWER ||
+                   tokenType == TokenType.DOT_APPLY ||
+                   tokenType == TokenType.APPLY;
+        }
+        
+        }
 }

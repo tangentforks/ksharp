@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace K3CSharp.Parsing
 {
@@ -37,6 +38,7 @@ namespace K3CSharp.Parsing
                 TokenType.SYMBOL => ParseSymbol(token),
                 TokenType.IDENTIFIER => ParseIdentifier(token, parser),
                 TokenType.NULL => ParseNull(token),
+                TokenType.SS => ParseSystemVerb(token),
                 _ => throw new Exception($"Unsupported atomic token type: {token.Type}({token.Lexeme})")
             };
         }
@@ -130,7 +132,7 @@ namespace K3CSharp.Parsing
         /// Parse string token (character vector) with full K escape sequence support
         /// Supports: \\, \b, \t, \n, \r, \", and octal sequences \000-\377
         /// </summary>
-        private static ASTNode ParseString(Token token)
+        public static ASTNode ParseString(Token token)
         {
             var lexeme = token.Lexeme;
             
@@ -138,16 +140,22 @@ namespace K3CSharp.Parsing
             // But we also need to handle cases where quotes might be present
             if (lexeme.Length >= 2 && lexeme[0] == '"' && lexeme[^1] == '"')
             {
-                // Traditional quoted string - remove quotes and process escape sequences
-                var rawString = lexeme.Substring(1, lexeme.Length - 2);
-                var processedString = ProcessEscapeSequences(rawString);
-                return ASTNode.MakeLiteral(new SymbolValue(processedString));
+                // Remove surrounding quotes and process escape sequences
+                var content = lexeme.Substring(1, lexeme.Length - 2);
+                var processedString = ProcessEscapeSequences(content);
+                
+                // Create a character vector (string) from the processed content
+                var charValues = processedString.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
+                return ASTNode.MakeLiteral(new VectorValue(charValues));
             }
             else
             {
                 // CHARACTER_VECTOR token with raw content - process escape sequences directly
                 var processedString = ProcessEscapeSequences(lexeme);
-                return ASTNode.MakeLiteral(new SymbolValue(processedString));
+                
+                // Create a character vector (string) from the processed content
+                var charValues = processedString.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
+                return ASTNode.MakeLiteral(new VectorValue(charValues));
             }
         }
         
@@ -216,7 +224,16 @@ namespace K3CSharp.Parsing
             
             // Remove backticks for symbol value
             var symbolValue = lexeme.Trim('`');
-            return ASTNode.MakeLiteral(new SymbolValue(symbolValue));
+            return ASTNode.MakeLiteral(new SymbolValue(token.Lexeme));
+        }
+        
+        /// <summary>
+        /// Parse system verb token
+        /// </summary>
+        private static ASTNode ParseSystemVerb(Token token)
+        {
+            // Create a literal node for the system verb
+            return ASTNode.MakeLiteral(new SymbolValue(token.Lexeme));
         }
 
         /// <summary>
@@ -264,7 +281,8 @@ namespace K3CSharp.Parsing
             {
                 TokenType.INTEGER or TokenType.LONG or TokenType.FLOAT or 
                 TokenType.CHARACTER or TokenType.CHARACTER_VECTOR or 
-                TokenType.SYMBOL or TokenType.IDENTIFIER or TokenType.NULL => true,
+                TokenType.SYMBOL or TokenType.IDENTIFIER or TokenType.NULL or
+                TokenType.SS => true,
                 _ => false
             };
         }
@@ -289,9 +307,10 @@ namespace K3CSharp.Parsing
                 TokenType.QUESTION => ASTNode.MakeLiteral(new SymbolValue("?")),
                 TokenType.HASH => ASTNode.MakeLiteral(new SymbolValue("#")),
                 TokenType.UNDERSCORE => ASTNode.MakeLiteral(new SymbolValue("_")),
-                TokenType.GLOBAL_ASSIGNMENT => ASTNode.MakeLiteral(new SymbolValue("::")),
                 TokenType.COLON => ASTNode.MakeLiteral(new SymbolValue(":")),
                 TokenType.SEMICOLON => ASTNode.MakeLiteral(new SymbolValue(";")),
+                TokenType.DOT_APPLY => ASTNode.MakeLiteral(new SymbolValue(".")),
+                TokenType.APPLY => ASTNode.MakeLiteral(new SymbolValue("@")),
                 
                 // System verbs
                 TokenType.CI => ASTNode.MakeLiteral(new SymbolValue("_ci")),

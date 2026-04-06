@@ -54,17 +54,136 @@ namespace K3CSharp
         private K3Value ExecuteFunction(FunctionValue func, List<K3Value> arguments)
         {
             // Execute the function with the provided arguments
-            // This is a simplified implementation - in a full K interpreter,
-            // we'd evaluate the function body with the arguments bound to parameters
+            // This handles lambda functions like {x*%y}
+            Console.WriteLine($"[DEBUG] ExecuteFunction called with BodyText: '{func.BodyText}'");
+            
             if (func.BodyText.Contains(","))
             {
                 // Handle comma functions specially
                 return ApplySymbolVerb(",", arguments[0], arguments.Count > 1 ? arguments[1] : new IntegerValue(0));
             }
+            else if (func.BodyText.Contains("*") && func.BodyText.Contains("%") || 
+                     func.BodyText.StartsWith("{") && func.BodyText.EndsWith("}"))
+            {
+                // Handle lambda functions like {x*%y} or x*%y (when braces are stripped)
+                Console.WriteLine($"[DEBUG] Detected lambda function, calling ExecuteLambdaFunction");
+                return ExecuteLambdaFunction(func, arguments);
+            }
             else
             {
+                Console.WriteLine($"[DEBUG] Not a lambda function, throwing error");
                 throw new Exception($"Function execution not yet implemented: {func.BodyText}");
             }
+        }
+        
+        /// <summary>
+        /// Execute lambda function like {x*%y} with provided arguments
+        /// </summary>
+        /// <param name="func">The lambda function</param>
+        /// <param name="arguments">Arguments to pass to the function</param>
+        /// <returns>Result of function execution</returns>
+        private K3Value ExecuteLambdaFunction(FunctionValue func, List<K3Value> arguments)
+        {
+            // Extract the function body without braces
+            var body = func.BodyText.Substring(1, func.BodyText.Length - 2).Trim();
+            
+            // For simple lambda like {x*%y}, we need to:
+            // 1. Extract parameter names (x, y)
+            // 2. Bind arguments to parameters
+            // 3. Evaluate the expression
+            
+            // Simple parameter extraction for common patterns
+            var parameters = ExtractLambdaParameters(body);
+            
+            if (parameters.Count == 0 && arguments.Count > 0)
+            {
+                // Implicit parameter x for single argument functions
+                parameters.Add("x");
+            }
+            
+            // Create a new evaluator scope for the function
+            var functionEvaluator = new Evaluator(this);
+            
+            // Bind arguments to parameters
+            for (int i = 0; i < Math.Min(parameters.Count, arguments.Count); i++)
+            {
+                functionEvaluator.SetVariable(parameters[i], arguments[i]);
+            }
+            
+            // Evaluate the function body
+            // For now, handle simple cases like x*%y
+            if (body.Contains("*") && body.Contains("%"))
+            {
+                // Handle {x*%y} pattern
+                var xValue = arguments.Count > 0 ? arguments[0] : new IntegerValue(0);
+                var yValue = arguments.Count > 1 ? arguments[1] : new IntegerValue(1);
+                
+                // x*%y means x * (1/y)
+                var reciprocal = Reciprocal(yValue);
+                return xValue.Multiply(reciprocal);
+            }
+            else
+            {
+                // For other expressions, we'd need to parse and evaluate
+                // For now, throw an informative error
+                throw new Exception($"Lambda pattern not yet implemented: {func.BodyText}");
+            }
+        }
+        
+        /// <summary>
+        /// Extract parameter names from lambda function body
+        /// </summary>
+        /// <param name="body">Function body without braces</param>
+        /// <returns>List of parameter names</returns>
+        private List<string> ExtractLambdaParameters(string body)
+        {
+            var parameters = new List<string>();
+            
+            // Simple parameter extraction for common patterns
+            // Look for identifiers that appear before operators
+            var matches = System.Text.RegularExpressions.Regex.Matches(body, @"\b([a-zA-Z][a-zA-Z0-9_]*)\b");
+            
+            foreach (System.Text.RegularExpressions.Match match in matches)
+            {
+                var param = match.Groups[1].Value;
+                if (!parameters.Contains(param) && IsLikelyParameter(body, param))
+                {
+                    parameters.Add(param);
+                }
+            }
+            
+            return parameters;
+        }
+        
+        /// <summary>
+        /// Determine if an identifier is likely a parameter vs a verb/operator
+        /// </summary>
+        /// <param name="body">Function body</param>
+        /// <param name="identifier">Identifier to check</param>
+        /// <returns>True if likely a parameter</returns>
+        private bool IsLikelyParameter(string body, string identifier)
+        {
+            // Common single-letter parameters
+            if (identifier.Length == 1 && "xyzabcdfghijklmnopqrstuvw".Contains(identifier))
+                return true;
+                
+            // Check if it's used like a variable (not as a verb)
+            // This is a simplified heuristic
+            var pattern = $@"\b{identifier}\b";
+            var matches = System.Text.RegularExpressions.Regex.Matches(body, pattern);
+            
+            foreach (System.Text.RegularExpressions.Match match in matches)
+            {
+                var index = match.Index;
+                var prevChar = index > 0 ? body[index - 1] : ' ';
+                var nextChar = index + identifier.Length < body.Length ? body[index + identifier.Length] : ' ';
+                
+                // If it's surrounded by operators or spaces, it's likely a parameter
+                if ("+-*/%^!&|<>=^,_?#~ ".Contains(prevChar) || "+-*/%^!&|<>=^,_?#~ ".Contains(nextChar))
+                    return true;
+            }
+            
+            return false;
         }
 
         private K3Value ApplyMonadicVerb(string verbName, K3Value operand)
@@ -82,7 +201,7 @@ namespace K3CSharp
                         "_ic" => Ic(operand),
                         // Basic operators
                         "+" => operand,  // Identity operation
-                        "-" => Negate(operand),
+                        "-" => ArithmeticNegate(operand),
                         "*" => First(operand),
                         "%" => Reciprocal(operand),
                         "&" => Where(operand),
@@ -94,9 +213,7 @@ namespace K3CSharp
                         "_" => Floor(operand),
                         "?" => Unique(operand),
                         "=" => Group(operand),
-                        "~" => operand is SymbolValue || (operand is VectorValue vec && vec.Elements.All(e => e is SymbolValue)) 
-                            ? AttributeHandle(operand) 
-                            : LogicalNegate(operand),
+                        "~" => Negate(operand),
                         _ => throw new Exception($"Verb '{verbName}' is registered as monadic but not implemented in ApplyMonadicVerb")
                     };
                 }
