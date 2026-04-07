@@ -2343,6 +2343,7 @@ namespace K3CSharp.Tests
                 ("parse_projection_dyadic_plus_fixed_left.k", "(`\"+\";,1;`\"::\")"),
                 ("parse_projection_dyadic_plus_fixed_right.k", "(`\"+\";`\"::\";,2)"),
                 ("parse_monadic_shape_atomic.k", "(`\"^:\";(`\",:\";,`a))"),
+                ("parse_apply_and_assign.k", "(`\"+:\";`i;1)"),
                 ("eval_dyadic_plus.k", "6 8 10 12"),
                 ("eval_monadic_star_nested.k", "22"),
                 ("eval_dot_execute_path.k", "`a`b`c`d`e`f"),

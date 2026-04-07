@@ -130,23 +130,25 @@ namespace K3CSharp.Parsing
                 var leftNode = BuildParseTreeFromTokens(leftTokens);
                 var rightNode = BuildParseTreeFromTokens(rightTokens);
                 
-                // Handle null nodes by creating appropriate literals
+                // Check if this should be a monadic operation (no left operand)
+                // MUST check this BEFORE replacing null nodes, as null leftNode is valid for monadic
+                if (leftTokens.Count == 0 && OperatorDetector.SupportsMonadic(opToken.Type))
+                {
+                    // Create monadic node when there's no left operand
+                    // Handle null right node
+                    if (rightNode == null)
+                        rightNode = ASTNode.MakeLiteral(new NullValue());
+                    return CreateMonadicNode(opToken, rightNode);
+                }
+                
+                // Handle null nodes by creating appropriate literals (for dyadic operations)
                 if (leftNode == null)
                     leftNode = ASTNode.MakeLiteral(new NullValue());
                 if (rightNode == null)
                     rightNode = ASTNode.MakeLiteral(new NullValue());
                 
-                // Check if this should be a monadic operation (no left operand)
-                if (leftTokens.Count == 0 && OperatorDetector.SupportsMonadic(opToken.Type))
-                {
-                    // Create monadic node when there's no left operand
-                    return CreateMonadicNode(opToken, rightNode);
-                }
-                else
-                {
-                    // Create dyadic node when there are both operands
-                    return CreateDyadicNode(opToken, leftNode, rightNode);
-                }
+                // Create dyadic node when there are both operands
+                return CreateDyadicNode(opToken, leftNode, rightNode);
             }
             else
             {
@@ -154,23 +156,25 @@ namespace K3CSharp.Parsing
                 var leftNode = ParseSubExpression(leftTokens);
                 var rightNode = ParseSubExpression(rightTokens);
                 
-                // Handle null nodes by creating appropriate literals
+                // Check if this should be a monadic operation (no left operand)
+                // MUST check this BEFORE replacing null nodes, as null leftNode is valid for monadic
+                if (leftTokens.Count == 0 && OperatorDetector.SupportsMonadic(opToken.Type))
+                {
+                    // Create monadic node when there's no left operand
+                    // Handle null right node
+                    if (rightNode == null)
+                        rightNode = ASTNode.MakeLiteral(new NullValue());
+                    return CreateMonadicNode(opToken, rightNode);
+                }
+                
+                // Handle null nodes by creating appropriate literals (for dyadic operations)
                 if (leftNode == null)
                     leftNode = ASTNode.MakeLiteral(new NullValue());
                 if (rightNode == null)
                     rightNode = ASTNode.MakeLiteral(new NullValue());
                 
-                // Check if this should be a monadic operation (no left operand)
-                if (leftTokens.Count == 0 && OperatorDetector.SupportsMonadic(opToken.Type))
-                {
-                    // Create monadic node when there's no left operand
-                    return CreateMonadicNode(opToken, rightNode);
-                }
-                else
-                {
-                    // Create dyadic node when there are both operands
-                    return CreateDyadicNode(opToken, leftNode, rightNode);
-                }
+                // Create dyadic node when there are both operands
+                return CreateDyadicNode(opToken, leftNode, rightNode);
             }
         }
         
@@ -204,13 +208,14 @@ namespace K3CSharp.Parsing
             if (tokens.Count == 0) return null;
             
             // Check for simple assignment statement (e.g., 'a: 42' in '1 + a: 42')
-            // This handles inline assignment where assignment is a sub-expression
+            // This handles inline assignment where assignment is a sub-expression.
+            // Use ParseInlineStatement so the assignment returns the value (not Null).
             if (tokens.Count >= 3 && IsSimpleAssignment(tokens))
             {
                 var statementParser = parentParser?.GetStatementParser();
                 if (statementParser != null)
                 {
-                    return statementParser.ParseStatement(tokens);
+                    return statementParser.ParseInlineStatement(tokens);
                 }
             }
             
@@ -401,7 +406,23 @@ namespace K3CSharp.Parsing
             }
             
             // Try dyadic operation (monadic parsing is handled at main LRS level)
-            return ParseDyadicOperation(tokens);
+            var dyadicResult = ParseDyadicOperation(tokens);
+            if (dyadicResult != null)
+                return dyadicResult;
+            
+            // If dyadic parsing failed and we have exactly 2 tokens (potential monadic: op + operand)
+            // try monadic parsing directly
+            if (tokens.Count == 2 && OperatorDetector.SupportsMonadic(tokens[0].Type))
+            {
+                var opToken = tokens[0];
+                var operandNode = CreateNodeFromToken(tokens[1]);
+                if (operandNode != null)
+                {
+                    return CreateMonadicNode(opToken, operandNode);
+                }
+            }
+            
+            return null;
         }
         
         /// <summary>

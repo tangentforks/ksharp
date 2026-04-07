@@ -1,44 +1,21 @@
 # K3CSharp Parser Failures
 
-**Generated:** 2026-04-07 02:12:46
-**Test Results:** 775/861 passed (90.0%)
+**Generated:** 2026-04-07 18:39:06
+**Test Results:** 811/862 passed (94.1%)
 
 ## Executive Summary
 
-**Total Tests:** 861
-**Passed Tests:** 775
-**Failed Tests:** 86
-**Success Rate:** 90.0%
+**Total Tests:** 862
+**Passed Tests:** 811
+**Failed Tests:** 51
+**Success Rate:** 94.1%
 
 **LRS Parser Statistics:**
-- NULL Results: 1
-- Incomplete Token Consumption: 1
-- Total Fallbacks to Legacy: 2
+- NULL Results: 0
+- Incomplete Token Consumption: 0
+- Total Fallbacks to Legacy: 0
 - Incorrect Results: 0
-- LRS is handling: 99.8%
-
-**Top Failure Patterns:**
-- Incomplete consumption (position 8/11): 1
-- After INTEGER (position 4/5): 1
-
-## LRS Parser Failures
-
-### NULL Results (LRS returned NULL)
-
-1. **apply_and_assign_multiline.k**:
-```k
-i+:1
-```
-After INTEGER (position 4/5)
--------------------------------------------------
-### Incomplete Token Consumption (LRS returned result but didn't consume all tokens)
-
-**apply_and_assign_simple.k**:
-```k
-i:0;i+:1;i
-```
-Incomplete consumption (position 8/11) (consumed 8/11)
--------------------------------------------------
+- LRS is handling: 100.0%
 
 ---
 

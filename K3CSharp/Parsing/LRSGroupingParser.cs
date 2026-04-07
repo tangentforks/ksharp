@@ -525,8 +525,11 @@ namespace K3CSharp.Parsing
                 return originalSourceText.Substring(bracketIndex + 1).Trim();
             }
             
-            // If no parameter list found, return the entire text (for parameterless functions)
-            return originalSourceText.Trim();
+            // If no parameter list found, strip any leading '{' and return the body
+            var body = originalSourceText.Trim();
+            if (body.StartsWith("{"))
+                body = body.Substring(1).Trim();
+            return body;
         }
         
         /// <summary>

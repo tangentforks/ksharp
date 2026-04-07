@@ -95,6 +95,99 @@ namespace K3CSharp.Parsing
             if (expressionTokens.Count == 0)
                 return null;
             
+            // CRITICAL: Check for projection patterns BEFORE bracket function call handling
+            // Pattern: +[;2] (operator with bracket containing semicolon)
+            // But NOT for DOT_APPLY/APPLY with 3+ args — those are amend/triadic, not projections
+            if (expressionTokens.Count >= 3 &&
+                IsVerbToken(expressionTokens[0].Type) &&
+                expressionTokens[1].Type == TokenType.LEFT_BRACKET)
+            {
+                var bracketEnd = FindMatchingBracket(expressionTokens, 1);
+                if (bracketEnd != -1)
+                {
+                    // Count top-level arguments inside brackets (paren/brace-aware)
+                    int argCount0 = CountBracketArguments(expressionTokens, 1);
+                    // Also detect top-level semicolons directly (handles blank slots like +[;5])
+                    int semicolonCount = 0;
+                    {
+                        int sd = 0;
+                        for (int si = 2; si < bracketEnd; si++)
+                        {
+                            var st = expressionTokens[si].Type;
+                            if (st == TokenType.LEFT_PAREN || st == TokenType.LEFT_BRACKET || st == TokenType.LEFT_BRACE) sd++;
+                            else if (st == TokenType.RIGHT_PAREN || st == TokenType.RIGHT_BRACKET || st == TokenType.RIGHT_BRACE) sd--;
+                            else if (st == TokenType.SEMICOLON && sd == 0) semicolonCount++;
+                        }
+                    }
+                    bool hasSemicolon = semicolonCount > 0;
+                    
+                    // DOT_APPLY/APPLY with 2+ semicolons = amend/triadic — skip projection handling
+                    bool isDotOrApply = expressionTokens[0].Type == TokenType.DOT_APPLY ||
+                                       expressionTokens[0].Type == TokenType.APPLY;
+                    if (isDotOrApply && semicolonCount >= 2)
+                        hasSemicolon = false;
+                    
+                    if (hasSemicolon)
+                    {
+                        // Split bracket content by top-level semicolons
+                        var bracketContent = expressionTokens.GetRange(2, bracketEnd - 2);
+                        var splitArgs = SplitBracketArguments(bracketContent, int.MaxValue);
+                        
+                        // Check if any slot is blank (empty token list = unspecified argument = projection)
+                        bool hasBlankSlot = splitArgs.Any(a => a.Count == 0);
+                        
+                        if (!hasBlankSlot)
+                        {
+                            // All arguments specified — evaluate as full function call
+                            // f[j;k] with both args = dyadic f applied to j and k
+                            var argNodes = splitArgs.Select(argTokens =>
+                                BuildParseTree ? BuildParseTreeFromRight(argTokens) : EvaluateFromRight(argTokens)).ToList();
+                            
+                            if (argNodes.Count == 2)
+                            {
+                                // Dyadic: create DyadicOp node
+                                return new ASTNode(ASTNodeType.DyadicOp, expressionTokens[0].Lexeme == "." ? new SymbolValue(".") : new SymbolValue(expressionTokens[0].Lexeme),
+                                    new List<ASTNode> { argNodes[0]!, argNodes[1]! });
+                            }
+                            else
+                            {
+                                // N-ary: fall through to ParseTriadicFromBracketCall below
+                                // (triadic/tetradic amend is handled there for . and @)
+                                // For other verbs with 3+ args, create a FunctionCall node
+                                var funcNode = new ASTNode(ASTNodeType.FunctionCall);
+                                funcNode.Value = new SymbolValue(expressionTokens[0].Lexeme);
+                                funcNode.Children.AddRange(argNodes.Where(n => n != null)!);
+                                return funcNode;
+                            }
+                        }
+                        else
+                        {
+                            // At least one blank slot — true projection
+                            var splitFirst = SplitBracketArguments(bracketContent, 2);
+                            int semicolonPos = -1;
+                            for (int i = 0; i < bracketContent.Count; i++)
+                            {
+                                if (bracketContent[i].Type == TokenType.SEMICOLON)
+                                { semicolonPos = i; break; }
+                            }
+                            ASTNode? leftArg = null;
+                            ASTNode? rightArg = null;
+                            if (semicolonPos > 0)
+                            {
+                                var leftTokens = bracketContent.GetRange(0, semicolonPos);
+                                leftArg = BuildParseTree ? BuildParseTreeFromRight(leftTokens) : EvaluateFromRight(leftTokens);
+                            }
+                            if (semicolonPos >= 0 && semicolonPos < bracketContent.Count - 1)
+                            {
+                                var rightTokens = bracketContent.GetRange(semicolonPos + 1, bracketContent.Count - semicolonPos - 1);
+                                rightArg = BuildParseTree ? BuildParseTreeFromRight(rightTokens) : EvaluateFromRight(rightTokens);
+                            }
+                            return CreateProjectionNode(expressionTokens[0], leftArg, rightArg);
+                        }
+                    }
+                }
+            }
+            
             // Check for bracket function call pattern BEFORE delegating to specific parsers
             // Brackets bind left-to-right with stronger binding the closer they are to the base.
             // e.g., c1[`Abs][] => (c1[`Abs])[] and f[1][4] => (f[1])[4]
@@ -260,11 +353,29 @@ namespace K3CSharp.Parsing
                 }
             }
             
+            // Check for assignments and apply-and-assign (IDENTIFIER ':' or IDENTIFIER VERB ':')
+            if (tokens.Count >= 3 && tokens[0].Type == TokenType.IDENTIFIER)
+            {
+                if (tokens[1].Type == TokenType.COLON)
+                    return statementParser.ParseStatement(tokens);
+                if (tokens.Count >= 4 && IsVerbToken(tokens[1].Type) && tokens[2].Type == TokenType.COLON)
+                    return statementParser.ParseStatement(tokens);
+                if (tokens[1].Type == TokenType.GLOBAL_ASSIGNMENT)
+                    return statementParser.ParseStatement(tokens);
+            }
+            
             // Check for grouping constructs (parentheses, braces, brackets)
             var firstTok = tokens[0];
             if (firstTok.Type == TokenType.LEFT_PAREN || firstTok.Type == TokenType.LEFT_BRACE || firstTok.Type == TokenType.LEFT_BRACKET)
             {
-                var groupingResult = groupingParser.ParseBrackets(tokens);
+                var tempGrouping = new LRSGroupingParser(tokens, BuildParseTree, this);
+                int pos = 0;
+                ASTNode? groupingResult = firstTok.Type switch
+                {
+                    TokenType.LEFT_PAREN => tempGrouping.ParseParentheses(ref pos),
+                    TokenType.LEFT_BRACE => tempGrouping.ParseBraces(ref pos),
+                    _ => groupingParser.ParseBrackets(tokens)
+                };
                 if (groupingResult != null)
                     return groupingResult;
             }
@@ -325,6 +436,17 @@ namespace K3CSharp.Parsing
                         }
                     }
                 }
+            }
+            
+            // Check for projection patterns BEFORE dyadic parsing
+            // 1. Parenthesized operator: (+) - projection with both arguments missing
+            // 2. Postfix projection: 1+ - left fixed, right missing
+            // 3. Prefix projection in brackets: +[;2] - left missing, right fixed
+            if (tokens.Count >= 2)
+            {
+                var projectionResult = TryParseProjection(tokens);
+                if (projectionResult != null)
+                    return projectionResult;
             }
             
             // Use arity detection to determine parsing order for multi-token expressions
@@ -407,7 +529,6 @@ namespace K3CSharp.Parsing
                 }
             }
             
-            // Handle monadic chaining BEFORE dyadic parsing (LRS: Right Scope First)
             // For expressions like "_db _bd (1;2.5;"a")", parse rightmost monadic first
             if (tokens.Count >= 2)
             {
@@ -484,6 +605,156 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
+        /// Try to parse projection patterns
+        /// 1. (+) - parenthesized operator alone
+        /// 2. 1+ - postfix projection (left fixed, right missing)
+        /// 3. +[;2] - bracket projection with semicolon
+        /// </summary>
+        private ASTNode? TryParseProjection(List<Token> tokens)
+        {
+            // Pattern 1: (+) - parenthesized operator alone
+            if (tokens.Count == 3 &&
+                tokens[0].Type == TokenType.LEFT_PAREN &&
+                IsVerbToken(tokens[1].Type) &&
+                tokens[2].Type == TokenType.RIGHT_PAREN)
+            {
+                return CreateProjectionNode(tokens[1], null, null);
+            }
+            
+            // Pattern 2: 1+ - postfix projection (left fixed, right missing)
+            // Last token is an operator that supports dyadic operations
+            if (tokens.Count == 2 &&
+                IsVerbToken(tokens[1].Type) &&
+                OperatorDetector.SupportsDyadic(tokens[1].Type))
+            {
+                var leftOperand = CreateNodeFromToken(tokens[0]);
+                return CreateProjectionNode(tokens[1], leftOperand, null);
+            }
+            
+            // Pattern 3: +[;2] or +[1;] - bracket projection
+            if (tokens.Count >= 3 &&
+                IsVerbToken(tokens[0].Type) &&
+                tokens[1].Type == TokenType.LEFT_BRACKET)
+            {
+                // Find matching bracket
+                var bracketEnd = FindMatchingBracket(tokens, 1);
+                if (bracketEnd != -1)
+                {
+                    // Check for semicolon indicating projection
+                    bool hasSemicolon = false;
+                    for (int i = 2; i < bracketEnd; i++)
+                    {
+                        if (tokens[i].Type == TokenType.SEMICOLON)
+                        {
+                            hasSemicolon = true;
+                            break;
+                        }
+                    }
+                    
+                    if (hasSemicolon)
+                    {
+                        // Parse the bracket content as projection arguments
+                        var bracketContent = tokens.GetRange(2, bracketEnd - 2);
+                        ASTNode? leftArg = null;
+                        ASTNode? rightArg = null;
+                        
+                        // Split by semicolon
+                        int semicolonPos = -1;
+                        for (int i = 0; i < bracketContent.Count; i++)
+                        {
+                            if (bracketContent[i].Type == TokenType.SEMICOLON)
+                            {
+                                semicolonPos = i;
+                                break;
+                            }
+                        }
+                        
+                        if (semicolonPos > 0)
+                        {
+                            // Has left argument
+                            var leftTokens = bracketContent.GetRange(0, semicolonPos);
+                            leftArg = BuildParseTreeFromRight(leftTokens);
+                        }
+                        
+                        if (semicolonPos < bracketContent.Count - 1)
+                        {
+                            // Has right argument
+                            var rightTokens = bracketContent.GetRange(semicolonPos + 1, bracketContent.Count - semicolonPos - 1);
+                            rightArg = BuildParseTreeFromRight(rightTokens);
+                        }
+                        
+                        return CreateProjectionNode(tokens[0], leftArg, rightArg);
+                    }
+                }
+            }
+            
+            return null;
+        }
+        
+        /// <summary>
+        /// Create a ProjectedFunction AST node
+        /// </summary>
+        private ASTNode CreateProjectionNode(Token operatorToken, ASTNode? leftArg, ASTNode? rightArg)
+        {
+            var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
+            
+            // Get operator symbol
+            var operatorSymbol = VerbRegistry.GetDyadicOperatorSymbol(operatorToken.Type);
+            projectedNode.Value = new SymbolValue(operatorSymbol);
+            
+            // Determine arity (default to 2 for dyadic operators)
+            var verb = VerbRegistry.GetVerb(operatorSymbol);
+            int arity = verb?.SupportedArities?.Max() ?? 2;
+            projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(arity)));
+            
+            // Add left argument (or :: placeholder if missing)
+            if (leftArg != null)
+            {
+                projectedNode.Children.Add(leftArg);
+            }
+            else
+            {
+                projectedNode.Children.Add(ASTNode.MakeLiteral(new SymbolValue("::")));
+            }
+            
+            // Add right argument (or :: placeholder if missing)  
+            if (rightArg != null)
+            {
+                projectedNode.Children.Add(rightArg);
+            }
+            else
+            {
+                projectedNode.Children.Add(ASTNode.MakeLiteral(new SymbolValue("::")));
+            }
+            
+            return projectedNode;
+        }
+        
+        /// <summary>
+        /// Find matching closing bracket for an opening bracket
+        /// </summary>
+        private int FindMatchingBracket(List<Token> tokens, int openPos)
+        {
+            if (openPos >= tokens.Count || tokens[openPos].Type != TokenType.LEFT_BRACKET)
+                return -1;
+            
+            int depth = 1;
+            for (int i = openPos + 1; i < tokens.Count; i++)
+            {
+                if (tokens[i].Type == TokenType.LEFT_BRACKET)
+                    depth++;
+                else if (tokens[i].Type == TokenType.RIGHT_BRACKET)
+                {
+                    depth--;
+                    if (depth == 0)
+                        return i;
+                }
+            }
+            
+            return -1;
+        }
+        
+        /// <summary>
         /// Parse expression tokens from right to left (LRS strategy)
         /// </summary>
         /// <param name="expressionTokens">Tokens to parse</param>
@@ -516,16 +787,12 @@ namespace K3CSharp.Parsing
             // This MUST be checked FIRST because other verb-related checks would otherwise intercept
             if (expressionTokens.Count >= 3)
             {
-                Console.WriteLine($"[LRS DEBUG] Checking disambiguating pattern: token0={expressionTokens[0].Type}, token1={expressionTokens[1].Type}, token2={expressionTokens[2].Type}");
-                Console.WriteLine($"[LRS DEBUG] IsVerbToken(token0)={VerbRegistry.IsVerbToken(expressionTokens[0].Type)}");
-                
                 if (VerbRegistry.IsVerbToken(expressionTokens[0].Type) &&
                     expressionTokens[1].Type == TokenType.COLON &&
                     (expressionTokens[2].Type == TokenType.ADVERB_SLASH ||
                      expressionTokens[2].Type == TokenType.ADVERB_BACKSLASH ||
                      expressionTokens[2].Type == TokenType.ADVERB_TICK))
                 {
-                    Console.WriteLine($"[LRS DEBUG] Found disambiguating colon pattern: {expressionTokens[0].Lexeme}:{expressionTokens[2].Lexeme}");
                     return ParseGenericVerbAdverbWithColon(expressionTokens);
                 }
             }
@@ -673,29 +940,29 @@ namespace K3CSharp.Parsing
             // Verbs should be handled naturally through right-to-left dyadic/monadic parsing
             // This allows "_bd ,5" to parse correctly as: _bd (monadic) applied to (,5 monadic enlist)
             
-            // Check for assignments (variable:value pattern)
-            // Assignments can appear anywhere in the token list, not just at the start
-            // BUT only treat as statement if it's a simple assignment (identifier: value)
-            // For inline assignments like '1 + a: 42', let dyadic parser handle the colon as part of expression
-            for (int i = 1; i < expressionTokens.Count; i++)
+            // Check for assignments (variable:value pattern) and apply-and-assign (variable verb: value)
+            // Only treat as statement if it starts with a plain identifier followed by ':' or 'verb:'
+            // For inline assignments like '1 + a: 42', let dyadic parser handle them
+            if (expressionTokens.Count >= 3 && expressionTokens[0].Type == TokenType.IDENTIFIER)
             {
-                if (expressionTokens[i].Type == TokenType.COLON ||
-                    expressionTokens[i].Type == TokenType.ASSIGNMENT ||
-                    expressionTokens[i].Type == TokenType.GLOBAL_ASSIGNMENT)
+                // Simple assignment: IDENTIFIER COLON expression  (a: 42)
+                if (expressionTokens[1].Type == TokenType.COLON)
                 {
-                    // Only treat as statement if it's a simple assignment (identifier: value)
-                    // where the identifier is at position i-1 and position 0 is also an identifier
-                    // This handles 'a: 42' but not '1 + a: 42'
-                    bool isSimpleAssignment = i == 1 && 
-                                              expressionTokens[0].Type == TokenType.IDENTIFIER &&
-                                              expressionTokens[i].Type == TokenType.COLON;
-                    
-                    if (isSimpleAssignment)
-                    {
-                        // Found a simple assignment operator - parse as assignment statement
                     return statementParser.ParseStatement(expressionTokens);
-                    }
-                    // Otherwise, let dyadic parser handle it (inline assignment in expression)
+                }
+                
+                // Apply-and-assign: IDENTIFIER VERB COLON expression  (i+:1, x-:5, etc.)
+                if (expressionTokens.Count >= 4 &&
+                    IsVerbToken(expressionTokens[1].Type) &&
+                    expressionTokens[2].Type == TokenType.COLON)
+                {
+                    return statementParser.ParseStatement(expressionTokens);
+                }
+                
+                // Global assignment: IDENTIFIER GLOBAL_ASSIGNMENT expression  (a:: 42)
+                if (expressionTokens[1].Type == TokenType.GLOBAL_ASSIGNMENT)
+                {
+                    return statementParser.ParseStatement(expressionTokens);
                 }
             }
                 
@@ -1004,29 +1271,46 @@ namespace K3CSharp.Parsing
                 return 0;
                 
             int count = 0;
-            int depth = 1;
+            int bracketDepth = 1;  // tracks [] depth (we start inside the outer bracket)
+            int nestedDepth = 0;   // tracks ()/{} nesting inside the current bracket level
             int i = bracketPos + 1;
             bool inArgument = false;
             
-            while (i < tokens.Count && depth > 0)
+            while (i < tokens.Count && bracketDepth > 0)
             {
                 var token = tokens[i];
                 
                 if (token.Type == TokenType.LEFT_BRACKET)
                 {
-                    depth++;
+                    bracketDepth++;
+                    nestedDepth++;
                     inArgument = true;
                 }
                 else if (token.Type == TokenType.RIGHT_BRACKET)
                 {
-                    depth--;
-                    if (depth == 1 && inArgument)
+                    if (nestedDepth > 0)
+                        nestedDepth--;
+                    else
                     {
-                        count++;
-                        inArgument = false;
+                        bracketDepth--;
+                        if (bracketDepth >= 1 && inArgument)
+                        {
+                            count++;
+                            inArgument = false;
+                        }
                     }
                 }
-                else if (depth == 1)
+                else if (token.Type == TokenType.LEFT_PAREN || token.Type == TokenType.LEFT_BRACE)
+                {
+                    nestedDepth++;
+                    inArgument = true;
+                }
+                else if (token.Type == TokenType.RIGHT_PAREN || token.Type == TokenType.RIGHT_BRACE)
+                {
+                    if (nestedDepth > 0)
+                        nestedDepth--;
+                }
+                else if (bracketDepth == 1 && nestedDepth == 0)
                 {
                     if (token.Type == TokenType.SEMICOLON)
                     {
@@ -1036,9 +1320,7 @@ namespace K3CSharp.Parsing
                             inArgument = false;
                         }
                     }
-                    else if (token.Type != TokenType.NEWLINE && 
-                            token.Type != TokenType.LEFT_BRACKET &&
-                            token.Type != TokenType.RIGHT_BRACKET)
+                    else if (token.Type != TokenType.NEWLINE)
                     {
                         inArgument = true;
                     }
@@ -1048,7 +1330,7 @@ namespace K3CSharp.Parsing
             }
             
             // Count the last argument if we were in one
-            if (inArgument && depth == 0)
+            if (inArgument && bracketDepth == 0)
                 count++;
                 
             return count;
@@ -1184,47 +1466,27 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Find matching closing bracket
-        /// </summary>
-        private int FindMatchingBracket(List<Token> tokens, int leftBracketPos)
-        {
-            if (leftBracketPos >= tokens.Count || tokens[leftBracketPos].Type != TokenType.LEFT_BRACKET)
-                return -1;
-                
-            int depth = 1;
-            for (int i = leftBracketPos + 1; i < tokens.Count; i++)
-            {
-                if (tokens[i].Type == TokenType.LEFT_BRACKET)
-                    depth++;
-                else if (tokens[i].Type == TokenType.RIGHT_BRACKET)
-                    depth--;
-                    
-                if (depth == 0)
-                    return i;
-            }
-            
-            return -1;
-        }
-        
-        /// <summary>
         /// Split bracket arguments by semicolons
         /// </summary>
         private List<List<Token>> SplitBracketArguments(List<Token> tokens, int expectedArgs)
         {
             var args = new List<List<Token>>();
             var currentArg = new List<Token>();
+            int depth = 0;
             
             for (int i = 0; i < tokens.Count; i++)
             {
                 var token = tokens[i];
                 
-                if (token.Type == TokenType.SEMICOLON)
+                if (token.Type == TokenType.LEFT_PAREN || token.Type == TokenType.LEFT_BRACKET || token.Type == TokenType.LEFT_BRACE)
+                    depth++;
+                else if (token.Type == TokenType.RIGHT_PAREN || token.Type == TokenType.RIGHT_BRACKET || token.Type == TokenType.RIGHT_BRACE)
+                    depth--;
+                
+                if (token.Type == TokenType.SEMICOLON && depth == 0)
                 {
-                    if (currentArg.Count > 0)
-                    {
-                        args.Add(currentArg);
-                        currentArg = new List<Token>();
-                    }
+                    args.Add(currentArg);
+                    currentArg = new List<Token>();
                 }
                 else
                 {
@@ -1233,8 +1495,7 @@ namespace K3CSharp.Parsing
             }
             
             // Add the last argument
-            if (currentArg.Count > 0)
-                args.Add(currentArg);
+            args.Add(currentArg);
                 
             return args;
         }
@@ -1853,20 +2114,24 @@ namespace K3CSharp.Parsing
             {
                 var currentArgTokens = splitArgs[i];
                 
-                // Handle third argument with disambiguating colon detection
-                if (i == 2 && currentArgTokens.Count == 2 && 
-                    currentArgTokens[0].Type == TokenType.MINUS && currentArgTokens[1].Type == TokenType.COLON)
+                // Handle verb+colon patterns as monadic verb symbols (e.g. -: >: +: etc.)
+                // These are disambiguating-colon forms: VERB COLON -> SymbolValue("verb")
+                if (i == 2 && currentArgTokens.Count == 2 &&
+                    IsVerbToken(currentArgTokens[0].Type) &&
+                    currentArgTokens[1].Type == TokenType.COLON)
                 {
-                    // This is -: (monadic negate with disambiguating colon)
-                    // Create a projected function node
-                    var negateNode = ASTNode.MakeLiteral(new SymbolValue("-"));
-                    var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction, new SymbolValue("-"), new List<ASTNode> { negateNode });
-                    children.Add(projectedNode);
+                    // Represent as a monadic verb symbol — evaluator dispatches via CallFunction(SymbolValue)
+                    var verbSymbol = VerbRegistry.GetDyadicOperatorSymbol(currentArgTokens[0].Type);
+                    children.Add(ASTNode.MakeLiteral(new SymbolValue(verbSymbol)));
                 }
                 else
                 {
-                    // Parse argument normally
-                    var argNode = BuildParseTreeFromTokens(currentArgTokens);
+                    // Parse argument respecting current mode
+                    ASTNode? argNode;
+                    if (BuildParseTree)
+                        argNode = BuildParseTreeFromTokens(currentArgTokens);
+                    else
+                        argNode = EvaluateFromRight(currentArgTokens);
                     if (argNode != null) children.Add(argNode);
                 }
             }

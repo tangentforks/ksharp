@@ -34,6 +34,19 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
+        /// Parse statement from tokens as an inline (non-terminal) assignment.
+        /// Used when the assignment is a sub-expression within a larger expression (e.g., right side of dyadic op).
+        /// Inline assignments return the assigned value, not Null.
+        /// </summary>
+        public ASTNode? ParseInlineStatement(List<Token> statementTokens)
+        {
+            var node = ParseStatement(statementTokens);
+            if (node is { Type: ASTNodeType.Assignment })
+                node.IsTerminalAssignment = false;
+            return node;
+        }
+        
+        /// <summary>
         /// Parse statement from tokens
         /// </summary>
         /// <param name="statementTokens">Tokens representing the statement</param>
@@ -126,9 +139,30 @@ namespace K3CSharp.Parsing
                 return null;
             
             // Check if this is a modified assignment operator (apply and assign)
+            // Case 1: compound token like "+:" (lexeme ends with ":")
             if (assignmentToken.Lexeme.Length > 1 && assignmentToken.Lexeme.EndsWith(":"))
             {
                 return ParseApplyAndAssignStatement(leftTokens, assignmentToken, rightTokens);
+            }
+            
+            // Case 2: apply-and-assign with separate tokens: IDENTIFIER VERB COLON expression
+            // e.g., i+:1 tokenized as [IDENTIFIER(i), PLUS(+), COLON(:), INTEGER(1)]
+            // Here leftTokens=[IDENTIFIER,VERB] and assignmentToken=COLON
+            if (assignmentToken.Type == TokenType.COLON &&
+                leftTokens.Count == 2 &&
+                leftTokens[0].Type == TokenType.IDENTIFIER &&
+                VerbRegistry.IsVerbToken(leftTokens[1].Type))
+            {
+                // Reconstruct as apply-and-assign: operator is leftTokens[1]
+                var applyAndAssignNode = new ASTNode(ASTNodeType.ApplyAndAssign);
+                applyAndAssignNode.Value = new SymbolValue(leftTokens[0].Lexeme);
+                var opSymbol = VerbRegistry.GetDyadicOperatorSymbol(leftTokens[1].Type);
+                applyAndAssignNode.Children.Add(ASTNode.MakeLiteral(new SymbolValue(opSymbol)));
+                var applyRightNode = ParseRightSideExpression(rightTokens);
+                if (applyRightNode == null)
+                    return null;
+                applyAndAssignNode.Children.Add(applyRightNode);
+                return applyAndAssignNode;
             }
             
             // Parse left side (variable name)

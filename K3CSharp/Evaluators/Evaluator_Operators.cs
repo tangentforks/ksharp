@@ -680,9 +680,6 @@ namespace K3CSharp
 
         private K3Value Take(K3Value count, K3Value data)
         {
-            // Debug: Log the type of count being passed
-            Console.WriteLine($"[DEBUG Take] count type: {count?.Type}, data type: {data?.Type}");
-            
             if (count is IntegerValue intCount)
             {
                 if (data is VectorValue dataVec)

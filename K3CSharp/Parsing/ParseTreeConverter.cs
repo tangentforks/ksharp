@@ -29,6 +29,7 @@ namespace K3CSharp.Parsing
                 ASTNodeType.FunctionCall => ConvertFunctionCall(node),
                 ASTNodeType.Vector => ConvertVector(node),
                 ASTNodeType.Assignment => ConvertAssignment(node),
+                ASTNodeType.ApplyAndAssign => ConvertApplyAndAssign(node),
                 ASTNodeType.Block => ConvertBlock(node),
                 ASTNodeType.ProjectedFunction => ConvertProjectedFunction(node),
                 _ => throw new NotSupportedException($"Node type {node.Type} not supported in parse tree conversion")
@@ -86,6 +87,26 @@ namespace K3CSharp.Parsing
         {
             // Variables become symbols with their K tree path
             return new SymbolValue(variableName);
+        }
+        
+        /// <summary>
+        /// Convert apply-and-assign to K list representation
+        /// Format: (`"op:"; `varname; rightArg) per Parse.md speclet
+        /// </summary>
+        private static K3Value ConvertApplyAndAssign(ASTNode node)
+        {
+            var varName = (node.Value as SymbolValue)?.Value ?? node.Value?.ToString() ?? "";
+            var opSymbol = (node.Children[0].Value as SymbolValue)?.Value ?? "+";
+            var elements = new List<K3Value>();
+            elements.Add(new SymbolValue(opSymbol + ":"));
+            elements.Add(ToSymbolPath(varName));
+            var rightArg = node.Children[1];
+            // Right argument: atomic literals are passed as-is (not enlisted), complex nodes converted normally
+            var rightVal = (rightArg.Type == ASTNodeType.Literal)
+                ? (rightArg.Value ?? new NullValue())
+                : ToKList(rightArg);
+            elements.Add(rightVal);
+            return new VectorValue(elements);
         }
         
         /// <summary>

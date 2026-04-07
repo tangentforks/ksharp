@@ -1046,33 +1046,28 @@ namespace K3CSharp
         {
             if (elements.Count == 0)
                 return 0; // Default to mixed list for empty vectors
-                
-            // Check if any element is a float - if so, the whole vector should be float
-            foreach (var element in elements)
-            {
-                if (element is FloatValue)
-                    return -2; // Float vector
-            }
             
-            // Check if all elements are integers/longs
-            bool allIntegers = true;
-            foreach (var element in elements)
-            {
-                if (!(element is IntegerValue || element is LongValue))
-                {
-                    allIntegers = false;
-                    break;
-                }
-            }
+            bool allNumeric = elements.All(e => e is IntegerValue || e is LongValue || e is FloatValue);
+            bool hasFloat = elements.Any(e => e is FloatValue);
             
-            if (allIntegers)
-                return -1; // Integer vector
-            else if (elements[0] is CharacterValue)
-                return -3; // Character vector
-            else if (elements[0] is SymbolValue)
-                return -4; // Symbol vector
-            else
-                return 0; // Default to mixed list
+            // Float vector only when ALL elements are numeric and at least one is float
+            if (allNumeric && hasFloat)
+                return -2;
+            
+            // Integer vector only when ALL elements are integers/longs
+            if (elements.All(e => e is IntegerValue || e is LongValue))
+                return -1;
+            
+            // Character vector when all are characters
+            if (elements.All(e => e is CharacterValue))
+                return -3;
+            
+            // Symbol vector when all are symbols
+            if (elements.All(e => e is SymbolValue))
+                return -4;
+            
+            // Mixed list
+            return 0;
         }
         
         private K3Value EvaluateVector(ASTNode node)
@@ -2013,7 +2008,7 @@ namespace K3CSharp
                     }
                     throw new Exception("+ operator requires 1 or 2 arguments");
                 case "-":
-                    if (arguments.Count == 1) return Negate(arguments[0]);
+                    if (arguments.Count == 1) return MonadicMinus(arguments[0]);
                     if (arguments.Count >= 2) return Minus(arguments[0], arguments[1]);
                     throw new Exception("- operator requires 1 or 2 arguments");
                 case "*":
@@ -2135,18 +2130,9 @@ namespace K3CSharp
         {
             K3Value? lastResult = null;
             
-            // Debug output
-            Console.WriteLine($"[EvaluateBlock] Block has {node.Children.Count} children");
-            for (int i = 0; i < node.Children.Count; i++)
-            {
-                Console.WriteLine($"[EvaluateBlock] Child {i}: {node.Children[i].Type}");
-            }
-            
             foreach (var child in node.Children)
             {
                 lastResult = EvaluateNode(child);
-                // Debug output for ALL children
-                Console.WriteLine($"[EvaluateBlock] -> {child.Type} = {lastResult?.GetType().Name} '{lastResult}'");
             }
             
             return lastResult;
@@ -2173,25 +2159,22 @@ namespace K3CSharp
                 return lastResult;
             }
             
-            // Automatically detect homogeneous types and convert to proper vectors
-            // This ensures (1;2;3;4) becomes 1 2 3 4 instead of staying as (1;2;3;4)
-            int vectorType = DetermineVectorTypeFromElements(results);
-            
-            // If this is a float vector, convert all integer elements to floats
-            if (vectorType == -2) // Float vector
-            {
-                var convertedElements = new List<K3Value>();
-                foreach (var element in results)
-                {
-                    if (element is IntegerValue intValue)
-                        convertedElements.Add(new FloatValue((double)intValue.Value));
-                    else if (element is LongValue longValue)
-                        convertedElements.Add(new FloatValue((double)longValue.Value));
-                    else
-                        convertedElements.Add(element);
-                }
-                return new VectorValue(convertedElements, vectorType);
-            }
+            // Semicolon-separated list (parenthesized): type is determined by element homogeneity.
+            // Mixed numeric types (int+float) stay as type-0 mixed lists — NOT promoted to float vectors.
+            // Float promotion only applies to space-separated vector literals (handled in EvaluateVector).
+            int vectorType;
+            if (results.Count == 0)
+                vectorType = 0;
+            else if (results.All(e => e is IntegerValue || e is LongValue))
+                vectorType = -1;
+            else if (results.All(e => e is FloatValue))
+                vectorType = -2;
+            else if (results.All(e => e is CharacterValue))
+                vectorType = -3;
+            else if (results.All(e => e is SymbolValue))
+                vectorType = -4;
+            else
+                vectorType = 0; // Mixed list
             
             return new VectorValue(results, vectorType);
         }
@@ -4183,12 +4166,12 @@ namespace K3CSharp
             
             var opName = op.Value;
             
-            // Check for trapped apply: .[f; args; :] - second child should be a colon token
-            if (opName == "." && IsColonNode(node.Children[1]))
+            // Check for trapped apply: .[f; args; :] - colon is the THIRD arg (Children[2])
+            if (opName == "." && IsColonNode(node.Children[2]))
             {
                 var arg1 = Evaluate(node.Children[0]);
-                var arg3 = Evaluate(node.Children[2]);
-                return TrappedApply(arg1, arg3);
+                var arg2 = Evaluate(node.Children[1]);
+                return TrappedApply(arg1, arg2);
             }
             
             var arg1Eval = Evaluate(node.Children[0]) ?? new NullValue();
@@ -4298,7 +4281,8 @@ namespace K3CSharp
 
         private K3Value EvaluateTriadicAt(K3Value arg1, K3Value arg2, K3Value arg3)
         {
-            throw new Exception("Triadic at operation not yet implemented");
+            var amendArgs = new List<K3Value> { arg1, arg2, arg3 };
+            return AmendFunction(amendArgs);
         }
 
         private K3Value EvaluateTetradicDot(K3Value arg1, K3Value arg2, K3Value arg3, K3Value arg4)
