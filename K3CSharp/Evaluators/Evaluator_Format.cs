@@ -83,9 +83,37 @@ namespace K3CSharp
             // Binary $ operator - form/format according to updated K3 specification
             
             // Handle {} form specifier for evaluating string expressions
+            // Check if left is a SymbolValue with "{}"
             if (left is SymbolValue leftSym && leftSym.Value == "{}")
             {
                 return EvaluateStringExpression(right);
+            }
+            
+            // Check if left is a FunctionValue representing empty braces {}
+            // This happens when LRS parser parses {} as an empty function
+            if (left is FunctionValue funcVal)
+            {
+                string origText = funcVal.OriginalSourceText?.Trim() ?? "";
+                string bodyText = funcVal.BodyText?.Trim() ?? "";
+                
+                // Check if it represents empty braces {} (with or without whitespace)
+                if (origText == "{}" || string.IsNullOrEmpty(bodyText))
+                {
+                    return EvaluateStringExpression(right);
+                }
+            }
+            
+            // Check if left is a VectorValue containing a FunctionValue (for {} in lists)
+            if (left is VectorValue vec && vec.Elements.Count == 1 && 
+                vec.Elements[0] is FunctionValue funcVal2)
+            {
+                string origText2 = funcVal2.OriginalSourceText?.Trim() ?? "";
+                string bodyText2 = funcVal2.BodyText?.Trim() ?? "";
+                
+                if (origText2 == "{}" || string.IsNullOrEmpty(bodyText2))
+                {
+                    return EvaluateStringExpression(right);
+                }
             }
             
             // Check if this is a type conversion case (0, 0L, 0.0, `, " ", {})

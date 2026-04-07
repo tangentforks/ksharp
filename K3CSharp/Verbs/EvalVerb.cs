@@ -15,6 +15,17 @@ namespace K3CSharp.Verbs
         // Static variable storage for basic variable evaluation
         private static readonly Dictionary<string, K3Value> variables = new Dictionary<string, K3Value>();
         
+        // Reference to the current evaluator instance for accessing global variables
+        private static Evaluator? currentEvaluator = null;
+        
+        /// <summary>
+        /// Set the current evaluator instance for accessing global variables
+        /// </summary>
+        public static void SetEvaluator(Evaluator evaluator)
+        {
+            currentEvaluator = evaluator;
+        }
+        
         /// <summary>
         /// Main _eval entry point
         /// </summary>
@@ -36,7 +47,24 @@ namespace K3CSharp.Verbs
         /// </summary>
         public static K3Value? GetVariable(string name)
         {
-            return variables.TryGetValue(name, out var value) ? value : null;
+            // First check local storage
+            if (variables.TryGetValue(name, out var value))
+                return value;
+                
+            // Then check the current evaluator's global variables
+            if (currentEvaluator != null)
+            {
+                try
+                {
+                    return currentEvaluator.GetVariableValuePublic(name);
+                }
+                catch
+                {
+                    // Variable not found in global context
+                }
+            }
+            
+            return null;
         }
         
         /// <summary>

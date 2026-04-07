@@ -314,6 +314,8 @@ namespace K3CSharp
                         "_getenv" => GetenvFunction(operand),
                         "_size" => SizeFunction(operand),
                         "_not" => MathNot(operand),
+                        "_parse" => Verbs.ParseVerbHandler.Parse(new[] { operand }),
+                        "_eval" => EvaluateEvalVerb(operand),
                         _ => throw new Exception($"Unknown monadic operator: {verbSymbol.Value}")
                     };
 
@@ -814,7 +816,7 @@ namespace K3CSharp
                     "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(operand, new IntegerValue(0), new IntegerValue(0)),
                     "ADVERB_TICK_COLON" => ApplyAdverbTickColon(operand, new IntegerValue(0), new IntegerValue(0)),
                     "_parse" => Verbs.ParseVerbHandler.Parse(new[] { operand }),
-                    "_eval" => Verbs.EvalVerbHandler.Evaluate(new[] { operand }),
+                    "_eval" => EvaluateEvalVerb(operand),
                     _ => throw new Exception($"Unknown monadic operator: {op.Value}")
                 };
             }
@@ -3586,6 +3588,13 @@ namespace K3CSharp
                 var errorVector = new VectorValue(new List<K3Value> { errorFlag, errorMessage });
                 return errorVector;
             }
+        }
+        
+        private K3Value EvaluateEvalVerb(K3Value operand)
+        {
+            // Set the current evaluator instance so _eval can access global variables
+            Verbs.EvalVerbHandler.SetEvaluator(this);
+            return Verbs.EvalVerbHandler.Evaluate(new[] { operand });
         }
         
         private K3Value BdFunction(K3Value operand)

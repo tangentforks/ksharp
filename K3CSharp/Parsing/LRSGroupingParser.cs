@@ -291,6 +291,31 @@ namespace K3CSharp.Parsing
             int braceStartPos = position; // Remember start position for original text extraction
             position++; // Consume '{'
             
+            // Check if this is a form specifier (empty braces followed by $)
+            // Per K spec: {}$ pattern should be treated as form specifier, not empty function
+            if (position < tokens.Count && tokens[position].Type == TokenType.RIGHT_BRACE)
+            {
+                int nextPos = position + 1;
+                // Skip any whitespace/newline tokens to find the next significant token
+                while (nextPos < tokens.Count && 
+                       (tokens[nextPos].Type == TokenType.NEWLINE || 
+                        tokens[nextPos].Type == TokenType.SEMICOLON))
+                {
+                    nextPos++;
+                }
+                
+                // Check if next significant token is $
+                if (nextPos < tokens.Count && tokens[nextPos].Type == TokenType.DOLLAR)
+                {
+                    position++; // Consume '}'
+                    
+                    // Create a special node for {} form specifier
+                    var formSpecifierNode = new ASTNode(ASTNodeType.FormSpecifier);
+                    formSpecifierNode.Value = new SymbolValue("{}");
+                    return formSpecifierNode;
+                }
+            }
+            
             // Parse function body
             var body = ParseFunctionBody(ref position, braceStartPos);
             

@@ -811,7 +811,16 @@ namespace K3CSharp.Parsing
                 return tempGroupingParser.ParseBraces(ref position);
             }
             
-            // Try dyadic operation first (monadic parsing is handled at main LRS level)
+            // Check if this is a nested monadic operation (e.g., ,`a in ^,`a)
+            if (tokens.Count >= 2 && OperatorDetector.SupportsMonadic(tokens[0].Type))
+            {
+                // Parse as monadic operation
+                var monadicResult = monadicParser.ParseMonadicOperator(tokens);
+                if (monadicResult != null)
+                    return monadicResult;
+            }
+            
+            // Try dyadic operation as fallback
             return dyadicParser.ParseDyadicOperation(tokens);
         }
         

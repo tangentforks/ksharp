@@ -116,16 +116,10 @@ namespace K3CSharp.Parsing
             if (sourceText.Contains("'") || sourceText.Contains("/") || sourceText.Contains("\\"))
             {
                 // Allow simple triadic dot operations but fallback on complex adverbs
-                if (!(sourceText.Contains(".[") && sourceText.Contains(";-:") && sourceText.Count(c => c == ';') <= 2))
+                if (!(sourceText.Contains(".[") && sourceText.Contains(";-") && sourceText.Count(c => c == ';') <= 2))
                 {
                     return true;
                 }
-            }
-            
-            // Fallback for dictionary operations
-            if (sourceText.Contains("@") && sourceText.Contains("`"))
-            {
-                return true;
             }
             
             // Fallback for complex expressions with many tokens
@@ -134,37 +128,12 @@ namespace K3CSharp.Parsing
                 return true;
             }
             
-            // Fallback for expressions with nested brackets/parentheses
-            int nestingLevel = 0;
-            foreach (var token in tokens)
-            {
-                if (token.Type == TokenType.LEFT_BRACKET || token.Type == TokenType.LEFT_PAREN || token.Type == TokenType.LEFT_BRACE)
-                {
-                    nestingLevel++;
-                }
-                else if (token.Type == TokenType.RIGHT_BRACKET || token.Type == TokenType.RIGHT_PAREN || token.Type == TokenType.RIGHT_BRACE)
-                {
-                    nestingLevel--;
-                }
-                
-                if (nestingLevel > 3) // Deep nesting
-                {
-                    return true;
-                }
-            }
-            
-            // Fallback for eval expressions (complex parsing)
-            if (sourceText.Contains("_eval") || sourceText.Contains("_parse"))
-            {
-                return true;
-            }
-            
-            // Fallback for attribute operations on complex structures
-            if (sourceText.Contains("~") && (sourceText.Contains("(") || sourceText.Contains("`")))
-            {
-                return true;
-            }
-            
+            // // Fallback for eval expressions (complex parsing)
+            // if (sourceText.Contains("_eval") || sourceText.Contains("_parse"))
+            // {
+            //     return true;
+            // }
+
             return false;
         }
 

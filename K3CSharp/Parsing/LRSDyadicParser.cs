@@ -330,8 +330,21 @@ namespace K3CSharp.Parsing
                 return nodeResult;
             }
             
-            // Pure LRS mode: Check if entire expression is wrapped in grouping construct
-            if (pureLRSMode && tokens.Count > 2)
+            // Check for empty braces {} form specifier (used with $ operator for string expression evaluation)
+            // Pattern: {} followed by $ - must be detected before other parsing
+            if (tokens.Count == 2 && 
+                tokens[0].Type == TokenType.LEFT_BRACE && 
+                tokens[1].Type == TokenType.RIGHT_BRACE)
+            {
+                // Create a form specifier node for empty braces
+                var formSpecifierNode = new ASTNode(ASTNodeType.FormSpecifier);
+                formSpecifierNode.Value = new SymbolValue("{}");
+                return formSpecifierNode;
+            }
+            
+            // Handle grouping constructs (parentheses, brackets, braces) that wrap the entire expression
+            // This ensures proper parsing of parenthesized sub-expressions regardless of pureLRSMode
+            if (tokens.Count > 2)
             {
                 var firstToken = tokens[0];
                 
@@ -359,12 +372,14 @@ namespace K3CSharp.Parsing
                             int pos = 0;
                             try
                             {
+                                ASTNode? result;
                                 if (openType == TokenType.LEFT_PAREN)
-                                    return subGroupingParser.ParseParentheses(ref pos);
+                                    result = subGroupingParser.ParseParentheses(ref pos);
                                 else if (openType == TokenType.LEFT_BRACKET)
-                                    return subGroupingParser.ParseBrackets(ref pos);
-                                else if (openType == TokenType.LEFT_BRACE)
-                                    return subGroupingParser.ParseBraces(ref pos);
+                                    result = subGroupingParser.ParseBrackets(ref pos);
+                                else
+                                    result = subGroupingParser.ParseBraces(ref pos);
+                                return result;
                             }
                             catch
                             {

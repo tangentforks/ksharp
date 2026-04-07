@@ -24,6 +24,7 @@ namespace K3CSharp.Parsing
             {
                 ASTNodeType.Literal => ToEnlistedVector(node.Value ?? new NullValue()),
                 ASTNodeType.Variable => ToEnlistedVector(ToSymbolPath((node.Value as SymbolValue)?.Value ?? "")),
+                ASTNodeType.MonadicOp => ConvertMonadicOp(node),
                 ASTNodeType.DyadicOp => ConvertDyadicOp(node),
                 ASTNodeType.FunctionCall => ConvertFunctionCall(node),
                 ASTNodeType.Vector => ConvertVector(node),
@@ -85,6 +86,44 @@ namespace K3CSharp.Parsing
         {
             // Variables become symbols with their K tree path
             return new SymbolValue(variableName);
+        }
+        
+        /// <summary>
+        /// Convert monadic operation to K list representation
+        /// </summary>
+        private static K3Value ConvertMonadicOp(ASTNode node)
+        {
+            var opSymbol = node.Value as SymbolValue ?? new SymbolValue(node.Value?.ToString() ?? "*");
+            var elements = new List<K3Value>();
+            
+            // Monadic operators use disambiguating colon
+            var monadicOpSymbol = new SymbolValue(opSymbol.Value + ":");
+            elements.Add(monadicOpSymbol);
+            
+            // Handle case where there are no children (shouldn't happen, but handle gracefully)
+            if (node.Children.Count == 0)
+            {
+                // Return just the operator symbol without operands
+                return new VectorValue(elements);
+            }
+            
+            // Convert operand based on its type
+            var operand = node.Children[0];
+            K3Value convertedOperand;
+            if (operand.Type == ASTNodeType.DyadicOp)
+                convertedOperand = ConvertDyadicOp(operand);
+            else if (operand.Type == ASTNodeType.MonadicOp)
+                convertedOperand = ConvertMonadicOp(operand);
+            else if (operand.Type == ASTNodeType.Vector || operand.Type == ASTNodeType.Block)
+                convertedOperand = ConvertVector(operand);
+            else if (operand.Type == ASTNodeType.Literal)
+                convertedOperand = ToKList(operand);
+            else
+                convertedOperand = ConvertAtomicValue(operand);
+                
+            elements.Add(convertedOperand);
+            
+            return new VectorValue(elements);
         }
         
         /// <summary>
