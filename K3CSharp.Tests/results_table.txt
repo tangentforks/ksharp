@@ -608,7 +608,7 @@ world"       │                      ║
 ║ serialization_bd_db_symbolvector.k                 │ _bd `a`b`c           │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_list.k                         │ _bd (1;2.5;"a")      │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_dictionary.k                   │ _bd .((`a;`"1");(`b;`"2")) │ "\001\000\000\0...   │                      ║
-║ serialization_bd_db_anonymousfunction.k            │ _bd {[x] x+1}        │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_db_anonymousfunction.k            │ _bd {[x] x+1}        │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_roundtrip_integer.k            │ _db _bd 42           │ 42                   │                      ║
 ║ serialization_bd_db_roundtrip_list.k               │ _db _bd (1;2.5;"a")  │ (1;2.5;"a")          │                      ║
 ║ serialization_bd_ic_symbol.k                       │ _ic _bd `A           │ 1 0 0 0 6 0 0 0...   │                      ║
@@ -621,7 +621,7 @@ world"       │                      ║
 ║ db_list_simple.k                                   │ _db _bd (1;2;3)      │ 1 2 3                │                      ║
 ║ db_dict_simple.k                                   │ _db _bd .((`a;1);(`b;2);(`c;3;)) │ .((`a;1;);(`b;2...   │                      ║
 ║ db_function_simple.k                               │ _db _bd {+}          │ {+}                  │                      ║
-║ db_function_params.k                               │ _db _bd {x+y}        │ {x + y}              │ {x+y}                ║
+║ db_function_params.k                               │ _db _bd {x+y}        │ {x + y}              │                      ║
 ║ db_null.k                                          │ _db _bd 0N           │ 0N                   │                      ║
 ║ db_empty_list.k                                    │ _db _bd ()           │ ()                   │                      ║
 ║ db_character.k                                     │ _db _bd "a"          │ "a"                  │                      ║
@@ -632,8 +632,8 @@ world"       │                      ║
 ║ db_symbol_simple.k                                 │ _db _bd `hello       │ `hello               │                      ║
 ║ db_list_longer.k                                   │ _db _bd (1;2;3;4;5)  │ 1 2 3 4 5            │                      ║
 ║ db_list_mixed_types.k                              │ _db _bd (1;`test;3.14;"hello") │ (1;`test;3.14;"...   │                      ║
-║ db_function_complex.k                              │ _db _bd {[x;y] x*y+z} │ {[x;y] x * y + z}    │ {[x;y] x*y+z}        ║
-║ db_function_simple_math.k                          │ _db _bd {x+y}        │ {x + y}              │ {x+y}                ║
+║ db_function_complex.k                              │ _db _bd {[x;y] x*y+z} │ {[x;y] x * y + z}    │                      ║
+║ db_function_simple_math.k                          │ _db _bd {x+y}        │ {x + y}              │                      ║
 ║ db_nested_dict_vectors.k                           │ _db _bd .((`a;(1;2;3));(`b;(`hello;`world;`test))) │ .((`a;1 2 3;);(...   │                      ║
 ║ db_nested_lists.k                                  │ _db _bd ((1;2;3);(`hello;`world;`test);(4.5;6.7)) │ (1 2 3;`hello`w...   │                      ║
 ║ db_mixed_list.k                                    │ _db _bd (1;`test;3.14) │ (1;`test;3.14)       │                      ║
@@ -704,8 +704,8 @@ world"       │                      ║
 ║ serialization_bd_list_edge_complex.k               │ _bd (_n;`symbol;{[]}) │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_list_edge_nested.k                │ _bd ((1;2);(3;4))    │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_list_edge_dicts.k                 │ _bd (.,(`a;1);.,(`b;2)) │ "\001\000\000\0...   │                      ║
-║ serialization_bd_anonymousfunction_random_1.k      │ _bd {[x] x+7;x$1;x<=2} │ "\001\000\000\0...   │ "\001\000\000\0...   ║
-║ serialization_bd_anonymousfunction_random_2.k      │ _bd {[] 0|4;0&3}     │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_anonymousfunction_random_1.k      │ _bd {[x] x+7;x$1;x<=2} │ "\001\000\000\0...   │                      ║
+║ serialization_bd_anonymousfunction_random_2.k      │ _bd {[] 0|4;0&3}     │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_anonymousfunction_random_3.k      │ _bd {[xyz] xy|3}     │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_floatvector_random_1.k            │ _bd 196825.27335627712 -326371.90292283031 -214498.92985862558 11655.819143220946 │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_floatvector_random_2.k            │ _bd 148812.33236087282 │ "\001\000\000\0...   │                      ║
@@ -868,7 +868,7 @@ world"       │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 803/862 tests passed (93.2%)                                                                               ║
+║ SUMMARY: 810/862 tests passed (94.0%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -1009,26 +1009,6 @@ Input: .k
 Expected: 
 Actual: .()
 ──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_db_anonymousfunction.k
-Input: _bd {[x] x+1}
-Expected: "\001\000\000\000\017\000\000\000\n\000\000\000\000{[x] x+1}\000"
-Actual: "\001\000\000\000\021\000\000\000\n\000\000\000\000{[x] x + 1}\000"
-──────────────────────────────────────────────────────────────────────────
-Test: db_function_params.k
-Input: _db _bd {x+y}
-Expected: {x+y}
-Actual: {x + y}
-──────────────────────────────────────────────────────────────────────────
-Test: db_function_complex.k
-Input: _db _bd {[x;y] x*y+z}
-Expected: {[x;y] x*y+z}
-Actual: {[x;y] x * y + z}
-──────────────────────────────────────────────────────────────────────────
-Test: db_function_simple_math.k
-Input: _db _bd {x+y}
-Expected: {x+y}
-Actual: {x + y}
-──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_integer_edge_-2147483648.k
 Input: _bd -2147483648
 Expected: "\001\000\000\000\b\000\000\000\001\000\000\000\001\000\000\200"
@@ -1038,16 +1018,6 @@ Test: serialization_bd_charactervector_edge_empty.k
 Input: _bd ""
 Expected: "\001\000\000\000\t\000\000\000\375\377\377\377\000\000\000\000\000"
 Actual: "\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000\000"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_anonymousfunction_random_1.k
-Input: _bd {[x] x+7;x$1;x<=2}
-Expected: "\001\000\000\000\030\000\000\000\n\000\000\000\000{[x] x+7;x$1;x<=2}\000"
-Actual: "\001\000\000\000\034\000\000\000\n\000\000\000\000{[x] x + 7;x $1;x <=2}\000"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_anonymousfunction_random_2.k
-Input: _bd {[] 0|4;0&3}
-Expected: "\001\000\000\000\022\000\000\000\n\000\000\000\000{[] 0|4;0&3}\000"
-Actual: "\001\000\000\000\024\000\000\000\n\000\000\000\000{[] 0 |4;0 &3}\000"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_anonymousfunction_random_3.k
 Input: _bd {[xyz] xy|3}
@@ -1153,11 +1123,6 @@ Test: idioms_01_448_conditional_drop_last.k
 Input: x:4 3#!12
 Expected: (0 1 2;3 4 5;6 7 8)
 Actual: (0 1 2;3 4 5;6 7 8;9 10 11)
-──────────────────────────────────────────────────────────────────────────
-Test: test_semicolon_parsing.k
-Input: x: (1;2;3)
-Expected: 
-Actual: 1 2 3
 ──────────────────────────────────────────────────────────────────────────
 Test: parse_projection_dyadic_plus.k
 Input: _parse "(+)"
