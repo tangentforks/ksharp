@@ -467,9 +467,9 @@ world"       │                      ║
 ║ test_ss_basic.k                                    │ "hello world" _ss "world" │ ("hello world";...   │ ,6                   ║
 ║ statement_assignment_basic.k                       │ a: 42                │                      │                      ║
 ║ statement_assignment_inline.k                      │ 1 + a: 42            │ 43                   │                      ║
-║ statement_conditional_basic.k                      │ :[1;2;3]             │ Error: Index op...   │ 2                    ║
-║ statement_do_basic.k                               │ i:0;do[3;i+:1];i     │ Error: Unsuppor...   │ 3                    ║
-║ statement_do_simple.k                              │ i:0;do[3;i+:1]       │ Error: Unsuppor...   │                      ║
+║ statement_conditional_basic.k                      │ :[1;2;3]             │ 2                    │                      ║
+║ statement_do_basic.k                               │ i:0;do[3;i+:1];i     │ 1                    │ 3                    ║
+║ statement_do_simple.k                              │ i:0;do[3;i+:1]       │                      │                      ║
 ║ semicolon_vars_test.k                              │ a: 10                │                      │                      ║
 ║ apply_and_assign_simple.k                          │ i:0;i+:1;i           │ 1                    │                      ║
 ║ apply_and_assign_multiline.k                       │ i:0                  │ 1                    │                      ║
@@ -532,15 +532,15 @@ world"       │                      ║
 ║ trap_dot_success.k                                 │ a:3 2 1              │ (0;1 3)              │                      ║
 ║ amend_colon_direct.k                               │ .[1 2 3; 1; :; 99]  // Amend with colon: replace element at index 1 with 99 │ 1 99 3               │                      ║
 ║ amend_triadic_monadic.k                            │ .[1 2 3; 1; -:]  // Triadic amend: apply monadic neg to element at index 1 │ 1 -2 3               │                      ║
-║ conditional_bracket_test.k                         │ :[1 < 2; "true"; "false"]  // Test conditional evaluation with bracket notation │ Error: Index op...   │ "true"               ║
-║ conditional_false.k                                │ :[0; "true"; "false"]  // Conditional evaluation - condition false │ Error: Index op...   │ "false"              ║
-║ conditional_simple_test.k                          │ :[1; "true"; "false"] │ Error: Index op...   │ "true"               ║
-║ conditional_true.k                                 │ :[1; "true"; "false"]  // Conditional evaluation - condition true │ Error: Index op...   │ "true"               ║
+║ conditional_bracket_test.k                         │ :[1 < 2; "true"; "false"]  // Test conditional evaluation with bracket notation │ "true"               │                      ║
+║ conditional_false.k                                │ :[0; "true"; "false"]  // Conditional evaluation - condition false │ "false"              │                      ║
+║ conditional_simple_test.k                          │ :[1; "true"; "false"] │ "true"               │                      ║
+║ conditional_true.k                                 │ :[1; "true"; "false"]  // Conditional evaluation - condition true │ "true"               │                      ║
 ║ dictionary_null_index.k                            │ d: .((`a;1);(`b;2))  │ 1 2                  │                      ║
 ║ dictionary_unmake.k                                │ d: .((`a;1);(`b;2)); result:. d; result │ ((`a;1;);(`b;2;))    │                      ║
-║ do_bracket_test.k                                  │ do[3; 42]  // Do function with bracket notation │ Error: Unsuppor...   │                      ║
-║ do_loop.k                                          │ i: 0; do[3; i+: 1]  // Do loop - increment i 3 times │ Error: Unsuppor...   │                      ║
-║ do_simple.k                                        │ do[3; 42]  // Do loop - simple test │ Error: Unsuppor...   │                      ║
+║ do_bracket_test.k                                  │ do[3; 42]  // Do function with bracket notation │                      │                      ║
+║ do_loop.k                                          │ i: 0; do[3; i+: 1]  // Do loop - increment i 3 times │                      │                      ║
+║ do_simple.k                                        │ do[3; 42]  // Do loop - simple test │                      │                      ║
 ║ dyadic_divide_bracket.k                            │ %[20; 4]  // Dyadic division with bracket notation │ 5.0                  │                      ║
 ║ dyadic_minus_bracket.k                             │ -[10; 3]  // Dyadic subtraction with bracket notation │ 7                    │                      ║
 ║ dyadic_multiply_bracket.k                          │ *[4; 6]  // Dyadic multiplication with bracket notation │ 24                   │                      ║
@@ -567,9 +567,9 @@ world"       │                      ║
 ║ format_string_pad_right.k                          │ -10$"test"           │ "test      "         │                      ║
 ║ format_vector_int.k                                │ 0$(1;2;3)            │ ("";"";"")           │                      ║
 ║ group_operator.k                                   │ a: 3 3 8 7 5 7 3 8 4 4 9 2 7 6 0 7 8 7 0 1 │ (0 1 6;2 7 16;3...   │                      ║
-║ if_bracket_test.k                                  │ if[1 < 2; a: 20]  // Test if function with bracket notation │ Error: Unsuppor...   │                      ║
-║ if_simple_test.k                                   │ if[3; 42]  // If function with bracket notation │ Error: Unsuppor...   │                      ║
-║ if_true.k                                          │ a: 10; if[1 < 2; a: 20]  // If statement - condition true │ Error: Unsuppor...   │                      ║
+║ if_bracket_test.k                                  │ if[1 < 2; a: 20]  // Test if function with bracket notation │                      │                      ║
+║ if_simple_test.k                                   │ if[3; 42]  // If function with bracket notation │                      │                      ║
+║ if_true.k                                          │ a: 10; if[1 < 2; a: 20]  // If statement - condition true │                      │                      ║
 ║ in_basic.k                                         │ 4 _in 1 7 2 4 6 3    │ 1                    │                      ║
 ║ in_notfound.k                                      │ 10 _in 1 7 2 4 6 3   │ 0                    │                      ║
 ║ in_simple.k                                        │ 5 _in 1 2 3          │ 0                    │                      ║
@@ -594,9 +594,9 @@ world"       │                      ║
 ║ k_tree_test_bracket_indexing.k                     │ d: .((`a;1);(`b;2);(`c;3)) │ 2                    │                      ║
 ║ k_tree_flip_test.k                                 │ +(`a`b`c;1 2 3)      │ ((`a;1);(`b;2);...   │                      ║
 ║ vector_null_index.k                                │ v: 1 2 3 4           │ 1 2 3 4              │                      ║
-║ while_bracket_test.k                               │ i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation │ Error: Unsuppor...   │                      ║
-║ while_safe_test.k                                  │ i: 0                 │ Error: Unsuppor...   │                      ║
-║ while_simple_test.k                                │ while[0; 42]         │ Error: Unsuppor...   │                      ║
+║ while_bracket_test.k                               │ i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation │                      │                      ║
+║ while_safe_test.k                                  │ i: 0                 │                      │                      ║
+║ while_simple_test.k                                │ while[0; 42]         │                      │                      ║
 ║ serialization_bd_db_integer.k                      │ _bd 42               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_float.k                        │ _bd 3.14159          │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_db_character.k                    │ _bd "a"              │ "\001\000\000\0...   │                      ║
@@ -811,7 +811,7 @@ world"       │                      ║
 ║ idioms_01_78_eval_number.k                         │ x:"1998 51"          │ 1998 51              │                      ║
 ║ idioms_01_88_name_variable.k                       │ x:"test"             │ Error: Error ev...   │ (0 1 2;3 4 5)        ║
 ║ idioms_01_96_conditional_execution.k               │ @[+/;!6;:]           │ Error: Amend wi...   │ 0 15                 ║
-║ idioms_01_493_choose_boolean.k                     │ x:"abcdef"           │ Error: Index op...   │ "xyz"                ║
+║ idioms_01_493_choose_boolean.k                     │ x:"abcdef"           │ "xyz"                │                      ║
 ║ idioms_01_434_replace_first.k                      │ x:"abbccdefcdab"     │ "tbbccdefcdab"       │                      ║
 ║ idioms_01_433_replace_last.k                       │ x:"abbccdefcdab"     │ "abbccdefcdat"       │                      ║
 ║ idioms_01_406_add_last.k                           │ x:1 2 3 4 5          │ 1 2 3 4 105          │                      ║
@@ -868,7 +868,7 @@ world"       │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 781/862 tests passed (90.6%)                                                                               ║
+║ SUMMARY: 797/862 tests passed (92.5%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -979,20 +979,10 @@ Input: "hello world" _ss "world"
 Expected: ,6
 Actual: ("hello world";`_ss;"world")
 ──────────────────────────────────────────────────────────────────────────
-Test: statement_conditional_basic.k
-Input: :[1;2;3]
-Expected: 2
-Actual: Error: Index operation requires dictionary or vector
-──────────────────────────────────────────────────────────────────────────
 Test: statement_do_basic.k
 Input: i:0;do[3;i+:1];i
 Expected: 3
-Actual: Error: Unsupported operator token type: DO
-──────────────────────────────────────────────────────────────────────────
-Test: statement_do_simple.k
-Input: i:0;do[3;i+:1]
-Expected: 
-Actual: Error: Unsupported operator token type: DO
+Actual: 1
 ──────────────────────────────────────────────────────────────────────────
 Test: io_read_basic.k
 Input: 0:`test
@@ -1019,41 +1009,6 @@ Input: -': 4 8 9 12 20
 Expected: 4 1 3 8
 Actual: Error: Dyadic operator must have exactly 2 children, got 0
 ──────────────────────────────────────────────────────────────────────────
-Test: conditional_bracket_test.k
-Input: :[1 < 2; "true"; "false"]  // Test conditional evaluation with bracket notation
-Expected: "true"
-Actual: Error: Index operation requires dictionary or vector
-──────────────────────────────────────────────────────────────────────────
-Test: conditional_false.k
-Input: :[0; "true"; "false"]  // Conditional evaluation - condition false
-Expected: "false"
-Actual: Error: Index operation requires dictionary or vector
-──────────────────────────────────────────────────────────────────────────
-Test: conditional_simple_test.k
-Input: :[1; "true"; "false"]
-Expected: "true"
-Actual: Error: Index operation requires dictionary or vector
-──────────────────────────────────────────────────────────────────────────
-Test: conditional_true.k
-Input: :[1; "true"; "false"]  // Conditional evaluation - condition true
-Expected: "true"
-Actual: Error: Index operation requires dictionary or vector
-──────────────────────────────────────────────────────────────────────────
-Test: do_bracket_test.k
-Input: do[3; 42]  // Do function with bracket notation
-Expected: 
-Actual: Error: Unsupported operator token type: DO
-──────────────────────────────────────────────────────────────────────────
-Test: do_loop.k
-Input: i: 0; do[3; i+: 1]  // Do loop - increment i 3 times
-Expected: 
-Actual: Error: Unsupported operator token type: DO
-──────────────────────────────────────────────────────────────────────────
-Test: do_simple.k
-Input: do[3; 42]  // Do loop - simple test
-Expected: 
-Actual: Error: Unsupported operator token type: DO
-──────────────────────────────────────────────────────────────────────────
 Test: empty_brackets_dictionary.k
 Input: d: .((`a;1);(`b;2))
 Expected: 1 2
@@ -1064,21 +1019,6 @@ Input: v: 1 2 3 4
 Expected: 1 2 3 4
 Actual: ()
 ──────────────────────────────────────────────────────────────────────────
-Test: if_bracket_test.k
-Input: if[1 < 2; a: 20]  // Test if function with bracket notation
-Expected: 
-Actual: Error: Unsupported operator token type: IF_FUNC
-──────────────────────────────────────────────────────────────────────────
-Test: if_simple_test.k
-Input: if[3; 42]  // If function with bracket notation
-Expected: 
-Actual: Error: Unsupported operator token type: IF_FUNC
-──────────────────────────────────────────────────────────────────────────
-Test: if_true.k
-Input: a: 10; if[1 < 2; a: 20]  // If statement - condition true
-Expected: 
-Actual: Error: Unsupported operator token type: IF_FUNC
-──────────────────────────────────────────────────────────────────────────
 Test: k_tree_current_branch.k
 Input: _d
 Expected: `.k
@@ -1088,21 +1028,6 @@ Test: k_tree_verify_root.k
 Input: .k
 Expected: 
 Actual: .()
-──────────────────────────────────────────────────────────────────────────
-Test: while_bracket_test.k
-Input: i: 0; while[i < 3; i+: 1]  // Test while function with bracket notation
-Expected: 
-Actual: Error: Unsupported operator token type: WHILE
-──────────────────────────────────────────────────────────────────────────
-Test: while_safe_test.k
-Input: i: 0
-Expected: 
-Actual: Error: Unsupported operator token type: WHILE
-──────────────────────────────────────────────────────────────────────────
-Test: while_simple_test.k
-Input: while[0; 42]
-Expected: 
-Actual: Error: Unsupported operator token type: WHILE
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_db_anonymousfunction.k
 Input: _bd {[x] x+1}
@@ -1218,11 +1143,6 @@ Test: idioms_01_96_conditional_execution.k
 Input: @[+/;!6;:]
 Expected: 0 15
 Actual: Error: Amend with colon requires 4 arguments: .[d; i; :; y]
-──────────────────────────────────────────────────────────────────────────
-Test: idioms_01_493_choose_boolean.k
-Input: x:"abcdef"
-Expected: "xyz"
-Actual: Error: Index operation requires dictionary or vector
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_495_indices_occurrences.k
 Input: x:"abcdefgab"

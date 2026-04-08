@@ -203,6 +203,18 @@ namespace K3CSharp.Parsing
                     }
                 }
                 
+                // Skip bracket function call handling for statement keywords (do, while, if, :)
+                // These should be handled by the statement parser instead
+                if (firstBracket != -1 && firstBracket == 1)
+                {
+                    var prefixToken = expressionTokens[0];
+                    if (LRSStatementParser.CouldBeStatement(prefixToken.Type))
+                    {
+                        // Let the statement parser handle this
+                        firstBracket = -1;
+                    }
+                }
+                
                 if (firstBracket != -1)
                 {
                     // Check if this is a triadic/tetradic operation pattern
@@ -804,10 +816,6 @@ namespace K3CSharp.Parsing
                 var firstToken = expressionTokens[0];
                 if (LRSStatementParser.CouldBeStatement(firstToken.Type))
                 {
-                    if (PureLRSMode && ParserConfig.EnableDebugging)
-                    {
-                        Console.WriteLine($"[PURE LRS DEBUG] EvaluateFromRight delegating to statement parser for {firstToken.Type}");
-                    }
                     return statementParser.ParseStatement(expressionTokens);
                 }
                 

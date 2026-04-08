@@ -273,6 +273,11 @@ namespace K3CSharp.Parsing
                 TokenType.EVAL => ASTNode.MakeLiteral(new SymbolValue("_eval")),
                 TokenType.PARSE => ASTNode.MakeLiteral(new SymbolValue("_parse")),
                 
+                // Control flow statements
+                TokenType.DO => ASTNode.MakeLiteral(new SymbolValue("_do")),
+                TokenType.WHILE => ASTNode.MakeLiteral(new SymbolValue("_while")),
+                TokenType.IF_FUNC => ASTNode.MakeLiteral(new SymbolValue("_if")),
+                
                 // MAX and MIN operators (use glyphs as expected by evaluator)
                 TokenType.MAX => ASTNode.MakeLiteral(new SymbolValue("|")),
                 TokenType.MIN => ASTNode.MakeLiteral(new SymbolValue("&")),
