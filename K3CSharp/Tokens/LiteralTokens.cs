@@ -48,6 +48,14 @@ namespace K3CSharp
 
         public override object GetValue()
         {
+            // Handle special long values per K specification
+            if (Lexeme == "0Ij")
+                return long.MaxValue;
+            if (Lexeme == "-0Ij")
+                return -long.MaxValue;
+            if (Lexeme == "0Nj")
+                return long.MinValue;
+            
             // Parse with bounds checking
             var numberPart = Lexeme.Substring(0, Lexeme.Length - 1); // Remove 'j'
             double parsedValue = double.Parse(numberPart);
@@ -99,7 +107,7 @@ namespace K3CSharp
 
         public override object GetValue()
         {
-            // Handle escape sequences
+            // Handle escape sequences in quoted format (e.g., '\n', '\t')
             if (Lexeme.Length == 3 && Lexeme[0] == '\'' && Lexeme[2] == '\'')
             {
                 char c = Lexeme[1];
@@ -112,6 +120,12 @@ namespace K3CSharp
                     '\'' => '\'',
                     _ => c
                 };
+            }
+            
+            // Handle unquoted single character (e.g., "f", "a" from double-quoted strings)
+            if (Lexeme.Length == 1)
+            {
+                return Lexeme[0];
             }
             
             throw new ArgumentException($"Invalid character literal: {Lexeme}");

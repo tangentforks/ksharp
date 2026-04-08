@@ -105,9 +105,15 @@ namespace K3CSharp.Parsing
             if (IsVerbBoundary(token, position))
                 return true;
             
-            // Check for adverb boundaries
+            // Check for adverb boundaries - but NOT if preceded by a verb (verb-immediate-left pattern)
             if (VerbRegistry.IsAdverbToken(token.Type) && depthTracker.IsAtBaseLevel())
-                return true;
+            {
+                // Don't treat adverb as boundary if previous token is a verb (e.g., +/ should stay together)
+                // If position is 0 (no previous token) OR previous token is not a verb, it's a boundary
+                if (position == 0 || !VerbRegistry.IsVerbToken(tokens[position - 1].Type))
+                    return true;
+                // If preceded by verb, adverb is NOT a boundary (e.g., +/ is one expression)
+            }
             
             // No operator precedence in K - removed IsOperatorBoundary check
             

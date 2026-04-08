@@ -115,6 +115,80 @@ namespace K3CSharp.Parsing
         {
             if (tokens.Count < 3) return null; // Need at least: left op right
             
+            // Check for verb+adverb patterns anywhere in the token list
+            // This handles cases like (1 2 3) +' (4 5 6) where the verb+adverb is in the middle
+            for (int i = 0; i < tokens.Count - 1; i++)
+            {
+                if (IsDyadicOperatorDirect(tokens[i].Type) && IsAdverbToken(tokens[i + 1].Type))
+                {
+                    // Extract the tokens for the adverb operation
+                    // Everything before the verb is the left operand
+                    var adverbLeftTokens = tokens.GetRange(0, i);
+                    // Everything after the adverb is the right operand
+                    var adverbRightTokens = tokens.GetRange(i + 2, tokens.Count - i - 2);
+                    var verbToken = tokens[i];
+                    var adverbToken = tokens[i + 1];
+                    
+                    // Build parse tree for left and right operands
+                    var leftNode = adverbLeftTokens.Count > 0 ? BuildParseTreeFromTokens(adverbLeftTokens) : null;
+                    var rightNode = adverbRightTokens.Count > 0 ? BuildParseTreeFromTokens(adverbRightTokens) : null;
+                    
+                    // Create verb node
+                    var verbNode = CreateNodeFromToken(verbToken);
+                    if (verbNode == null)
+                    {
+                        throw new Exception($"Failed to create verb node from token: {verbToken.Type}({verbToken.Lexeme})");
+                    }
+                    
+                    // Create adverb node with the structure expected by the evaluator
+                    // The evaluator expects: DyadicOp(adverb_symbol, left, right)
+                    // For adverbs with verbs, we need to embed the verb info in the structure
+                    var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
+                    
+                    // For the ' (each) adverb with dyadic verbs like +', the structure should be:
+                    // The verb becomes the "left" operand (evaluator extracts it)
+                    // The right operand is the actual right argument
+                    // If there's a left operand in the expression (e.g., 1 2 3 +' 4 5 6), 
+                    // we need a more complex structure
+                    
+                    if (leftNode != null && rightNode != null)
+                    {
+                        // Both operands: e.g., (1 2 3) +' (4 5 6)
+                        // Create a 3-child structure for dyadic verb with each adverb
+                        adverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbToken.Type));
+                        // First child is the verb
+                        adverbNode.Children.Add(verbNode);
+                        // Second child is the left operand
+                        adverbNode.Children.Add(leftNode);
+                        // Third child is the right operand
+                        adverbNode.Children.Add(rightNode);
+                    }
+                    else if (rightNode != null)
+                    {
+                        // Only right operand: e.g., +' (1 2 3) - unusual but handle it
+                        adverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbToken.Type));
+                        adverbNode.Children.Add(verbNode);
+                        adverbNode.Children.Add(rightNode);
+                    }
+                    else if (leftNode != null)
+                    {
+                        // Only left operand: e.g., (1 2 3) +' - unusual but handle it
+                        adverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbToken.Type));
+                        adverbNode.Children.Add(verbNode);
+                        adverbNode.Children.Add(leftNode);
+                    }
+                    else
+                    {
+                        // No operands - just the modified verb
+                        adverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbToken.Type));
+                        adverbNode.Children.Add(verbNode);
+                        adverbNode.Children.Add(ASTNode.MakeLiteral(new NullValue()));
+                    }
+                    
+                    return adverbNode;
+                }
+            }
+            
             var rightmostOpIndex = FindRightmostOperator(tokens);
             if (rightmostOpIndex == -1) return null;
             
@@ -188,8 +262,37 @@ namespace K3CSharp.Parsing
             if (tokens.Count == 0) return null;
             if (tokens.Count == 1) 
             {
-                var nodeResult = CreateNodeFromToken(tokens[0]);
-                return nodeResult;
+                return CreateNodeFromToken(tokens[0]);
+            }
+            
+            // Check if this is a parenthesized expression and use grouping parser
+            if (tokens.Count >= 2 && 
+                tokens[0].Type == TokenType.LEFT_PAREN && 
+                tokens[tokens.Count - 1].Type == TokenType.RIGHT_PAREN)
+            {
+                // Use grouping parser for parenthesized expressions
+                var subGroupingParser = new LRSGroupingParser(tokens, parentParser?.BuildParseTree ?? false, parentParser);
+                int pos = 0;
+                try
+                {
+                    return subGroupingParser.ParseParentheses(ref pos);
+                }
+                catch
+                {
+                    // Fall through to dyadic parsing if grouping parser fails
+                }
+            }
+            
+            // Check if all tokens are atomic - if so, create a vector
+            bool allAtomic = tokens.All(t => LRSAtomicParser.IsAtomicToken(t.Type));
+            if (allAtomic)
+            {
+                var argNodes = new List<ASTNode>();
+                foreach (var token in tokens)
+                {
+                    argNodes.Add(LRSAtomicParser.ParseAtomicToken(token));
+                }
+                return new ASTNode(ASTNodeType.Vector, null, argNodes);
             }
             
             // Try dyadic operation first (monadic parsing is handled at main LRS level)

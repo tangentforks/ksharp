@@ -112,28 +112,7 @@ namespace K3CSharp.Parsing
         /// </summary>
         private bool ShouldFallbackToLegacy(string sourceText, List<Token> tokens)
         {
-            // Fallback for adverb-heavy expressions
-            if (sourceText.Contains("'") || sourceText.Contains("/") || sourceText.Contains("\\"))
-            {
-                // Allow simple triadic dot operations but fallback on complex adverbs
-                if (!(sourceText.Contains(".[") && sourceText.Contains(";-") && sourceText.Count(c => c == ';') <= 2))
-                {
-                    return true;
-                }
-            }
-            
-            // Fallback for complex expressions with many tokens
-            if (tokens.Count > 30)
-            {
-                return true;
-            }
-            
-            // // Fallback for eval expressions (complex parsing)
-            // if (sourceText.Contains("_eval") || sourceText.Contains("_parse"))
-            // {
-            //     return true;
-            // }
-
+            // Pure LRS mode: no fallback to legacy parser
             return false;
         }
 

@@ -19,8 +19,8 @@ namespace K3CSharp.Tests
         static SimpleTestRunner()
         {
             // Enable Safe LRS mode - production configuration
-            ParserConfig.EnableLRSSafely();
-            //ParserConfig.EnablePureLRS();
+            // ParserConfig.EnableLRSSafely();
+            ParserConfig.EnablePureLRS();
             ParserConfig.EnableDebugging = false;
             ParserConfig.LogConfigChange("TestRunner initialization - Safe LRS mode");
         }

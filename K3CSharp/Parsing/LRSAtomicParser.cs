@@ -76,6 +76,19 @@ namespace K3CSharp.Parsing
         {
             var lexeme = token.Lexeme;
             
+            // Handle special long values per K specification
+            // 0Ij represents positive infinity (long.MaxValue)
+            if (lexeme == "0Ij")
+                return ASTNode.MakeLiteral(new LongValue(long.MaxValue));
+            
+            // -0Ij represents negative infinity (-long.MaxValue)
+            if (lexeme == "-0Ij")
+                return ASTNode.MakeLiteral(new LongValue(-long.MaxValue));
+            
+            // 0Nj represents null (long.MinValue)
+            if (lexeme == "0Nj")
+                return ASTNode.MakeLiteral(new LongValue(long.MinValue));
+            
             // Parse with bounds checking
             var numberPart = lexeme.Substring(0, lexeme.Length - 1); // Remove 'j'
             double parsedValue = double.Parse(numberPart);
@@ -109,7 +122,7 @@ namespace K3CSharp.Parsing
         {
             var lexeme = token.Lexeme;
             
-            // Handle escape sequences
+            // Handle escape sequences in quoted format (e.g., '\n', '\t')
             if (lexeme.Length == 3 && lexeme[0] == '\'' && lexeme[2] == '\'')
             {
                 char c = lexeme[1];
@@ -125,95 +138,29 @@ namespace K3CSharp.Parsing
                 return ASTNode.MakeLiteral(new CharacterValue(charValue.ToString()));
             }
             
+            // Handle unquoted single character (e.g., "f", "a" from double-quoted strings)
+            if (lexeme.Length == 1)
+            {
+                return ASTNode.MakeLiteral(new CharacterValue(lexeme));
+            }
+            
             throw new ArgumentException($"Invalid character literal: {lexeme}");
         }
 
         /// <summary>
-        /// Parse string token (character vector) with full K escape sequence support
-        /// Supports: \\, \b, \t, \n, \r, \", and octal sequences \000-\377
+        /// Parse string token (character vector)
+        /// Note: Escape sequences are already processed by the lexer (ReadString)
         /// </summary>
         public static ASTNode ParseString(Token token)
         {
             var lexeme = token.Lexeme;
             
-            // CHARACTER_VECTOR tokens from lexer contain raw string content (no quotes)
-            // But we also need to handle cases where quotes might be present
-            if (lexeme.Length >= 2 && lexeme[0] == '"' && lexeme[^1] == '"')
-            {
-                // Remove surrounding quotes and process escape sequences
-                var content = lexeme.Substring(1, lexeme.Length - 2);
-                var processedString = ProcessEscapeSequences(content);
-                
-                // Create a character vector (string) from the processed content
-                var charValues = processedString.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
-                return ASTNode.MakeLiteral(new VectorValue(charValues));
-            }
-            else
-            {
-                // CHARACTER_VECTOR token with raw content - process escape sequences directly
-                var processedString = ProcessEscapeSequences(lexeme);
-                
-                // Create a character vector (string) from the processed content
-                var charValues = processedString.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
-                return ASTNode.MakeLiteral(new VectorValue(charValues));
-            }
+            // CHARACTER_VECTOR tokens from lexer contain processed string content
+            // Escape sequences are already handled by the lexer, so we use the lexeme directly
+            var charValues = lexeme.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
+            return ASTNode.MakeLiteral(new VectorValue(charValues));
         }
         
-        /// <summary>
-        /// Process escape sequences in string according to K specification
-        /// </summary>
-        private static string ProcessEscapeSequences(string input)
-        {
-            var result = new System.Text.StringBuilder();
-            int i = 0;
-            
-            while (i < input.Length)
-            {
-                if (input[i] == '\\' && i + 1 < input.Length)
-                {
-                    char nextChar = input[i + 1];
-                    
-                    // Check for octal escape sequence (\000-\377)
-                    if (nextChar >= '0' && nextChar <= '7' && i + 3 < input.Length)
-                    {
-                        string octalDigits = input.Substring(i + 1, 3);
-                        if (octalDigits.Length == 3 && 
-                            octalDigits[0] >= '0' && octalDigits[0] <= '7' &&
-                            octalDigits[1] >= '0' && octalDigits[1] <= '7' &&
-                            octalDigits[2] >= '0' && octalDigits[2] <= '7')
-                        {
-                            // Convert octal to character
-                            int octalValue = Convert.ToInt32(octalDigits, 8);
-                            result.Append((char)octalValue);
-                            i += 4; // Skip \xxx
-                            continue;
-                        }
-                    }
-                    
-                    // Handle standard escape sequences
-                    char escapedChar = nextChar switch
-                    {
-                        '\\' => '\\',
-                        'b' => '\b',
-                        't' => '\t',
-                        'n' => '\n',
-                        'r' => '\r',
-                        '"' => '"',
-                        _ => nextChar // Any other character after \ is interpreted as itself
-                    };
-                    
-                    result.Append(escapedChar);
-                    i += 2; // Skip \x
-                }
-                else
-                {
-                    result.Append(input[i]);
-                    i++;
-                }
-            }
-            
-            return result.ToString();
-        }
 
         /// <summary>
         /// Parse symbol token
@@ -325,6 +272,10 @@ namespace K3CSharp.Parsing
                 TokenType.TIME => ASTNode.MakeLiteral(new SymbolValue("_t")),
                 TokenType.EVAL => ASTNode.MakeLiteral(new SymbolValue("_eval")),
                 TokenType.PARSE => ASTNode.MakeLiteral(new SymbolValue("_parse")),
+                
+                // MAX and MIN operators (use glyphs as expected by evaluator)
+                TokenType.MAX => ASTNode.MakeLiteral(new SymbolValue("|")),
+                TokenType.MIN => ASTNode.MakeLiteral(new SymbolValue("&")),
                 
                 // Delimiters for parse tree representation
                 TokenType.LEFT_PAREN => ASTNode.MakeLiteral(new SymbolValue("(")),

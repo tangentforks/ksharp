@@ -1545,8 +1545,9 @@ namespace K3CSharp.Parsing
         
         /// <summary>
         /// Create AST node from token using LRSAtomicParser
+        /// Rebuild marker V2
         /// </summary>
-        private ASTNode CreateNodeFromToken(Token token)
+        internal ASTNode CreateNodeFromToken(Token token)
         {
             // Handle adverb tokens in Pure LRS mode
             if (PureLRSMode && VerbRegistry.IsAdverbToken(token.Type))
@@ -1610,9 +1611,6 @@ namespace K3CSharp.Parsing
         /// <returns>AST node representing the adverb operation, or null if no adverb found</returns>
         private ASTNode? ParseAdverbExpression(List<Token> expressionTokens)
         {
-            // CONSERVATIVE APPROACH: Only handle very specific, simple cases
-            // Start with the most basic adverb patterns to avoid breaking the system
-            
             // CONSERVATIVE APPROACH: Only handle very specific, simple cases
             // Start with the most basic adverb patterns to avoid breaking the system
             
@@ -1703,9 +1701,10 @@ namespace K3CSharp.Parsing
             
             // Case 3: Generic verb + single-glyph adverb pattern
             // Pattern: verb/ args, verb\ args, verb' args (e.g., -/ 10 2 3 1, +\ 1 2 3, #' (1 2;3 4))
+            // Note: verb must be at position 0, adverb at position 1
             if (expressionTokens.Count >= 2)
             {
-                // Check for verb followed by single-glyph adverb
+                // Check for verb followed by single-glyph adverb at positions 0 and 1
                 if (IsVerbToken(expressionTokens[0].Type) &&
                     (expressionTokens[1].Type == TokenType.ADVERB_SLASH ||
                      expressionTokens[1].Type == TokenType.ADVERB_BACKSLASH ||
@@ -1746,42 +1745,46 @@ namespace K3CSharp.Parsing
             
             if (argTokens.Count > 0)
             {
-                // Parse the arguments as a sub-expression
-                int argPosition = 0;
-                var argParser = new LRSExpressionProcessor(argTokens, BuildParseTree, this);
-                argNode = argParser.ProcessExpression(ref argPosition);
-                
-                // If we couldn.t parse the arguments, try using the LRSParser directly
-                // This handles complex expressions like (1 2 3;4 5 6) with semicolons
-                if (argNode == null && argTokens.Count > 0)
+                // Check if all argument tokens are atomic - if so, create a vector directly
+                bool allAtomic = true;
+                foreach (var token in argTokens)
                 {
-                    argNode = BuildParseTreeFromTokens(argTokens);
+                    if (!LRSAtomicParser.IsAtomicToken(token.Type))
+                    {
+                        allAtomic = false;
+                        break;
+                    }
                 }
                 
-                // Final fallback: create a vector from atomic tokens only
-                if (argNode == null && argTokens.Count > 0)
-                if (argNode == null && argTokens.Count > 0)
+                if (allAtomic)
                 {
-                    // Create a vector node from the argument tokens
+                    // Create a vector node from the atomic argument tokens
                     var argNodes = new List<ASTNode>();
                     foreach (var token in argTokens)
                     {
-                        if (LRSAtomicParser.IsAtomicToken(token.Type))
-                        {
-                            argNodes.Add(LRSAtomicParser.ParseAtomicToken(token, this));
-                        }
+                        argNodes.Add(LRSAtomicParser.ParseAtomicToken(token, this));
                     }
+                    argNode = new ASTNode(ASTNodeType.Vector, null, argNodes);
+                }
+                else
+                {
+                    // Parse the arguments as a sub-expression for complex cases
+                    int argPosition = 0;
+                    var argParser = new LRSExpressionProcessor(argTokens, BuildParseTree, this);
+                    argNode = argParser.ProcessExpression(ref argPosition);
                     
-                    if (argNodes.Count > 0)
+                    // If we couldn.t parse the arguments, try using the LRSParser directly
+                    // This handles complex expressions like (1 2 3;4 5 6) with semicolons
+                    if (argNode == null && argTokens.Count > 0)
                     {
-                        argNode = new ASTNode(ASTNodeType.Vector, null, argNodes);
+                        argNode = BuildParseTreeFromTokens(argTokens);
                     }
                 }
             }
             
             // Create adverb node: DyadicOp(adverb_symbol, verb, arguments)
             var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
-            adverbNode.Value = new SymbolValue(GetAdverbName(adverbToken.Type));
+            adverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbToken.Type));
             adverbNode.Children.Add(verbNode);
             
             // Add dummy left argument (0) to match legacy parser AST structure
@@ -1849,7 +1852,7 @@ namespace K3CSharp.Parsing
             
             // Create adverb node: DyadicOp(adverb_symbol, verb, arguments)
             var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
-            adverbNode.Value = new SymbolValue(GetAdverbName(adverbToken.Type));
+            adverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbToken.Type));
             adverbNode.Children.Add(verbNode);
             
             // Add dummy left argument (0) to match legacy parser AST structure
@@ -1889,7 +1892,7 @@ namespace K3CSharp.Parsing
             
             // Create adverb node: ADVERB(verb, 0, args)
             var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
-            adverbNode.Value = new SymbolValue(GetAdverbName(adverbToken.Type));
+            adverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbToken.Type));
             adverbNode.Children.Add(verbNode);
             adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0))); // left argument (dummy)
             
@@ -1931,20 +1934,6 @@ namespace K3CSharp.Parsing
                 TokenType.MULTIPLY => "*",
                 TokenType.DIVIDE => "%",
                 TokenType.DOT_PRODUCT => "_dot",
-                _ => tokenType.ToString()
-            };
-        }
-        
-        /// <summary>
-        /// Get adverb name from token type
-        /// </summary>
-        private string GetAdverbName(TokenType tokenType)
-        {
-            return tokenType switch
-            {
-                TokenType.ADVERB_SLASH_COLON => "ADVERB_SLASH_COLON",
-                TokenType.ADVERB_BACKSLASH_COLON => "ADVERB_BACKSLASH_COLON",
-                TokenType.ADVERB_TICK_COLON => "ADVERB_TICK_COLON",
                 _ => tokenType.ToString()
             };
         }
@@ -2148,5 +2137,18 @@ namespace K3CSharp.Parsing
             
             return null;
         }
+        
+        /// <summary>
+        /// Force rebuild marker V3 - ensures new assembly is built
+        /// </summary>
+        public void ForceRebuildMarkerV3() { }
+        
+        /// <summary>
+        /// Force rebuild marker V4 - April 2026 adverb fixes
+        /// </summary>
+        public void ForceRebuildMarkerV4() { }
     }
 }
+
+// Force rebuild marker class V5
+public static class ForceRebuildMarkerV5 { public static int Value = 42; }

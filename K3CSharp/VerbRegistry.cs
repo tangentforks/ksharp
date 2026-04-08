@@ -1180,13 +1180,13 @@ namespace K3CSharp
             return adverbType switch
             {
                 // Over (/) and Scan (\) - support monadic and dyadic verbs
-                "ADVERB_SLASH" or "ADVERB_BACKSLASH" => verb.SupportedArities.Contains(1) || verb.SupportedArities.Contains(2),
+                "over" or "scan" => verb.SupportedArities.Contains(1) || verb.SupportedArities.Contains(2),
                 
                 // Each (') - supports monadic verbs only
-                "ADVERB_TICK" => verb.SupportedArities.Contains(1),
+                "each" => verb.SupportedArities.Contains(1),
                 
                 // Each-right (/), Each-left (\), Each-prior (') - support dyadic verbs
-                "ADVERB_SLASH_COLON" or "ADVERB_BACKSLASH_COLON" or "ADVERB_TICK_COLON" => verb.SupportedArities.Contains(2),
+                "each-right" or "each-left" or "each-prior" => verb.SupportedArities.Contains(2),
                 
                 _ => (verb.Type == VerbType.Operator || verb.Type == VerbType.Function) &&
                        verb.SupportedArities.Contains(1)

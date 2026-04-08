@@ -161,7 +161,7 @@ namespace K3CSharp.Parsing
         public static List<string> GetEachCompatibleVerbs()
         {
             return GetVerbsWithArity(1)
-                .Where(verbName => VerbRegistry.SupportsAdverbs(verbName, "ADVERB_TICK"))
+                .Where(verbName => VerbRegistry.SupportsAdverbs(verbName, "each"))
                 .ToList();
         }
         
@@ -172,7 +172,7 @@ namespace K3CSharp.Parsing
         public static List<string> GetEachRightCompatibleVerbs()
         {
             return GetVerbsWithArity(2)
-                .Where(verbName => VerbRegistry.SupportsAdverbs(verbName, "ADVERB_SLASH_COLON"))
+                .Where(verbName => VerbRegistry.SupportsAdverbs(verbName, "each-right"))
                 .ToList();
         }
         
@@ -183,7 +183,7 @@ namespace K3CSharp.Parsing
         public static List<string> GetEachLeftCompatibleVerbs()
         {
             return GetVerbsWithArity(2)
-                .Where(verbName => VerbRegistry.SupportsAdverbs(verbName, "ADVERB_BACKSLASH_COLON"))
+                .Where(verbName => VerbRegistry.SupportsAdverbs(verbName, "each-left"))
                 .ToList();
         }
         
@@ -194,7 +194,7 @@ namespace K3CSharp.Parsing
         public static List<string> GetOverCompatibleVerbs()
         {
             return GetAllRegisteredVerbNames()
-                .Where(verbName => VerbRegistry.SupportsAdverbs(verbName, "ADVERB_SLASH"))
+                .Where(verbName => VerbRegistry.SupportsAdverbs(verbName, "over"))
                 .ToList();
         }
         
@@ -205,7 +205,7 @@ namespace K3CSharp.Parsing
         public static List<string> GetScanCompatibleVerbs()
         {
             return GetAllRegisteredVerbNames()
-                .Where(verbName => VerbRegistry.SupportsAdverbs(verbName, "ADVERB_BACKSLASH"))
+                .Where(verbName => VerbRegistry.SupportsAdverbs(verbName, "over"))
                 .ToList();
         }
         

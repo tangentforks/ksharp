@@ -709,20 +709,6 @@ namespace K3CSharp
             };
         }
         
-        /// <summary>
-        /// Get adverb name from token type
-        /// </summary>
-        private string GetAdverbName(TokenType tokenType)
-        {
-            return tokenType switch
-            {
-                TokenType.ADVERB_SLASH_COLON => "ADVERB_SLASH_COLON",
-                TokenType.ADVERB_BACKSLASH_COLON => "ADVERB_BACKSLASH_COLON",
-                TokenType.ADVERB_TICK_COLON => "ADVERB_TICK_COLON",
-                _ => tokenType.ToString()
-            };
-        }
-        
         private ASTNode? ParseExpressionWithoutSemicolons()
         {
                         
@@ -758,7 +744,7 @@ namespace K3CSharp
                 
                 // Create adverb node: ADVERB(verb, 0, args)
                 var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
-                adverbNode.Value = new SymbolValue(GetAdverbName(adverbToken.Type));
+                adverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbToken.Type));
                 adverbNode.Children.Add(verbNode);
                 adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0))); // left argument (dummy)
                 
@@ -830,7 +816,7 @@ namespace K3CSharp
                 
                 // Create adverb node: ADVERB(verb, 0, args)
                 var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
-                adverbNode.Value = new SymbolValue(GetAdverbName(adverbType));
+                adverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbType));
                 adverbNode.Children.Add(verbNode);
                 adverbNode.Children.Add(new ASTNode(ASTNodeType.Literal, new IntegerValue(0))); // left argument (dummy)
                 
@@ -1197,7 +1183,20 @@ namespace K3CSharp
                             }
                             else if (token.Type == TokenType.LONG)
                             {
-                                term = ASTNode.MakeLiteral(new LongValue(long.Parse(token.Lexeme)));
+                                var lexeme = token.Lexeme;
+                                LongValue longValue;
+                                
+                                // Handle special long values per K specification
+                                if (lexeme == "0Ij")
+                                    longValue = new LongValue(long.MaxValue);
+                                else if (lexeme == "-0Ij")
+                                    longValue = new LongValue(-long.MaxValue);
+                                else if (lexeme == "0Nj")
+                                    longValue = new LongValue(long.MinValue);
+                                else
+                                    longValue = new LongValue(long.Parse(lexeme));
+                                
+                                term = ASTNode.MakeLiteral(longValue);
                                 Advance(); // Consume the token
                             }
                             else if (token.Type == TokenType.FLOAT)

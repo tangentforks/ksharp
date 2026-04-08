@@ -69,7 +69,19 @@ namespace K3CSharp.Parsing
         /// </summary>
         private static ASTNode ParseLong(Token token)
         {
-            if (long.TryParse(token.Lexeme, out long longValue))
+            var lexeme = token.Lexeme;
+            
+            // Handle special long values per K specification
+            if (lexeme == "0Ij")
+                return ASTNode.MakeLiteral(new LongValue(long.MaxValue));
+            if (lexeme == "-0Ij")
+                return ASTNode.MakeLiteral(new LongValue(-long.MaxValue));
+            if (lexeme == "0Nj")
+                return ASTNode.MakeLiteral(new LongValue(long.MinValue));
+            
+            // Strip the 'j' suffix and parse
+            var numberPart = lexeme.Substring(0, lexeme.Length - 1);
+            if (long.TryParse(numberPart, out long longValue))
             {
                 return ASTNode.MakeLiteral(new LongValue(longValue));
             }

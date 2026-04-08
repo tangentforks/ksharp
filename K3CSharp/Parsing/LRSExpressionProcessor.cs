@@ -4,7 +4,9 @@ using System.Collections.Generic;
 namespace K3CSharp.Parsing
 {
     /// <summary>
-    /// Expression processing for LRS parser
+    /// Processes expressions in the LRS parser by coordinating token processing
+    /// Fixed: ProcessMonadicExpression now handles adverb tokens correctly
+    /// </summary>
     /// Replaces ExpressionParser.ParsePrimary() calls with LRS-based processing
     /// Routes tokens to appropriate LRS parsers using verb-agnostic design
     /// </summary>
@@ -162,8 +164,14 @@ namespace K3CSharp.Parsing
             {
                 var currentToken = tokens[position];
                 
-                // Stop if we hit a dyadic operator or expression delimiter
-                if (OperatorDetector.IsDyadicOperator(currentToken.Type) ||
+                // DEBUG: Check if this is an adverb token
+                if (VerbRegistry.IsAdverbToken(currentToken.Type))
+                {
+                    Console.WriteLine($"[DEBUG LRSExprProc] Found adverb token: {currentToken.Type}({currentToken.Lexeme}), including in monadic tokens");
+                }
+                
+                // Stop if we hit a dyadic operator (but not an adverb) or expression delimiter
+                if ((OperatorDetector.IsDyadicOperator(currentToken.Type) && !VerbRegistry.IsAdverbToken(currentToken.Type)) ||
                     currentToken.Type == TokenType.SEMICOLON ||
                     currentToken.Type == TokenType.NEWLINE ||
                     currentToken.Type == TokenType.RIGHT_PAREN ||

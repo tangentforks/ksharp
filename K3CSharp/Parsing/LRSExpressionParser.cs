@@ -24,11 +24,6 @@ namespace K3CSharp.Parsing
             var expressionTokens = new List<Token>();
             var delimiterDepth = new DelimiterDepth(initialParenLevel, initialBracketLevel, initialBraceLevel);
             
-            if (ParserConfig.EnableDebugging)
-            {
-                Console.WriteLine($"[ReadExpressionTokens] Starting at position {position}");
-            }
-            
             while (position < tokens.Count)
             {
                 var token = tokens[position];
@@ -54,6 +49,22 @@ namespace K3CSharp.Parsing
                     if (ParserConfig.EnableDebugging)
                         Console.WriteLine($"[ReadExpressionTokens] Stopped at separator, collected {expressionTokens.Count} tokens");
                     break;
+                }
+                
+                // Stop at adverb boundaries when at base level, but NOT if preceded by a verb (verb-immediate-left pattern)
+                if (delimiterDepth.IsAtBaseLevel() && VerbRegistry.IsAdverbToken(token.Type))
+                {
+                    // Check if this adverb is preceded by a verb in the collected expression tokens
+                    // Use expressionTokens.Count to check if we have collected any tokens before this adverb
+                    if (expressionTokens.Count == 0 || !VerbRegistry.IsVerbToken(expressionTokens[expressionTokens.Count - 1].Type))
+                    {
+                        if (ParserConfig.EnableDebugging)
+                            Console.WriteLine($"[ReadExpressionTokens] Stopped at adverb boundary {token.Type}, collected {expressionTokens.Count} tokens");
+                        break;
+                    }
+                    // If preceded by verb, adverb is NOT a boundary (e.g., +/ is one expression)
+                    if (ParserConfig.EnableDebugging)
+                        Console.WriteLine($"[ReadExpressionTokens] Adverb {token.Type} preceded by verb, continuing");
                 }
                     
                 // Update delimiter depth

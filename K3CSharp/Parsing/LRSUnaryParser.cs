@@ -242,6 +242,16 @@ namespace K3CSharp.Parsing
         /// </summary>
         private ASTNode CreateNodeFromToken(Token token)
         {
+            // Handle adverb tokens by delegating to parent parser
+            if (VerbRegistry.IsAdverbToken(token.Type))
+            {
+                if (parentParser != null)
+                {
+                    return parentParser.CreateNodeFromToken(token);
+                }
+                throw new Exception($"Cannot process adverb token without parent parser: {token.Type}({token.Lexeme})");
+            }
+            
             if (!LRSAtomicParser.IsAtomicToken(token.Type))
             {
                 throw new Exception($"CreateNodeFromToken called with non-atomic token: {token.Type}({token.Lexeme})");
@@ -250,3 +260,4 @@ namespace K3CSharp.Parsing
         }
     }
 }
+

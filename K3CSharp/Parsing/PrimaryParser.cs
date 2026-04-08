@@ -93,6 +93,14 @@ namespace K3CSharp
             
             var lexeme = token.Lexeme;
             
+            // Handle special long values per K specification
+            if (lexeme == "0Ij")
+                return ASTNode.MakeLiteral(new LongValue(long.MaxValue));
+            if (lexeme == "-0Ij")
+                return ASTNode.MakeLiteral(new LongValue(-long.MaxValue));
+            if (lexeme == "0Nj")
+                return ASTNode.MakeLiteral(new LongValue(long.MinValue));
+            
             // Parse with bounds checking
             var numberPart = lexeme.Substring(0, lexeme.Length - 1); // Remove 'j'
             double parsedValue = double.Parse(numberPart);
@@ -126,7 +134,7 @@ namespace K3CSharp
             
             var lexeme = token.Lexeme;
             
-            // Handle escape sequences
+            // Handle escape sequences in quoted format (e.g., '\n', '\t')
             if (lexeme.Length == 3 && lexeme[0] == '\'' && lexeme[2] == '\'')
             {
                 char c = lexeme[1];
@@ -140,6 +148,12 @@ namespace K3CSharp
                     _ => c
                 };
                 return ASTNode.MakeLiteral(new CharacterValue(charValue.ToString()));
+            }
+            
+            // Handle unquoted single character (e.g., "f", "a" from double-quoted strings)
+            if (lexeme.Length == 1)
+            {
+                return ASTNode.MakeLiteral(new CharacterValue(lexeme));
             }
             
             throw new ArgumentException($"Invalid character literal: {lexeme}");
@@ -491,10 +505,22 @@ namespace K3CSharp
             var token = context.CurrentToken();
             context.Advance();
             
+            if (token.Type == TokenType.LONG)
+            {
+                var lexeme = token.Lexeme;
+                // Handle special long values per K specification
+                if (lexeme == "0Ij")
+                    return ASTNode.MakeLiteral(new LongValue(long.MaxValue));
+                if (lexeme == "-0Ij")
+                    return ASTNode.MakeLiteral(new LongValue(-long.MaxValue));
+                if (lexeme == "0Nj")
+                    return ASTNode.MakeLiteral(new LongValue(long.MinValue));
+                return ASTNode.MakeLiteral(new LongValue(long.Parse(lexeme.Substring(0, lexeme.Length - 1))));
+            }
+            
             return token.Type switch
             {
                 TokenType.INTEGER => ASTNode.MakeLiteral(new IntegerValue(int.Parse(token.Lexeme))),
-                TokenType.LONG => ASTNode.MakeLiteral(new LongValue(long.Parse(token.Lexeme.Substring(0, token.Lexeme.Length - 1)))),
                 TokenType.FLOAT => ASTNode.MakeLiteral(new FloatValue(double.Parse(token.Lexeme))),
                 TokenType.CHARACTER => ASTNode.MakeLiteral(new CharacterValue(token.Lexeme)),
                 TokenType.CHARACTER_VECTOR => CreateCharacterVector(token),

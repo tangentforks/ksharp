@@ -663,9 +663,9 @@ namespace K3CSharp
                 // THIS IS FUNDAMENTALLY WRONG, ADVERBS MUST BE AGNOSTIC TO THE VERB THEY MODIFY
                 // WE WANT GENERIC HandleAdverbOver HandleAdverbScan HandleAdverbEach
                 //   HandleAdverbEachRight HandleAdverbEachLeft HandleAdverbEachPrior
-                case "ADVERB_SLASH": return Over(new SymbolValue("+"), left, right);
-                case "ADVERB_BACKSLASH": return Scan(new SymbolValue("+"), left, right);
-                case "ADVERB_TICK": return HandleAdverbTick(left, new IntegerValue(0), right);
+                case "over": return Over(new SymbolValue("+"), left, right);
+                case "scan": return Scan(new SymbolValue("+"), left, right);
+                case "each": return HandleAdverbTick(left, new IntegerValue(0), right);
                 case "/:": return EachRight(new SymbolValue("_dot"), left, right);
                 case "\\:": return EachLeft(new SymbolValue("_dot"), left, right);
                 case "TYPE": return IoVerbDyadic(left, right, 4);
@@ -695,7 +695,7 @@ namespace K3CSharp
         private K3Value EvaluateDyadicOp(ASTNode node)
         {
             if (node.Value is not SymbolValue op) throw new Exception("Dyadic operator must have a symbol value");
-            
+
             
             // Handle monadic operators (which are implemented as dyadic ops with one child)
             if (node.Children.Count == 1)
@@ -809,12 +809,12 @@ namespace K3CSharp
                     "_not" => MathNot(operand),
                     "MIN" => operand, // Identity operation for monadic min
                     "MAX" => operand, // Identity operation for monadic max
-                    "ADVERB_SLASH" => ApplyAdverbSlash(operand, new IntegerValue(0), new IntegerValue(0)),
-                    "ADVERB_BACKSLASH" => ApplyAdverbBackslash(operand, new IntegerValue(0), new IntegerValue(0)),
-                    "ADVERB_TICK" => ApplyAdverbTick(operand, new IntegerValue(0), new IntegerValue(0)),
-                    "ADVERB_SLASH_COLON" => ApplyAdverbSlashColon(operand, new IntegerValue(0), new IntegerValue(0)),
-                    "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(operand, new IntegerValue(0), new IntegerValue(0)),
-                    "ADVERB_TICK_COLON" => ApplyAdverbTickColon(operand, new IntegerValue(0), new IntegerValue(0)),
+                    "over" => ApplyAdverbSlash(operand, new IntegerValue(0), new IntegerValue(0)),
+                    "scan" => ApplyAdverbBackslash(operand, new IntegerValue(0), new IntegerValue(0)),
+                    "each" => ApplyAdverbTick(operand, new IntegerValue(0), new IntegerValue(0)),
+                    "each-right" => ApplyAdverbSlashColon(operand, new IntegerValue(0), new IntegerValue(0)),
+                    "each-left" => ApplyAdverbBackslashColon(operand, new IntegerValue(0), new IntegerValue(0)),
+                    "each-prior" => ApplyAdverbTickColon(operand, new IntegerValue(0), new IntegerValue(0)),
                     "_parse" => Verbs.ParseVerbHandler.Parse(new[] { operand }),
                     "_eval" => EvaluateEvalVerb(operand),
                     _ => throw new Exception($"Unknown monadic operator: {op.Value}")
@@ -861,9 +861,9 @@ namespace K3CSharp
             }
             
             // Special handling for two-glyph adverbs with multiple children (adverb evaluation)
-            if ((op.Value.ToString() == "ADVERB_SLASH_COLON" || 
-                 op.Value.ToString() == "ADVERB_BACKSLASH_COLON" || 
-                 op.Value.ToString() == "ADVERB_TICK_COLON") && node.Children.Count == 3)
+            if ((op.Value.ToString() == "each-right" || 
+                 op.Value.ToString() == "each-left" || 
+                 op.Value.ToString() == "each-prior") && node.Children.Count == 3)
             {
                 // This is an adverb operation: ADVERB(verb, 0, args)
                 // Handle this using the adverb evaluation pipeline
@@ -886,9 +886,9 @@ namespace K3CSharp
                 
                 return op.Value.ToString() switch
                 {
-                    "ADVERB_SLASH_COLON" => ApplyAdverbSlashColon(verbValue, leftArg, argsVector),
-                    "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(verbValue, leftArg, argsVector),
-                    "ADVERB_TICK_COLON" => ApplyAdverbTickColon(verbValue, leftArg, argsVector),
+                    "each-right" => ApplyAdverbSlashColon(verbValue, leftArg, argsVector),
+                    "each-left" => ApplyAdverbBackslashColon(verbValue, leftArg, argsVector),
+                    "each-prior" => ApplyAdverbTickColon(verbValue, leftArg, argsVector),
                     _ => throw new Exception($"Unknown adverb: {op.Value}")
                 };
             }
@@ -960,8 +960,8 @@ namespace K3CSharp
                 }
             }
             else if (node.Children.Count == 2 && 
-                    (op.Value.ToString() == "ADVERB_TICK" || op.Value.ToString() == "ADVERB_SLASH" || op.Value.ToString() == "ADVERB_BACKSLASH" ||
-                     op.Value.ToString() == "ADVERB_SLASH_COLON" || op.Value.ToString() == "ADVERB_BACKSLASH_COLON" || op.Value.ToString() == "ADVERB_TICK_COLON"))
+                    (op.Value.ToString() == "each" || op.Value.ToString() == "over" || op.Value.ToString() == "scan" ||
+                     op.Value.ToString() == "each-right" || op.Value.ToString() == "each-left" || op.Value.ToString() == "each-prior"))
             {
                 // Handle 2-argument adverb structure from LRS parser: ADVERB(verb, argument)
                 var verbNode = node.Children[0];
@@ -985,19 +985,19 @@ namespace K3CSharp
                     var verbValue = Evaluate(verbNode);
                     return op.Value.ToString() switch
                     {
-                        "ADVERB_SLASH" => ApplyAdverbSlash(verbValue, argument, argument),
-                        "ADVERB_BACKSLASH" => ApplyAdverbBackslash(verbValue, argument, argument),
-                        "ADVERB_TICK" => HandleAdverbTick(verbValue, argument, argument),
-                        "ADVERB_SLASH_COLON" => ApplyAdverbSlashColon(verbValue, argument, argument),
-                        "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(verbValue, argument, argument),
-                        "ADVERB_TICK_COLON" => ApplyAdverbTickColon(verbValue, argument, argument),
+                        "over" => ApplyAdverbSlash(verbValue, argument, argument),
+                        "scan" => ApplyAdverbBackslash(verbValue, argument, argument),
+                        "each" => HandleAdverbTick(verbValue, argument, argument),
+                        "each-right" => ApplyAdverbSlashColon(verbValue, argument, argument),
+                        "each-left" => ApplyAdverbBackslashColon(verbValue, argument, argument),
+                        "each-prior" => ApplyAdverbTickColon(verbValue, argument, argument),
                         _ => throw new Exception($"Unknown adverb: {op.Value}")
                     };
                 }
             }
             else if (node.Children.Count == 3 && 
-                    (op.Value.ToString() == "ADVERB_TICK" || op.Value.ToString() == "ADVERB_SLASH" || op.Value.ToString() == "ADVERB_BACKSLASH" ||
-                     op.Value.ToString() == "ADVERB_SLASH_COLON" || op.Value.ToString() == "ADVERB_BACKSLASH_COLON" || op.Value.ToString() == "ADVERB_TICK_COLON"))
+                    (op.Value.ToString() == "each" || op.Value.ToString() == "over" || op.Value.ToString() == "scan" ||
+                     op.Value.ToString() == "each-right" || op.Value.ToString() == "each-left" || op.Value.ToString() == "each-prior"))
             {
                 // Handle 3-argument adverb structure using adverb-aware evaluation
                 var verbNode = node.Children[0];
@@ -1021,12 +1021,12 @@ namespace K3CSharp
                     var verbValue = Evaluate(verbNode);
                     return op.Value.ToString() switch
                     {
-                        "ADVERB_SLASH" => ApplyAdverbSlash(verbValue, leftArg, rightArg),
-                        "ADVERB_BACKSLASH" => ApplyAdverbBackslash(verbValue, leftArg, rightArg),
-                        "ADVERB_TICK" => HandleAdverbTick(verbValue, leftArg, rightArg),
-                        "ADVERB_SLASH_COLON" => ApplyAdverbSlashColon(verbValue, leftArg, rightArg),
-                        "ADVERB_BACKSLASH_COLON" => ApplyAdverbBackslashColon(verbValue, leftArg, rightArg),
-                        "ADVERB_TICK_COLON" => ApplyAdverbTickColon(verbValue, leftArg, rightArg),
+                        "over" => ApplyAdverbSlash(verbValue, leftArg, rightArg),
+                        "scan" => ApplyAdverbBackslash(verbValue, leftArg, rightArg),
+                        "each" => HandleAdverbTick(verbValue, leftArg, rightArg),
+                        "each-right" => ApplyAdverbSlashColon(verbValue, leftArg, rightArg),
+                        "each-left" => ApplyAdverbBackslashColon(verbValue, leftArg, rightArg),
+                        "each-prior" => ApplyAdverbTickColon(verbValue, leftArg, rightArg),
                         _ => throw new Exception($"Unknown adverb: {op.Value}")
                     };
                 }
@@ -4326,7 +4326,7 @@ namespace K3CSharp
                 currentVerb = verbWithAdverbs.BaseVerb;
                 
                 // Special handling for over adverb - apply directly to arguments without base verb first
-                if (verbWithAdverbs.Adverbs.Contains("ADVERB_SLASH"))
+                if (verbWithAdverbs.Adverbs.Contains("over"))
                 {
                     // Check if we have initialization (left argument is not dummy 0)
                     if (arguments.Length == 2 && arguments[0] is IntegerValue leftInt && leftInt.Value != 0)
@@ -4342,7 +4342,7 @@ namespace K3CSharp
                 }
                 
                 // Special handling for scan adverb - apply directly to arguments without base verb first
-                if (verbWithAdverbs.Adverbs.Contains("ADVERB_BACKSLASH"))
+                if (verbWithAdverbs.Adverbs.Contains("scan"))
                 {
                     // Check if we have initialization (left argument is not dummy 0)
                     if (arguments.Length == 2 && arguments[0] is IntegerValue leftInt && leftInt.Value != 0)
@@ -4401,32 +4401,32 @@ namespace K3CSharp
             public K3Value HandleTwoArgumentAdverb(VerbWithAdverbs verbWithAdverbs, K3Value argument)
             {
                 // For 2-argument adverb structures, handle over/scan/each adverbs correctly
-                if (verbWithAdverbs.Adverbs.Contains("ADVERB_SLASH"))
+                if (verbWithAdverbs.Adverbs.Contains("over"))
                 {
                     // Over adverb (/) - use existing implementation
                     return evaluator.ApplyAdverbSlash(CreateVerbValue(verbWithAdverbs.BaseVerb), new IntegerValue(0), argument);
                 }
-                else if (verbWithAdverbs.Adverbs.Contains("ADVERB_BACKSLASH"))
+                else if (verbWithAdverbs.Adverbs.Contains("scan"))
                 {
                     // Scan adverb (\) - use existing implementation
                     return evaluator.ApplyAdverbBackslash(CreateVerbValue(verbWithAdverbs.BaseVerb), new IntegerValue(0), argument);
                 }
-                else if (verbWithAdverbs.Adverbs.Contains("ADVERB_TICK"))
+                else if (verbWithAdverbs.Adverbs.Contains("each"))
                 {
                     // Each adverb (') - use existing implementation
                     return evaluator.HandleAdverbTick(CreateVerbValue(verbWithAdverbs.BaseVerb), new IntegerValue(0), argument);
                 }
-                else if (verbWithAdverbs.Adverbs.Contains("ADVERB_SLASH_COLON"))
+                else if (verbWithAdverbs.Adverbs.Contains("each-right"))
                 {
                     // Each-right adverb (/:) - use existing implementation
                     return evaluator.ApplyAdverbSlashColon(CreateVerbValue(verbWithAdverbs.BaseVerb), new IntegerValue(0), argument);
                 }
-                else if (verbWithAdverbs.Adverbs.Contains("ADVERB_BACKSLASH_COLON"))
+                else if (verbWithAdverbs.Adverbs.Contains("each-left"))
                 {
                     // Each-left adverb (\:) - use existing implementation
                     return evaluator.ApplyAdverbBackslashColon(CreateVerbValue(verbWithAdverbs.BaseVerb), new IntegerValue(0), argument);
                 }
-                else if (verbWithAdverbs.Adverbs.Contains("ADVERB_TICK_COLON"))
+                else if (verbWithAdverbs.Adverbs.Contains("each-prior"))
                 {
                     // Each-prior adverb (':) - use existing implementation
                     return evaluator.ApplyAdverbTickColon(CreateVerbValue(verbWithAdverbs.BaseVerb), new IntegerValue(0), argument);
@@ -4468,12 +4468,12 @@ namespace K3CSharp
             {
                 return adverb switch
                 {
-                    "ADVERB_SLASH" => ApplyOverAdverb(verbResult, originalArguments),
-                    "ADVERB_BACKSLASH" => ApplyScanAdverb(verbResult, originalArguments),
-                    "ADVERB_TICK" => ApplyEachAdverb(verbResult, originalArguments),
-                    "ADVERB_SLASH_COLON" => ApplyEachRightAdverb(verbResult, originalArguments),
-                    "ADVERB_BACKSLASH_COLON" => ApplyEachLeftAdverb(verbResult, originalArguments),
-                    "ADVERB_TICK_COLON" => ApplyEachPriorAdverb(verbResult, originalArguments),
+                    "over" => ApplyOverAdverb(verbResult, originalArguments),
+                    "scan" => ApplyScanAdverb(verbResult, originalArguments),
+                    "each" => ApplyEachAdverb(verbResult, originalArguments),
+                    "each-right" => ApplyEachRightAdverb(verbResult, originalArguments),
+                    "each-left" => ApplyEachLeftAdverb(verbResult, originalArguments),
+                    "each-prior" => ApplyEachPriorAdverb(verbResult, originalArguments),
                     _ => throw new Exception($"Unknown adverb: {adverb}")
                 };
             }
