@@ -171,7 +171,7 @@ namespace K3CSharp.Parsing
             
             // Remove backticks for symbol value
             var symbolValue = lexeme.Trim('`');
-            return ASTNode.MakeLiteral(new SymbolValue(token.Lexeme));
+            return ASTNode.MakeLiteral(new SymbolValue(symbolValue));
         }
         
         /// <summary>

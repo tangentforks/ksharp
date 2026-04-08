@@ -329,7 +329,14 @@ namespace K3CSharp.Parsing
             {
                 // Create new FunctionValue with updated source text that includes closing brace
                 string updatedSourceText = funcVal.OriginalSourceText + "}";
-                body.Value = new FunctionValue(funcVal.BodyText, funcVal.Parameters, funcVal.PreParsedTokens, updatedSourceText, funcVal.Hint);
+                var newFuncVal = new FunctionValue(funcVal.BodyText, funcVal.Parameters, funcVal.PreParsedTokens, updatedSourceText, funcVal.Hint);
+                // Preserve the cached AST from the original FunctionValue
+                var cachedAst = funcVal.GetCachedAst();
+                if (cachedAst != null)
+                {
+                    newFuncVal.CacheAst(cachedAst);
+                }
+                body.Value = newFuncVal;
             }
             
             return body;
