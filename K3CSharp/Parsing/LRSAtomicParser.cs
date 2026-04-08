@@ -273,6 +273,12 @@ namespace K3CSharp.Parsing
                 TokenType.EVAL => ASTNode.MakeLiteral(new SymbolValue("_eval")),
                 TokenType.PARSE => ASTNode.MakeLiteral(new SymbolValue("_parse")),
                 
+                // Linear algebra operations
+                TokenType.DOT_PRODUCT => ASTNode.MakeLiteral(new SymbolValue("_dot")),
+                TokenType.MUL => ASTNode.MakeLiteral(new SymbolValue("_mul")),
+                TokenType.INV => ASTNode.MakeLiteral(new SymbolValue("_inv")),
+                TokenType.LSQ => ASTNode.MakeLiteral(new SymbolValue("_lsq")),
+                
                 // Control flow statements
                 TokenType.DO => ASTNode.MakeLiteral(new SymbolValue("_do")),
                 TokenType.WHILE => ASTNode.MakeLiteral(new SymbolValue("_while")),

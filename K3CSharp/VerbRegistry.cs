@@ -300,7 +300,7 @@ namespace K3CSharp
                 TokenType.MINUS => "-",
                 TokenType.MULTIPLY => "*",
                 TokenType.DIVIDE => "%",
-                TokenType.DOT_PRODUCT => ".",
+                TokenType.DOT_PRODUCT => "_dot",
                 TokenType.DOT_APPLY => ".",
                 TokenType.APPLY => "@",
                 TokenType.MUL => "_mul",
