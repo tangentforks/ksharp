@@ -154,19 +154,12 @@ namespace K3CSharp
                     {
                         var statementType = node.Value is SymbolValue sym ? sym.Value : node.Value?.ToString() ?? "";
                         
-                        // Evaluate all arguments first
-                        var evaluatedArgs = new List<K3Value>();
-                        foreach (var child in node.Children)
-                        {
-                            evaluatedArgs.Add(Evaluate(child));
-                        }
-                        
                         return statementType switch
                         {
-                            ":" => EvaluateConditionalExpression(evaluatedArgs),
-                            "do" => EvaluateDoStatement(evaluatedArgs),
-                            "if" => EvaluateIfStatement(evaluatedArgs),
-                            "while" => EvaluateWhileStatement(evaluatedArgs),
+                            ":" => EvaluateConditionalExpression(node.Children),
+                            "do" => EvaluateDoStatement(node.Children),
+                            "if" => EvaluateIfStatement(node.Children),
+                            "while" => EvaluateWhileStatement(node.Children),
                             _ => throw new Exception($"Unknown conditional statement type: {statementType}")
                         };
                     }
@@ -3279,7 +3272,7 @@ namespace K3CSharp
             }
         }
 
-        private K3Value EvaluateDoStatement(List<K3Value> args)
+        private K3Value EvaluateDoStatement(List<ASTNode> args)
         {
             // Do statement: do[count; expression] or do[count; expression1; ; expressionN]
             // Execute expressions count times, return null (type 6) per spec
@@ -3289,22 +3282,25 @@ namespace K3CSharp
                 throw new Exception("Do statement requires at least 2 arguments: count and expression(s)");
             }
             
-            var count = ToInteger(args[0]);
+            // Evaluate count first (once)
+            var countValue = Evaluate(args[0]);
+            var count = ToInteger(countValue);
             
             if (count < 0)
             {
                 throw new Exception("Do count must be non-negative");
             }
             
-            var expressions = args.Skip(1).ToList();
+            // Get expression nodes (skip the count)
+            var expressionNodes = args.Skip(1).ToList();
             
+            // Execute count times
             for (int i = 0; i < count; i++)
             {
-                foreach (var expr in expressions)
+                foreach (var exprNode in expressionNodes)
                 {
-                    // The expressions are already evaluated K3Value objects
-                    // For do statements, we just execute them (side effects only)
-                    // The actual evaluation was already done when parsing the arguments
+                    // Re-evaluate the expression on each iteration
+                    Evaluate(exprNode);
                 }
             }
             
@@ -3312,7 +3308,7 @@ namespace K3CSharp
             return new NullValue();
         }
         
-        private K3Value EvaluateConditionalExpression(List<K3Value> args)
+        private K3Value EvaluateConditionalExpression(List<ASTNode> args)
         {
             // Conditional expression: :[condition;true_expr;false_expr]
             // Returns the value of true_expr if condition is non-zero, otherwise false_expr
@@ -3323,21 +3319,23 @@ namespace K3CSharp
                 throw new Exception("Conditional expression requires at least 2 arguments: condition and true expression");
             }
             
-            var condition = ToInteger(args[0]);
+            // Evaluate condition
+            var conditionValue = Evaluate(args[0]);
+            var condition = ToInteger(conditionValue);
             
             if (condition != 0)
             {
-                // Condition is true, return true expression
-                return args[1];
+                // Condition is true, evaluate and return true expression
+                return Evaluate(args[1]);
             }
             else
             {
-                // Condition is false, return false expression if provided, otherwise null
-                return args.Count >= 3 ? args[2] : new NullValue();
+                // Condition is false, evaluate and return false expression if provided, otherwise null
+                return args.Count >= 3 ? Evaluate(args[2]) : new NullValue();
             }
         }
         
-        private K3Value EvaluateIfStatement(List<K3Value> args)
+        private K3Value EvaluateIfStatement(List<ASTNode> args)
         {
             // If statement: if[condition; expression] or if[condition; expression1; ; expressionN]
             // Execute expressions if condition is not equal to 0, return null (type 6) per spec
@@ -3347,16 +3345,17 @@ namespace K3CSharp
                 throw new Exception("If statement requires at least 2 arguments: condition and expression(s)");
             }
             
-            var condition = ToInteger(args[0]);
+            // Evaluate condition
+            var conditionValue = Evaluate(args[0]);
+            var condition = ToInteger(conditionValue);
             
             if (condition != 0)
             {
-                // Condition is true, execute expressions (side effects only)
-                var expressions = args.Skip(1).ToList();
-                foreach (var expr in expressions)
+                // Condition is true, execute expressions
+                var expressionNodes = args.Skip(1).ToList();
+                foreach (var exprNode in expressionNodes)
                 {
-                    // The expressions are already evaluated K3Value objects
-                    // For if statements, we just execute them (side effects only)
+                    Evaluate(exprNode);
                 }
             }
             
@@ -3364,7 +3363,7 @@ namespace K3CSharp
             return new NullValue();
         }
         
-        private K3Value EvaluateWhileStatement(List<K3Value> args)
+        private K3Value EvaluateWhileStatement(List<ASTNode> args)
         {
             // While statement: while[condition; expression] or while[condition; expression1; ; expressionN]
             // Execute expressions while condition is not equal to 0, return null (type 6) per spec
@@ -3374,32 +3373,24 @@ namespace K3CSharp
                 throw new Exception("While statement requires at least 2 arguments: condition and expression(s)");
             }
             
-            var expressions = args.Skip(1).ToList();
+            var expressionNodes = args.Skip(1).ToList();
             
             while (true)
             {
                 // Re-evaluate condition each iteration
-                // Note: In the current implementation, the condition is already evaluated
-                // This is a limitation - true while statements need to re-evaluate the condition
-                // For now, we'll use the already evaluated condition value
-                var condition = ToInteger(args[0]);
+                var conditionValue = Evaluate(args[0]);
+                var condition = ToInteger(conditionValue);
                 
                 if (condition == 0)
                 {
                     break;
                 }
                 
-                // Execute expressions (side effects only)
-                foreach (var expr in expressions)
+                // Execute expressions
+                foreach (var exprNode in expressionNodes)
                 {
-                    // The expressions are already evaluated K3Value objects
-                    // For while statements, we just execute them (side effects only)
+                    Evaluate(exprNode);
                 }
-                
-                // Note: This is a simplified implementation. A true while statement
-                // would need to re-parse and re-evaluate the condition each iteration.
-                // For the current test cases, this should work.
-                break; // Prevent infinite loop for now
             }
             
             // While statements always return null (type 6) per spec

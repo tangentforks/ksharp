@@ -52,7 +52,7 @@
 world         ║
 ║ test_symbol_escape.k                               │ `"hello\nworld"      │ `"hello
 world"       │                      ║
-║ complex_function.k                                 │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2} │ Error: Unclosed...   │ 205.0                ║
+║ complex_function.k                                 │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2} │ 205.0                │                      ║
 ║ count_operator.k                                   │ # (1 2 3)            │ 3                    │                      ║
 ║ cut_vector.k                                       │ (0 2 4) _ (0 1 2 3 4 5 6 7) │ (0 1;2 3;4 5 6 7)    │                      ║
 ║ dictionary_empty.k                                 │ .()                  │ .()                  │                      ║
@@ -115,7 +115,7 @@ world"       │                      ║
 ║ function_call_simple.k                             │ add7:{[arg1] arg1+7} │ 12                   │                      ║
 ║ function_foo_chain.k                               │ mul:{[op1;op2] op1 * op2} │ 20                   │                      ║
 ║ function_mul.k                                     │ mul:{[op1;op2] op1 * op2} │ 32                   │                      ║
-║ lambda_string_assign.k                             │ {a:"hello";a}[]      │ Error: Unclosed...   │ "hello"              ║
+║ lambda_string_assign.k                             │ {a:"hello";a}[]      │ Error: Function...   │ "hello"              ║
 ║ lambda_string_literal.k                            │ {"hello"}[]          │ Error: Function...   │ "hello"              ║
 ║ lambda_symbol_literal.k                            │ {`abc}[]             │ Error: Function...   │ `abc                 ║
 ║ named_function_over.k                              │ f:{x*%y};f/10 20 30  │ {x * % y}            │ 0.01666667           ║
@@ -330,9 +330,9 @@ world"       │                      ║
 ║ grade_down_no_parens.k                             │ > 3 11 9 9 4         │ 1 2 3 4 0            │                      ║
 ║ grade_up_no_parens.k                               │ < 3 11 9 9 4         │ 0 4 2 3 1            │                      ║
 ║ mixed_types.k                                      │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
-║ multiline_function_single.k                        │ test: {[x] a:x*2; a+10} │ Error: Unclosed...   │ 20                   ║
+║ multiline_function_single.k                        │ test: {[x] a:x*2; a+10} │ 20                   │                      ║
 ║ null_vector.k                                      │ (;1;2)               │ (;1;2)               │                      ║
-║ scoping_single.k                                   │ globalVar: 100       │ Error: Unclosed...   │ 60                   ║
+║ scoping_single.k                                   │ globalVar: 100       │ 60                   │                      ║
 ║ semicolon_simple.k                                 │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
 ║ semicolon_vars.k                                   │ a: 10                │ 30 200 -10           │                      ║
 ║ semicolon_vector.k                                 │ a: 1 2               │ (7;3 4;-20.45)       │                      ║
@@ -377,10 +377,10 @@ world"       │                      ║
 ║ variable_assignment.k                              │ foo:7                │                      │                      ║
 ║ variable_reassignment.k                            │ foo:7                │ 7.2 4.5              │                      ║
 ║ variable_scoping_global_access.k                   │ globalVar: 100  // Test function accessing global variable │ 150                  │                      ║
-║ variable_scoping_global_assignment.k               │ globalVar: 100  // Test global assignment from nested function │ Error: Unclosed...   │ 30                   ║
-║ variable_scoping_global_unchanged.k                │ globalVar: 100  // Test verify global variable unchanged │ Error: Unclosed...   │ 100                  ║
-║ variable_scoping_local_hiding.k                    │ globalVar: 100  // Test function with local variable hiding global │ Error: Unclosed...   │ 60                   ║
-║ variable_scoping_nested_functions.k                │ globalVar: 100  // Test nested functions │ Error: Unclosed...   │ 140                  ║
+║ variable_scoping_global_assignment.k               │ globalVar: 100  // Test global assignment from nested function │ 100                  │ 30                   ║
+║ variable_scoping_global_unchanged.k                │ globalVar: 100  // Test verify global variable unchanged │ 100                  │                      ║
+║ variable_scoping_local_hiding.k                    │ globalVar: 100  // Test function with local variable hiding global │ 60                   │                      ║
+║ variable_scoping_nested_functions.k                │ globalVar: 100  // Test nested functions │ 140                  │                      ║
 ║ variable_usage.k                                   │ x:10                 │ 30                   │                      ║
 ║ dot_execute.k                                      │ ."2+2"               │ 4                    │                      ║
 ║ dot_execute_context.k                              │ foo:7                │ 8                    │                      ║
@@ -468,7 +468,7 @@ world"       │                      ║
 ║ statement_assignment_basic.k                       │ a: 42                │                      │                      ║
 ║ statement_assignment_inline.k                      │ 1 + a: 42            │ 43                   │                      ║
 ║ statement_conditional_basic.k                      │ :[1;2;3]             │ 2                    │                      ║
-║ statement_do_basic.k                               │ i:0;do[3;i+:1];i     │ 1                    │ 3                    ║
+║ statement_do_basic.k                               │ i:0;do[3;i+:1];i     │ 3                    │                      ║
 ║ statement_do_simple.k                              │ i:0;do[3;i+:1]       │                      │                      ║
 ║ semicolon_vars_test.k                              │ a: 10                │                      │                      ║
 ║ apply_and_assign_simple.k                          │ i:0;i+:1;i           │ 1                    │                      ║
@@ -704,8 +704,8 @@ world"       │                      ║
 ║ serialization_bd_list_edge_complex.k               │ _bd (_n;`symbol;{[]}) │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_list_edge_nested.k                │ _bd ((1;2);(3;4))    │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_list_edge_dicts.k                 │ _bd (.,(`a;1);.,(`b;2)) │ "\001\000\000\0...   │                      ║
-║ serialization_bd_anonymousfunction_random_1.k      │ _bd {[x] x+7;x$1;x<=2} │ Error: Unclosed...   │ "\001\000\000\0...   ║
-║ serialization_bd_anonymousfunction_random_2.k      │ _bd {[] 0|4;0&3}     │ Error: Unclosed...   │ "\001\000\000\0...   ║
+║ serialization_bd_anonymousfunction_random_1.k      │ _bd {[x] x+7;x$1;x<=2} │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_anonymousfunction_random_2.k      │ _bd {[] 0|4;0&3}     │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_anonymousfunction_random_3.k      │ _bd {[xyz] xy|3}     │ "\001\000\000\0...   │ "\001\000\000\0...   ║
 ║ serialization_bd_floatvector_random_1.k            │ _bd 196825.27335627712 -326371.90292283031 -214498.92985862558 11655.819143220946 │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_floatvector_random_2.k            │ _bd 148812.33236087282 │ "\001\000\000\0...   │                      ║
@@ -868,7 +868,7 @@ world"       │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 797/862 tests passed (92.5%)                                                                               ║
+║ SUMMARY: 804/862 tests passed (93.3%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -894,15 +894,10 @@ Expected: "hello
 world
 Actual: Error: Unterminated string literal
 ──────────────────────────────────────────────────────────────────────────
-Test: complex_function.k
-Input: distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2}
-Expected: 205.0
-Actual: Error: Unclosed braces - expected '}'
-──────────────────────────────────────────────────────────────────────────
 Test: lambda_string_assign.k
 Input: {a:"hello";a}[]
 Expected: "hello"
-Actual: Error: Unclosed braces - expected '}'
+Actual: Error: Function execution error: Undefined variable: hello
 ──────────────────────────────────────────────────────────────────────────
 Test: lambda_string_literal.k
 Input: {"hello"}[]
@@ -929,35 +924,10 @@ Input: (;;)
 Expected: (;;)
 Actual: (;)
 ──────────────────────────────────────────────────────────────────────────
-Test: multiline_function_single.k
-Input: test: {[x] a:x*2; a+10}
-Expected: 20
-Actual: Error: Unclosed braces - expected '}'
-──────────────────────────────────────────────────────────────────────────
-Test: scoping_single.k
-Input: globalVar: 100
-Expected: 60
-Actual: Error: Unclosed braces - expected '}'
-──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
-Actual: Error: Unclosed braces - expected '}'
-──────────────────────────────────────────────────────────────────────────
-Test: variable_scoping_global_unchanged.k
-Input: globalVar: 100  // Test verify global variable unchanged
-Expected: 100
-Actual: Error: Unclosed braces - expected '}'
-──────────────────────────────────────────────────────────────────────────
-Test: variable_scoping_local_hiding.k
-Input: globalVar: 100  // Test function with local variable hiding global
-Expected: 60
-Actual: Error: Unclosed braces - expected '}'
-──────────────────────────────────────────────────────────────────────────
-Test: variable_scoping_nested_functions.k
-Input: globalVar: 100  // Test nested functions
-Expected: 140
-Actual: Error: Unclosed braces - expected '}'
+Actual: 100
 ──────────────────────────────────────────────────────────────────────────
 Test: ci_adverb_vector.k
 Input: _ci' 97 94 80
@@ -978,11 +948,6 @@ Test: test_ss_basic.k
 Input: "hello world" _ss "world"
 Expected: ,6
 Actual: ("hello world";`_ss;"world")
-──────────────────────────────────────────────────────────────────────────
-Test: statement_do_basic.k
-Input: i:0;do[3;i+:1];i
-Expected: 3
-Actual: 1
 ──────────────────────────────────────────────────────────────────────────
 Test: io_read_basic.k
 Input: 0:`test
@@ -1062,12 +1027,12 @@ Actual: "\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000\000"
 Test: serialization_bd_anonymousfunction_random_1.k
 Input: _bd {[x] x+7;x$1;x<=2}
 Expected: "\001\000\000\000\030\000\000\000\n\000\000\000\000{[x] x+7;x$1;x<=2}\000"
-Actual: Error: Unclosed braces - expected '}'
+Actual: "\001\000\000\000\034\000\000\000\n\000\000\000\000{[x] x + 7;x $1;x <=2}\000"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_anonymousfunction_random_2.k
 Input: _bd {[] 0|4;0&3}
 Expected: "\001\000\000\000\022\000\000\000\n\000\000\000\000{[] 0|4;0&3}\000"
-Actual: Error: Unclosed braces - expected '}'
+Actual: "\001\000\000\000\024\000\000\000\n\000\000\000\000{[] 0 |4;0 &3}\000"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_anonymousfunction_random_3.k
 Input: _bd {[xyz] xy|3}

@@ -545,9 +545,6 @@ namespace K3CSharp.Parsing
             var position = 0;
             var expressions = new List<ASTNode>();
             
-            // Debug: always print for this method
-            Console.WriteLine($"[ParseMultiple] ENTER: sourceText='{sourceText}'");
-            
             // Skip leading whitespace-only lines (top-level only)
             // Per K spec: whitespace-only lines at top level are ignored
             while (position < tokens.Count && 

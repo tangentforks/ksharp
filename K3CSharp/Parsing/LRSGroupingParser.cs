@@ -486,9 +486,47 @@ namespace K3CSharp.Parsing
                 position++; // Consume ']'
             }
             
-            // Parse function body
-            var body = ParseExpressionInGrouping(ref position);
-            var bodyNode = body ?? ASTNode.MakeLiteral(new NullValue());
+            // Parse function body - may contain multiple statements separated by semicolons
+            var bodyExpressions = new List<ASTNode>();
+            
+            while (position < tokens.Count && tokens[position].Type != TokenType.RIGHT_BRACE)
+            {
+                // Parse one expression
+                var expr = ParseExpressionInGrouping(ref position);
+                if (expr != null)
+                {
+                    bodyExpressions.Add(expr);
+                }
+                
+                // Check for semicolon or newline and consume it if present
+                if (position < tokens.Count && (tokens[position].Type == TokenType.SEMICOLON || tokens[position].Type == TokenType.NEWLINE))
+                {
+                    position++; // Consume separator
+                }
+                else
+                {
+                    // No separator - this is the last expression
+                    break;
+                }
+            }
+            
+            // Create body node - if multiple expressions, create a sequence that evaluates all
+            // and returns the last one's value
+            ASTNode bodyNode;
+            if (bodyExpressions.Count == 0)
+            {
+                bodyNode = ASTNode.MakeLiteral(new NullValue());
+            }
+            else if (bodyExpressions.Count == 1)
+            {
+                bodyNode = bodyExpressions[0];
+            }
+            else
+            {
+                // Multiple expressions - create a vector node to hold them
+                // The evaluator will execute all and return the last result
+                bodyNode = ASTNode.MakeVector(bodyExpressions);
+            }
             
             // Extract complete original source text from opening brace to current position
             string originalSourceText = ExtractOriginalSourceText(braceStartPos, position);
