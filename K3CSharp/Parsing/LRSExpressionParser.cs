@@ -51,20 +51,26 @@ namespace K3CSharp.Parsing
                     break;
                 }
                 
-                // Stop at adverb boundaries when at base level, but NOT if preceded by a verb (verb-immediate-left pattern)
+                // Stop at adverb boundaries when at base level, but NOT if preceded by a verb, function, or identifier (verb-immediate-left pattern)
                 if (delimiterDepth.IsAtBaseLevel() && VerbRegistry.IsAdverbToken(token.Type))
                 {
-                    // Check if this adverb is preceded by a verb in the collected expression tokens
+                    // Check if this adverb is preceded by a verb, function closing brace, or identifier in the collected expression tokens
                     // Use expressionTokens.Count to check if we have collected any tokens before this adverb
-                    if (expressionTokens.Count == 0 || !VerbRegistry.IsVerbToken(expressionTokens[expressionTokens.Count - 1].Type))
+                    bool precededByVerbOrFunction = expressionTokens.Count > 0 && 
+                        (VerbRegistry.IsVerbToken(expressionTokens[expressionTokens.Count - 1].Type) ||
+                         expressionTokens[expressionTokens.Count - 1].Type == TokenType.RIGHT_BRACE ||
+                         expressionTokens[expressionTokens.Count - 1].Type == TokenType.RIGHT_PAREN ||
+                         expressionTokens[expressionTokens.Count - 1].Type == TokenType.IDENTIFIER);
+                    
+                    if (!precededByVerbOrFunction)
                     {
                         if (ParserConfig.EnableDebugging)
                             Console.WriteLine($"[ReadExpressionTokens] Stopped at adverb boundary {token.Type}, collected {expressionTokens.Count} tokens");
                         break;
                     }
-                    // If preceded by verb, adverb is NOT a boundary (e.g., +/ is one expression)
+                    // If preceded by verb, function, or identifier, adverb is NOT a boundary (e.g., +/ or {x+y}/ or f/ are one expression)
                     if (ParserConfig.EnableDebugging)
-                        Console.WriteLine($"[ReadExpressionTokens] Adverb {token.Type} preceded by verb, continuing");
+                        Console.WriteLine($"[ReadExpressionTokens] Adverb {token.Type} preceded by verb/function/identifier, continuing");
                 }
                     
                 // Update delimiter depth

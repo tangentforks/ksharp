@@ -401,10 +401,15 @@ namespace K3CSharp.Parsing
             // Check for function+adverb patterns BEFORE dyadic parsing
             // These have higher precedence than regular dyadic operations
             // Pattern: {function}/vector or {function}\vector
+            string firstDbg = tokens.Count > 0 ? tokens[0].Type.ToString() : "none";
+            string secondDbg = tokens.Count > 1 ? tokens[1].Type.ToString() : "none";
+            Console.WriteLine($"[DEBUG BuildParseTree] tokens.Count={tokens.Count}, first={firstDbg}, second={secondDbg}");
             if (tokens.Count >= 2)
             {
                 var potentialFunction = tokens[0];
                 var potentialAdverb = tokens[1];
+                
+                Console.WriteLine($"[DEBUG BuildParseTree] potentialFunction.Type={potentialFunction.Type}, potentialAdverb.Type={potentialAdverb.Type}, IsAdverb={VerbRegistry.IsAdverbToken(potentialAdverb.Type)}");
                 
                 // Check if first token is a function (LEFT_BRACE) and second is an adverb
                 if (potentialFunction.Type == TokenType.LEFT_BRACE && 
@@ -773,6 +778,10 @@ namespace K3CSharp.Parsing
         /// <returns>AST node representing parsed expression</returns>
         internal ASTNode? EvaluateFromRight(List<Token> expressionTokens)
         {
+            var firstTokenDbg = expressionTokens.Count > 0 ? expressionTokens[0].Type.ToString() : "none";
+            var allTokens = string.Join(", ", expressionTokens.Select(t => $"{t.Type}({t.Lexeme})"));
+            Console.WriteLine($"[DEBUG EvaluateFromRight] Called with {expressionTokens.Count} tokens: {allTokens}");
+            
             if (PureLRSMode && ParserConfig.EnableDebugging)
             {
                 Console.WriteLine($"[PURE LRS DEBUG] EvaluateFromRight processing {expressionTokens.Count} tokens: {string.Join(" ", expressionTokens.Select(t => $"{t.Type}({t.Lexeme})"))}");
@@ -792,6 +801,112 @@ namespace K3CSharp.Parsing
                 if (ParserConfig.EnableDebugging)
                     Console.WriteLine($"[EvaluateFromRight] Single token, returning: {expressionTokens[0].Type}");
                 return CreateNodeFromToken(expressionTokens[0]);
+            }
+            
+            // Check for function+adverb patterns FIRST
+            // Pattern: {function}/vector or {function}\vector
+            Console.WriteLine($"[DEBUG EvaluateFromRight] Checking for function+adverb pattern, tokens={expressionTokens.Count}");
+            if (expressionTokens.Count >= 2 && expressionTokens[0].Type == TokenType.LEFT_BRACE)
+            {
+                // Find the matching right brace for the function
+                int braceLevel = 1;
+                int functionEnd = -1;
+                for (int i = 1; i < expressionTokens.Count; i++)
+                {
+                    if (expressionTokens[i].Type == TokenType.LEFT_BRACE)
+                        braceLevel++;
+                    else if (expressionTokens[i].Type == TokenType.RIGHT_BRACE)
+                        braceLevel--;
+                    
+                    if (braceLevel == 0)
+                    {
+                        functionEnd = i;
+                        break;
+                    }
+                }
+                
+                // Check if there's an adverb immediately after the closing brace
+                if (functionEnd > 0 && functionEnd + 1 < expressionTokens.Count)
+                {
+                    var potentialAdverb = expressionTokens[functionEnd + 1];
+                    Console.WriteLine($"[DEBUG EvaluateFromRight] Found LEFT_BRACE, function ends at {functionEnd}, next token={potentialAdverb.Type}");
+                    Console.WriteLine($"[DEBUG EvaluateFromRight] IsAdverb? {VerbRegistry.IsAdverbToken(potentialAdverb.Type)}");
+                    
+                    if (VerbRegistry.IsAdverbToken(potentialAdverb.Type))
+                    {
+                        Console.WriteLine($"[DEBUG EvaluateFromRight] Found function+adverb pattern!");
+                        // Parse the function (from 0 to functionEnd inclusive)
+                        var functionTokens = expressionTokens.GetRange(0, functionEnd + 1);
+                        Console.WriteLine($"[DEBUG EvaluateFromRight] Parsing function tokens: {string.Join(", ", functionTokens.Select(t => $"{t.Type}({t.Lexeme})"))}");
+                        var functionNode = groupingParser.ParseBraces(functionTokens);
+                        Console.WriteLine($"[DEBUG EvaluateFromRight] functionNode={functionNode?.Type}, functionNode.Value={functionNode?.Value}");
+                        if (functionNode != null)
+                        {
+                            // Parse the remaining tokens as the adverb argument
+                            var remainingTokens = expressionTokens.Skip(functionEnd + 2).ToList(); // Skip function and adverb
+                            Console.WriteLine($"[DEBUG EvaluateFromRight] Remaining tokens: {string.Join(", ", remainingTokens.Select(t => $"{t.Type}({t.Lexeme})"))}");
+                            if (remainingTokens.Count > 0)
+                            {
+                                var argNode = EvaluateFromRight(remainingTokens);
+                                Console.WriteLine($"[DEBUG EvaluateFromRight] argNode={argNode?.Type}, argNode.Value={argNode?.Value}");
+                                if (argNode != null)
+                                {
+                                    // Create adverb node: ADVERB(adverb, function, argument)
+                                    Console.WriteLine($"[DEBUG EvaluateFromRight] Creating adverb node");
+                                    var adverbNode = CreateAdverbNode(potentialAdverb, functionNode, argNode);
+                                    Console.WriteLine($"[DEBUG EvaluateFromRight] Created adverb node: Type={adverbNode.Type}, Value={adverbNode.Value}, Children={adverbNode.Children.Count}");
+                                    return adverbNode;
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"[DEBUG EvaluateFromRight] argNode is null, skipping adverb node creation");
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine($"[DEBUG EvaluateFromRight] No remaining tokens, skipping adverb node creation");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[DEBUG EvaluateFromRight] functionNode is null, skipping adverb node creation");
+                        }
+                    }
+                }
+            }
+            
+            // Check for function variable + adverb patterns
+            // Pattern: f/vector or f\vector where f is a function variable
+            if (expressionTokens.Count >= 2 && expressionTokens[0].Type == TokenType.IDENTIFIER)
+            {
+                var potentialAdverb = expressionTokens[1];
+                if (VerbRegistry.IsAdverbToken(potentialAdverb.Type))
+                {
+                    Console.WriteLine($"[DEBUG EvaluateFromRight] Found function variable + adverb pattern: {expressionTokens[0].Lexeme}/{potentialAdverb.Type}");
+                    // Create a variable node for the function
+                    var functionNode = CreateNodeFromToken(expressionTokens[0]);
+                    Console.WriteLine($"[DEBUG EvaluateFromRight] Created function variable node: {functionNode?.Type}, Value={functionNode?.Value}");
+                    
+                    if (functionNode != null)
+                    {
+                        // Parse the remaining tokens as the adverb argument
+                        var remainingTokens = expressionTokens.Skip(2).ToList(); // Skip function variable and adverb
+                        Console.WriteLine($"[DEBUG EvaluateFromRight] Remaining tokens for function variable case: {string.Join(", ", remainingTokens.Select(t => $"{t.Type}({t.Lexeme})"))}");
+                        if (remainingTokens.Count > 0)
+                        {
+                            var argNode = EvaluateFromRight(remainingTokens);
+                            Console.WriteLine($"[DEBUG EvaluateFromRight] argNode={argNode?.Type}, argNode.Value={argNode?.Value}");
+                            if (argNode != null)
+                            {
+                                // Create adverb node: ADVERB(adverb, function, argument)
+                                Console.WriteLine($"[DEBUG EvaluateFromRight] Creating adverb node for function variable");
+                                var adverbNode = CreateAdverbNode(potentialAdverb, functionNode, argNode);
+                                Console.WriteLine($"[DEBUG EvaluateFromRight] Created adverb node: Type={adverbNode.Type}, Value={adverbNode.Value}, Children={adverbNode.Children.Count}");
+                                return adverbNode;
+                            }
+                        }
+                    }
+                }
             }
             
             // Check for disambiguating colon pattern: verb + colon + adverb

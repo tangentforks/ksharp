@@ -653,14 +653,13 @@ namespace K3CSharp
             // Handle special cases with lambda expressions
             switch (opName)
             {
-                // THIS IS FUNDAMENTALLY WRONG, ADVERBS MUST BE AGNOSTIC TO THE VERB THEY MODIFY
-                // WE WANT GENERIC HandleAdverbOver HandleAdverbScan HandleAdverbEach
-                //   HandleAdverbEachRight HandleAdverbEachLeft HandleAdverbEachPrior
-                case "over": return Over(new SymbolValue("+"), left, right);
-                case "scan": return Scan(new SymbolValue("+"), left, right);
+                // Adverbs must be agnostic to the verb they modify
+                // Pass the actual verb (left operand) to the adverb handler
+                case "over": return Over(left, new IntegerValue(0), right);
+                case "scan": return Scan(left, new IntegerValue(0), right);
                 case "each": return HandleAdverbTick(left, new IntegerValue(0), right);
-                case "/:": return EachRight(new SymbolValue("_dot"), left, right);
-                case "\\:": return EachLeft(new SymbolValue("_dot"), left, right);
+                case "/:": return EachRight(left, new IntegerValue(0), right);
+                case "\\:": return EachLeft(left, new IntegerValue(0), right);
                 case "TYPE": return IoVerbDyadic(left, right, 4);
                 case "STRING_REPRESENTATION": return IoVerbMonadic(right, 5);
                 case "IO_VERB_0": return IoVerbDyadic(left, right, 0);
@@ -689,7 +688,6 @@ namespace K3CSharp
         {
             if (node.Value is not SymbolValue op) throw new Exception("Dyadic operator must have a symbol value");
 
-            
             // Handle monadic operators (which are implemented as dyadic ops with one child)
             if (node.Children.Count == 1)
             {
@@ -852,6 +850,36 @@ namespace K3CSharp
                 
                 return HandleAdverbTick(verbValue, new IntegerValue(0), argsVector);
             }
+
+            // Special handling for / adverb (over) with 2 children: {func}/args
+            if (op.Value.ToString() == "/" && node.Children.Count == 2)
+            {
+                var verbNode = node.Children[0];
+                var argument = Evaluate(node.Children[1]);
+                if (argument == null) throw new Exception("Adverb argument cannot be null");
+                
+                // Evaluate the verb (function)
+                var verbValue = Evaluate(verbNode);
+                if (verbValue == null) throw new Exception("Adverb verb cannot be null");
+                
+                // Apply the over adverb
+                return ApplyAdverbSlash(verbValue, new IntegerValue(0), argument);
+            }
+
+            // Special handling for \ adverb (scan) with 2 children: {func}\args
+            if (op.Value.ToString() == "\\" && node.Children.Count == 2)
+            {
+                var verbNode = node.Children[0];
+                var argument = Evaluate(node.Children[1]);
+                if (argument == null) throw new Exception("Adverb argument cannot be null");
+                
+                // Evaluate the verb (function)
+                var verbValue = Evaluate(verbNode);
+                if (verbValue == null) throw new Exception("Adverb verb cannot be null");
+                
+                // Apply the scan adverb
+                return ApplyAdverbBackslash(verbValue, new IntegerValue(0), argument);
+            }
             
             // Special handling for two-glyph adverbs with multiple children (adverb evaluation)
             if ((op.Value.ToString() == "each-right" || 
@@ -954,9 +982,12 @@ namespace K3CSharp
             }
             else if (node.Children.Count == 2 && 
                     (op.Value.ToString() == "each" || op.Value.ToString() == "over" || op.Value.ToString() == "scan" ||
-                     op.Value.ToString() == "each-right" || op.Value.ToString() == "each-left" || op.Value.ToString() == "each-prior"))
+                     op.Value.ToString() == "each-right" || op.Value.ToString() == "each-left" || op.Value.ToString() == "each-prior" ||
+                     op.Value.ToString() == "/" || op.Value.ToString() == "\\" || op.Value.ToString() == "'" ||
+                     op.Value.ToString() == "/:" || op.Value.ToString() == "\\:" || op.Value.ToString() == "':"))
             {
                 // Handle 2-argument adverb structure from LRS parser: ADVERB(verb, argument)
+                Console.WriteLine($"[DEBUG] Entering 2-arg adverb handler, op={op.Value}, children={node.Children.Count}");
                 var verbNode = node.Children[0];
                 var argument = Evaluate(node.Children[1]);
                 
@@ -976,14 +1007,16 @@ namespace K3CSharp
                 {
                     // Fallback to legacy evaluation for simple cases
                     var verbValue = Evaluate(verbNode);
+                    Console.WriteLine($"[DEBUG AdverbEval] verbNode.Type={verbNode.Type}, verbValue.Type={verbValue.Type}, verbValue={verbValue}");
+                    Console.WriteLine($"[DEBUG AdverbEval] op.Value={op.Value}, argument={argument}");
                     return op.Value.ToString() switch
                     {
-                        "over" => ApplyAdverbSlash(verbValue, argument, argument),
-                        "scan" => ApplyAdverbBackslash(verbValue, argument, argument),
-                        "each" => HandleAdverbTick(verbValue, argument, argument),
-                        "each-right" => ApplyAdverbSlashColon(verbValue, argument, argument),
-                        "each-left" => ApplyAdverbBackslashColon(verbValue, argument, argument),
-                        "each-prior" => ApplyAdverbTickColon(verbValue, argument, argument),
+                        "over" or "/" => ApplyAdverbSlash(verbValue, argument, argument),
+                        "scan" or "\\" => ApplyAdverbBackslash(verbValue, argument, argument),
+                        "each" or "'" => HandleAdverbTick(verbValue, argument, argument),
+                        "each-right" or "/:" => ApplyAdverbSlashColon(verbValue, argument, argument),
+                        "each-left" or "\\:" => ApplyAdverbBackslashColon(verbValue, argument, argument),
+                        "each-prior" or "':" => ApplyAdverbTickColon(verbValue, argument, argument),
                         _ => throw new Exception($"Unknown adverb: {op.Value}")
                     };
                 }

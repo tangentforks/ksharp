@@ -281,6 +281,28 @@ namespace K3CSharp.Parsing
         }
 
         /// <summary>
+        /// Parse braces from a token list (used by EvaluateFromRight for function+adverb patterns)
+        /// </summary>
+        public ASTNode? ParseBraces(List<Token> braceTokens)
+        {
+            if (braceTokens.Count == 0 || braceTokens[0].Type != TokenType.LEFT_BRACE)
+                return null;
+            
+            // Temporarily swap tokens to use the provided list
+            var originalTokens = tokens;
+            try
+            {
+                tokens = braceTokens;
+                int position = 0;
+                return ParseBraces(ref position);
+            }
+            finally
+            {
+                tokens = originalTokens;
+            }
+        }
+
+        /// <summary>
         /// Parse braces expression (function definitions)
         /// </summary>
         public ASTNode ParseBraces(ref int position)

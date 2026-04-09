@@ -31,8 +31,10 @@
 ║ adverb_scan_with_initialization.k                  │ 2 *\ 1 2 3           │ 2 2 4 12             │                      ║
 ║ anonymous_function_double_param.k                  │ {[op1;op2] op1 * op2} │ {[op1;op2] op1 ...   │                      ║
 ║ anonymous_function_empty.k                         │ {}                   │ {}                   │                      ║
-║ anonymous_function_over_adverb.k                   │ {x*%y}/10 20 30      │ {x * % y}            │ 0.01666667           ║
-║ anonymous_function_scan_adverb.k                   │ {x*%y}\10 20 30      │ {x * % y}            │ (10;0.5;0.01666...   ║
+║ anonymous_function_over_adverb.k                   │ {x*%y}/10 20 30      │ 0.01666667           │                      ║
+║ anonymous_function_scan_adverb.k                   │ {x*%y}\10 20 30      │ (10;0.5;0.01666...   │                      ║
+║ function_variable_over_adverb.k                    │ f:{x*%y};f/10 20 30  │ 0.01666667           │                      ║
+║ function_variable_scan_adverb.k                    │ f:{x*%y};f\10 20 30  │ (10;0.5;0.01666...   │                      ║
 ║ test_projected_function.k                          │ %  // This should create a projected function │ `"%"                 │ %                    ║
 ║ atom_scalar.k                                      │ @42                  │ 1                    │                      ║
 ║ atom_vector.k                                      │ @1 2 3               │ 0                    │                      ║
@@ -118,8 +120,8 @@ world"       │                      ║
 ║ lambda_string_assign.k                             │ {a:"hello";a}[]      │ (;"hello")           │ "hello"              ║
 ║ lambda_string_literal.k                            │ {"hello"}[]          │ "hello"              │                      ║
 ║ lambda_symbol_literal.k                            │ {`abc}[]             │ `abc                 │                      ║
-║ named_function_over.k                              │ f:{x*%y};f/10 20 30  │ {x * % y}            │ 0.01666667           ║
-║ named_function_scan.k                              │ f:{x*%y};f\10 20 30  │ {x * % y}            │ (10;0.5;0.01666...   ║
+║ named_function_over.k                              │ f:{x*%y};f/10 20 30  │ 0.01666667           │                      ║
+║ named_function_scan.k                              │ f:{x*%y};f\10 20 30  │ (10;0.5;0.01666...   │                      ║
 ║ where_generate_scalar.k                            │ &4                   │ 0 0 0 0              │                      ║
 ║ grade_down_operator.k                              │ > (3 11 9 9 4)       │ 1 2 3 4 0            │                      ║
 ║ grade_up_operator.k                                │ < (3 11 9 9 4)       │ 0 4 2 3 1            │                      ║
@@ -868,21 +870,11 @@ world"       │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 810/862 tests passed (94.0%)                                                                               ║
+║ SUMMARY: 816/864 tests passed (94.4%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
 ═════════════════════════════════════════════════════════════════════════════════════
-Test: anonymous_function_over_adverb.k
-Input: {x*%y}/10 20 30
-Expected: 0.01666667
-Actual: {x * % y}
-──────────────────────────────────────────────────────────────────────────
-Test: anonymous_function_scan_adverb.k
-Input: {x*%y}\10 20 30
-Expected: (10;0.5;0.01666667)
-Actual: {x * % y}
-──────────────────────────────────────────────────────────────────────────
 Test: test_projected_function.k
 Input: %  // This should create a projected function
 Expected: %
@@ -903,16 +895,6 @@ Test: lambda_string_assign.k
 Input: {a:"hello";a}[]
 Expected: "hello"
 Actual: (;"hello")
-──────────────────────────────────────────────────────────────────────────
-Test: named_function_over.k
-Input: f:{x*%y};f/10 20 30
-Expected: 0.01666667
-Actual: {x * % y}
-──────────────────────────────────────────────────────────────────────────
-Test: named_function_scan.k
-Input: f:{x*%y};f\10 20 30
-Expected: (10;0.5;0.01666667)
-Actual: {x * % y}
 ──────────────────────────────────────────────────────────────────────────
 Test: list_null_multiple_semicolons.k
 Input: (;;)
@@ -1021,7 +1003,7 @@ Actual: "\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000\000"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_anonymousfunction_random_3.k
 Input: _bd {[xyz] xy|3}
-Expected: "\001\000\000\000\024\000\000\000\n\000\000\000.k\000{[xyz] xy|3}\000"
+Expected: "\001\000\000\000\025\000\000\000\n\000\000\000.k\000{[xyz] xy |3}\000"
 Actual: "\001\000\000\000\023\000\000\000\n\000\000\000\000{[xyz] xy |3}\000"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_list_with_explicit_nulls.k

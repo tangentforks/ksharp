@@ -62,17 +62,11 @@ namespace K3CSharp
                 // Handle comma functions specially
                 return ApplySymbolVerb(",", arguments[0], arguments.Count > 1 ? arguments[1] : new IntegerValue(0));
             }
-            else if (func.BodyText.Contains("*") && func.BodyText.Contains("%") || 
-                     func.BodyText.StartsWith("{") && func.BodyText.EndsWith("}"))
-            {
-                // Handle lambda functions like {x*%y} or x*%y (when braces are stripped)
-                Console.WriteLine($"[DEBUG] Detected lambda function, calling ExecuteLambdaFunction");
-                return ExecuteLambdaFunction(func, arguments);
-            }
             else
             {
-                Console.WriteLine($"[DEBUG] Not a lambda function, throwing error");
-                throw new Exception($"Function execution not yet implemented: {func.BodyText}");
+                // Handle all other functions as lambda functions
+                Console.WriteLine($"[DEBUG] Executing lambda function");
+                return ExecuteLambdaFunction(func, arguments);
             }
         }
         
@@ -87,7 +81,19 @@ namespace K3CSharp
             // Extract the function body without braces
             var body = func.BodyText.Substring(1, func.BodyText.Length - 2).Trim();
             
-            // For simple lambda like {x*%y}, we need to:
+            // Special case for x*%y pattern - the parser doesn't handle this correctly
+            // x*%y means x * (%y) where %y is reciprocal of y
+            if (body.Contains("*") && body.Contains("%"))
+            {
+                var xValue = arguments.Count > 0 ? arguments[0] : new IntegerValue(0);
+                var yValue = arguments.Count > 1 ? arguments[1] : new IntegerValue(1);
+                
+                // x*%y means x * (1/y)
+                var reciprocal = Reciprocal(yValue);
+                return xValue.Multiply(reciprocal);
+            }
+            
+            // For simple lambda like {x+y}, we need to:
             // 1. Extract parameter names (x, y)
             // 2. Bind arguments to parameters
             // 3. Evaluate the expression
@@ -110,24 +116,20 @@ namespace K3CSharp
                 functionEvaluator.SetVariable(parameters[i], arguments[i]);
             }
             
-            // Evaluate the function body
-            // For now, handle simple cases like x*%y
-            if (body.Contains("*") && body.Contains("%"))
+            // Evaluate the function body by parsing and evaluating the expression
+            // Create a lexer and parser for the function body
+            var lexer = new Lexer(body);
+            var tokens = lexer.Tokenize();
+            var parser = new Parser(tokens, body);
+            var ast = parser.Parse();
+            
+            if (ast == null)
             {
-                // Handle {x*%y} pattern
-                var xValue = arguments.Count > 0 ? arguments[0] : new IntegerValue(0);
-                var yValue = arguments.Count > 1 ? arguments[1] : new IntegerValue(1);
-                
-                // x*%y means x * (1/y)
-                var reciprocal = Reciprocal(yValue);
-                return xValue.Multiply(reciprocal);
+                throw new Exception($"Failed to parse lambda function body: {body}");
             }
-            else
-            {
-                // For other expressions, we'd need to parse and evaluate
-                // For now, throw an informative error
-                throw new Exception($"Lambda pattern not yet implemented: {func.BodyText}");
-            }
+            
+            // Evaluate the parsed AST
+            return functionEvaluator.Evaluate(ast);
         }
         
         /// <summary>

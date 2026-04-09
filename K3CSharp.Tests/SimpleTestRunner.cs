@@ -294,6 +294,12 @@ namespace K3CSharp.Tests
 
                 ("anonymous_function_scan_adverb.k", "(10;0.5;0.01666667)"),
 
+                // Function Variable tests
+
+                ("function_variable_over_adverb.k", "0.01666667"),
+
+                ("function_variable_scan_adverb.k", "(10;0.5;0.01666667)"),
+
                 // Projected Function tests
 
                 ("test_projected_function.k", "%"),
