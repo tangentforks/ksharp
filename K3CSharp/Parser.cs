@@ -1179,7 +1179,26 @@ namespace K3CSharp
                             
                             if (token.Type == TokenType.INTEGER)
                             {
-                                term = ASTNode.MakeLiteral(new IntegerValue(int.Parse(token.Lexeme)));
+                                var lexeme = token.Lexeme;
+                                
+                                // Handle special integer values per K specification
+                                if (lexeme == "0I" || lexeme == "-0I")
+                                {
+                                    term = ASTNode.MakeLiteral(new IntegerValue(lexeme));
+                                }
+                                else
+                                {
+                                    var intValue = int.Parse(lexeme);
+                                    // Convert extreme values to special values per spec
+                                    // Values >= int32 max become 0I (positive infinity)
+                                    if (intValue >= 2147483647)
+                                        term = ASTNode.MakeLiteral(new IntegerValue("0I"));
+                                    // Values <= -2147483647 become -0I (negative infinity)
+                                    else if (intValue <= -2147483647)
+                                        term = ASTNode.MakeLiteral(new IntegerValue("-0I"));
+                                    else
+                                        term = ASTNode.MakeLiteral(new IntegerValue(intValue));
+                                }
                                 Advance(); // Consume the token
                             }
                             else if (token.Type == TokenType.LONG)

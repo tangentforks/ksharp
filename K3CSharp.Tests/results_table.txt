@@ -657,7 +657,7 @@ world"       │                      ║
 ║ serialization_bd_integer_edge_1.k                  │ _bd 1                │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_-1.k                 │ _bd -1               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_2147483647.k         │ _bd 2147483647       │ "\001\000\000\0...   │                      ║
-║ serialization_bd_integer_edge_-2147483648.k        │ _bd -2147483648      │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_integer_edge_-2147483648.k        │ _bd -2147483648      │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_0N.k                 │ _bd 0N               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_0I.k                 │ _bd 0I               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_integer_edge_-0I.k                │ _bd -0I              │ "\001\000\000\0...   │                      ║
@@ -870,7 +870,7 @@ world"       │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 822/864 tests passed (95.1%)                                                                               ║
+║ SUMMARY: 823/864 tests passed (95.3%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -960,11 +960,6 @@ Test: k_tree_verify_root.k
 Input: .k
 Expected: 
 Actual: .()
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_integer_edge_-2147483648.k
-Input: _bd -2147483648
-Expected: "\001\000\000\000\b\000\000\000\001\000\000\000\001\000\000\200"
-Actual: "\001\000\000\000\b\000\000\000\001\000\000\000\000\000\000\200"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_charactervector_edge_empty.k
 Input: _bd ""

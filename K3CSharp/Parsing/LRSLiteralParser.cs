@@ -53,8 +53,21 @@ namespace K3CSharp.Parsing
         /// </summary>
         private static ASTNode ParseInteger(Token token)
         {
-            if (int.TryParse(token.Lexeme, out int intValue))
+            var lexeme = token.Lexeme;
+            
+            // Handle special integer values per K specification
+            if (lexeme == "0I" || lexeme == "-0I")
+                return ASTNode.MakeLiteral(new IntegerValue(lexeme));
+            
+            if (int.TryParse(lexeme, out int intValue))
             {
+                // Convert extreme values to special values per spec
+                // Values >= int32 max become 0I (positive infinity)
+                if (intValue >= 2147483647)
+                    return ASTNode.MakeLiteral(new IntegerValue("0I"));
+                // Values <= -2147483647 become -0I (negative infinity)
+                if (intValue <= -2147483647)
+                    return ASTNode.MakeLiteral(new IntegerValue("-0I"));
                 return ASTNode.MakeLiteral(new IntegerValue(intValue));
             }
             else if (long.TryParse(token.Lexeme, out long longValue))

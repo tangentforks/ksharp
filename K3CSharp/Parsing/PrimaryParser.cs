@@ -78,8 +78,12 @@ namespace K3CSharp
             if (int.TryParse(lexeme, out int intValue))
             {
                 // Convert extreme values to special values per spec
+                // Values >= int32 max become 0I (positive infinity)
                 if (intValue >= 2147483647)
                     return ASTNode.MakeLiteral(new IntegerValue("0I"));
+                // Values <= -2147483647 become -0I (negative infinity)
+                if (intValue <= -2147483647)
+                    return ASTNode.MakeLiteral(new IntegerValue("-0I"));
                 return ASTNode.MakeLiteral(new IntegerValue(intValue));
             }
             
