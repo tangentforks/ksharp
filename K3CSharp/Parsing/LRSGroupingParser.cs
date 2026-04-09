@@ -539,7 +539,7 @@ namespace K3CSharp.Parsing
                 }
             }
             
-            // Create body node - if multiple expressions, create a sequence that evaluates all
+            // Create body node - if multiple expressions, create a statement block that evaluates all
             // and returns the last one's value
             ASTNode bodyNode;
             if (bodyExpressions.Count == 0)
@@ -552,9 +552,13 @@ namespace K3CSharp.Parsing
             }
             else
             {
-                // Multiple expressions - create a vector node to hold them
-                // The evaluator will execute all and return the last result
-                bodyNode = ASTNode.MakeVector(bodyExpressions);
+                // Multiple expressions - create a StatementBlock node to hold them
+                // The evaluator will execute all and return only the last result
+                bodyNode = new ASTNode(ASTNodeType.StatementBlock);
+                foreach (var expr in bodyExpressions)
+                {
+                    bodyNode.Children.Add(expr);
+                }
             }
             
             // Extract complete original source text from opening brace to current position

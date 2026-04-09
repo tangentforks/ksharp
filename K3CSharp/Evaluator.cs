@@ -199,6 +199,9 @@ namespace K3CSharp
                 case ASTNodeType.ExpressionList:
                     return EvaluateExpressionList(node);
 
+                case ASTNodeType.StatementBlock:
+                    return EvaluateStatementBlock(node);
+
                 case ASTNodeType.FormSpecifier:
                     // {} form specifier - return a special value that will be handled in dyadic form operations
                     return new SymbolValue("{}");
@@ -2205,8 +2208,23 @@ namespace K3CSharp
             return new VectorValue(results, vectorType);
         }
 
-        
-        
+        /// <summary>
+        /// Evaluate a statement block (semicolon-separated statements in a function body).
+        /// Executes all statements sequentially but returns only the last expression's value.
+        /// </summary>
+        private K3Value? EvaluateStatementBlock(ASTNode node)
+        {
+            K3Value? lastResult = new NullValue();
+            
+            foreach (var child in node.Children)
+            {
+                lastResult = EvaluateNode(child) ?? new NullValue();
+            }
+            
+            // Return only the last result (statements before last are evaluated for side effects)
+            return lastResult;
+        }
+
         private K3Value Find(K3Value left, K3Value right)
         {
             // Find operator: d ? y

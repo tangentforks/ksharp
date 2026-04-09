@@ -54,7 +54,7 @@
 world         ║
 ║ test_symbol_escape.k                               │ `"hello\nworld"      │ `"hello
 world"       │                      ║
-║ complex_function.k                                 │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2} │ (100;100.0;205.0)    │ 205.0                ║
+║ complex_function.k                                 │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2} │ 205.0                │                      ║
 ║ count_operator.k                                   │ # (1 2 3)            │ 3                    │                      ║
 ║ cut_vector.k                                       │ (0 2 4) _ (0 1 2 3 4 5 6 7) │ (0 1;2 3;4 5 6 7)    │                      ║
 ║ dictionary_empty.k                                 │ .()                  │ .()                  │                      ║
@@ -117,7 +117,7 @@ world"       │                      ║
 ║ function_call_simple.k                             │ add7:{[arg1] arg1+7} │ 12                   │                      ║
 ║ function_foo_chain.k                               │ mul:{[op1;op2] op1 * op2} │ 20                   │                      ║
 ║ function_mul.k                                     │ mul:{[op1;op2] op1 * op2} │ 32                   │                      ║
-║ lambda_string_assign.k                             │ {a:"hello";a}[]      │ (;"hello")           │ "hello"              ║
+║ lambda_string_assign.k                             │ {a:"hello";a}[]      │ "hello"              │                      ║
 ║ lambda_string_literal.k                            │ {"hello"}[]          │ "hello"              │                      ║
 ║ lambda_symbol_literal.k                            │ {`abc}[]             │ `abc                 │                      ║
 ║ named_function_over.k                              │ f:{x*%y};f/10 20 30  │ 0.01666667           │                      ║
@@ -332,9 +332,9 @@ world"       │                      ║
 ║ grade_down_no_parens.k                             │ > 3 11 9 9 4         │ 1 2 3 4 0            │                      ║
 ║ grade_up_no_parens.k                               │ < 3 11 9 9 4         │ 0 4 2 3 1            │                      ║
 ║ mixed_types.k                                      │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
-║ multiline_function_single.k                        │ test: {[x] a:x*2; a+10} │ 10 20                │ 20                   ║
+║ multiline_function_single.k                        │ test: {[x] a:x*2; a+10} │ 20                   │                      ║
 ║ null_vector.k                                      │ (;1;2)               │ (;1;2)               │                      ║
-║ scoping_single.k                                   │ globalVar: 100       │ 50 60                │ 60                   ║
+║ scoping_single.k                                   │ globalVar: 100       │ 60                   │                      ║
 ║ semicolon_simple.k                                 │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
 ║ semicolon_vars.k                                   │ a: 10                │ 30 200 -10           │                      ║
 ║ semicolon_vector.k                                 │ a: 1 2               │ (7;3 4;-20.45)       │                      ║
@@ -381,8 +381,8 @@ world"       │                      ║
 ║ variable_scoping_global_access.k                   │ globalVar: 100  // Test function accessing global variable │ 150                  │                      ║
 ║ variable_scoping_global_assignment.k               │ globalVar: 100  // Test global assignment from nested function │ Error: Function...   │ 30                   ║
 ║ variable_scoping_global_unchanged.k                │ globalVar: 100  // Test verify global variable unchanged │ 100                  │                      ║
-║ variable_scoping_local_hiding.k                    │ globalVar: 100  // Test function with local variable hiding global │ (;50;60)             │ 60                   ║
-║ variable_scoping_nested_functions.k                │ globalVar: 100  // Test nested functions │ (;{[y] globalVa...   │ 140                  ║
+║ variable_scoping_local_hiding.k                    │ globalVar: 100  // Test function with local variable hiding global │ 60                   │                      ║
+║ variable_scoping_nested_functions.k                │ globalVar: 100  // Test nested functions │ 140                  │                      ║
 ║ variable_usage.k                                   │ x:10                 │ 30                   │                      ║
 ║ dot_execute.k                                      │ ."2+2"               │ 4                    │                      ║
 ║ dot_execute_context.k                              │ foo:7                │ 8                    │                      ║
@@ -870,7 +870,7 @@ world"       │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 816/864 tests passed (94.4%)                                                                               ║
+║ SUMMARY: 822/864 tests passed (95.1%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -886,45 +886,15 @@ Expected: "hello
 world
 Actual: Error: Unterminated string literal
 ──────────────────────────────────────────────────────────────────────────
-Test: complex_function.k
-Input: distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2}
-Expected: 205.0
-Actual: (100;100.0;205.0)
-──────────────────────────────────────────────────────────────────────────
-Test: lambda_string_assign.k
-Input: {a:"hello";a}[]
-Expected: "hello"
-Actual: (;"hello")
-──────────────────────────────────────────────────────────────────────────
 Test: list_null_multiple_semicolons.k
 Input: (;;)
 Expected: (;;)
 Actual: (;)
 ──────────────────────────────────────────────────────────────────────────
-Test: multiline_function_single.k
-Input: test: {[x] a:x*2; a+10}
-Expected: 20
-Actual: 10 20
-──────────────────────────────────────────────────────────────────────────
-Test: scoping_single.k
-Input: globalVar: 100
-Expected: 60
-Actual: 50 60
-──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: Error: Function execution error: Function execution error: Assignment requires a variable name on the left side, but got IntegerValue with value 100
-──────────────────────────────────────────────────────────────────────────
-Test: variable_scoping_local_hiding.k
-Input: globalVar: 100  // Test function with local variable hiding global
-Expected: 60
-Actual: (;50;60)
-──────────────────────────────────────────────────────────────────────────
-Test: variable_scoping_nested_functions.k
-Input: globalVar: 100  // Test nested functions
-Expected: 140
-Actual: (;{[y] globalVar + x + y};140)
 ──────────────────────────────────────────────────────────────────────────
 Test: ci_adverb_vector.k
 Input: _ci' 97 94 80
