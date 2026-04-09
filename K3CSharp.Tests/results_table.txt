@@ -692,7 +692,7 @@ world"       │                      ║
 ║ serialization_bd_character_edge_001.k              │ _bd "\001"           │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_character_edge_377.k              │ _bd "\377"           │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_character_edge_backspace.k        │ _bd "\b"             │ "\001\000\000\0...   │                      ║
-║ serialization_bd_charactervector_edge_empty.k      │ _bd ""               │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_charactervector_edge_empty.k      │ _bd ""               │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_charactervector_edge_a.k          │ _bd "a"              │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_charactervector_edge_hello.k      │ _bd "hello"          │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_charactervector_edge_whitespace.k │ _bd "\n\t\r"         │ "\001\000\000\0...   │                      ║
@@ -870,7 +870,7 @@ world"       │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 823/864 tests passed (95.3%)                                                                               ║
+║ SUMMARY: 824/864 tests passed (95.4%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -960,11 +960,6 @@ Test: k_tree_verify_root.k
 Input: .k
 Expected: 
 Actual: .()
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_charactervector_edge_empty.k
-Input: _bd ""
-Expected: "\001\000\000\000\t\000\000\000\375\377\377\377\000\000\000\000\000"
-Actual: "\001\000\000\000\b\000\000\000\000\000\000\000\000\000\000\000"
 ──────────────────────────────────────────────────────────────────────────
 Test: serialization_bd_anonymousfunction_random_3.k
 Input: _bd {[xyz] xy|3}

@@ -162,7 +162,15 @@ namespace K3CSharp.Parsing
             // CHARACTER_VECTOR tokens from lexer contain processed string content
             // Escape sequences are already handled by the lexer, so we use the lexeme directly
             var charValues = lexeme.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
-            return ASTNode.MakeLiteral(new VectorValue(charValues));
+            
+            // Preserve character vector type for empty strings
+            // According to spec: if length != 1 (including 0), produce character vector (type -3)
+            if (charValues.Count == 0)
+                return ASTNode.MakeLiteral(new VectorValue(charValues, -3)); // Empty character vector
+            else if (charValues.Count == 1)
+                return ASTNode.MakeLiteral(charValues[0]); // Single character
+            else
+                return ASTNode.MakeLiteral(new VectorValue(charValues)); // Character vector
         }
         
 

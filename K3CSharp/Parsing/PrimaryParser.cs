@@ -174,7 +174,19 @@ namespace K3CSharp
             if (lexeme.Length >= 2 && lexeme[0] == '"' && lexeme[^1] == '"')
             {
                 var stringValue = lexeme.Substring(1, lexeme.Length - 2);
-                return ASTNode.MakeLiteral(new SymbolValue(stringValue));
+                
+                // According to spec:
+                // - If length is 1, produce a character
+                // - If length is other than 1 (including 0 or >1), produce a character vector
+                if (stringValue.Length == 0)
+                    return ASTNode.MakeLiteral(new VectorValue(new List<K3Value>(), -3)); // Empty character vector
+                else if (stringValue.Length == 1)
+                    return ASTNode.MakeLiteral(new CharacterValue(stringValue)); // Single character
+                else
+                {
+                    var charValues = stringValue.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
+                    return ASTNode.MakeLiteral(new VectorValue(charValues)); // Character vector
+                }
             }
             
             throw new ArgumentException($"Invalid string literal: {lexeme}");
@@ -545,7 +557,14 @@ namespace K3CSharp
                 content = content.Substring(1, content.Length - 2);
             }
             var charValues = content.Select(c => (K3Value)new CharacterValue(c.ToString())).ToList();
-            return ASTNode.MakeLiteral(new VectorValue(charValues));
+            
+            // Preserve character vector type for empty strings
+            if (charValues.Count == 0)
+                return ASTNode.MakeLiteral(new VectorValue(charValues, -3)); // Empty character vector
+            else if (charValues.Count == 1)
+                return ASTNode.MakeLiteral(charValues[0]); // Single character
+            else
+                return ASTNode.MakeLiteral(new VectorValue(charValues)); // Character vector
         }
         
         private ASTNode ParseMonadicOperator(ParseContext context)
