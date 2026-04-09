@@ -590,20 +590,27 @@ namespace K3CSharp
                         var elements = new List<ASTNode> { firstExpr! };
                         do
                         {
-                            // Check for empty position (consecutive semicolons or trailing)
-                            if (!IsAtEnd() && (CurrentToken().Type == TokenType.SEMICOLON || CurrentToken().Type == TokenType.RIGHT_PAREN))
+                            // Check for empty position (consecutive semicolons)
+                            while (!IsAtEnd() && CurrentToken().Type == TokenType.SEMICOLON)
                             {
                                 // Empty position → null element
                                 elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                                Advance(); // Consume the semicolon
                             }
-                            else
+                            
+                            // Check if at RIGHT_PAREN (trailing empty position after last semicolon)
+                            if (!IsAtEnd() && CurrentToken().Type == TokenType.RIGHT_PAREN)
                             {
-                                var nextExpr = ParseBracketArgument();
-                                if (nextExpr != null)
-                                    elements.Add(nextExpr);
-                                else
-                                    elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                                // Empty position → null element
+                                elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                                break; // Exit the do-while loop
                             }
+                            
+                            var nextExpr = ParseBracketArgument();
+                            if (nextExpr != null)
+                                elements.Add(nextExpr);
+                            else
+                                elements.Add(ASTNode.MakeLiteral(new NullValue()));
                         } while (Match(TokenType.SEMICOLON));
 
                         if (!Match(TokenType.RIGHT_PAREN))

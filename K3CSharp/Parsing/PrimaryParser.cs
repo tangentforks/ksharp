@@ -229,6 +229,7 @@ namespace K3CSharp
             }
             
             // Parse expressions sequentially from left to right
+            bool lastWasSeparator = false;
             while (!context.IsAtEnd() && !context.Check(TokenType.RIGHT_PAREN))
             {
                 // Skip newlines as they are also expression separators
@@ -238,12 +239,13 @@ namespace K3CSharp
                 }
                 
                 // Check for empty expressions (consecutive separators)
-                if (context.CurrentToken().Type == TokenType.SEMICOLON || 
+                // Multiple consecutive semicolons each represent an empty position
+                while (context.CurrentToken().Type == TokenType.SEMICOLON || 
                     context.CurrentToken().Type == TokenType.NEWLINE)
                 {
                     elements.Add(ASTNode.MakeLiteral(new NullValue()));
                     context.Advance(); // Consume the separator
-                    continue;
+                    lastWasSeparator = true;
                 }
                 
                 // Parse the expression (commas are operators, so they're handled as part of expressions)
@@ -254,16 +256,23 @@ namespace K3CSharp
                 }
                 else
                 {
-                    elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                    // Failed to parse expression - this means empty position
+                    // Only add null if we're not at RIGHT_PAREN (trailing empty handled separately)
+                    if (!context.Check(TokenType.RIGHT_PAREN))
+                    {
+                        elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                    }
                 }
                 
                 // Check for separator (semicolon or newline only - commas are operators!)
                 if (context.Match(TokenType.SEMICOLON))
                 {
+                    lastWasSeparator = true;
                     continue; // Next expression
                 }
                 else if (context.Match(TokenType.NEWLINE))
                 {
+                    lastWasSeparator = true;
                     continue; // Next expression
                 }
                 else if (context.Check(TokenType.RIGHT_PAREN))
@@ -278,6 +287,13 @@ namespace K3CSharp
             }
             
             context.Advance(); // Consume ')'
+            
+            // If the last token before ')' was a separator, add a null for the trailing empty expression
+            // This handles cases like (a;) and (;;)
+            if (lastWasSeparator)
+            {
+                elements.Add(ASTNode.MakeLiteral(new NullValue()));
+            }
             
             // Apply K specification rules for the result
             if (elements.Count == 1)

@@ -778,10 +778,6 @@ namespace K3CSharp.Parsing
         /// <returns>AST node representing parsed expression</returns>
         internal ASTNode? EvaluateFromRight(List<Token> expressionTokens)
         {
-            var firstTokenDbg = expressionTokens.Count > 0 ? expressionTokens[0].Type.ToString() : "none";
-            var allTokens = string.Join(", ", expressionTokens.Select(t => $"{t.Type}({t.Lexeme})"));
-            Console.WriteLine($"[DEBUG EvaluateFromRight] Called with {expressionTokens.Count} tokens: {allTokens}");
-            
             if (PureLRSMode && ParserConfig.EnableDebugging)
             {
                 Console.WriteLine($"[PURE LRS DEBUG] EvaluateFromRight processing {expressionTokens.Count} tokens: {string.Join(" ", expressionTokens.Select(t => $"{t.Type}({t.Lexeme})"))}");
@@ -798,14 +794,11 @@ namespace K3CSharp.Parsing
                 
             if (expressionTokens.Count == 1)
             {
-                if (ParserConfig.EnableDebugging)
-                    Console.WriteLine($"[EvaluateFromRight] Single token, returning: {expressionTokens[0].Type}");
                 return CreateNodeFromToken(expressionTokens[0]);
             }
             
             // Check for function+adverb patterns FIRST
             // Pattern: {function}/vector or {function}\vector
-            Console.WriteLine($"[DEBUG EvaluateFromRight] Checking for function+adverb pattern, tokens={expressionTokens.Count}");
             if (expressionTokens.Count >= 2 && expressionTokens[0].Type == TokenType.LEFT_BRACE)
             {
                 // Find the matching right brace for the function
@@ -829,47 +822,34 @@ namespace K3CSharp.Parsing
                 if (functionEnd > 0 && functionEnd + 1 < expressionTokens.Count)
                 {
                     var potentialAdverb = expressionTokens[functionEnd + 1];
-                    Console.WriteLine($"[DEBUG EvaluateFromRight] Found LEFT_BRACE, function ends at {functionEnd}, next token={potentialAdverb.Type}");
-                    Console.WriteLine($"[DEBUG EvaluateFromRight] IsAdverb? {VerbRegistry.IsAdverbToken(potentialAdverb.Type)}");
                     
                     if (VerbRegistry.IsAdverbToken(potentialAdverb.Type))
                     {
-                        Console.WriteLine($"[DEBUG EvaluateFromRight] Found function+adverb pattern!");
                         // Parse the function (from 0 to functionEnd inclusive)
                         var functionTokens = expressionTokens.GetRange(0, functionEnd + 1);
-                        Console.WriteLine($"[DEBUG EvaluateFromRight] Parsing function tokens: {string.Join(", ", functionTokens.Select(t => $"{t.Type}({t.Lexeme})"))}");
                         var functionNode = groupingParser.ParseBraces(functionTokens);
-                        Console.WriteLine($"[DEBUG EvaluateFromRight] functionNode={functionNode?.Type}, functionNode.Value={functionNode?.Value}");
                         if (functionNode != null)
                         {
                             // Parse the remaining tokens as the adverb argument
                             var remainingTokens = expressionTokens.Skip(functionEnd + 2).ToList(); // Skip function and adverb
-                            Console.WriteLine($"[DEBUG EvaluateFromRight] Remaining tokens: {string.Join(", ", remainingTokens.Select(t => $"{t.Type}({t.Lexeme})"))}");
                             if (remainingTokens.Count > 0)
                             {
                                 var argNode = EvaluateFromRight(remainingTokens);
-                                Console.WriteLine($"[DEBUG EvaluateFromRight] argNode={argNode?.Type}, argNode.Value={argNode?.Value}");
                                 if (argNode != null)
                                 {
                                     // Create adverb node: ADVERB(adverb, function, argument)
-                                    Console.WriteLine($"[DEBUG EvaluateFromRight] Creating adverb node");
                                     var adverbNode = CreateAdverbNode(potentialAdverb, functionNode, argNode);
-                                    Console.WriteLine($"[DEBUG EvaluateFromRight] Created adverb node: Type={adverbNode.Type}, Value={adverbNode.Value}, Children={adverbNode.Children.Count}");
                                     return adverbNode;
-                                }
-                                else
-                                {
-                                    Console.WriteLine($"[DEBUG EvaluateFromRight] argNode is null, skipping adverb node creation");
                                 }
                             }
                             else
                             {
-                                Console.WriteLine($"[DEBUG EvaluateFromRight] No remaining tokens, skipping adverb node creation");
+                                // No arguments - nominalized adverb
                             }
                         }
                         else
                         {
-                            Console.WriteLine($"[DEBUG EvaluateFromRight] functionNode is null, skipping adverb node creation");
+                            // Function parsing failed
                         }
                     }
                 }
@@ -882,26 +862,20 @@ namespace K3CSharp.Parsing
                 var potentialAdverb = expressionTokens[1];
                 if (VerbRegistry.IsAdverbToken(potentialAdverb.Type))
                 {
-                    Console.WriteLine($"[DEBUG EvaluateFromRight] Found function variable + adverb pattern: {expressionTokens[0].Lexeme}/{potentialAdverb.Type}");
                     // Create a variable node for the function
                     var functionNode = CreateNodeFromToken(expressionTokens[0]);
-                    Console.WriteLine($"[DEBUG EvaluateFromRight] Created function variable node: {functionNode?.Type}, Value={functionNode?.Value}");
                     
                     if (functionNode != null)
                     {
                         // Parse the remaining tokens as the adverb argument
                         var remainingTokens = expressionTokens.Skip(2).ToList(); // Skip function variable and adverb
-                        Console.WriteLine($"[DEBUG EvaluateFromRight] Remaining tokens for function variable case: {string.Join(", ", remainingTokens.Select(t => $"{t.Type}({t.Lexeme})"))}");
                         if (remainingTokens.Count > 0)
                         {
                             var argNode = EvaluateFromRight(remainingTokens);
-                            Console.WriteLine($"[DEBUG EvaluateFromRight] argNode={argNode?.Type}, argNode.Value={argNode?.Value}");
                             if (argNode != null)
                             {
                                 // Create adverb node: ADVERB(adverb, function, argument)
-                                Console.WriteLine($"[DEBUG EvaluateFromRight] Creating adverb node for function variable");
                                 var adverbNode = CreateAdverbNode(potentialAdverb, functionNode, argNode);
-                                Console.WriteLine($"[DEBUG EvaluateFromRight] Created adverb node: Type={adverbNode.Type}, Value={adverbNode.Value}, Children={adverbNode.Children.Count}");
                                 return adverbNode;
                             }
                         }

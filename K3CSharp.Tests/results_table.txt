@@ -194,7 +194,7 @@ world"       │                      ║
 ║ parentheses_precedence.k                           │ 1 + (2 * 3)          │ 7                    │                      ║
 ║ parenthesized_vector.k                             │ (1;2;3;4)            │ 1 2 3 4              │                      ║
 ║ list_null_consecutive_semicolons.k                 │ (1;;2)               │ (1;;2)               │                      ║
-║ list_null_multiple_semicolons.k                    │ (;;)                 │ (;)                  │ (;;)                 ║
+║ list_null_multiple_semicolons.k                    │ (;;)                 │ (;;)                 │                      ║
 ║ list_null_empty_parens.k                           │ ()                   │ ()                   │                      ║
 ║ power_operator.k                                   │ 2 ^ 3                │ 8                    │                      ║
 ║ precedence_chain1.k                                │ 10 + 20 * 30 + 40    │ 1410                 │                      ║
@@ -722,7 +722,7 @@ world"       │                      ║
 ║ test_symbol_vector_with_quoted.k                   │ `a `b `"." `c        │ `a`b`"."`c           │                      ║
 ║ serialization_bd_dictionary_with_symbol_vectors.k  │ _bd .((`colA;`a `b `c);(`colB;`dd `eee `ffff)) │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_dictionary_with_vectors.k         │ _bd .((`col1;1 2 3 4);(`col2;5 6 7 8)) │ "\001\000\000\0...   │                      ║
-║ serialization_bd_list_with_explicit_nulls.k        │ _bd ((`a;`"1";);(`b;`"2";)) │ "\001\000\000\0...   │ "\001\000\000\0...   ║
+║ serialization_bd_list_with_explicit_nulls.k        │ _bd ((`a;`"1";);(`b;`"2";)) │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_list_with_vectors.k               │ _bd ((`col1;1 2 3 4);(`col2;5 6 7 8)) │ "\001\000\000\0...   │                      ║
 ║ serialization_bd_list_with_symbol_vectors.k        │ _bd ((`colA;`a `b `c);(`colB;`dd `eee `ffff)) │ "\001\000\000\0...   │                      ║
 ║ bd_dict_single_entry.k                             │ _bd .,(`a;1)         │ "\001\000\000\0...   │                      ║
@@ -870,7 +870,7 @@ world"       │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 824/864 tests passed (95.4%)                                                                               ║
+║ SUMMARY: 826/864 tests passed (95.6%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -885,11 +885,6 @@ Input: "hello
 Expected: "hello
 world
 Actual: Error: Unterminated string literal
-──────────────────────────────────────────────────────────────────────────
-Test: list_null_multiple_semicolons.k
-Input: (;;)
-Expected: (;;)
-Actual: (;)
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
@@ -965,11 +960,6 @@ Test: serialization_bd_anonymousfunction_random_3.k
 Input: _bd {[xyz] xy|3}
 Expected: "\001\000\000\000\025\000\000\000\n\000\000\000.k\000{[xyz] xy |3}\000"
 Actual: "\001\000\000\000\023\000\000\000\n\000\000\000\000{[xyz] xy |3}\000"
-──────────────────────────────────────────────────────────────────────────
-Test: serialization_bd_list_with_explicit_nulls.k
-Input: _bd ((`a;`"1";);(`b;`"2";))
-Expected: "\001\000\000\000H\000\000\000\000\000\000\000\002\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000a\000\000\000\004\000\000\0001\000\000\000\006\000\000\000\000\000\000\000\000\000\000\000\003\000\000\000\004\000\000\000b\000\000\000\004\000\000\0002\000\000\000\006\000\000\000\000\000\000\000"
-Actual: "\001\000\000\000(\000\000\000\000\000\000\000\002\000\000\000\374\377\377\377\002\000\000\000a\0001\000\000\000\000\000\374\377\377\377\002\000\000\000b\0002\000\000\000\000\000"
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_nesting_join_each_left.k
 Input: ((1 2 3);(4 5 6);(7 8 9)),/:\:((9 8 7);(6 5 4);(3 2 1))

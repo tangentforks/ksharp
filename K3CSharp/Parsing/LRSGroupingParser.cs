@@ -43,6 +43,7 @@ namespace K3CSharp.Parsing
             }
             
             // Parse expressions sequentially from left to right
+            bool lastWasSeparator = false;
             while (position < tokens.Count && tokens[position].Type != TokenType.RIGHT_PAREN)
             {
                 // Skip newlines as they are expression separators
@@ -51,35 +52,47 @@ namespace K3CSharp.Parsing
                     position++;
                 }
                 
-                // Check for empty expressions (consecutive separators)
-                if (position < tokens.Count && (tokens[position].Type == TokenType.SEMICOLON || 
+                // Check for empty expressions (consecutive separators) at the start
+                // Multiple consecutive semicolons each represent an empty position
+                bool addedNullsInLoop = false;
+                while (position < tokens.Count && (tokens[position].Type == TokenType.SEMICOLON || 
                     tokens[position].Type == TokenType.NEWLINE))
                 {
                     elements.Add(ASTNode.MakeLiteral(new NullValue()));
                     position++; // Consume the separator
-                    continue;
+                    addedNullsInLoop = true;
                 }
+                if (addedNullsInLoop)
+                    lastWasSeparator = true;
                 
                 // Parse the expression (commas are operators, so they're handled as part of expressions)
                 var expr = ParseExpressionInGrouping(ref position);
                 if (expr != null)
                 {
                     elements.Add(expr);
+                    lastWasSeparator = false; // We just added an expression, so last was NOT a separator
                 }
                 else
                 {
-                    elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                    // Failed to parse expression - this means empty position
+                    // Only add null if we're not at RIGHT_PAREN (trailing empty handled separately)
+                    if (position < tokens.Count && tokens[position].Type != TokenType.RIGHT_PAREN)
+                    {
+                        elements.Add(ASTNode.MakeLiteral(new NullValue()));
+                    }
                 }
                 
                 // Check for separator (semicolon or newline only - commas are operators!)
                 if (position < tokens.Count && tokens[position].Type == TokenType.SEMICOLON)
                 {
                     position++; // Consume semicolon
+                    lastWasSeparator = true; // Last consumed token was a separator
                     continue; // Next expression
                 }
                 else if (position < tokens.Count && tokens[position].Type == TokenType.NEWLINE)
                 {
                     position++; // Consume newline
+                    lastWasSeparator = true; // Last consumed token was a separator
                     continue; // Next expression
                 }
                 else if (position < tokens.Count && tokens[position].Type == TokenType.RIGHT_PAREN)
@@ -97,6 +110,13 @@ namespace K3CSharp.Parsing
                 throw new Exception("Unclosed parentheses - expected ')'");
                 
             position++; // Consume ')'
+            
+            // If the last token before ')' was a separator, add a null for the trailing empty expression
+            // This handles cases like (a;) and (;;)
+            if (lastWasSeparator)
+            {
+                elements.Add(ASTNode.MakeLiteral(new NullValue()));
+            }
             
             // Apply K specification rules for the result
             if (elements.Count == 1)
@@ -382,7 +402,7 @@ namespace K3CSharp.Parsing
                 token.Type == TokenType.RIGHT_PAREN || token.Type == TokenType.RIGHT_BRACKET || 
                 token.Type == TokenType.RIGHT_BRACE)
             {
-                return ASTNode.MakeLiteral(new NullValue()); // Empty expression
+                return null; // Empty expression - let caller handle null addition
             }
             
             // Collect all tokens for this expression, including nested parentheses
