@@ -110,7 +110,7 @@ namespace K3CSharp.Parsing
         {
             if (EnableDebugging)
             {
-                Console.WriteLine($"[ParserConfig] {operation}: {GetConfigSummary()}");
+                // Config operation logged
             }
         }
     }

@@ -115,15 +115,10 @@ namespace K3CSharp.Parsing
         /// </summary>
         public ASTNode? Parse()
         {
-            // Debug: check which path we'll take
-            if (sourceText.Contains("d:."))
+            if (ParserConfig.EnableDebugging)
             {
-                Console.WriteLine($"[Parse] ENTER: source='{sourceText.Substring(0, Math.Min(30, sourceText.Length))}'");
+                // Debug logging disabled
             }
-
-            // Pure LRS mode: Handle multiple semicolon-separated expressions
-            if (sourceText.Contains("d:."))
-                Console.WriteLine("[Parse] Taking Pure LRS path -> ParseMultipleExpressions");
             return ParseMultipleExpressions();
         }
         
@@ -246,10 +241,9 @@ namespace K3CSharp.Parsing
             while (position < tokens.Count)
             {
                 // Debug for ktree tests
-                if (sourceText.Contains("d:.((`keyA"))
+                if (ParserConfig.EnableDebugging)
                 {
-                    Console.WriteLine($"[ParseMultiple] Position {position}/{tokens.Count}, Token: {tokens[position].Type}({tokens[position].Lexeme})");
-                    Console.WriteLine($"[ParseMultiple] expressions.Count = {expressions.Count}");
+                    // Debug logging disabled
                 }
                 // Check for EOF
                 if (tokens[position].Type == TokenType.EOF)
@@ -310,15 +304,6 @@ namespace K3CSharp.Parsing
                     }
                     
                     // Otherwise, it's a real parsing failure
-                    if (ParserConfig.EnableDebugging)
-                    {
-                        Console.WriteLine($"[DEBUG] Pure LRS multi-expression parsing failed at position {position}");
-                        Console.WriteLine($"  Source: {sourceText}");
-                        if (position < tokens.Count)
-                        {
-                            Console.WriteLine($"  Failed at token: {tokens[position].Type}({tokens[position].Lexeme})");
-                        }
-                    }
                     return null;
                 }
                 
@@ -341,14 +326,6 @@ namespace K3CSharp.Parsing
             // Validate that we consumed all tokens
             if (position < tokens.Count)
             {
-                // Debug logging for incomplete parsing
-                if (ParserConfig.EnableDebugging)
-                {
-                    Console.WriteLine($"[DEBUG] Pure LRS multi-expression parsing incomplete:");
-                    Console.WriteLine($"  Source: {sourceText}");
-                    Console.WriteLine($"  Position: {position}/{tokens.Count}");
-                    Console.WriteLine($"  Remaining tokens: {string.Join(" ", tokens.Skip(position).Select(t => t.Type))}");
-                }
                 return null; // Incomplete parse
             }
             
@@ -370,9 +347,9 @@ namespace K3CSharp.Parsing
             }
             
             // Debug for ktree tests
-            if (sourceText.Contains("d:.((`keyA"))
+            if (ParserConfig.EnableDebugging)
             {
-                Console.WriteLine($"[ParseMultiple] RETURNING Block with {expressions.Count} expressions");
+                // Debug logging disabled
             }
             
             return blockNode;

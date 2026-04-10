@@ -134,12 +134,6 @@ namespace K3CSharp.Parsing
             var isMonadic = VerbQueryExtensions.IsMonadicOperation(verbName);
             var isDyadic = VerbQueryExtensions.IsDyadicOperation(verbName);
             
-            // DEBUG: Trace verb boundary detection
-            if (verbName.Contains("sethint") || verbName.Contains("lsq") || verbName.Contains("draw"))
-            {
-                Console.WriteLine($"[DEBUG IsVerbBoundary] {verbName}: isMonadic={isMonadic}, isDyadic={isDyadic}, isMultiArity={isMonadic && isDyadic}");
-            }
-            
             // Multi-arity verbs (like #, _, $, @) can create complex boundaries
             if (isMonadic && isDyadic)
             {
@@ -218,12 +212,6 @@ namespace K3CSharp.Parsing
                 verbName = token.Lexeme;
             else
                 verbName = VerbRegistry.TokenTypeToVerbName(token.Type);
-            
-            // DEBUG: Trace verb name resolution
-            if (verbName.Contains("sethint") || verbName.Contains("lsq") || verbName.Contains("draw"))
-            {
-                Console.WriteLine($"[DEBUG GetVerbName] Token={token.Type}({token.Lexeme}) -> VerbName={verbName}");
-            }
             
             return verbName;
         }

@@ -991,7 +991,6 @@ namespace K3CSharp
                      op.Value.ToString() == "/:" || op.Value.ToString() == "\\:" || op.Value.ToString() == "':"))
             {
                 // Handle 2-argument adverb structure from LRS parser: ADVERB(verb, argument)
-                Console.WriteLine($"[DEBUG] Entering 2-arg adverb handler, op={op.Value}, children={node.Children.Count}");
                 var verbNode = node.Children[0];
                 var argument = Evaluate(node.Children[1]);
                 
@@ -1011,8 +1010,6 @@ namespace K3CSharp
                 {
                     // Fallback to legacy evaluation for simple cases
                     var verbValue = Evaluate(verbNode);
-                    Console.WriteLine($"[DEBUG AdverbEval] verbNode.Type={verbNode.Type}, verbValue.Type={verbValue.Type}, verbValue={verbValue}");
-                    Console.WriteLine($"[DEBUG AdverbEval] op.Value={op.Value}, argument={argument}");
                     return op.Value.ToString() switch
                     {
                         "over" or "/" => ApplyAdverbSlash(verbValue, argument, argument),

@@ -51,12 +51,6 @@ namespace K3CSharp.Tests
                 var lexer = new Lexer(expression);
                 var tokens = lexer.Tokenize();
                 
-                Console.WriteLine($"Tokens: {tokens.Count}");
-                for (int i = 0; i < tokens.Count; i++)
-                {
-                    Console.WriteLine($"  {i}: {tokens[i].Type} = '{tokens[i].Lexeme}'");
-                }
-                
                 // Test the LRS parser
                 var lrsParser = new LRSParser(tokens);
                 var position = 0;

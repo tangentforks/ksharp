@@ -56,7 +56,6 @@ namespace K3CSharp
         {
             // Execute the function with the provided arguments
             // This handles lambda functions like {x*%y}
-            Console.WriteLine($"[DEBUG] ExecuteFunction called with BodyText: '{func.BodyText}'");
             
             if (func.BodyText.Contains(","))
             {
@@ -66,7 +65,6 @@ namespace K3CSharp
             else
             {
                 // Handle all other functions as lambda functions
-                Console.WriteLine($"[DEBUG] Executing lambda function");
                 return ExecuteLambdaFunction(func, arguments);
             }
         }

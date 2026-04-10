@@ -87,12 +87,6 @@ namespace K3CSharp.Parsing
             var verb = VerbRegistry.GetVerb(verbName);
             var result = verb?.SupportedArities.Contains(2) ?? false;
             
-            // Debug for DOT_APPLY
-            if (tokenType == TokenType.DOT_APPLY)
-            {
-                Console.WriteLine($"[IsDyadicOperatorDirect] DOT_APPLY: verbName='{verbName}', verb={verb?.Name}, result={result}");
-            }
-            
             return result;
         }
         

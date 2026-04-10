@@ -654,12 +654,9 @@ namespace K3CSharp
             var projectionSlots = new List<ASTNode?>();
             var hasSemicolon = false;
             
-            System.Console.WriteLine("DEBUG ParseBracketContentsAsCommaEnlisted: Starting");
-            
             if (context.Check(TokenType.RIGHT_BRACKET))
             {
                 context.Advance(); // Consume ']'
-                System.Console.WriteLine("DEBUG: Empty brackets, returning empty vector");
                 return ASTNode.MakeVector(elements);
             }
             
@@ -668,7 +665,6 @@ namespace K3CSharp
             {
                 hasSemicolon = true;
                 projectionSlots.Add(null); // Missing first argument
-                System.Console.WriteLine("DEBUG: Found leading semicolon - projection detected");
                 
                 // Skip empty lines
                 while (!context.IsAtEnd() && context.CurrentToken().Type == TokenType.NEWLINE)
@@ -681,7 +677,6 @@ namespace K3CSharp
             if (!context.IsAtEnd() && context.CurrentToken().Type != TokenType.RIGHT_BRACKET)
             {
                 var firstElement = ParseBracketArgument(context);
-                System.Console.WriteLine($"DEBUG: Parsed first element: {firstElement?.Type}");
                 if (firstElement == null)
                 {
                     throw new Exception("Expected expression in brackets");
@@ -703,7 +698,6 @@ namespace K3CSharp
                 if (context.Match(TokenType.SEMICOLON))
                 {
                     hasSemicolon = true;
-                    System.Console.WriteLine("DEBUG: Found another semicolon");
                     
                     // Add null for missing argument
                     projectionSlots.Add(null);
@@ -741,7 +735,7 @@ namespace K3CSharp
             }
             
             context.Advance(); // Consume ']'
-            System.Console.WriteLine($"DEBUG: hasSemicolon={hasSemicolon}, elements={elements.Count}, projectionSlots={projectionSlots.Count}");
+
             
             // If we detected semicolons (projection syntax), create a projection node
             if (hasSemicolon)
@@ -753,11 +747,9 @@ namespace K3CSharp
                 var nonNullElements = projectionSlots.Where(x => x != null).Cast<ASTNode>().ToList();
                 projectionElements.AddRange(nonNullElements);
                 
-                System.Console.WriteLine($"DEBUG: Creating projection vector with {projectionElements.Count} elements");
                 return ASTNode.MakeVector(projectionElements);
             }
             
-            System.Console.WriteLine($"DEBUG: Creating regular vector with {elements.Count} elements");
             return ASTNode.MakeVector(elements);
         }
 

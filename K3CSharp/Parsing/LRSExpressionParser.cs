@@ -28,16 +28,9 @@ namespace K3CSharp.Parsing
             {
                 var token = tokens[position];
                 
-                if (ParserConfig.EnableDebugging)
-                {
-                    Console.WriteLine($"[ReadExpressionTokens] pos={position}, token={token.Type}({token.Lexeme}), depth=({delimiterDepth.ParenLevel},{delimiterDepth.BracketLevel},{delimiterDepth.BraceLevel})");
-                }
-                
                 // Always stop at EOF - it marks end of input, not start of new expression
                 if (token.Type == TokenType.EOF)
                 {
-                    if (ParserConfig.EnableDebugging)
-                        Console.WriteLine($"[ReadExpressionTokens] Stopped at EOF, collected {expressionTokens.Count} tokens");
                     break;
                 }
                 
@@ -46,8 +39,6 @@ namespace K3CSharp.Parsing
                     (token.Type == TokenType.SEMICOLON || token.Type == TokenType.NEWLINE) && 
                     expressionTokens.Count > 0)
                 {
-                    if (ParserConfig.EnableDebugging)
-                        Console.WriteLine($"[ReadExpressionTokens] Stopped at separator, collected {expressionTokens.Count} tokens");
                     break;
                 }
                 
@@ -64,13 +55,8 @@ namespace K3CSharp.Parsing
                     
                     if (!precededByVerbOrFunction)
                     {
-                        if (ParserConfig.EnableDebugging)
-                            Console.WriteLine($"[ReadExpressionTokens] Stopped at adverb boundary {token.Type}, collected {expressionTokens.Count} tokens");
                         break;
                     }
-                    // If preceded by verb, function, or identifier, adverb is NOT a boundary (e.g., +/ or {x+y}/ or f/ are one expression)
-                    if (ParserConfig.EnableDebugging)
-                        Console.WriteLine($"[ReadExpressionTokens] Adverb {token.Type} preceded by verb/function/identifier, continuing");
                 }
                     
                 // Update delimiter depth
@@ -79,18 +65,11 @@ namespace K3CSharp.Parsing
                 // Return if we've closed too many delimiters
                 if (delimiterDepth.HasNegativeDepth())
                 {
-                    if (ParserConfig.EnableDebugging)
-                        Console.WriteLine($"[ReadExpressionTokens] Negative depth detected, returning {expressionTokens.Count} tokens");
                     return expressionTokens;
                 }
                 
                 expressionTokens.Add(token);
                 position++;
-            }
-            
-            if (ParserConfig.EnableDebugging)
-            {
-                Console.WriteLine($"[ReadExpressionTokens] Finished, collected {expressionTokens.Count} tokens: {string.Join(" ", expressionTokens.Select(t => t.Type))}");
             }
             
             return expressionTokens;

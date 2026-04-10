@@ -236,22 +236,8 @@ namespace K3CSharp.Parsing
         /// </summary>
         private ASTNode HandleSystemOperator(Token funcToken, List<Token> argTokens)
         {
-            if (ParserConfig.EnableDebugging)
-            {
-                Console.WriteLine($"[HandleSystemOperator] Processing {funcToken.Lexeme} with {argTokens.Count} argument tokens");
-                if (argTokens.Count > 0)
-                {
-                    Console.WriteLine($"[HandleSystemOperator] Arg tokens: {string.Join(" ", argTokens.Select(t => $"{t.Type}({t.Lexeme})"))}");
-                }
-            }
-            
             // Parse argument using LRS parser
             var argument = ParseArgumentWithLRS(argTokens);
-            
-            if (ParserConfig.EnableDebugging)
-            {
-                Console.WriteLine($"[HandleSystemOperator] Parsed argument: {(argument != null ? argument.ToString() : "null")}");
-            }
             
             var funcCall = new ASTNode(ASTNodeType.FunctionCall);
             funcCall.Children.Add(ASTNode.MakeVariable(funcToken.Lexeme));

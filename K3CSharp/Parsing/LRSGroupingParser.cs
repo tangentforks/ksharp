@@ -630,9 +630,6 @@ namespace K3CSharp.Parsing
         /// <returns>Body text reconstructed from AST</returns>
         private string ExtractBodyTextFromAST(ASTNode bodyNode)
         {
-            // Debug: Print the AST structure
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] ExtractBodyTextFromAST: Type={bodyNode.Type}, Children={bodyNode.Children.Count}");
-            
             if (bodyNode.Type == ASTNodeType.Literal && bodyNode.Value != null)
             {
                 return bodyNode.Value.ToString();
