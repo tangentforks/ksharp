@@ -901,6 +901,29 @@ namespace K3CSharp
                 };
             }
             
+            // Handle adverb noun-form: DyadicOp("over"/"scan"/"each"/etc, [verb, 0]) with 2 children
+            // This covers +/ as a value (argument to @[...] etc.)
+            if (node.Children.Count == 2 &&
+                (op.Value.ToString() == "over" || op.Value.ToString() == "scan" ||
+                 op.Value.ToString() == "each" || op.Value.ToString() == "each-right" ||
+                 op.Value.ToString() == "each-left" || op.Value.ToString() == "each-prior"))
+            {
+                var verbNode2 = node.Children[0];
+                var arg2 = Evaluate(node.Children[1]);
+                var verbValue2 = Evaluate(verbNode2);
+                var monadicLeft2 = new IntegerValue(0);
+                return op.Value.ToString() switch
+                {
+                    "over" => ApplyAdverbSlash(verbValue2, monadicLeft2, arg2),
+                    "scan" => ApplyAdverbBackslash(verbValue2, monadicLeft2, arg2),
+                    "each" => HandleAdverbTick(verbValue2, monadicLeft2, arg2),
+                    "each-right" => ApplyAdverbSlashColon(verbValue2, monadicLeft2, arg2),
+                    "each-left" => ApplyAdverbBackslashColon(verbValue2, monadicLeft2, arg2),
+                    "each-prior" => ApplyAdverbTickColon(verbValue2, monadicLeft2, arg2),
+                    _ => throw new Exception($"Unknown adverb: {op.Value}")
+                };
+            }
+
             // Handle dyadic operators
             if (node.Children.Count == 2)
             {
@@ -2135,8 +2158,8 @@ namespace K3CSharp
             
             if (vector is VectorValue vec)
             {
-                // Handle null indexing (_n) - "all" operation
-                if (index is NullValue)
+                // Handle null or empty-vector indexing — "all" operation: d[] or d[_n]
+                if (index is NullValue || (index is VectorValue emptyIdx && emptyIdx.Elements.Count == 0))
                 {
                     // Return all elements of the vector
                     return new VectorValue(vec.Elements);
@@ -2323,8 +2346,8 @@ namespace K3CSharp
             // Handle dictionary indexing
             if (data is DictionaryValue dict)
             {
-                // Handle _n (null) index - return all values
-                if (index is NullValue)
+                // Handle _n (null) or empty-vector index — return all values: d[] or d[_n]
+                if (index is NullValue || (index is VectorValue emptyDictIdx && emptyDictIdx.Elements.Count == 0))
                 {
                     var allValues = new List<K3Value>();
                     foreach (var entry in dict.Entries)
@@ -4082,15 +4105,15 @@ namespace K3CSharp
         private K3Value EvaluateTriadicAt(K3Value arg1, K3Value arg2, K3Value arg3)
         {
             var amendArgs = new List<K3Value> { arg1, arg2, arg3 };
-            return AmendFunction(amendArgs);
+            return AmendItemFunction(amendArgs);
         }
 
         private K3Value EvaluateTetradicDot(K3Value arg1, K3Value arg2, K3Value arg3, K3Value arg4)
         {
-            // Tetradic dot: .[d; i; f; y] - amend item operation
-            // arg1=data, arg2=indices, arg3=function, arg4=value
+            // Tetradic dot: .[d; i; f; y] - deep path amend (AmendFunction, not AmendItemFunction)
+            // arg1=data, arg2=indices (path), arg3=function, arg4=value
             var amendArgs = new List<K3Value> { arg1, arg2, arg3, arg4 };
-            return AmendItemFunction(amendArgs);
+            return AmendFunction(amendArgs);
         }
 
         private K3Value EvaluateTetradicAt(K3Value arg1, K3Value arg2, K3Value arg3, K3Value arg4)

@@ -259,8 +259,17 @@ namespace K3CSharp
             // If left is vector and right is vector, use Each (e.g., (1 2 3) %/ (4 5 6))
             // If only right argument, use Over (e.g., %/ 1 2 3)
             
+            // Noun form: both args are sentinel 0 — return projected function (e.g. +/ used as a value)
+            bool leftSentinel = left is IntegerValue lv && lv.Value == 0;
+            bool rightSentinel = right is IntegerValue rv && rv.Value == 0;
+            if (leftSentinel && rightSentinel)
+            {
+                string verbStr = verb is SymbolValue vs ? vs.Value : verb.ToString() ?? "";
+                return new AdverbProjectedFunctionValue("over", verbStr, 1);
+            }
+            
             // Check for "over" case: left is dummy 0 and right is vector
-            if (left is IntegerValue leftInt && leftInt.Value == 0 && right is VectorValue)
+            if (leftSentinel && right is VectorValue)
             {
                 return Over(verb, left, right);
             }
@@ -283,6 +292,14 @@ namespace K3CSharp
 
         private K3Value ApplyAdverbBackslash(K3Value verb, K3Value left, K3Value right)
         {
+            // Noun form: both args are sentinel 0 — return projected function (e.g. +\ used as a value)
+            bool leftSentinel = left is IntegerValue lv && lv.Value == 0;
+            bool rightSentinel = right is IntegerValue rv && rv.Value == 0;
+            if (leftSentinel && rightSentinel)
+            {
+                string verbStr = verb is SymbolValue vs ? vs.Value : verb.ToString() ?? "";
+                return new AdverbProjectedFunctionValue("scan", verbStr, 1);
+            }
             // Natural nested evaluation: call Scan with the verb and arguments
             return Scan(verb, left ?? new IntegerValue(0), right ?? new IntegerValue(0));
         }

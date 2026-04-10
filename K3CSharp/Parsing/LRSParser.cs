@@ -1116,6 +1116,9 @@ namespace K3CSharp.Parsing
                 if (token.Type == TokenType.ADVERB_SLASH || 
                     token.Type == TokenType.ADVERB_BACKSLASH || 
                     token.Type == TokenType.ADVERB_TICK ||
+                    token.Type == TokenType.ADVERB_SLASH_COLON ||
+                    token.Type == TokenType.ADVERB_BACKSLASH_COLON ||
+                    token.Type == TokenType.ADVERB_TICK_COLON ||
                     token.Type == TokenType.VARIADIC_ADVERB_OVER ||
                     token.Type == TokenType.VARIADIC_ADVERB_SCAN ||
                     token.Type == TokenType.VARIADIC_ADVERB_EACH)

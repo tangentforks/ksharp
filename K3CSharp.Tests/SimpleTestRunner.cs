@@ -1517,6 +1517,15 @@ namespace K3CSharp.Tests
 
                 ("amend_item_monadic.k", "1 4 3"),
 
+                ("amend_item_symbol_path.k", "1 12 3 4 5"),
+
+                // Amend dot tests
+                ("amend_dot_symbol_path.k", "1 12 3 4 5"),
+
+                ("amend_dot_empty_index.k", "11 12 13"),
+
+                ("amend_dot_null_index_each.k", "11 12 13"),
+
                 // Existing amend tests - only valid cases with 3+ arguments
 
                 ("amend_test.k", "(1 2 13 4 5;6 7 8 9 10)"),
@@ -1606,6 +1615,11 @@ namespace K3CSharp.Tests
                 ("adverb_slash_colon_basic.k", "(5 6 7;6 7 8;7 8 9)"),
 
                 ("adverb_tick_colon_basic.k", "4 1 3 8"),
+
+                // Empty bracket index tests
+                ("empty_brackets_vector.k", "1 2 3 4"),
+
+                ("empty_brackets_dictionary.k", "1 2"),
 
                 
 

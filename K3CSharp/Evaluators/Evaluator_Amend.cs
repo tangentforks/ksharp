@@ -23,6 +23,19 @@ namespace K3CSharp
             var function = arguments[2];
             var value = arguments.Count > 3 ? arguments[3] : null;
 
+            // Handle symbol path as first arg: in-place amend of a global variable
+            if (data is SymbolValue pathSym && pathSym.Value != ":")
+            {
+                var resolvedData = GetVariableValuePublic(pathSym.Value);
+                if (resolvedData != null)
+                {
+                    var amendedArgs = new List<K3Value>(arguments) { [0] = resolvedData };
+                    var amended = AmendFunction(amendedArgs);
+                    SetVariable(pathSym.Value, amended);
+                    return pathSym;
+                }
+            }
+
             // Check for direct value assignment (third argument is colon)
             if (function is SymbolValue colonSym && colonSym.Value == ":")
             {
@@ -91,6 +104,19 @@ namespace K3CSharp
             var indices = arguments[1];
             var function = arguments[2];
             var value = arguments.Count > 3 ? arguments[3] : null;
+
+            // Handle symbol path as first arg: in-place amend of a global variable
+            if (data is SymbolValue pathSym && pathSym.Value != ":")
+            {
+                var resolvedData = GetVariableValuePublic(pathSym.Value);
+                if (resolvedData != null)
+                {
+                    var amendedArgs = new List<K3Value>(arguments) { [0] = resolvedData };
+                    var amended = AmendItemFunction(amendedArgs);
+                    SetVariable(pathSym.Value, amended);
+                    return pathSym;
+                }
+            }
 
             // Check for error trapping (third argument is colon)
             if (function is SymbolValue colonSym && colonSym.Value == ":")
@@ -378,7 +404,17 @@ namespace K3CSharp
 
             if (data is VectorValue list)
             {
-                if (index is IntegerValue intIdx)
+                if (index is NullValue)
+                {
+                    // Null index: amend every element — .[d;,_n;f;y] / .[d;(_n;...);f;y]
+                    var result = new List<K3Value>(list.Elements);
+                    for (int i = 0; i < result.Count; i++)
+                    {
+                        result[i] = AmendAtPath(result[i], path, pathIndex + 1, function, value);
+                    }
+                    return new VectorValue(result);
+                }
+                else if (index is IntegerValue intIdx)
                 {
                     int idx = (int)intIdx.Value;
                     if (idx < 0 || idx >= list.Elements.Count)
