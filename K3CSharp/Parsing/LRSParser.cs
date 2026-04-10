@@ -54,17 +54,70 @@ namespace K3CSharp.Parsing
             definedVariables.Clear();
         }
         
+        /// <summary>
+        /// Preprocess tokens to combine adjacent DOT_APPLY + IDENTIFIER sequences
+        /// into single IDENTIFIER tokens with dotted notation (e.g., .k.d becomes a single Variable ".k.d")
+        /// Only applies when the DOT_APPLY and IDENTIFIER are adjacent (no space between them).
+        /// </summary>
+        private static List<Token> PreprocessDottedPaths(List<Token> tokens)
+        {
+            var result = new List<Token>();
+            int i = 0;
+            
+            while (i < tokens.Count)
+            {
+                // Check for DOT_APPLY followed by adjacent IDENTIFIER pattern
+                if (tokens[i].Type == TokenType.DOT_APPLY && 
+                    i + 1 < tokens.Count &&
+                    (tokens[i + 1].Type == TokenType.IDENTIFIER || tokens[i + 1].Type == TokenType.SYMBOL))
+                {
+                    // Check adjacency: dot position + 1 == next token position
+                    bool isAdjacent = (tokens[i].Position + tokens[i].Lexeme.Length) == tokens[i + 1].Position;
+                    
+                    if (isAdjacent)
+                    {
+                        // Build the dotted path
+                        var dottedPath = "." + tokens[i + 1].Lexeme;
+                        int startPos = tokens[i].Position;
+                        int j = i + 2;
+                        
+                        // Continue consuming .identifier sequences
+                        while (j + 1 < tokens.Count && 
+                               tokens[j].Type == TokenType.DOT_APPLY &&
+                               (tokens[j + 1].Type == TokenType.IDENTIFIER || tokens[j + 1].Type == TokenType.SYMBOL) &&
+                               (tokens[j].Position + tokens[j].Lexeme.Length) == tokens[j + 1].Position)
+                        {
+                            dottedPath += "." + tokens[j + 1].Lexeme;
+                            j += 2;
+                        }
+                        
+                        // Create a single IDENTIFIER token with the full dotted path
+                        result.Add(new Token(TokenType.IDENTIFIER, dottedPath, startPos));
+                        i = j;
+                        continue;
+                    }
+                }
+                
+                result.Add(tokens[i]);
+                i++;
+            }
+            
+            return result;
+        }
+        
         public LRSParser(List<Token> tokens, bool buildParseTree = false)
         {
-            this.tokens = tokens;
+            // Preprocess tokens to combine K-tree dotted notation
+            var processedTokens = PreprocessDottedPaths(tokens);
+            this.tokens = processedTokens;
             this.BuildParseTree = buildParseTree;
             this.PureLRSMode = true; // Default to Pure LRS mode
-            this.expressionParser = new LRSExpressionParser(tokens);
-            this.dyadicParser = new LRSDyadicParser(tokens, this);
+            this.expressionParser = new LRSExpressionParser(processedTokens);
+            this.dyadicParser = new LRSDyadicParser(processedTokens, this);
             this.monadicParser = new LRSMonadicParser(this);
-            this.functionParser = new LRSFunctionParser(tokens);
-            this.statementParser = new LRSStatementParser(tokens, this);
-            this.groupingParser = new LRSGroupingParser(tokens, buildParseTree, this);
+            this.functionParser = new LRSFunctionParser(processedTokens);
+            this.statementParser = new LRSStatementParser(processedTokens, this);
+            this.groupingParser = new LRSGroupingParser(processedTokens, buildParseTree, this);
         }
         
         /// <summary>

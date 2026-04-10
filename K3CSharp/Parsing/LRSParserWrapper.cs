@@ -46,68 +46,16 @@ namespace K3CSharp.Parsing
         
         public LRSParserWrapper(List<Token> tokens, string sourceText)
         {
-            // Preprocess tokens to combine K-tree dotted notation (.k.d -> single IDENTIFIER token)
-            var processedTokens = PreprocessDottedPaths(tokens, sourceText);
-            this.tokens = processedTokens;
+            // Preprocessing is now handled by LRSParser
+            this.tokens = tokens;
             this.sourceText = sourceText;
 
             // Always use LRS parser (no legacy mode)
-            this.lrsParser = new LRSParser(processedTokens);
+            this.lrsParser = new LRSParser(tokens);
             if (this.lrsParser != null)
             {
                 this.lrsParser.PureLRSMode = true;
             }
-        }
-        
-        /// <summary>
-        /// Preprocess tokens to combine adjacent DOT_APPLY + IDENTIFIER sequences
-        /// into single IDENTIFIER tokens with dotted notation (e.g., .k.d becomes a single Variable ".k.d")
-        /// Only applies when the DOT_APPLY and IDENTIFIER are adjacent (no space between them).
-        /// </summary>
-        private static List<Token> PreprocessDottedPaths(List<Token> tokens, string sourceText)
-        {
-            var result = new List<Token>();
-            int i = 0;
-            
-            while (i < tokens.Count)
-            {
-                // Check for DOT_APPLY followed by adjacent IDENTIFIER pattern
-                if (tokens[i].Type == TokenType.DOT_APPLY && 
-                    i + 1 < tokens.Count &&
-                    (tokens[i + 1].Type == TokenType.IDENTIFIER || tokens[i + 1].Type == TokenType.SYMBOL))
-                {
-                    // Check adjacency: dot position + 1 == next token position
-                    bool isAdjacent = (tokens[i].Position + tokens[i].Lexeme.Length) == tokens[i + 1].Position;
-                    
-                    if (isAdjacent)
-                    {
-                        // Build the dotted path
-                        var dottedPath = "." + tokens[i + 1].Lexeme;
-                        int startPos = tokens[i].Position;
-                        int j = i + 2;
-                        
-                        // Continue consuming .identifier sequences
-                        while (j + 1 < tokens.Count && 
-                               tokens[j].Type == TokenType.DOT_APPLY &&
-                               (tokens[j + 1].Type == TokenType.IDENTIFIER || tokens[j + 1].Type == TokenType.SYMBOL) &&
-                               (tokens[j].Position + tokens[j].Lexeme.Length) == tokens[j + 1].Position)
-                        {
-                            dottedPath += "." + tokens[j + 1].Lexeme;
-                            j += 2;
-                        }
-                        
-                        // Create a single IDENTIFIER token with the full dotted path
-                        result.Add(new Token(TokenType.IDENTIFIER, dottedPath, startPos));
-                        i = j;
-                        continue;
-                    }
-                }
-                
-                result.Add(tokens[i]);
-                i++;
-            }
-            
-            return result;
         }
         
         /// <summary>
