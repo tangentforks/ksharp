@@ -22,8 +22,6 @@ namespace K3CSharp.Parsing
         private readonly LRSParser? lrsParser;
         private readonly List<Token> tokens;
         private readonly string sourceText;
-        private readonly bool enableFallback;
-        private readonly bool useLRSParser;
         
         // Static failure analyzer for tracking all LRS failures
         private static readonly object failureAnalyzerLock = new object();
@@ -46,23 +44,18 @@ namespace K3CSharp.Parsing
             currentTestName = "";
         }
         
-        public LRSParserWrapper(List<Token> tokens, string sourceText, bool enableFallback = true, bool useLRSParser = true)
+        public LRSParserWrapper(List<Token> tokens, string sourceText)
         {
             // Preprocess tokens to combine K-tree dotted notation (.k.d -> single IDENTIFIER token)
             var processedTokens = PreprocessDottedPaths(tokens, sourceText);
             this.tokens = processedTokens;
             this.sourceText = sourceText;
-            this.enableFallback = enableFallback;
-            this.useLRSParser = useLRSParser;
-            
-            if (useLRSParser)
+
+            // Always use LRS parser (no legacy mode)
+            this.lrsParser = new LRSParser(processedTokens);
+            if (this.lrsParser != null)
             {
-                this.lrsParser = new LRSParser(processedTokens);
-                // Enable Pure LRS mode when fallback is disabled
-                if (this.lrsParser != null)
-                {
-                    this.lrsParser.PureLRSMode = !enableFallback;
-                }
+                this.lrsParser.PureLRSMode = true;
             }
         }
         
@@ -118,274 +111,20 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Check if expression should use legacy parser based on complexity patterns
-        /// </summary>
-        private bool ShouldFallbackToLegacy(string sourceText, List<Token> tokens)
-        {
-            // Pure LRS mode: no fallback to legacy parser
-            return false;
-        }
-
-        /// <summary>
-        /// Parse using LRS strategy with fallback to legacy parser
+        /// Parse using LRS strategy (no fallback)
         /// </summary>
         public ASTNode? Parse()
         {
-            if (!useLRSParser)
+            // Debug: check which path we'll take
+            if (sourceText.Contains("d:."))
             {
-                // Direct to legacy parser
-                return new Parser(tokens, sourceText).Parse();
+                Console.WriteLine($"[Parse] ENTER: source='{sourceText.Substring(0, Math.Min(30, sourceText.Length))}'");
             }
-            
-            // Check if we should fallback to legacy based on complexity patterns
-            if (ShouldFallbackToLegacy(sourceText, tokens))
-            {
-                return FallbackToLegacyParser();
-            }
-            
-            try
-            {
-                // Debug: check which path we'll take
-                if (sourceText.Contains("d:."))
-                {
-                    Console.WriteLine($"[Parse] ENTER: enableFallback={enableFallback}, source='{sourceText.Substring(0, Math.Min(30, sourceText.Length))}'");
-                }
-                
-                // Pure LRS mode: Handle multiple semicolon-separated expressions
-                if (!enableFallback)
-                {
-                    if (sourceText.Contains("d:."))
-                        Console.WriteLine("[Parse] Taking Pure LRS path -> ParseMultipleExpressions");
-                    return ParseMultipleExpressions();
-                }
-                
-                // Safe LRS mode: Handle multiple expressions with fallback
-                if (sourceText.Contains("d:."))
-                    Console.WriteLine("[Parse] Taking Safe LRS path");
-                var position = 0;
-                ASTNode? result = null;
-                var expressions = new List<ASTNode>();
-                
-                // Check if this contains multiple TOP-LEVEL expressions (semicolons not inside parentheses/brackets/braces)
-                // Semicolons inside grouping constructs are handled by the grouping parser, not as expression separators
-                bool hasMultipleExpressions = false;
-                int nestingLevel = 0;
-                foreach (var token in tokens)
-                {
-                    if (token.Type == TokenType.LEFT_PAREN || token.Type == TokenType.LEFT_BRACKET || token.Type == TokenType.LEFT_BRACE)
-                    {
-                        nestingLevel++;
-                    }
-                    else if (token.Type == TokenType.RIGHT_PAREN || token.Type == TokenType.RIGHT_BRACKET || token.Type == TokenType.RIGHT_BRACE)
-                    {
-                        nestingLevel--;
-                    }
-                    else if (token.Type == TokenType.SEMICOLON && nestingLevel == 0)
-                    {
-                        // Semicolon at top level indicates multiple expressions
-                        hasMultipleExpressions = true;
-                        break;
-                    }
-                }
-                
-                if (hasMultipleExpressions)
-                {
-                    // Parse multiple expressions for semicolon-separated statements
-                    while (position < tokens.Count)
-                    {
-                        // Skip whitespace and separators
-                        while (position < tokens.Count && 
-                               (tokens[position].Type == TokenType.NEWLINE || 
-                                tokens[position].Type == TokenType.SEMICOLON))
-                        {
-                            if (tokens[position].Type == TokenType.SEMICOLON)
-                            {
-                                // Add null for empty expression between semicolons
-                                expressions.Add(ASTNode.MakeLiteral(new NullValue()));
-                            }
-                            position++;
-                        }
-                        
-                        if (position >= tokens.Count) break;
-                        
-                        // Parse single expression
-                        if (sourceText.Contains("d:."))
-                        {
-                            Console.WriteLine($"[SafeLRS] Parsing expression at position {position}, token={tokens[position].Type}({tokens[position].Lexeme})");
-                        }
-                        var exprResult = lrsParser?.ParseExpression(ref position);
-                        if (sourceText.Contains("d:."))
-                        {
-                            Console.WriteLine($"[SafeLRS] ParseExpression returned: {exprResult?.Type} (position now {position})");
-                        }
-                        if (exprResult != null)
-                        {
-                            expressions.Add(exprResult);
-                        }
-                        else
-                        {
-                            // Failed to parse expression, break out
-                            if (sourceText.Contains("d:."))
-                            {
-                                Console.WriteLine($"[SafeLRS] ParseExpression returned NULL, breaking");
-                            }
-                            break;
-                        }
-                    }
-                    
-                    // Create result following K semantics: wrap multiple expressions in Block node
-                    // for sequential evaluation. The evaluator will execute each expression
-                    // in order and return the last value.
-                    if (sourceText.Contains("d:."))
-                    {
-                        Console.WriteLine($"[SafeLRS] expressions.Count = {expressions.Count}");
-                    }
-                    if (expressions.Count == 1)
-                    {
-                        result = expressions[0]; // Single expression - return directly
-                    }
-                    else if (expressions.Count > 1)
-                    {
-                        // Multiple expressions: wrap in Block node for sequential evaluation
-                        if (sourceText.Contains("d:."))
-                            Console.WriteLine("[SafeLRS] Creating Block node for multiple expressions");
-                        var blockNode = new ASTNode(ASTNodeType.Block);
-                        foreach (var expr in expressions)
-                        {
-                            blockNode.Children.Add(expr);
-                        }
-                        result = blockNode;
-                    }
-                }
-                else
-                {
-                    // Single expression parsing
-                    result = lrsParser?.ParseExpression(ref position);
-                }
-                
-                // Record failure if LRS parsing failed
-                if (result == null)
-                {
-                    var lastTokenType = position > 0 && position <= tokens.Count 
-                        ? tokens[position - 1].Type 
-                        : (TokenType?)null;
-                    
-                    // Record failure for later analysis
-                    lock (failureAnalyzerLock)
-                    {
-                        var record = new ParserFailureRecord
-                        {
-                            Timestamp = DateTime.Now,
-                            TestName = currentTestName,
-                            SourceText = sourceText,
-                            ConsumedTokens = position,
-                            TotalTokens = tokens.Count,
-                            LastTokenType = lastTokenType,
-                            FailurePoint = DetermineFailurePoint(position, tokens.Count, lastTokenType)
-                        };
-                        failureRecords.Add(record);
-                        
-                        // Limit records to prevent memory issues
-                        if (failureRecords.Count > 10000)
-                        {
-                            failureRecords.RemoveAt(0);
-                        }
-                    }
-                }
-                
-                // Validate result
-                // Check if remaining tokens are just whitespace/newlines
-                bool onlyWhitespaceRemaining = true;
-                if (position < tokens.Count)
-                {
-                    for (int i = position; i < tokens.Count; i++)
-                    {
-                        if (tokens[i].Type != TokenType.NEWLINE && tokens[i].Type != TokenType.EOF)
-                        {
-                            onlyWhitespaceRemaining = false;
-                            break;
-                        }
-                    }
-                }
-                
-                if (result != null && (position >= tokens.Count || onlyWhitespaceRemaining))
-                {
-                    return result;
-                }
-                
-                // Debug logging for Pure LRS mode failures
-                if (!enableFallback && ParserConfig.EnableDebugging)
-                {
-                    Console.WriteLine($"[DEBUG] Pure LRS parsing incomplete:");
-                    Console.WriteLine($"  Source: {sourceText}");
-                    Console.WriteLine($"  Result: {(result != null ? "NOT NULL" : "NULL")}");
-                    Console.WriteLine($"  Position: {position}/{tokens.Count}");
-                    if (position < tokens.Count)
-                    {
-                        Console.WriteLine($"  Remaining tokens: {string.Join(" ", tokens.Skip(position).Select(t => t.Type))}");
-                    }
-                }
-                
-                // If LRS parsing didn't consume all tokens, fall back
-                if (enableFallback)
-                {
-                    // Debug for ktree tests
-                    if (sourceText.Contains("d:."))
-                    {
-                        Console.WriteLine($"[SafeLRS] Checking fallback: position={position}, tokens.Count={tokens.Count}, result={result?.Type}");
-                    }
-                    
-                    // Track incomplete consumption cases separately
-                    if (result != null && position < tokens.Count)
-                    {
-                        lock (failureAnalyzerLock)
-                        {
-                            var record = new ParserFailureRecord
-                            {
-                                Timestamp = DateTime.Now,
-                                TestName = currentTestName,
-                                SourceText = sourceText,
-                                ConsumedTokens = position,
-                                TotalTokens = tokens.Count,
-                                LastTokenType = position < tokens.Count ? tokens[position].Type : null,
-                                FailurePoint = $"Incomplete consumption (position {position}/{tokens.Count})"
-                            };
-                            failureRecords.Add(record);
-                            
-                            if (failureRecords.Count > 10000)
-                            {
-                                failureRecords.RemoveAt(0);
-                            }
-                        }
-                    }
-                    return FallbackToLegacyParser();
-                }
-                
-                throw new Exception($"LRS parser failed to parse complete expression: {sourceText}");
-            }
-            catch (Exception ex) when (enableFallback)
-            {
-                // Fallback to legacy parser on any error
-                Console.WriteLine($"[DEBUG] LRS parser failed with error: {ex.Message}");
-                Console.WriteLine($"[DEBUG] Stack trace: {ex.StackTrace}");
-                return FallbackToLegacyParser();
-            }
-        }
-        
-        /// <summary>
-        /// Fallback to legacy parser
-        /// </summary>
-        private ASTNode? FallbackToLegacyParser()
-        {
-            try
-            {
-                var legacyParser = new Parser(tokens, sourceText);
-                return legacyParser.Parse();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Both LRS and legacy parsers failed for: {sourceText}. Legacy error: {ex.Message}");
-            }
+
+            // Pure LRS mode: Handle multiple semicolon-separated expressions
+            if (sourceText.Contains("d:."))
+                Console.WriteLine("[Parse] Taking Pure LRS path -> ParseMultipleExpressions");
+            return ParseMultipleExpressions();
         }
         
         /// <summary>
@@ -394,12 +133,6 @@ namespace K3CSharp.Parsing
         /// </summary>
         public bool IsIncompleteExpression()
         {
-            if (!useLRSParser)
-            {
-                // Delegate to legacy parser
-                return new Parser(tokens, sourceText).IsIncompleteExpression();
-            }
-
             // Simple delimiter balancing check (same logic as legacy parser)
             int parentheses = 0;
             int brackets = 0;
@@ -438,65 +171,7 @@ namespace K3CSharp.Parsing
             // Expression is incomplete if any brackets are unmatched
             return parentheses != 0 || brackets != 0 || braces != 0 || inString || inSymbol;
         }
-        
-        /// <summary>
-        /// Parse with explicit mode selection
-        /// </summary>
-        public ASTNode? ParseWithMode(ParsingMode mode)
-        {
-            return mode switch
-            {
-                ParsingMode.LRSOnly => ParseLRSOnly(),
-                ParsingMode.LegacyOnly => ParseLegacyOnly(),
-                ParsingMode.LRSWithFallback => Parse(),
-                _ => Parse()
-            };
-        }
-        
-        /// <summary>
-        /// Parse using only LRS parser (no fallback)
-        /// </summary>
-        private ASTNode? ParseLRSOnly()
-        {
-            if (!useLRSParser || lrsParser == null)
-            {
-                throw new InvalidOperationException("LRS parser is disabled");
-            }
-            
-            var position = 0;
-            ASTNode? lastResult = null;
-            
-            // Parse all expressions in the script sequentially
-            while (position < tokens.Count)
-            {
-                var expr = lrsParser.ParseExpression(ref position);
-                
-                if (expr != null)
-                {
-                    lastResult = expr;
-                }
-                
-                // Skip any remaining newlines or semicolons
-                while (position < tokens.Count && 
-                       (tokens[position].Type == TokenType.NEWLINE || 
-                        tokens[position].Type == TokenType.SEMICOLON))
-                {
-                    position++;
-                }
-            }
-            
-            return lastResult;
-        }
-        
-        /// <summary>
-        /// Parse using only legacy parser
-        /// </summary>
-        private ASTNode? ParseLegacyOnly()
-        {
-            var legacyParser = new Parser(tokens, sourceText);
-            return legacyParser.Parse();
-        }
-        
+
         /// <summary>
         /// Get parsing statistics for debugging
         /// </summary>
@@ -506,25 +181,22 @@ namespace K3CSharp.Parsing
             {
                 TokenCount = tokens.Count,
                 SourceText = sourceText,
-                UseLRSParser = useLRSParser,
-                EnableFallback = enableFallback
+                UseLRSParser = true,
+                EnableFallback = false
             };
-            
-            if (useLRSParser)
+
+            try
             {
-                try
-                {
-                    var position = 0;
-                    var result = lrsParser?.ParseExpression(ref position);
-                    stats.LRSSuccess = result != null && position >= tokens.Count;
-                    stats.LRSConsumedTokens = position;
-                }
-                catch
-                {
-                    stats.LRSSuccess = false;
-                }
+                var position = 0;
+                var result = lrsParser?.ParseExpression(ref position);
+                stats.LRSSuccess = result != null && position >= tokens.Count;
+                stats.LRSConsumedTokens = position;
             }
-            
+            catch
+            {
+                stats.LRSSuccess = false;
+            }
+
             return stats;
         }
         
@@ -549,21 +221,7 @@ namespace K3CSharp.Parsing
                 failureRecords.Clear();
             }
         }
-        
-        /// <summary>
-        /// Determine failure point description
-        /// </summary>
-        private static string DetermineFailurePoint(int consumedTokens, int totalTokens, TokenType? lastTokenType)
-        {
-            if (consumedTokens == 0)
-                return "Start of expression";
-            if (consumedTokens >= totalTokens)
-                return "End of expression";
-            if (lastTokenType.HasValue)
-                return $"After {lastTokenType.Value} (position {consumedTokens}/{totalTokens})";
-            return $"Position {consumedTokens}/{totalTokens}";
-        }
-        
+
         /// <summary>
         /// Parse multiple semicolon-separated expressions in Pure LRS mode
         /// Returns the result of the last expression (K semantics)

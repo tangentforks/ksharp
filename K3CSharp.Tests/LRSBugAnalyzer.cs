@@ -8,30 +8,28 @@ using K3CSharp.Parsing;
 namespace K3CSharp.Tests
 {
     /// <summary>
-    /// Analyzes LRS parser bugs by comparing LRS vs Legacy parser results
+    /// Analyzes LRS parser failures (legacy parser comparison removed)
+    /// NOTE: This tool no longer compares with legacy parser since it's being removed
     /// </summary>
     public class LRSBugAnalyzer
     {
         public static void AnalyzeLRSBugs()
         {
-            Console.WriteLine("=== LRS Bug Analysis ===\n");
+            Console.WriteLine("=== LRS Parser Failure Analysis ===");
+            Console.WriteLine("NOTE: Legacy parser comparison removed - Parser class being deleted\n");
             
             var testDir = Path.Combine(Directory.GetCurrentDirectory(), "TestScripts");
             var testFiles = Directory.GetFiles(testDir, "*.k").OrderBy(f => f).ToList();
             
-            var bugCategories = new Dictionary<string, List<string>>
+            var failureCategories = new Dictionary<string, List<string>>
             {
-                ["OperatorPrecedence"] = new List<string>(),
-                ["FunctionCalls"] = new List<string>(),
-                ["VectorOperations"] = new List<string>(),
-                ["DictionaryOperations"] = new List<string>(),
-                ["AssignmentIssues"] = new List<string>(),
                 ["ParsingErrors"] = new List<string>(),
                 ["EvaluationErrors"] = new List<string>(),
                 ["Other"] = new List<string>()
             };
             
             int analyzed = 0;
+            int failures = 0;
             int maxToAnalyze = 50; // Analyze first 50 tests
             
             foreach (var testFile in testFiles)
@@ -43,6 +41,8 @@ namespace K3CSharp.Tests
                 
                 try
                 {
+                    analyzed++;
+                    
                     // Test with LRS parser (Pure mode)
                     ParserConfig.UseLRSParser = true;
                     ParserConfig.EnableFallback = false;
@@ -51,6 +51,16 @@ namespace K3CSharp.Tests
                     var lexerLRS = new Lexer(script);
                     var tokensLRS = lexerLRS.Tokenize();
                     var astLRS = ParserConfig.ParseWithConfig(tokensLRS, script);
+                    
+                    if (astLRS == null)
+                    {
+                        failures++;
+                        failureCategories["ParsingErrors"].Add(fileName);
+                        Console.WriteLine($"\n[{failures}] {fileName} - Parsing failed (AST is null)");
+                        Console.WriteLine($"Script: {script.Substring(0, Math.Min(60, script.Length))}...");
+                        continue;
+                    }
+                    
                     var evaluatorLRS = new Evaluator();
                     K3Value? resultLRS = null;
                     string? errorLRS = null;
@@ -62,111 +72,41 @@ namespace K3CSharp.Tests
                     catch (Exception ex)
                     {
                         errorLRS = ex.Message;
-                    }
-                    
-                    // Test with Legacy parser
-                    ParserConfig.UseLRSParser = false;
-                    
-                    var lexerLegacy = new Lexer(script);
-                    var tokensLegacy = lexerLegacy.Tokenize();
-                    var parserLegacy = new Parser(tokensLegacy, script);
-                    var astLegacy = parserLegacy.Parse();
-                    var evaluatorLegacy = new Evaluator();
-                    K3Value? resultLegacy = null;
-                    string? errorLegacy = null;
-                    
-                    try
-                    {
-                        resultLegacy = evaluatorLegacy.Evaluate(astLegacy);
-                    }
-                    catch (Exception ex)
-                    {
-                        errorLegacy = ex.Message;
-                    }
-                    
-                    // Compare results
-                    var lrsOutput = errorLRS ?? resultLRS?.ToString() ?? "NULL";
-                    var legacyOutput = errorLegacy ?? resultLegacy?.ToString() ?? "NULL";
-                    
-                    if (lrsOutput != legacyOutput)
-                    {
-                        analyzed++;
-                        
-                        // Categorize the bug
-                        var category = CategorizeBug(script, lrsOutput, legacyOutput, errorLRS, errorLegacy);
-                        bugCategories[category].Add(fileName);
-                        
-                        Console.WriteLine($"\n[{analyzed}] {fileName}");
+                        failures++;
+                        failureCategories["EvaluationErrors"].Add(fileName);
+                        Console.WriteLine($"\n[{failures}] {fileName} - Evaluation failed");
                         Console.WriteLine($"Script: {script.Substring(0, Math.Min(60, script.Length))}...");
-                        Console.WriteLine($"LRS:    {lrsOutput.Substring(0, Math.Min(60, lrsOutput.Length))}");
-                        Console.WriteLine($"Legacy: {legacyOutput.Substring(0, Math.Min(60, legacyOutput.Length))}");
-                        Console.WriteLine($"Category: {category}");
+                        Console.WriteLine($"Error: {errorLRS}");
+                        continue;
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    // Skip tests that fail to parse
+                    failures++;
+                    failureCategories["Other"].Add(fileName);
+                    Console.WriteLine($"\n[{failures}] {fileName} - Unexpected error");
+                    Console.WriteLine($"Script: {script.Substring(0, Math.Min(60, script.Length))}...");
+                    Console.WriteLine($"Error: {ex.Message}");
                 }
             }
             
             // Print summary
-            Console.WriteLine("\n\n=== Bug Category Summary ===");
-            foreach (var category in bugCategories.OrderByDescending(kv => kv.Value.Count))
+            Console.WriteLine("\n=== Failure Summary ===");
+            foreach (var category in failureCategories)
             {
                 if (category.Value.Count > 0)
                 {
-                    Console.WriteLine($"\n{category.Key}: {category.Value.Count} tests");
-                    foreach (var test in category.Value.Take(5))
+                    Console.WriteLine($"\n{category.Key}: {category.Value.Count}");
+                    foreach (var file in category.Value)
                     {
-                        Console.WriteLine($"  - {test}");
-                    }
-                    if (category.Value.Count > 5)
-                    {
-                        Console.WriteLine($"  ... and {category.Value.Count - 5} more");
+                        Console.WriteLine($"  - {file}");
                     }
                 }
             }
             
-            // Restore default config
-            ParserConfig.UseLRSParser = true;
-            ParserConfig.EnableFallback = false;
-        }
-        
-        private static string CategorizeBug(string script, string lrsOutput, string legacyOutput, 
-            string? errorLRS, string? errorLegacy)
-        {
-            // Check for parsing errors
-            if (errorLRS != null && errorLegacy == null)
-                return "ParsingErrors";
-            
-            // Check for evaluation errors
-            if (errorLRS != null && errorLegacy != null)
-                return "EvaluationErrors";
-            
-            // Check for operator precedence issues (contains operators)
-            if (script.Contains("+") || script.Contains("-") || script.Contains("*") || script.Contains("%"))
-            {
-                if (script.Contains(" - ") || script.Contains("+ ") || script.Contains("* "))
-                    return "OperatorPrecedence";
-            }
-            
-            // Check for function calls
-            if (script.Contains("[") && script.Contains("]"))
-                return "FunctionCalls";
-            
-            // Check for vector operations
-            if (script.Contains("(") && script.Contains(";"))
-                return "VectorOperations";
-            
-            // Check for dictionary operations
-            if (script.Contains(".") && script.Contains("("))
-                return "DictionaryOperations";
-            
-            // Check for assignment issues
-            if (script.Contains(":") && !script.Contains("::"))
-                return "AssignmentIssues";
-            
-            return "Other";
+            Console.WriteLine($"\nTotal analyzed: {analyzed}");
+            Console.WriteLine($"Total failures: {failures}");
+            Console.WriteLine($"Success rate: {((analyzed - failures) * 100.0 / analyzed):F1}%");
         }
     }
 }

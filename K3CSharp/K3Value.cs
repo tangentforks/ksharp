@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using K3CSharp.Parsing;
 
 namespace K3CSharp
 {
@@ -1282,20 +1283,18 @@ namespace K3CSharp
                 {
                     return _cachedAst;
                 }
-                
+
                 // Parse and cache the AST
                 ASTNode? ast;
                 if (PreParsedTokens != null && PreParsedTokens.Count > 0)
                 {
-                    var parser = new Parser(PreParsedTokens, BodyText);
-                    ast = parser.Parse();
+                    ast = ParserConfig.ParseWithConfig(PreParsedTokens, BodyText);
                 }
                 else
                 {
                     var lexer = new Lexer(BodyText);
                     var tokens = lexer.Tokenize();
-                    var parser = new Parser(tokens, BodyText);
-                    ast = parser.Parse();
+                    ast = ParserConfig.ParseWithConfig(tokens, BodyText);
                 }
                 
                 _cachedAst = ast;

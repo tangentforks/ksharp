@@ -41,47 +41,26 @@ namespace K3CSharp.Parsing
         /// </summary>
         public static ASTNode? ParseWithConfig(List<Token> tokens, string source)
         {
-            if (UseLRSParser)
-            {
-                var wrapper = new LRSParserWrapper(tokens, source, EnableFallback, true);
-                return wrapper.Parse();
-            }
-            else
-            {
-                return new Parser(tokens, source).Parse();
-            }
+            var wrapper = new LRSParserWrapper(tokens, source);
+            return wrapper.Parse();
         }
-        
+
         /// <summary>
         /// Check if expression is incomplete using configuration
         /// </summary>
         public static bool IsIncompleteExpressionWithConfig(List<Token> tokens, string source)
         {
-            if (UseLRSParser)
-            {
-                var wrapper = new LRSParserWrapper(tokens, source, EnableFallback, true);
-                return wrapper.IsIncompleteExpression();
-            }
-            else
-            {
-                return new Parser(tokens, source).IsIncompleteExpression();
-            }
+            var wrapper = new LRSParserWrapper(tokens, source);
+            return wrapper.IsIncompleteExpression();
         }
-        
+
         /// <summary>
         /// Get parsing statistics for monitoring
         /// </summary>
         public static ParsingStats? GetParsingStats(List<Token> tokens, string source)
         {
-            if (UseLRSParser)
-            {
-                var wrapper = new LRSParserWrapper(tokens, source, EnableFallback, true);
-                return wrapper.GetParsingStats();
-            }
-            else
-            {
-                return null; // Legacy parser doesn't provide stats
-            }
+            var wrapper = new LRSParserWrapper(tokens, source);
+            return wrapper.GetParsingStats();
         }
         
         /// <summary>

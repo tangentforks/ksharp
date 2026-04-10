@@ -2793,9 +2793,12 @@ namespace K3CSharp
                     {
                         var lexer = new Lexer(code);
                         var tokens = lexer.Tokenize();
-                        var parser = new Parser(tokens, code);
-                        var ast = parser.Parse();
-                        return Evaluate(ast) ?? new NullValue();
+                        var ast = ParserConfig.ParseWithConfig(tokens, code);
+                        if (ast != null)
+                        {
+                            return Evaluate(ast) ?? new NullValue();
+                        }
+                        return new NullValue();
                     }
                     catch (Exception ex)
                     {
@@ -3223,8 +3226,8 @@ namespace K3CSharp
             
             if (operand is VectorValue args && args.Elements.Count >= 2)
             {
-                var countValue = args.Elements[0] is FunctionValue countFunc 
-                    ? Evaluate(new Parser(countFunc.PreParsedTokens ?? new List<Token>(), "").Parse() ?? new ASTNode(ASTNodeType.Literal, new NullValue()))
+                var countValue = args.Elements[0] is FunctionValue countFunc
+                    ? Evaluate(ParserConfig.ParseWithConfig(countFunc.PreParsedTokens ?? new List<Token>(), "") ?? new ASTNode(ASTNodeType.Literal, new NullValue()))
                     : EvaluateExpression(args.Elements[0]);
                 var count = ToInteger(countValue);
                 
@@ -3243,8 +3246,7 @@ namespace K3CSharp
                         if (expr is FunctionValue func)
                         {
                             // Parse and evaluate the function body
-                            var parser = new Parser(func.PreParsedTokens ?? new List<Token>(), "");
-                            var ast = parser.Parse();
+                            var ast = ParserConfig.ParseWithConfig(func.PreParsedTokens ?? new List<Token>(), "");
                             if (ast != null) Evaluate(ast); // Execute but don't store result
                         }
                         else

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using K3CSharp.Parsing;
 
 namespace K3CSharp
 {
@@ -120,8 +121,7 @@ namespace K3CSharp
             // Create a lexer and parser for the function body
             var lexer = new Lexer(body);
             var tokens = lexer.Tokenize();
-            var parser = new Parser(tokens, body);
-            var ast = parser.Parse();
+            var ast = ParserConfig.ParseWithConfig(tokens, body);
             
             if (ast == null)
             {

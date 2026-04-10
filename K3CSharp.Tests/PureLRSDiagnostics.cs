@@ -133,7 +133,7 @@ namespace K3CSharp.Tests
                 Console.WriteLine($"Multi-line tokens: {string.Join(", ", tokens.Select(t => $"{t.Type}({t.Lexeme})"))}");
                 
                 // Use LRSParserWrapper for multi-line scripts (Pure LRS mode)
-                var wrapper = new LRSParserWrapper(tokens, script, enableFallback: false, useLRSParser: true);
+                var wrapper = new LRSParserWrapper(tokens, script);
                 
                 var result = wrapper.Parse();
                 

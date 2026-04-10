@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using K3CSharp.Parsing;
 
 namespace K3CSharp
 {
@@ -96,8 +97,7 @@ namespace K3CSharp
                     // Evaluate the reconstructed string using full parser for consistency
                     var lexer = new Lexer(code);
                     var tokens = lexer.Tokenize();
-                    var parser = new Parser(tokens, code);
-                    var ast = parser.Parse();
+                    var ast = ParserConfig.ParseWithConfig(tokens, code);
                     if (ast != null)
                     {
                         return Evaluate(ast) ?? new NullValue();
@@ -125,8 +125,7 @@ namespace K3CSharp
                 // Use full parser for consistency
                 var lexer = new Lexer(code);
                 var tokens = lexer.Tokenize();
-                var parser = new Parser(tokens, code);
-                var ast = parser.Parse();
+                var ast = ParserConfig.ParseWithConfig(tokens, code);
                 if (ast != null)
                 {
                     return Evaluate(ast) ?? new NullValue();
