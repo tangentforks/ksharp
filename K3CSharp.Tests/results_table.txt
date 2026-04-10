@@ -403,7 +403,7 @@ world"       │                      ║
 ║ monadic_format_vector_simple.k                     │ $1 2 3               │ (,"1";,"2";,"3")     │                      ║
 ║ format_integer.k                                   │ 0$1                  │ ""                   │                      ║
 ║ ci_adverb_vector.k                                 │ _ci' 97 94 80        │ "a^P"                │                      ║
-║ adverb_each_count.k                                │ #:' (1 2 3;1 2 3 4 5; 1 2) │                      │ 3 5 2                ║
+║ adverb_each_count.k                                │ #:' (1 2 3;1 2 3 4 5; 1 2) │ 3 5 2                │                      ║
 ║ format_float_numeric.k                             │ 0.0$1                │ ,"1"                 │                      ║
 ║ form_long.k                                        │ 0j$"42"              │ 42j                  │                      ║
 ║ format_numeric.k                                   │ 5$1                  │ "    1"              │                      ║
@@ -870,7 +870,7 @@ world"       │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 825/864 tests passed (95.5%)                                                                               ║
+║ SUMMARY: 826/864 tests passed (95.6%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -890,11 +890,6 @@ Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: Error: Function execution error: Function execution error: Assignment requires a variable name on the left side, but got IntegerValue with value 100
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_each_count.k
-Input: #:' (1 2 3;1 2 3 4 5; 1 2)
-Expected: 3 5 2
-Actual: 
 ──────────────────────────────────────────────────────────────────────────
 Test: time_t.k
 Input: r:_t

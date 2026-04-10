@@ -48,11 +48,19 @@ namespace K3CSharp.Parsing
                     // Check if this adverb is preceded by a verb, function closing brace, or identifier in the collected expression tokens
                     // Use expressionTokens.Count to check if we have collected any tokens before this adverb
                     var lastTokenType = expressionTokens.Count > 0 ? expressionTokens[expressionTokens.Count - 1].Type : TokenType.EOF;
+                    
+                    // Also check for disambiguating colon pattern: if last token is COLON and
+                    // the token before it is a verb (e.g., #:'), we should continue collecting
+                    bool precededByDisambiguatingColon = lastTokenType == TokenType.COLON &&
+                        expressionTokens.Count >= 2 &&
+                        VerbRegistry.IsVerbToken(expressionTokens[expressionTokens.Count - 2].Type);
+                    
                     bool precededByVerbOrFunction = expressionTokens.Count > 0 && 
                         (VerbRegistry.IsVerbToken(lastTokenType) ||
                          lastTokenType == TokenType.RIGHT_BRACE ||
                          lastTokenType == TokenType.RIGHT_PAREN ||
-                         lastTokenType == TokenType.IDENTIFIER);
+                         lastTokenType == TokenType.IDENTIFIER ||
+                         precededByDisambiguatingColon);
                     
                     if (!precededByVerbOrFunction)
                     {

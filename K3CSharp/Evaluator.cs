@@ -986,15 +986,18 @@ namespace K3CSharp
                 else
                 {
                     // Fallback to legacy evaluation for simple cases
+                    // 2-child structure comes from disambiguating colon (verb:' args) = monadic context
+                    // Use 0 as left argument to signal monadic context to adverb handlers
                     var verbValue = Evaluate(verbNode);
+                    var monadicLeft = new IntegerValue(0);
                     return op.Value.ToString() switch
                     {
-                        "over" or "/" => ApplyAdverbSlash(verbValue, argument, argument),
-                        "scan" or "\\" => ApplyAdverbBackslash(verbValue, argument, argument),
-                        "each" or "'" => HandleAdverbTick(verbValue, argument, argument),
-                        "each-right" or "/:" => ApplyAdverbSlashColon(verbValue, argument, argument),
-                        "each-left" or "\\:" => ApplyAdverbBackslashColon(verbValue, argument, argument),
-                        "each-prior" or "':" => ApplyAdverbTickColon(verbValue, argument, argument),
+                        "over" or "/" => ApplyAdverbSlash(verbValue, monadicLeft, argument),
+                        "scan" or "\\" => ApplyAdverbBackslash(verbValue, monadicLeft, argument),
+                        "each" or "'" => HandleAdverbTick(verbValue, monadicLeft, argument),
+                        "each-right" or "/:" => ApplyAdverbSlashColon(verbValue, monadicLeft, argument),
+                        "each-left" or "\\:" => ApplyAdverbBackslashColon(verbValue, monadicLeft, argument),
+                        "each-prior" or "':" => ApplyAdverbTickColon(verbValue, monadicLeft, argument),
                         _ => throw new Exception($"Unknown adverb: {op.Value}")
                     };
                 }

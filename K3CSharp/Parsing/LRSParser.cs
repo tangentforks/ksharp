@@ -511,6 +511,24 @@ namespace K3CSharp.Parsing
                     return projectionResult;
             }
             
+            // Check for disambiguating colon pattern: verb + colon + adverb
+            // Pattern: #:' args (e.g., #:' (1 2;3 4) for count each)
+            // MUST be checked BEFORE arity detection because # followed by : would be detected as dyadic
+            // Note that while / \ and ' support both monadic and dyadic verbs, 
+            // /: \: and ': support only dyadic verbs and should always result in an  
+            // error if used with a monadic verb
+            if (tokens.Count >= 3)
+            {
+                if (VerbRegistry.IsVerbToken(tokens[0].Type) &&
+                    tokens[1].Type == TokenType.COLON &&
+                    (tokens[2].Type == TokenType.ADVERB_SLASH ||
+                     tokens[2].Type == TokenType.ADVERB_BACKSLASH ||
+                     tokens[2].Type == TokenType.ADVERB_TICK))
+                {
+                    return ParseGenericVerbAdverbWithColon(tokens);
+                }
+            }
+            
             // Use arity detection to determine parsing order for multi-token expressions
             if (tokens.Count > 2)
             {
@@ -1761,6 +1779,7 @@ namespace K3CSharp.Parsing
             
             // Case 3a: Disambiguating colon pattern - verb + colon + adverb
             // Pattern: verb:' args (e.g., #:' (1 2;3 4) for count each)
+            // MUST be checked BEFORE generic verb+adverb pattern
             if (expressionTokens.Count >= 3)
             {
                 if (IsVerbToken(expressionTokens[0].Type) &&
@@ -1914,7 +1933,7 @@ namespace K3CSharp.Parsing
                 var argParser = new LRSExpressionProcessor(argTokens, BuildParseTree, this);
                 argNode = argParser.ProcessExpression(ref argPosition);
                 
-                // If we couldn.t parse the arguments, try using the LRSParser directly
+                // If we couldn't parse the arguments, try using the LRSParser directly
                 // This handles complex expressions like (1 2 3;4 5 6) with semicolons
                 if (argNode == null && argTokens.Count > 0)
                 {
@@ -1942,13 +1961,12 @@ namespace K3CSharp.Parsing
             }
             
             // Create adverb node: DyadicOp(adverb_symbol, verb, arguments)
+            // Disambiguating colon forces monadic interpretation - use 2-child structure
             var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
             adverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbToken.Type));
             adverbNode.Children.Add(verbNode);
             
-            // Add dummy left argument (0) to match legacy parser AST structure
-            adverbNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(0)));
-            
+            // No dummy left argument - disambiguating colon means monadic
             if (argNode != null)
             {
                 adverbNode.Children.Add(argNode);
