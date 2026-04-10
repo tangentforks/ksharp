@@ -198,7 +198,6 @@ namespace K3CSharp
             this.tokens = tokens;
             this.sourceText = sourceText;
             this.current = 0;
-            
                     }
 
         public bool IsExpressionComplete()

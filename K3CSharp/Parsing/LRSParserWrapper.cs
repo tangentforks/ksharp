@@ -9,6 +9,16 @@ namespace K3CSharp.Parsing
     /// </summary>
     public class LRSParserWrapper
     {
+        private static readonly Dictionary<TokenType, (int paren, int bracket, int brace)> DelimiterAdjustments = new()
+        {
+            { TokenType.LEFT_PAREN, (1, 0, 0) },
+            { TokenType.RIGHT_PAREN, (-1, 0, 0) },
+            { TokenType.LEFT_BRACKET, (0, 1, 0) },
+            { TokenType.RIGHT_BRACKET, (0, -1, 0) },
+            { TokenType.LEFT_BRACE, (0, 0, 1) },
+            { TokenType.RIGHT_BRACE, (0, 0, -1) }
+        };
+
         private readonly LRSParser? lrsParser;
         private readonly List<Token> tokens;
         private readonly string sourceText;
@@ -380,6 +390,7 @@ namespace K3CSharp.Parsing
         
         /// <summary>
         /// Check if expression is incomplete (matches Parser interface)
+        /// Uses delimiter balancing instead of parsing to avoid dependency on parsing success
         /// </summary>
         public bool IsIncompleteExpression()
         {
@@ -388,26 +399,44 @@ namespace K3CSharp.Parsing
                 // Delegate to legacy parser
                 return new Parser(tokens, sourceText).IsIncompleteExpression();
             }
-            
-            try
+
+            // Simple delimiter balancing check (same logic as legacy parser)
+            int parentheses = 0;
+            int brackets = 0;
+            int braces = 0;
+            bool inString = false;
+            bool inSymbol = false;
+
+            for (int i = 0; i < tokens.Count; i++)
             {
-                var position = 0;
-                var result = lrsParser?.ParseExpression(ref position);
-                
-                // If LRS parsing failed, fall back to legacy parser
-                if (result == null)
+                var token = tokens[i];
+
+                if (token.Type == TokenType.QUOTE && !inString)
                 {
-                    return new Parser(tokens, sourceText).IsIncompleteExpression();
+                    inString = true;
                 }
-                
-                // Expression is incomplete if we didn't consume all tokens
-                return position < tokens.Count;
+                else if (token.Type == TokenType.QUOTE && inString)
+                {
+                    inString = false;
+                }
+                else if (token.Type == TokenType.BACKTICK && !inSymbol)
+                {
+                    inSymbol = true;
+                }
+                else if ((token.Type == TokenType.SYMBOL || token.Type == TokenType.BACKTICK) && inSymbol)
+                {
+                    inSymbol = false;
+                }
+                else if (!inString && !inSymbol && DelimiterAdjustments.TryGetValue(token.Type, out var adjustment))
+                {
+                    parentheses += adjustment.paren;
+                    brackets += adjustment.bracket;
+                    braces += adjustment.brace;
+                }
             }
-            catch when (enableFallback)
-            {
-                // Fallback to legacy parser for incomplete expression detection
-                return new Parser(tokens, sourceText).IsIncompleteExpression();
-            }
+
+            // Expression is incomplete if any brackets are unmatched
+            return parentheses != 0 || brackets != 0 || braces != 0 || inString || inSymbol;
         }
         
         /// <summary>

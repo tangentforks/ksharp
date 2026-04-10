@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Reflection;
+using K3CSharp.Parsing;
 
 namespace K3CSharp
 {
@@ -1463,15 +1464,13 @@ namespace K3CSharp
                 // Fallback to parsing from text (deferred validation per spec)
                 if (preParsedTokens != null && preParsedTokens.Count > 0)
                 {
-                    var parser = new Parser(preParsedTokens, bodyText);
-                    ast = ParseFunctionBodyStatements(parser, bodyText);
+                    ast = ParserConfig.ParseWithConfig(preParsedTokens, bodyText);
                 }
                 else
                 {
                     var lexer = new Lexer(bodyText);
                     var tokens = lexer.Tokenize();
-                    var parser = new Parser(tokens, bodyText);
-                    ast = ParseFunctionBodyStatements(parser, bodyText);
+                    ast = ParserConfig.ParseWithConfig(tokens, bodyText);
                 }
                 
                 if (ast != null)
@@ -1588,256 +1587,6 @@ namespace K3CSharp
             }
         }
 
-        private ASTNode? ParseFunctionBodyStatements(Parser parser, string bodyText)
-        {
-            // For function bodies, we need to handle multiple statements separated by semicolons or newlines
-            // The main parser.Parse() method should handle this correctly for function bodies
-            try
-            {
-                return parser.Parse();
-            }
-            catch (Exception)
-            {
-                // If parsing fails, it might be due to nested function definitions
-                // Let's try a more robust approach by parsing the function body manually
-                return ParseFunctionBodyManually(bodyText);
-            }
-        }
-        
-        private ASTNode? ParseFunctionBodyManually(string bodyText)
-        {
-            // Manual parsing for function bodies with nested functions
-            // This is a simplified version that focuses on the core issue
-            var lexer = new Lexer(bodyText);
-            var tokens = lexer.Tokenize();
-            var statements = new List<ASTNode>();
-            
-            int current = 0;
-            while (current < tokens.Count)
-            {
-                var token = tokens[current];
-                
-                // Skip whitespace and newlines
-                if (token.Type == TokenType.NEWLINE || token.Type == TokenType.SEMICOLON)
-                {
-                    current++;
-                    continue;
-                }
-                
-                // Check for assignment: variable : expression
-                if (token.Type == TokenType.SYMBOL && current + 1 < tokens.Count && tokens[current + 1].Type == TokenType.ASSIGNMENT)
-                {
-                    var varName = token.Lexeme;
-                    current += 2; // Skip variable and assignment
-                    
-                    // Parse the right side of the assignment
-                    var rightSide = ParseRightSide(tokens, ref current);
-                    
-                    if (rightSide != null)
-                    {
-                        var assignment = ASTNode.MakeAssignment(varName, rightSide);
-                        statements.Add(assignment);
-                    }
-                }
-                else
-                {
-                    // For now, just skip unknown tokens to avoid crashes
-                    current++;
-                }
-            }
-            
-            // Create a block node for the function body
-            var block = new ASTNode(ASTNodeType.Block);
-            foreach (var statement in statements)
-            {
-                block.Children.Add(statement);
-            }
-            
-            return block;
-        }
-        
-        private ASTNode? ParseRightSide(List<Token> tokens, ref int current)
-        {
-            if (current >= tokens.Count) return null;
-            
-            var token = tokens[current];
-            
-            // Check for function definition: {[params] body}
-            if (token.Type == TokenType.LEFT_BRACE)
-            {
-                return ParseFunctionDefinitionFromTokens(tokens, ref current);
-            }
-            
-            // Parse as regular expression
-            return ParseExpressionFromTokens(tokens, ref current);
-        }
-        
-        private ASTNode? ParseFunctionDefinitionFromTokens(List<Token> tokens, ref int current)
-        {
-            // Parse function definition: {[params] body}
-            if (current >= tokens.Count || tokens[current].Type != TokenType.LEFT_BRACE)
-                return null;
-                
-            current++; // Skip LEFT_BRACE
-            
-            var parameters = new List<string>();
-            
-            // Check for parameter list
-            if (current < tokens.Count && tokens[current].Type == TokenType.LEFT_BRACKET)
-            {
-                current++; // Skip LEFT_BRACKET
-                
-                // Parse parameters
-                while (current < tokens.Count && tokens[current].Type != TokenType.RIGHT_BRACKET)
-                {
-                    if (tokens[current].Type == TokenType.IDENTIFIER)
-                    {
-                        parameters.Add(tokens[current].Lexeme);
-                    }
-                    current++;
-                    
-                    // Skip semicolons between parameters
-                    if (current < tokens.Count && tokens[current].Type == TokenType.SEMICOLON)
-                    {
-                        current++;
-                    }
-                }
-                
-                if (current < tokens.Count && tokens[current].Type == TokenType.RIGHT_BRACKET)
-                {
-                    current++; // Skip RIGHT_BRACKET
-                }
-            }
-            
-            // Parse function body (everything until RIGHT_BRACE)
-            var bodyStart = current;
-            var braceLevel = 1;
-            
-            while (current < tokens.Count && braceLevel > 0)
-            {
-                if (tokens[current].Type == TokenType.LEFT_BRACE)
-                    braceLevel++;
-                else if (tokens[current].Type == TokenType.RIGHT_BRACE)
-                    braceLevel--;
-                    
-                if (braceLevel > 0)
-                    current++;
-            }
-            
-            if (braceLevel == 0)
-            {
-                current--; // Back up to the RIGHT_BRACE
-                
-                // Extract body tokens
-                var bodyTokens = new List<Token>();
-                for (int i = bodyStart; i < current; i++)
-                {
-                    bodyTokens.Add(tokens[i]);
-                }
-                
-                current++; // Skip the RIGHT_BRACE
-                
-                // Create function body text
-                var bodyText = string.Join(" ", bodyTokens.Select(t => t.Lexeme));
-                
-                // Create function value
-                var functionValue = new FunctionValue(bodyText, parameters, bodyTokens);
-                
-                // Create function AST node
-                var functionNode = new ASTNode(ASTNodeType.Function);
-                functionNode.Value = functionValue;
-                functionNode.Parameters = parameters;
-                
-                return functionNode;
-            }
-            
-            return null;
-        }
-        
-        private ASTNode? ParseExpressionFromTokens(List<Token> tokens, ref int current)
-        {
-            // Simple expression parsing - this is a simplified version
-            // In a full implementation, this would be more sophisticated
-            if (current >= tokens.Count) return null;
-            
-            var token = tokens[current];
-            
-            // Handle literals
-            if (token.Type == TokenType.INTEGER || token.Type == TokenType.FLOAT || token.Type == TokenType.SYMBOL)
-            {
-                current++;
-                return ASTNode.MakeLiteral(CreateK3Value(token));
-            }
-            
-            // Handle function calls: variable . argument (dot-apply)
-            if (token.Type == TokenType.SYMBOL && current + 2 < tokens.Count && tokens[current + 1].Type == TokenType.DOT_APPLY)
-            {
-                var funcName = token.Lexeme;
-                var argToken = tokens[current + 2];
-                
-                // Check if the next token could be an argument
-                if (IsArgumentToken(argToken))
-                {
-                    current += 3; // Skip function, dot, and argument
-                    
-                    var funcVar = ASTNode.MakeVariable(funcName);
-                    var argValue = ASTNode.MakeLiteral(CreateK3Value(argToken));
-                    
-                    var funcCall = new ASTNode(ASTNodeType.FunctionCall);
-                    funcCall.Children.Add(funcVar);
-                    funcCall.Children.Add(argValue);
-                    
-                    return funcCall;
-                }
-            }
-            
-            // Handle function calls: variable argument (space-separated)
-            if (token.Type == TokenType.SYMBOL && current + 1 < tokens.Count)
-            {
-                var funcName = token.Lexeme;
-                var argToken = tokens[current + 1];
-                
-                // Check if the next token could be an argument
-                if (IsArgumentToken(argToken))
-                {
-                    current += 2;
-                    
-                    var funcVar = ASTNode.MakeVariable(funcName);
-                    var argValue = ASTNode.MakeLiteral(CreateK3Value(argToken));
-                    
-                    var funcCall = new ASTNode(ASTNodeType.FunctionCall);
-                    funcCall.Children.Add(funcVar);
-                    funcCall.Children.Add(argValue);
-                    
-                    return funcCall;
-                }
-            }
-            
-            // Skip unknown tokens
-            current++;
-            return null;
-        }
-        
-        private bool IsArgumentToken(Token token)
-        {
-            return token.Type == TokenType.INTEGER || token.Type == TokenType.FLOAT || 
-                   token.Type == TokenType.SYMBOL;
-        }
-        
-        private K3Value CreateK3Value(Token token)
-        {
-            switch (token.Type)
-            {
-                case TokenType.INTEGER:
-                    return new IntegerValue(int.Parse(token.Lexeme));
-                case TokenType.FLOAT:
-                    return new FloatValue(double.Parse(token.Lexeme));
-                case TokenType.SYMBOL:
-                    return new SymbolValue(token.Lexeme);
-                default:
-                    return new NullValue();
-            }
-        }
 
         public K3Value CallVariableFunction(string functionName, List<K3Value> arguments)
         {
@@ -3304,13 +3053,12 @@ namespace K3CSharp
         {
             // Execute the string expression using dot execute
             // This evaluates the expression in the current variable context
-            
+
             try
             {
                 var lexer = new Lexer(expression);
                 var tokens = lexer.Tokenize();
-                var parser = new Parser(tokens, expression);
-                var ast = parser.Parse();
+                var ast = ParserConfig.ParseWithConfig(tokens, expression);
                 if (ast != null)
                 {
                     return Evaluate(ast) ?? new NullValue();

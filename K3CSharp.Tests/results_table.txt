@@ -553,7 +553,7 @@ world"       │                      ║
 ║ dyadic_plus_dot_apply.k                            │ (+) . (3; 5)  // Dyadic addition with dot-apply notation │ 8                    │                      ║
 ║ empty_brackets_dictionary.k                        │ d: .((`a;1);(`b;2))  │ ()                   │ 1 2                  ║
 ║ empty_brackets_vector.k                            │ v: 1 2 3 4           │ ()                   │ 1 2 3 4              ║
-║ format_braces_complex_expressions.k                │ sum:{[a;b] a+b}      │ 14 20 10             │                      ║
+║ format_braces_complex_expressions.k                │ sum:{[a;b] a+b}      │ Error: Error ev...   │ 14 20 10             ║
 ║ format_float_precision_complex_mixed.k             │ 10.3$(1.234;2.567;3.890;4.123) │ ("     1.234";"...   │                      ║
 ║ format_float_vector.k                              │ 0.0$(1;2.5;3.14;42)  │ (,"1";,"2";,"3"...   │                      ║
 ║ format_int_vector.k                                │ 0$(1;2.5;3.14;42)    │ ("";"";"";"")        │                      ║
@@ -563,8 +563,8 @@ world"       │                      ║
 ║ form_0_float_vector.k                              │ 0.0$("3.14";"1e48";"1.4e-27") │ 3.14 1e+048 1.4...   │                      ║
 ║ form_symbol_string.k                               │ `$"abc"              │ `abc                 │                      ║
 ║ form_symbol_vector.k                               │ `$("abc";"de";"f")   │ `abc`de`f            │                      ║
-║ form_braces_string_new.k                           │ {}$"{y*z+x}"         │ {y*z+x}              │                      ║
-║ form_braces_complex_new.k                          │ {}$("{y*z+x}";"{[t;a;v;s] s+(v*t)+.5*a*t*t}") │ ({y*z+x};{[t;a;...   │                      ║
+║ form_braces_string_new.k                           │ {}$"{y*z+x}"         │ {y * z + x}          │                      ║
+║ form_braces_complex_new.k                          │ {}$("{y*z+x}";"{[t;a;v;s] s+(v*t)+.5*a*t*t}") │ ({y * z + x};{[...   │ ({y * z + x};{[...   ║
 ║ format_string_pad_left.k                           │ 10$"hello"           │ "     hello"         │                      ║
 ║ format_string_pad_right.k                          │ -10$"test"           │ "test      "         │                      ║
 ║ format_vector_int.k                                │ 0$(1;2;3)            │ ("";"";"")           │                      ║
@@ -870,7 +870,7 @@ world"       │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 826/864 tests passed (95.6%)                                                                               ║
+║ SUMMARY: 824/864 tests passed (95.4%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -945,6 +945,16 @@ Test: empty_brackets_vector.k
 Input: v: 1 2 3 4
 Expected: 1 2 3 4
 Actual: ()
+──────────────────────────────────────────────────────────────────────────
+Test: format_braces_complex_expressions.k
+Input: sum:{[a;b] a+b}
+Expected: 14 20 10
+Actual: Error: Error evaluating string expression 'sum[3;4]*2': Index operation requires dictionary or vector
+──────────────────────────────────────────────────────────────────────────
+Test: form_braces_complex_new.k
+Input: {}$("{y*z+x}";"{[t;a;v;s] s+(v*t)+.5*a*t*t}")
+Expected: ({y * z + x};{[t;a;v;s] s + (v * t)+.5 * a * t * t})
+Actual: ({y * z + x};{[t;a;v;s] s + (v * t)+ . 5 * a * t * t})
 ──────────────────────────────────────────────────────────────────────────
 Test: k_tree_current_branch.k
 Input: _d

@@ -62,7 +62,7 @@ namespace K3CSharp.Parsing
         {
             this.tokens = tokens;
             this.BuildParseTree = buildParseTree;
-            this.PureLRSMode = false; // Default to Safe LRS mode
+            this.PureLRSMode = true; // Default to Pure LRS mode
             this.expressionParser = new LRSExpressionParser(tokens);
             this.dyadicParser = new LRSDyadicParser(tokens, this);
             this.monadicParser = new LRSMonadicParser(this);

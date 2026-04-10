@@ -1705,10 +1705,9 @@ namespace K3CSharp.Tests
 
                 ("form_symbol_vector.k", "`abc`de`f"),
 
-                ("form_braces_string_new.k", "{y*z+x}"),
+                ("form_braces_string_new.k", "{y * z + x}"),
 
-                ("form_braces_complex_new.k", "({y*z+x};{[t;a;v;s] s+(v*t)+.5*a*t*t})"),
-
+                ("form_braces_complex_new.k", "({y * z + x};{[t;a;v;s] s + (v * t)+.5 * a * t * t})"),
                 ("format_string_pad_left.k", "\"     hello\""),
 
                 ("format_string_pad_right.k", "\"test      \""),
@@ -2670,8 +2669,8 @@ namespace K3CSharp.Tests
                             var checkLexer = new Lexer(accumulatedLine);
                             var checkTokens = checkLexer.Tokenize();
 
-                            // Use legacy parser for incomplete expression check for all tests during LRS debugging
-                            bool isIncomplete = new Parser(checkTokens, accumulatedLine).IsIncompleteExpression();
+                            // Use configured parser (LRS or legacy) for incomplete expression check
+                            bool isIncomplete = ParserConfig.IsIncompleteExpressionWithConfig(checkTokens, accumulatedLine);
 
                             if (isIncomplete)
                             {
