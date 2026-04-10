@@ -254,7 +254,7 @@ namespace K3CSharp.Parsing
                 TokenType.INTEGER or TokenType.LONG or TokenType.FLOAT or 
                 TokenType.CHARACTER or TokenType.CHARACTER_VECTOR or 
                 TokenType.SYMBOL or TokenType.IDENTIFIER or TokenType.NULL or
-                TokenType.SS or TokenType.TIME => true,
+                TokenType.TIME => true,
                 _ => false
             };
         }

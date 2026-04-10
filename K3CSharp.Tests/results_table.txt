@@ -466,7 +466,7 @@ world"       │                      ║
 ║ test_monadic_colon.k                               │ : 42                 │ 42                   │                      ║
 ║ test_sm_basic.k                                    │ `foo _sm `foo        │ 1                    │                      ║
 ║ test_sm_simple.k                                   │ `a _sm `a            │ 1                    │                      ║
-║ test_ss_basic.k                                    │ "hello world" _ss "world" │ ("hello world";...   │ ,6                   ║
+║ test_ss_basic.k                                    │ "hello world" _ss "world" │ ,6                   │                      ║
 ║ statement_assignment_basic.k                       │ a: 42                │                      │                      ║
 ║ statement_assignment_inline.k                      │ 1 + a: 42            │ 43                   │                      ║
 ║ statement_conditional_basic.k                      │ :[1;2;3]             │ 2                    │                      ║
@@ -876,7 +876,7 @@ world"       │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 842/870 tests passed (96.8%)                                                                               ║
+║ SUMMARY: 843/870 tests passed (96.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -896,11 +896,6 @@ Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: Error: Function execution error: Function execution error: Assignment requires a variable name on the left side, but got IntegerValue with value 100
-──────────────────────────────────────────────────────────────────────────
-Test: test_ss_basic.k
-Input: "hello world" _ss "world"
-Expected: ,6
-Actual: ("hello world";`_ss;"world")
 ──────────────────────────────────────────────────────────────────────────
 Test: io_read_basic.k
 Input: 0:`test
