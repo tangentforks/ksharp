@@ -1,1 +1,1 @@
-`test 6:,"ABC"
+`test_io_write_bytes_basic 6:,"ABC"

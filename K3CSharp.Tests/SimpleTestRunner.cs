@@ -1485,9 +1485,9 @@ namespace K3CSharp.Tests
 
                 ("io_append_multiple.k", ""),
 
-                ("io_read_bytes_basic.k", "hello"),
+                ("io_read_bytes_basic.k", "\"\\357\\273\\277hello\\r\\n\""), // \357\273\277 is the BOM
 
-                ("io_read_bytes_empty.k", "\"\""),
+                ("io_read_bytes_empty.k", "\"\\357\\273\\277\""), // \357\273\277 is the BOM
 
                 ("io_write_bytes_basic.k", ""),
 

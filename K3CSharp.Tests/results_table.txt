@@ -300,7 +300,7 @@ world"       │                      ║
 ║ io_read_symbol.k                                   │ 2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\symbol.l" │ `helllo              │                      ║
 ║ io_read_intvec.k                                   │ 2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\intvec.l" │ 5 6 7                │                      ║
 ║ io_read_debug.k                                    │ 2: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test.l" │ 123456               │                      ║
-║ io_write_int.k                                     │ "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test_write.l" 1: 42 │                      │                      ║
+║ io_write_int.k                                     │ "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test_io_write_int.l" 1: 42 │                      │                      ║
 ║ io_roundtrip.k                                     │ "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\test_roundtrip.l" 1: (1;2.5;"hello") │ (1;2.5;"hello")      │                      ║
 ║ io_monadic_1_int_vector.k                          │ 1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\intvec.l" │ 5 6 7                │                      ║
 ║ io_monadic_1_float_vector.k                        │ 1: "T:\\_src\\github.com\\ERufian\\ksharp\\TestFiles\\float.l" │ 0i                   │                      ║
@@ -475,16 +475,16 @@ world"       │                      ║
 ║ semicolon_vars_test.k                              │ a: 10                │                      │                      ║
 ║ apply_and_assign_simple.k                          │ i:0;i+:1;i           │ 1                    │                      ║
 ║ apply_and_assign_multiline.k                       │ i:0                  │ 1                    │                      ║
-║ io_read_basic.k                                    │ 0:`test              │ ,"0 1 2 255"         │ ("line1";"line2...   ║
-║ io_write_basic.k                                   │ `testW 0: ("line1";"line2";"line3");0:`testW │ ("line1";"line2...   │                      ║
-║ io_append_simple.k                                 │ `testfile 5: "hello" │                      │                      ║
-║ io_append_basic.k                                  │ `test 5: "hello"     │                      │                      ║
-║ io_append_multiple.k                               │ `test 5: "hello"; `test 5: "world"; `test 5: 1 2 3 │                      │                      ║
-║ io_read_bytes_basic.k                              │ `test 0:,"hello";6:`test │ "\357\273\277he...   │ hello                ║
-║ io_read_bytes_empty.k                              │ `empty 0:(); 6:`empty │ "\357\273\277\r\n"   │ ""                   ║
-║ io_write_bytes_basic.k                             │ `test 6:,"ABC"       │                      │                      ║
-║ io_write_bytes_overwrite.k                         │ `test 6:,"ABC"; `test 6:,"XYZ" │                      │                      ║
-║ io_write_bytes_binary.k                            │ `test 6:(0 1 2 255)  │                      │                      ║
+║ io_read_basic.k                                    │ 0:`test_lines        │ ("line1";"line2...   │                      ║
+║ io_write_basic.k                                   │ `test_io_write_basic 0: ("line1";"line2";"line3");0:`test_io_write_basic │ ("line1";"line2...   │                      ║
+║ io_append_simple.k                                 │ `testfile_io_append_simple 0: "hello"; `testfile_io_append_simple 5: " world" │                      │                      ║
+║ io_append_basic.k                                  │ `test_io_append_basic 5: "hello" │                      │                      ║
+║ io_append_multiple.k                               │ `test_io_append_multiple 0: "hello "; `test_io_append_multiple 5: "world "; `test_io_append_multiple 5: 1 2 3 │                      │                      ║
+║ io_read_bytes_basic.k                              │ `test_io_read_bytes_basic 0:,"hello";6:`test_io_read_bytes_basic │ "\357\273\277he...   │                      ║
+║ io_read_bytes_empty.k                              │ 6:`empty             │ "\357\273\277"       │                      ║
+║ io_write_bytes_basic.k                             │ `test_io_write_bytes_basic 6:,"ABC" │                      │                      ║
+║ io_write_bytes_overwrite.k                         │ `test_io_write_bytes_overwrite 6:,"ABC"; `test_io_write_bytes_overwrite 6:,"XYZ" │                      │                      ║
+║ io_write_bytes_binary.k                            │ `test_io_write_bytes_binary 6:(0 1 2 255) │                      │                      ║
 ║ search_in_basic.k                                  │ 4 _in 1 2 3 4 5      │ 1                    │                      ║
 ║ search_in_notfound.k                               │ 6 _in 1 2 3 4 5      │ 0                    │                      ║
 ║ search_bin_basic.k                                 │ 3 4 5 6 _bin 4       │ 1                    │                      ║
@@ -876,7 +876,7 @@ world"       │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 843/870 tests passed (96.9%)                                                                               ║
+║ SUMMARY: 846/870 tests passed (97.2%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -896,21 +896,6 @@ Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: Error: Function execution error: Function execution error: Assignment requires a variable name on the left side, but got IntegerValue with value 100
-──────────────────────────────────────────────────────────────────────────
-Test: io_read_basic.k
-Input: 0:`test
-Expected: ("line1";"line2";"line3")
-Actual: ,"0 1 2 255"
-──────────────────────────────────────────────────────────────────────────
-Test: io_read_bytes_basic.k
-Input: `test 0:,"hello";6:`test
-Expected: hello
-Actual: "\357\273\277hello\r\n"
-──────────────────────────────────────────────────────────────────────────
-Test: io_read_bytes_empty.k
-Input: `empty 0:(); 6:`empty
-Expected: ""
-Actual: "\357\273\277\r\n"
 ──────────────────────────────────────────────────────────────────────────
 Test: format_braces_complex_expressions.k
 Input: sum:{[a;b] a+b}
