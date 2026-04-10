@@ -504,6 +504,12 @@ namespace K3CSharp
                 return new SymbolValue(variableName);
             }
             
+            // Check if this is a niladic system variable (e.g., _t, _d, _T)
+            if (VerbRegistry.IsSystemVariable(variableName))
+            {
+                return EvaluateVerb(variableName, Array.Empty<K3Value>());
+            }
+            
             // Check parent evaluator (for nested function calls)
             if (parentEvaluator != null)
             {

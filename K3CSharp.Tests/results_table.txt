@@ -434,7 +434,7 @@ world"       │                      ║
 ║ format_braces_function_calls.k                     │ sum:{[a;b] a+b}      │ 5 20 12              │                      ║
 ║ format_braces_nested_function_calls.k              │ sum:{[a;b] a+b}      │ 5 8 25               │                      ║
 ║ log.k                                              │ _log 10              │ 2.302585             │                      ║
-║ time_t.k                                           │ r:_t                 │ Error: Unsuppor...   │ .((`type;1;);(`...   ║
+║ time_t.k                                           │ r:_t                 │ .((`type;1;);(`...   │                      ║
 ║ rand_draw_select.k                                 │ r:10 _draw 4; .((`type;4:r);(`shape;^r)) │ .((`type;-1;);(...   │                      ║
 ║ rand_draw_deal.k                                   │ r:4 _draw -4; .((`type;4:r);(`shape;^r);(`allitemsunique;(#r)=#?r)) │ .((`type;-1;);(...   │                      ║
 ║ rand_draw_probability.k                            │ r:10 _draw 0; .((`type;4:r);(`shape;^r)) │ .((`type;-2;);(...   │                      ║
@@ -870,7 +870,7 @@ world"       │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 826/864 tests passed (95.6%)                                                                               ║
+║ SUMMARY: 827/864 tests passed (95.7%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -890,11 +890,6 @@ Test: variable_scoping_global_assignment.k
 Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: Error: Function execution error: Function execution error: Assignment requires a variable name on the left side, but got IntegerValue with value 100
-──────────────────────────────────────────────────────────────────────────
-Test: time_t.k
-Input: r:_t
-Expected: .((`type;1;);(`shape;!0;))
-Actual: Error: Unsupported atomic token type: TIME(_t)
 ──────────────────────────────────────────────────────────────────────────
 Test: test_ss_basic.k
 Input: "hello world" _ss "world"

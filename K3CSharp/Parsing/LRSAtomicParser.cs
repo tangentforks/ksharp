@@ -39,6 +39,7 @@ namespace K3CSharp.Parsing
                 TokenType.IDENTIFIER => ParseIdentifier(token, parser),
                 TokenType.NULL => ParseNull(token),
                 TokenType.SS => ParseSystemVerb(token),
+                TokenType.TIME => ParseSystemVariable(token, "_t"),
                 _ => throw new Exception($"Unsupported atomic token type: {token.Type}({token.Lexeme})")
             };
         }
@@ -196,6 +197,18 @@ namespace K3CSharp.Parsing
         }
 
         /// <summary>
+        /// Parse niladic system variable token (e.g., _t) as a Variable node
+        /// so the evaluator routes it through EvaluateVerb
+        /// </summary>
+        private static ASTNode ParseSystemVariable(Token token, string verbName)
+        {
+            var node = new ASTNode(ASTNodeType.Variable);
+            node.Value = new SymbolValue(verbName);
+            node.Children.Add(ASTNode.MakeLiteral(new SymbolValue("system")));
+            return node;
+        }
+
+        /// <summary>
         /// Parse identifier token (variable)
         /// Uses verb-agnostic system function detection
         /// </summary>
@@ -241,7 +254,7 @@ namespace K3CSharp.Parsing
                 TokenType.INTEGER or TokenType.LONG or TokenType.FLOAT or 
                 TokenType.CHARACTER or TokenType.CHARACTER_VECTOR or 
                 TokenType.SYMBOL or TokenType.IDENTIFIER or TokenType.NULL or
-                TokenType.SS => true,
+                TokenType.SS or TokenType.TIME => true,
                 _ => false
             };
         }
