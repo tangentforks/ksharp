@@ -417,6 +417,32 @@ namespace K3CSharp.Parsing
                     return groupingResult;
             }
             
+            // Check for verb-immediate-left adverb patterns FIRST (highest priority)
+            // Pattern: verb'args or verb/args or verb\args
+            // This must be checked BEFORE any other parsing to prevent the expression from being parsed as a regular operation
+            if (tokens.Count >= 2)
+            {
+                var potentialVerb = tokens[0];
+                var potentialAdverb = tokens[1];
+                
+                // Check if first token is a verb and second token is a single-glyph adverb that supports verb-immediate-left
+                bool isVerb = VerbRegistry.IsVerbToken(potentialVerb.Type);
+                bool isAdverb = VerbRegistry.IsAdverbToken(potentialAdverb.Type);
+                bool isSingleGlyphAdverb = potentialAdverb.Type == TokenType.ADVERB_TICK || 
+                                          potentialAdverb.Type == TokenType.ADVERB_SLASH || 
+                                          potentialAdverb.Type == TokenType.ADVERB_BACKSLASH;
+                
+                if (isVerb && isAdverb && isSingleGlyphAdverb)
+                {
+                    // Use LRSAdverbParser to handle verb-immediate-left pattern
+                    var adverbParser = new LRSAdverbParser(tokens, BuildParseTree);
+                    int position = 1; // Start at adverb position
+                    var adverbResult = adverbParser.ParseVerbImmediateLeftAdverb(ref position);
+                    if (adverbResult != null)
+                        return adverbResult;
+                }
+            }
+            
             // Check for atomic-only sequences (implicit vector creation)
             if (tokens.Count > 1 && tokens.All(t => LRSAtomicParser.IsAtomicToken(t.Type)))
             {
@@ -1627,6 +1653,13 @@ namespace K3CSharp.Parsing
                 return LRSAtomicParser.ParseAtomicToken(token, this);
             }
             
+            // Handle verb tokens by creating symbol nodes
+            if (VerbRegistry.IsVerbToken(token.Type))
+            {
+                var verbName = VerbRegistry.TokenTypeToVerbName(token.Type);
+                return ASTNode.MakeLiteral(new SymbolValue(verbName));
+            }
+            
             // Handle operator symbols for parse trees
             return LRSAtomicParser.CreateOperatorNode(token.Type);
         }
@@ -1724,32 +1757,7 @@ namespace K3CSharp.Parsing
                     return ParseSimpleTwoGlyphAdverb(expressionTokens);
                 }
             }
-            
-            // Case 2: Simple single-glyph adverb with system verb
-            // Pattern: _ci' number number number
-            if (expressionTokens.Count >= 3)
-            {
-                // Check for pattern: _ci' 97 94 80 (or any number of arguments)
-                if (expressionTokens[0].Type == TokenType.CI &&
-                    expressionTokens[1].Type == TokenType.ADVERB_TICK)
-                {
-                    // Check that remaining tokens are arguments (integers, floats, etc.)
-                    bool hasValidArgs = true;
-                    for (int i = 2; i < expressionTokens.Count; i++)
-                    {
-                        if (!LRSAtomicParser.IsAtomicToken(expressionTokens[i].Type))
-                        {
-                            hasValidArgs = false;
-                            break;
-                        }
-                    }
-                    
-                    if (hasValidArgs)
-                    {
-                        return ParseSimpleSingleGlyphAdverb(expressionTokens);
-                    }
-                }
-            }
+
             
             // Case 3a: Disambiguating colon pattern - verb + colon + adverb
             // Pattern: verb:' args (e.g., #:' (1 2;3 4) for count each)
@@ -1848,17 +1856,34 @@ namespace K3CSharp.Parsing
                 }
             }
             
-            // Create adverb node: DyadicOp(adverb_symbol, verb, arguments)
+            // Check if verb is monadic to determine node structure
+            var verbName = VerbRegistry.TokenTypeToVerbName(verbToken.Type);
+            var verbInfo = VerbRegistry.GetVerb(verbName);
+            bool isMonadicVerb = verbInfo != null && verbInfo.SupportedArities.Contains(1) && verbInfo.SupportedArities.Length == 1;
+            
+            // Create adverb node with appropriate structure
             var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
             adverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbToken.Type));
             adverbNode.Children.Add(verbNode);
             
-            // Add dummy left argument (0) to match legacy parser AST structure
-            adverbNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(0)));
-            
-            if (argNode != null)
+            if (isMonadicVerb)
             {
-                adverbNode.Children.Add(argNode);
+                // Monadic verb: 2-child structure (verb, arguments)
+                if (argNode != null)
+                {
+                    adverbNode.Children.Add(argNode);
+                }
+            }
+            else
+            {
+                // Dyadic verb: 3-child structure (verb, left, right)
+                // Add dummy left argument (0) for now
+                adverbNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(0)));
+                
+                if (argNode != null)
+                {
+                    adverbNode.Children.Add(argNode);
+                }
             }
             
             return adverbNode;
@@ -2074,37 +2099,6 @@ namespace K3CSharp.Parsing
                 TokenType.ADVERB_BACKSLASH_COLON => "\\:",
                 _ => tokenType.ToString().ToLower()
             };
-        }
-        
-        /// <summary>
-        /// Parse simple single-glyph adverb (conservative approach)
-        /// </summary>
-        /// <param name="expressionTokens">Tokens to parse</param>
-        /// <returns>AST node for the adverb operation</returns>
-        private ASTNode ParseSimpleSingleGlyphAdverb(List<Token> expressionTokens)
-        {
-            // Create a DyadicOp node with the ' adverb
-            // The evaluator will handle this as a special case for adverb evaluation
-            var children = new List<ASTNode>();
-            
-            // Verb: _ci
-            var verbNode = ASTNode.MakeLiteral(new SymbolValue("_ci"));
-            children.Add(verbNode);
-            
-            // Add dummy left argument (0) to match legacy parser AST structure
-            children.Add(ASTNode.MakeLiteral(new IntegerValue(0)));
-            
-            // Arguments: 97 94 80
-            for (int i = 2; i < expressionTokens.Count; i++)
-            {
-                if (expressionTokens[i].Type == TokenType.INTEGER)
-                {
-                    children.Add(ASTNode.MakeLiteral(new IntegerValue(int.Parse(expressionTokens[i].Lexeme))));
-                }
-            }
-            
-            // Create DyadicOp with ' symbol - evaluator will handle this specially
-            return new ASTNode(ASTNodeType.DyadicOp, new SymbolValue("'"), children);
         }
         
         /// <summary>

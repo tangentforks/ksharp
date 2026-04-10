@@ -402,8 +402,8 @@ world"       │                      ║
 ║ monadic_format_float.k                             │ $3.14                │ "3.14"               │                      ║
 ║ monadic_format_vector_simple.k                     │ $1 2 3               │ (,"1";,"2";,"3")     │                      ║
 ║ format_integer.k                                   │ 0$1                  │ ""                   │                      ║
-║ ci_adverb_vector.k                                 │ _ci' 97 94 80        │ Error: Dyadic o...   │ "a^P"                ║
-║ adverb_each_count.k                                │ #:' (1 2 3;1 2 3 4 5; 1 2) │ Error: CreateNo...   │ 3 5 2                ║
+║ ci_adverb_vector.k                                 │ _ci' 97 94 80        │ "a^P"                │                      ║
+║ adverb_each_count.k                                │ #:' (1 2 3;1 2 3 4 5; 1 2) │                      │ 3 5 2                ║
 ║ format_float_numeric.k                             │ 0.0$1                │ ,"1"                 │                      ║
 ║ form_long.k                                        │ 0j$"42"              │ 42j                  │                      ║
 ║ format_numeric.k                                   │ 5$1                  │ "    1"              │                      ║
@@ -586,7 +586,7 @@ world"       │                      ║
 ║ k_tree_retrieve_absolute_foo.k                     │ .k.foo: 42           │ 42                   │                      ║
 ║ k_tree_retrieval_relative.k                        │ .k.foo: 42           │ 42                   │                      ║
 ║ k_tree_enumerate.k                                 │ !`                   │ `k`t                 │                      ║
-║ k_tree_current_branch.k                            │ _d                   │ `_d                  │ `.k                  ║
+║ k_tree_current_branch.k                            │ _d                   │ `DIRECTORY           │ `.k                  ║
 ║ k_tree_dictionary_indexing.k                       │ .k.foo: 42           │ 42                   │                      ║
 ║ k_tree_nested_indexing.k                           │ .k.dd: .((`a;1);(`b;2);(`c;3)) │ 2                    │                      ║
 ║ k_tree_verify_root.k                               │ .k                   │ .()                  │                      ║
@@ -818,7 +818,7 @@ world"       │                      ║
 ║ idioms_01_433_replace_last.k                       │ x:"abbccdefcdab"     │ "abbccdefcdat"       │                      ║
 ║ idioms_01_406_add_last.k                           │ x:1 2 3 4 5          │ 1 2 3 4 105          │                      ║
 ║ idioms_01_449_limit_between.k                      │ x:(58 9 37 84 39 99;60 30 45 97 77 35;49 87 82 79 8 30;46 61 20 51 12 34;31 51 29 35 17 89) // 5 6 _draw 100 │ (58 30 37 70 39...   │                      ║
-║ idioms_01_495_indices_occurrences.k                │ x:"abcdefgab"        │ Error: CreateNo...   │ 0 2 5 7              ║
+║ idioms_01_495_indices_occurrences.k                │ x:"abcdefgab"        │ ()                   │ 0 2 5 7              ║
 ║ idioms_01_504_replace_satisfying.k                 │ x:1 0 0 0 1 0 1 1 0 1 │ " bcd f  i "         │ " bcd f i "          ║
 ║ idioms_01_569_change_to_one.k                      │ y:10 5 7 12 20       │ 10 1 7 1 1           │                      ║
 ║ idioms_01_556_all_indices.k                        │ x:2 2 2 2            │ 0 1 2 3              │                      ║
@@ -870,7 +870,7 @@ world"       │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 824/864 tests passed (95.4%)                                                                               ║
+║ SUMMARY: 825/864 tests passed (95.5%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -891,15 +891,10 @@ Input: globalVar: 100  // Test global assignment from nested function
 Expected: 30
 Actual: Error: Function execution error: Function execution error: Assignment requires a variable name on the left side, but got IntegerValue with value 100
 ──────────────────────────────────────────────────────────────────────────
-Test: ci_adverb_vector.k
-Input: _ci' 97 94 80
-Expected: "a^P"
-Actual: Error: Dyadic operator must have exactly 2 children, got 5
-──────────────────────────────────────────────────────────────────────────
 Test: adverb_each_count.k
 Input: #:' (1 2 3;1 2 3 4 5; 1 2)
 Expected: 3 5 2
-Actual: Error: CreateNodeFromToken called with non-atomic token: COLON(:)
+Actual: 
 ──────────────────────────────────────────────────────────────────────────
 Test: time_t.k
 Input: r:_t
@@ -959,7 +954,7 @@ Actual: ({y * z + x};{[t;a;v;s] s + (v * t)+ . 5 * a * t * t})
 Test: k_tree_current_branch.k
 Input: _d
 Expected: `.k
-Actual: `_d
+Actual: `DIRECTORY
 ──────────────────────────────────────────────────────────────────────────
 Test: k_tree_verify_root.k
 Input: .k
@@ -1029,7 +1024,7 @@ Actual: Error: Amend with colon requires 4 arguments: .[d; i; :; y]
 Test: idioms_01_495_indices_occurrences.k
 Input: x:"abcdefgab"
 Expected: 0 2 5 7
-Actual: Error: CreateNodeFromToken called with non-atomic token: LIN(_lin)
+Actual: ()
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_504_replace_satisfying.k
 Input: x:1 0 0 0 1 0 1 1 0 1

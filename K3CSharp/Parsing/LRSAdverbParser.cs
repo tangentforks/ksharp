@@ -154,6 +154,34 @@ namespace K3CSharp.Parsing
             if (position >= tokens.Count)
                 return null;
 
+            // Check if all remaining tokens are atomic - if so, create a vector
+            bool allAtomic = true;
+            for (int i = position; i < tokens.Count; i++)
+            {
+                if (!LRSAtomicParser.IsAtomicToken(tokens[i].Type))
+                {
+                    allAtomic = false;
+                    break;
+                }
+            }
+
+            if (allAtomic && tokens.Count > position)
+            {
+                // Create a VectorValue from all remaining atomic tokens
+                var values = new List<K3Value>();
+                while (position < tokens.Count)
+                {
+                    var atomicNode = LRSAtomicParser.ParseAtomicToken(tokens[position]);
+                    if (atomicNode.Value is K3Value kv)
+                    {
+                        values.Add(kv);
+                    }
+                    position++;
+                }
+                var vectorValue = new VectorValue(values);
+                return ASTNode.MakeLiteral(vectorValue);
+            }
+
             // Use LRS expression processor to parse the argument
             var expressionProcessor = new LRSExpressionProcessor(tokens, buildParseTree);
             return expressionProcessor.ProcessExpression(ref position);
@@ -287,13 +315,17 @@ namespace K3CSharp.Parsing
         /// <summary>
         /// Create verb-immediate-left adverb node with correct arity
         /// Note: Uses DyadicOp for all adverbs (K3CSharp convention), evaluator handles arity
+        /// Evaluator expects 3 children for adverb operations: verb, leftArg, rightArg
+        /// For monadic each (verb-immediate-left), leftArg is 0
         /// </summary>
         private ASTNode CreateVerbImmediateLeftAdverbNode(Token adverbToken, ASTNode leftArg, ASTNode rightArg)
         {
             // Note: K3CSharp uses DyadicOp for all operators regardless of arity
             // The evaluator determines actual arity from the adverb type and verb characteristics
-            var children = new List<ASTNode> { leftArg, rightArg };
-            return new ASTNode(ASTNodeType.DyadicOp, new SymbolValue(adverbToken.Lexeme), children);
+            // Evaluator expects: children[0] = verb, children[1] = leftArg (0 for monadic), children[2] = rightArg
+            var zeroNode = ASTNode.MakeLiteral(new IntegerValue(0));
+            var children = new List<ASTNode> { leftArg, zeroNode, rightArg };
+            return new ASTNode(ASTNodeType.DyadicOp, new SymbolValue(GetAdverbSymbol(adverbToken.Type)), children);
         }
         
         /// <summary>
@@ -472,17 +504,18 @@ namespace K3CSharp.Parsing
         
         /// <summary>
         /// Get adverb symbol for token type
+        /// Returns evaluator-expected symbols (e.g., "each" not "'")
         /// </summary>
         private string GetAdverbSymbol(TokenType tokenType)
         {
             return tokenType switch
             {
-                TokenType.ADVERB_TICK => "'",
-                TokenType.ADVERB_SLASH => "/",
-                TokenType.ADVERB_BACKSLASH => "\\",
-                TokenType.ADVERB_SLASH_COLON => "/:",
-                TokenType.ADVERB_TICK_COLON => "':",
-                TokenType.ADVERB_BACKSLASH_COLON => "\\:",
+                TokenType.ADVERB_TICK => "each",
+                TokenType.ADVERB_SLASH => "over",
+                TokenType.ADVERB_BACKSLASH => "scan",
+                TokenType.ADVERB_SLASH_COLON => "each-right",
+                TokenType.ADVERB_TICK_COLON => "each-prior",
+                TokenType.ADVERB_BACKSLASH_COLON => "each-left",
                 _ => tokenType.ToString().ToLower()
             };
         }

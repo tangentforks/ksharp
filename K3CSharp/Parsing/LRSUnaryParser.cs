@@ -252,6 +252,26 @@ namespace K3CSharp.Parsing
                 throw new Exception($"Cannot process adverb token without parent parser: {token.Type}({token.Lexeme})");
             }
             
+            // Handle verb tokens by delegating to parent parser
+            if (VerbRegistry.IsVerbToken(token.Type))
+            {
+                if (parentParser != null)
+                {
+                    return parentParser.CreateNodeFromToken(token);
+                }
+                throw new Exception($"Cannot process verb token without parent parser: {token.Type}({token.Lexeme})");
+            }
+            
+            // Handle COLON tokens by delegating to parent parser (for disambiguating colon patterns)
+            if (token.Type == TokenType.COLON)
+            {
+                if (parentParser != null)
+                {
+                    return parentParser.CreateNodeFromToken(token);
+                }
+                throw new Exception($"Cannot process COLON token without parent parser: {token.Type}({token.Lexeme})");
+            }
+            
             if (!LRSAtomicParser.IsAtomicToken(token.Type))
             {
                 throw new Exception($"CreateNodeFromToken called with non-atomic token: {token.Type}({token.Lexeme})");

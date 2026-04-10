@@ -42,16 +42,17 @@ namespace K3CSharp.Parsing
                     break;
                 }
                 
-                // Stop at adverb boundaries when at base level, but NOT if preceded by a verb, function, or identifier (verb-immediate-left pattern)
+                // Stop at adverb boundaries when at base level, but NOT if preceded by a verb, function closing brace, or identifier (verb-immediate-left pattern)
                 if (delimiterDepth.IsAtBaseLevel() && VerbRegistry.IsAdverbToken(token.Type))
                 {
                     // Check if this adverb is preceded by a verb, function closing brace, or identifier in the collected expression tokens
                     // Use expressionTokens.Count to check if we have collected any tokens before this adverb
+                    var lastTokenType = expressionTokens.Count > 0 ? expressionTokens[expressionTokens.Count - 1].Type : TokenType.EOF;
                     bool precededByVerbOrFunction = expressionTokens.Count > 0 && 
-                        (VerbRegistry.IsVerbToken(expressionTokens[expressionTokens.Count - 1].Type) ||
-                         expressionTokens[expressionTokens.Count - 1].Type == TokenType.RIGHT_BRACE ||
-                         expressionTokens[expressionTokens.Count - 1].Type == TokenType.RIGHT_PAREN ||
-                         expressionTokens[expressionTokens.Count - 1].Type == TokenType.IDENTIFIER);
+                        (VerbRegistry.IsVerbToken(lastTokenType) ||
+                         lastTokenType == TokenType.RIGHT_BRACE ||
+                         lastTokenType == TokenType.RIGHT_PAREN ||
+                         lastTokenType == TokenType.IDENTIFIER);
                     
                     if (!precededByVerbOrFunction)
                     {

@@ -829,29 +829,6 @@ namespace K3CSharp
                 var argsVector = Evaluate(node.Children[1]);
                 
                 // Handle the ' adverb (each) - pass the verb and all arguments
-                // For _ci' pattern, we need to apply _ci to each argument individually
-                if (verbValue is SymbolValue verbSymbol && verbSymbol.Value == "_ci")
-                {
-                    // Apply _ci to each argument in the vector
-                    var result = new List<K3Value>();
-                    if (argsVector is VectorValue vector)
-                    {
-                        foreach (var arg in vector.Elements)
-                        {
-                            // Apply _ci to this argument
-                            var ciResult = Ci(arg);
-                            result.Add(ciResult);
-                        }
-                    }
-                    else
-                    {
-                        // Single argument, not a vector
-                        var ciResult = Ci(argsVector);
-                        result.Add(ciResult);
-                    }
-                    return new VectorValue(result);
-                }
-                
                 return HandleAdverbTick(verbValue, new IntegerValue(0), argsVector);
             }
 

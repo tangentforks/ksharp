@@ -289,92 +289,47 @@ namespace K3CSharp
 
         public K3Value HandleAdverbTick(K3Value verb, K3Value left, K3Value right)
         {
-            // Special handling for system verbs with each adverb
-            if (verb is SymbolValue verbSymbol)
+            // Determine verb arity using VerbRegistry
+            int arity = 2; // Default to dyadic
+            if (verb is SymbolValue vs)
             {
-                var verbName = verbSymbol.Value;
-                if (verbName == "_ci")
+                var verbName = vs.Value;
+                
+                // Special handling for system verbs with each adverb
+                // These are monadic system verbs - use monadic Each
+                if (verbName == "_ci" || verbName == "_ic")
                 {
-                    // Handle _ci' pattern - apply _ci to each element
-                    return HandleCiEach(left, right);
-                }
-                else if (verbName == "_ic")
-                {
-                    // Handle _ic' pattern - apply _ic to each element
-                    return HandleIcEach(left, right);
-                }
-                // Add more system verbs as needed
-            }
-            
-            // Check if this is a monadic verb with each (left is dummy value)
-            if (left is IntegerValue leftInt && leftInt.Value == 0 && right is VectorValue dataVec)
-            {
-                // This is a monadic verb with each - call 2-argument Each
-                return Each(verb, dataVec);
-            }
-            
-            // Default to 3-argument Each for dyadic verbs
-            return Each(verb, left, right);
-        }
-        
-        /// <summary>
-        /// Handle _ci' each adverb pattern
-        /// </summary>
-        /// <param name="left">Left argument (usually dummy value)</param>
-        /// <param name="right">Right argument (data vector)</param>
-        /// <returns>Vector of characters</returns>
-        private K3Value HandleCiEach(K3Value left, K3Value right)
-        {
-            // Apply _ci to each element in the right argument
-            if (right is VectorValue dataVec)
-            {
-                var result = new List<K3Value>();
-                foreach (var element in dataVec.Elements)
-                {
-                    // Apply _ci monadic operation
-                    var ciResult = Ci(element);
-                    result.Add(ciResult);
+                    return Each(verb, right ?? new IntegerValue(0));
                 }
                 
-                // If all results are characters, return as character vector
-                if (result.All(r => r is CharacterValue))
+                var verbInfo = VerbRegistry.GetVerb(verbName);
+                if (verbInfo != null)
                 {
-                    return new VectorValue(result);
-                }
-                else
-                {
-                    return new VectorValue(result);
+                    // Check if verb supports monadic and if we're in monadic context
+                    bool isMonadicContext = left is IntegerValue leftInt && leftInt.Value == 0;
+                    if (isMonadicContext && verbInfo.SupportedArities.Contains(1))
+                    {
+                        arity = 1;
+                    }
+                    else if (verbInfo.SupportedArities.Length == 1)
+                    {
+                        // Fixed arity verb
+                        arity = verbInfo.SupportedArities[0];
+                    }
                 }
             }
             
-            // If right is not a vector, apply _ci to it directly
-            return Ci(right);
-        }
-        
-        /// <summary>
-        /// Handle _ic' each adverb pattern
-        /// </summary>
-        /// <param name="left">Left argument (usually dummy value)</param>
-        /// <param name="right">Right argument (data vector)</param>
-        /// <returns>Vector of integers</returns>
-        private K3Value HandleIcEach(K3Value left, K3Value right)
-        {
-            // Apply _ic to each element in the right argument
-            if (right is VectorValue dataVec)
+            // Handle based on arity
+            if (arity == 1)
             {
-                var result = new List<K3Value>();
-                foreach (var element in dataVec.Elements)
-                {
-                    // Apply _ic monadic operation
-                    var icResult = Ic(element);
-                    result.Add(icResult);
-                }
-                
-                return new VectorValue(result);
+                // Monadic verb with each
+                return Each(verb, right ?? new IntegerValue(0));
             }
-            
-            // If right is not a vector, apply _ic to it directly
-            return Ic(right);
+            else
+            {
+                // Dyadic verb with each (or higher arity treated as dyadic for now)
+                return Each(verb, left, right ?? new IntegerValue(0));
+            }
         }
 
         private K3Value ApplyAdverbTick(K3Value verb, K3Value left, K3Value right)
