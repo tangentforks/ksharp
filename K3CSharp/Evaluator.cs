@@ -1044,6 +1044,31 @@ namespace K3CSharp
                     };
                 }
             }
+            else if (node.Children.Count == 1 &&
+                    (op.Value.ToString() == "each-right" || op.Value.ToString() == "each-left" ||
+                     op.Value.ToString() == "each-prior" || op.Value.ToString() == "each" ||
+                     op.Value.ToString() == "over" || op.Value.ToString() == "scan"))
+            {
+                // Nominalized modified verb: adverb node with only the verb child and no arguments.
+                // This occurs when a multi-adverb expression like ,/:\: builds the inner
+                // modified verb (,/:) as an argument to the outer adverb (\:).
+                // Evaluate the inner verb and wrap it in a FunctionValue encoding so
+                // EachLeft/EachRight can call it with each element as the reduced verb.
+                var innerVerbValue = Evaluate(node.Children[0]);
+                string adverbName = op.Value.ToString();
+                string innerVerbStr = innerVerbValue is SymbolValue sv ? sv.Value : innerVerbValue?.ToString() ?? "";
+                string encoded = adverbName switch
+                {
+                    "each-right" => $"EACH_RIGHT:{innerVerbStr}",
+                    "each-left"  => $"EACH_LEFT:{innerVerbStr}",
+                    "each-prior" => $"EACH_PRIOR:{innerVerbStr}",
+                    "each"       => $"EACH:{innerVerbStr}",
+                    "over"       => $"OVER:{innerVerbStr}",
+                    "scan"       => $"SCAN:{innerVerbStr}",
+                    _            => $"{adverbName}:{innerVerbStr}"
+                };
+                return new FunctionValue(encoded, new List<string> { "x", "y" });
+            }
             else if (node.Children.Count == 0)
             {
                 // Handle niladic operators

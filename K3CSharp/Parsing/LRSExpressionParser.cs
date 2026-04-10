@@ -57,6 +57,7 @@ namespace K3CSharp.Parsing
                     
                     bool precededByVerbOrFunction = expressionTokens.Count > 0 && 
                         (VerbRegistry.IsVerbToken(lastTokenType) ||
+                         VerbRegistry.IsAdverbToken(lastTokenType) ||
                          lastTokenType == TokenType.RIGHT_BRACE ||
                          lastTokenType == TokenType.RIGHT_PAREN ||
                          lastTokenType == TokenType.IDENTIFIER ||

@@ -115,67 +115,74 @@ namespace K3CSharp.Parsing
             {
                 if (IsDyadicOperatorDirect(tokens[i].Type) && IsAdverbToken(tokens[i + 1].Type))
                 {
+                    var verbToken = tokens[i];
+                    // Consume all consecutive adverbs after the verb
+                    int adverbEnd = i + 1;
+                    while (adverbEnd < tokens.Count && IsAdverbToken(tokens[adverbEnd].Type))
+                        adverbEnd++;
+                    // adverbEnd is now the index of the first non-adverb token after the verb
+                    var adverbTokens = tokens.GetRange(i + 1, adverbEnd - i - 1); // all adverb tokens
+                    var adverbToken = adverbTokens[adverbTokens.Count - 1]; // outermost adverb
                     // Extract the tokens for the adverb operation
                     // Everything before the verb is the left operand
                     var adverbLeftTokens = tokens.GetRange(0, i);
-                    // Everything after the adverb is the right operand
-                    var adverbRightTokens = tokens.GetRange(i + 2, tokens.Count - i - 2);
-                    var verbToken = tokens[i];
-                    var adverbToken = tokens[i + 1];
+                    // Everything after ALL adverbs is the right operand
+                    var adverbRightTokens = tokens.GetRange(adverbEnd, tokens.Count - adverbEnd);
                     
                     // Build parse tree for left and right operands
                     var leftNode = adverbLeftTokens.Count > 0 ? BuildParseTreeFromTokens(adverbLeftTokens) : null;
                     var rightNode = adverbRightTokens.Count > 0 ? BuildParseTreeFromTokens(adverbRightTokens) : null;
                     
-                    // Create verb node
+                    // Create base verb node
                     var verbNode = CreateNodeFromToken(verbToken);
                     if (verbNode == null)
                     {
                         throw new Exception($"Failed to create verb node from token: {verbToken.Type}({verbToken.Lexeme})");
                     }
                     
-                    // Create adverb node with the structure expected by the evaluator
-                    // The evaluator expects: DyadicOp(adverb_symbol, left, right)
-                    // For adverbs with verbs, we need to embed the verb info in the structure
-                    var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
+                    // Build nested verb node for multiple adverbs (one-adverb-at-a-time per spec).
+                    // For verb/:\: the innermost adverb (/:) wraps the base verb, producing a
+                    // modified verb node; the outermost adverb (\:) then wraps that.
+                    // innerVerbNode starts as the base verb and is wrapped left-to-right through
+                    // the adverb list (adverbTokens[0] is closest to verb, last is outermost).
+                    ASTNode innerVerbNode = verbNode;
+                    for (int a = 0; a < adverbTokens.Count - 1; a++)
+                    {
+                        // Wrap innerVerbNode with adverbTokens[a] to produce a modified verb
+                        var innerAdverbNode = new ASTNode(ASTNodeType.DyadicOp);
+                        innerAdverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbTokens[a].Type));
+                        innerAdverbNode.Children.Add(innerVerbNode);
+                        innerVerbNode = innerAdverbNode;
+                    }
                     
-                    // For the ' (each) adverb with dyadic verbs like +', the structure should be:
-                    // The verb becomes the "left" operand (evaluator extracts it)
-                    // The right operand is the actual right argument
-                    // If there's a left operand in the expression (e.g., 1 2 3 +' 4 5 6), 
-                    // we need a more complex structure
+                    // Create top-level adverb node with the structure expected by the evaluator
+                    var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
                     
                     if (leftNode != null && rightNode != null)
                     {
-                        // Both operands: e.g., (1 2 3) +' (4 5 6)
-                        // Create a 3-child structure for dyadic verb with each adverb
+                        // Both operands: e.g., (1 2 3) ,/:\: (4 5 6)
+                        // Create a 3-child structure: (outerAdverb, modifiedVerb, leftArg, rightArg)
                         adverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbToken.Type));
-                        // First child is the verb
-                        adverbNode.Children.Add(verbNode);
-                        // Second child is the left operand
+                        adverbNode.Children.Add(innerVerbNode);
                         adverbNode.Children.Add(leftNode);
-                        // Third child is the right operand
                         adverbNode.Children.Add(rightNode);
                     }
                     else if (rightNode != null)
                     {
-                        // Only right operand: e.g., +' (1 2 3) - unusual but handle it
                         adverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbToken.Type));
-                        adverbNode.Children.Add(verbNode);
+                        adverbNode.Children.Add(innerVerbNode);
                         adverbNode.Children.Add(rightNode);
                     }
                     else if (leftNode != null)
                     {
-                        // Only left operand: e.g., (1 2 3) +' - unusual but handle it
                         adverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbToken.Type));
-                        adverbNode.Children.Add(verbNode);
+                        adverbNode.Children.Add(innerVerbNode);
                         adverbNode.Children.Add(leftNode);
                     }
                     else
                     {
-                        // No operands - just the modified verb
                         adverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbToken.Type));
-                        adverbNode.Children.Add(verbNode);
+                        adverbNode.Children.Add(innerVerbNode);
                         adverbNode.Children.Add(ASTNode.MakeLiteral(new NullValue()));
                     }
                     

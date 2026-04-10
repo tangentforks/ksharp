@@ -759,10 +759,10 @@ world"       │                      ║
 ║ math_dot_vector_each_left.k                        │ (1 2) _dot\: (3 4;5 6) │ (8 10;16 20)         │                      ║
 ║ adverb_complex_vector_each_right.k                 │ 10 11 12 +/: ((1 2 3);(4 5 6);(7 8 9)) │ (11 13 15;14 16...   │                      ║
 ║ adverb_complex_matrix_each_right.k                 │ ((1 2 3);(4 5 6);(7 8 9)) +/: 10 11 12 │ ((11 12 13;14 1...   │                      ║
-║ adverb_nesting_join_each_left.k                    │ ((1 2 3);(4 5 6);(7 8 9)),/:\:((9 8 7);(6 5 4);(3 2 1)) │                      │ ((1 2 3 9 8 7;1...   ║
-║ adverb_complex_string_each_left.k                  │ (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),/:\:"  " │ Error: Unknown ...   │ ((("hello";"wor...   ║
+║ adverb_nesting_join_each_left.k                    │ ((1 2 3);(4 5 6);(7 8 9)),/:\:((9 8 7);(6 5 4);(3 2 1)) │ ((1 2 3 9 8 7;1...   │                      ║
+║ adverb_complex_string_each_left.k                  │ (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),/:\:"  " │ ((("hello";"wor...   │                      ║
 ║ join_each_left.k                                   │ (1 2 3),\: (4 5 6)   │ (1 4 5 6;2 4 5 ...   │                      ║
-║ test_nested_adverb.k                               │ 1 2 3 ,/:\: 4 5 6    │ Error: Unknown ...   │ ((1 4;1 5;1 6);...   ║
+║ test_nested_adverb.k                               │ 1 2 3 ,/:\: 4 5 6    │ ((1 4;1 5;1 6);...   │                      ║
 ║ math_lsq_non_square.k                              │ (7 8 9) _lsq (1 2 3;4 5 6) │ -1.0 2.0             │                      ║
 ║ math_lsq_high_rank.k                               │ (10 11 12 13) _lsq (1 2 3 4;2 3 4 5) │ -8.0 9.0             │                      ║
 ║ math_lsq_complex.k                                 │ (7.5 8.0 9.5) _lsq (1.5 2.0 3.0;4.5 5.5 6.0) │ 0.1232877 1.506849   │                      ║
@@ -870,7 +870,7 @@ world"       │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 829/864 tests passed (95.9%)                                                                               ║
+║ SUMMARY: 832/864 tests passed (96.3%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -950,21 +950,6 @@ Test: serialization_bd_anonymousfunction_random_3.k
 Input: _bd {[xyz] xy|3}
 Expected: "\001\000\000\000\025\000\000\000\n\000\000\000.k\000{[xyz] xy |3}\000"
 Actual: "\001\000\000\000\023\000\000\000\n\000\000\000\000{[xyz] xy |3}\000"
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_nesting_join_each_left.k
-Input: ((1 2 3);(4 5 6);(7 8 9)),/:\:((9 8 7);(6 5 4);(3 2 1))
-Expected: ((1 2 3 9 8 7;1 2 3 6 5 4;1 2 3 3 2 1);(4 5 6 9 8 7;4 5 6 6 5 4;4 5 6 3 2 1);(7 8 9 9 8 7;7 8 9 6 5 4;7 8 9 3 2 1))
-Actual: 
-──────────────────────────────────────────────────────────────────────────
-Test: adverb_complex_string_each_left.k
-Input: (("hello";"world.");("It's";"me";"ksharp.");("Have";"fun";"with";"me!")),/:\:"  "
-Expected: ((("hello";"world.";" ");("hello";"world.";" "));(("It's";"me";"ksharp.";" ");("It's";"me";"ksharp.";" "));(("Have";"fun";"with";"me!";" ");("Have";"fun";"with";"me!";" ")))
-Actual: Error: Unknown dyadic operator: each-right
-──────────────────────────────────────────────────────────────────────────
-Test: test_nested_adverb.k
-Input: 1 2 3 ,/:\: 4 5 6
-Expected: ((1 4;1 5;1 6);(2 4;2 5;2 6);(3 4;3 5;3 6))
-Actual: Error: Unknown dyadic operator: each-right
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_hint_system.k
 Input: 42 _sethint `uint
