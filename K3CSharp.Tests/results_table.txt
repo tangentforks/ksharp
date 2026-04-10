@@ -501,7 +501,7 @@ world"       │                      ║
 ║ format_pad_mixed_vector.k                          │ 10$(1;2;3)           │ ("         1";"...   │                      ║
 ║ format_pad_negative_mixed_vector.k                 │ -10$(1;2;3)          │ ("1         ";"...   │                      ║
 ║ vector_notation_empty.k                            │ ()                   │ ()                   │                      ║
-║ vector_notation_functions.k                        │ double: {[x] x * 2}  │ (({[x] x * 2};5...   │ 10 20 30             ║
+║ vector_notation_functions.k                        │ double: {[x] x * 2}  │ 10 20 30             │                      ║
 ║ vector_notation_mixed_types.k                      │ (42; 3.14; "hello"; `symbol) │ (42;3.14;"hello...   │                      ║
 ║ vector_notation_nested.k                           │ ((1 + 2); (3 + 4); (5 + 6)) │ 3 7 11               │                      ║
 ║ vector_notation_semicolon.k                        │ (3 + 4; 5 + 6; -20.45) │ (7;11;-20.45)        │                      ║
@@ -829,7 +829,7 @@ world"       │                      ║
 ║ idioms_01_509_remove_y.k                           │ x:"abcdeabc"         │ "bcdebc"             │                      ║
 ║ idioms_01_510_remove_blanks.k                      │ x:" bcde bc"         │ "bcdebc"             │                      ║
 ║ idioms_01_496_remove_punctuation.k                 │ x:"oh! no, stop it. you will?" │ Error: Undefine...   │ "oh no stop it ...   ║
-║ idioms_01_177_string_search.k                      │ x:"st"               │ ("indices of st...   │ 11 20 32             ║
+║ idioms_01_177_string_search.k                      │ x:"st"               │ 11 20 32             │                      ║
 ║ idioms_01_45_binary_representation.k               │ x:16                 │ 1 0 0 0 0            │                      ║
 ║ idioms_01_84_scalar_boolean.k                      │ x:1 0 0 1 1 1 0 1    │ 157                  │                      ║
 ║ idioms_01_129_arctangent.k                         │ x:_sqrt[3]           │ Error: Unsuppor...   │ 0.5235988            ║
@@ -870,7 +870,7 @@ world"       │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 827/864 tests passed (95.7%)                                                                               ║
+║ SUMMARY: 829/864 tests passed (95.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -910,11 +910,6 @@ Test: io_read_bytes_empty.k
 Input: `empty 0:(); 6:`empty
 Expected: ""
 Actual: "\357\273\277\r\n"
-──────────────────────────────────────────────────────────────────────────
-Test: vector_notation_functions.k
-Input: double: {[x] x * 2}
-Expected: 10 20 30
-Actual: (({[x] x * 2};5);({[x] x * 2};10);({[x] x * 2};15))
 ──────────────────────────────────────────────────────────────────────────
 Test: adverb_tick_colon_basic.k
 Input: -': 4 8 9 12 20
@@ -1025,11 +1020,6 @@ Test: idioms_01_496_remove_punctuation.k
 Input: x:"oh! no, stop it. you will?"
 Expected: "oh no stop it you will"
 Actual: Error: Undefined variable: dvl
-──────────────────────────────────────────────────────────────────────────
-Test: idioms_01_177_string_search.k
-Input: x:"st"
-Expected: 11 20 32
-Actual: ("indices of start of string x in string y";`_ss;"st")
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_01_129_arctangent.k
 Input: x:_sqrt[3]

@@ -1086,6 +1086,29 @@ namespace K3CSharp.Parsing
                 }
             }
                 
+            // Check for user-defined function application: identifier argument -> f x
+            // Pattern: IDENTIFIER followed by a non-assignment, non-adverb, non-bracket token
+            // f[args] goes through the bracket-indexing path below, not here
+            // Only applies when the identifier is NOT a known built-in verb token
+            if (expressionTokens.Count >= 2 &&
+                expressionTokens[0].Type == TokenType.IDENTIFIER &&
+                expressionTokens[1].Type != TokenType.COLON &&
+                expressionTokens[1].Type != TokenType.GLOBAL_ASSIGNMENT &&
+                expressionTokens[1].Type != TokenType.LEFT_BRACKET &&
+                !VerbRegistry.IsAdverbToken(expressionTokens[1].Type) &&
+                !VerbRegistry.IsVerbToken(expressionTokens[1].Type))
+            {
+                var funcNode = CreateNodeFromToken(expressionTokens[0]);
+                var argTokens = expressionTokens.Skip(1).ToList();
+                ASTNode? argNode = argTokens.Count == 1
+                    ? CreateNodeFromToken(argTokens[0])
+                    : EvaluateFromRight(argTokens);
+                if (funcNode != null && argNode != null)
+                {
+                    return ASTNode.MakeFunctionCall(funcNode, new System.Collections.Generic.List<ASTNode> { argNode });
+                }
+            }
+
             // Check for adverb operations (only if expression starts with adverb or contains clear adverb patterns)
             bool hasAdverbPattern = false;
             foreach (var token in expressionTokens)
@@ -2126,6 +2149,11 @@ namespace K3CSharp.Parsing
         private ASTNode? TryCreateImplicitVector(List<Token> tokens)
         {
             if (tokens.Count < 2)
+                return null;
+            
+            // IDENTIFIER as first token means function application (f x), not implicit vector
+            // Implicit vectors only consist of literal values: 1 2 3, `a`b`c, etc.
+            if (tokens[0].Type == TokenType.IDENTIFIER)
                 return null;
                 
             // Check if all tokens are atomic literals and collect them
