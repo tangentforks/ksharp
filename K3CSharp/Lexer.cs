@@ -350,8 +350,17 @@ namespace K3CSharp
                 }
                 else if (c == '.')
                 {
-                    tokens.Add(new Token(TokenType.DOT_APPLY, ".", position));
-                    Advance();
+                    // Check if this is a decimal number starting with '.' (e.g., .5)
+                    // If followed by a digit, parse it as a number
+                    if (position + 1 < input.Length && char.IsDigit(input[position + 1]))
+                    {
+                        tokens.Add(ReadNumber());
+                    }
+                    else
+                    {
+                        tokens.Add(new Token(TokenType.DOT_APPLY, ".", position));
+                        Advance();
+                    }
                 }
                 else if (c == ':')
                 {
