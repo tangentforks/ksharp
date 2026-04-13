@@ -2753,7 +2753,7 @@ namespace K3CSharp
             if (left is SymbolValue pathSym)
             {
                 var resolvedValue = GetVariableValuePublic(pathSym.Value);
-                if (resolvedValue != null)
+                if (resolvedValue != null && !(resolvedValue is NullValue))
                 {
                     left = resolvedValue;
                 }
@@ -2953,6 +2953,32 @@ namespace K3CSharp
                         arguments = new List<K3Value> { right ?? throw new ArgumentNullException(nameof(right)) };
                     }
                     return CallFunction(function, arguments);
+                }
+                else if (left is ProjectedFunctionValue projectedFunc)
+                {
+                    List<K3Value> arguments;
+                    if (right is VectorValue argVector)
+                    {
+                        arguments = new List<K3Value>(argVector.Elements);
+                    }
+                    else
+                    {
+                        arguments = new List<K3Value> { right ?? throw new ArgumentNullException(nameof(right)) };
+                    }
+                    return CallProjectedFunction(projectedFunc, arguments);
+                }
+                else if (left is AdverbProjectedFunctionValue adverbProjFunc)
+                {
+                    List<K3Value> arguments;
+                    if (right is VectorValue argVector)
+                    {
+                        arguments = new List<K3Value>(argVector.Elements);
+                    }
+                    else
+                    {
+                        arguments = new List<K3Value> { right ?? throw new ArgumentNullException(nameof(right)) };
+                    }
+                    return CallAdverbProjectedFunction(adverbProjFunc, arguments);
                 }
                 else if (left != null && left.Type == ValueType.Symbol)
                 {

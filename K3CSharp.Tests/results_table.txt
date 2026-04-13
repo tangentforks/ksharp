@@ -645,9 +645,9 @@ d[] │ 1 2                  │                      ║
 (.).((1 2 3); 0; f; 10) │ 11 2 3               │                      ║
 ║ amend_test_func_var.k                              │ f:{x+y}
 (.).((1 2 3); 0; f; 10) │ 11 2 3               │                      ║
-║ trap_dot_add.k                                     │ .[+;(1 2;3 4);:]     │ (1;"Dictionary ...   │ (0;4 6)              ║
+║ trap_dot_add.k                                     │ .[+;(1 2;3 4);:]     │ (0;4 6)              │                      ║
 ║ trap_dot_success.k                                 │ a:3 2 1
-.[@;(a;2 0);:] │ (1;"Dictionary ...   │ (0;1 3)              ║
+.[@;(a;2 0);:] │ (0;1 3)              │                      ║
 ║ amend_colon_direct.k                               │ .[1 2 3; 1; :; 99]   │ 1 99 3               │                      ║
 ║ amend_triadic_monadic.k                            │ .[1 2 3; 1; -:]      │ 1 -2 3               │                      ║
 ║ conditional_bracket_test.k                         │ :[1 < 2; "true"; "false"] │ "true"               │                      ║
@@ -664,10 +664,10 @@ d@_n │ 1 2                  │                      ║
 ║ dyadic_minus_bracket.k                             │ -[10; 3]             │ 7                    │                      ║
 ║ dyadic_multiply_bracket.k                          │ *[4; 6]              │ 24                   │                      ║
 ║ dyadic_plus_bracket.k                              │ +[3; 5]              │ 8                    │                      ║
-║ dyadic_divide_dot_apply.k                          │ (%) . (20; 4)        │ 20 4                 │ 5.0                  ║
-║ dyadic_minus_dot_apply.k                           │ (-) . (10; 3)        │ 10 3                 │ 7                    ║
-║ dyadic_multiply_dot_apply.k                        │ (*) . (4; 6)         │ 4 6                  │ 24                   ║
-║ dyadic_plus_dot_apply.k                            │ (+) . (3; 5)         │ 3 5                  │ 8                    ║
+║ dyadic_divide_dot_apply.k                          │ (%) . (20; 4)        │ 5.0                  │                      ║
+║ dyadic_minus_dot_apply.k                           │ (-) . (10; 3)        │ 7                    │                      ║
+║ dyadic_multiply_dot_apply.k                        │ (*) . (4; 6)         │ 24                   │                      ║
+║ dyadic_plus_dot_apply.k                            │ (+) . (3; 5)         │ 8                    │                      ║
 ║ empty_brackets_dictionary.k                        │ d: .((`a;1);(`b;2))
 d[] │ 1 2                  │                      ║
 ║ empty_brackets_vector.k                            │ v: 1 2 3 4
@@ -1108,7 +1108,7 @@ _eval (`",";,`a`b`c;(`",";,`d;`v)) │ `a`b`c`d`e`f         │                 
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 842/868 tests passed (97.0%)                                                                               ║
+║ SUMMARY: 848/868 tests passed (97.7%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -1136,37 +1136,6 @@ result5
 globalVar
 Expected: 30
 Actual: Error: Function execution error: Function execution error: Assignment requires a variable name on the left side, but got IntegerValue with value 100
-──────────────────────────────────────────────────────────────────────────
-Test: trap_dot_add.k
-Input: .[+;(1 2;3 4);:]
-Expected: (0;4 6)
-Actual: (1;"Dictionary key must be a symbol, got IntegerValue")
-──────────────────────────────────────────────────────────────────────────
-Test: trap_dot_success.k
-Input: a:3 2 1
-.[@;(a;2 0);:]
-Expected: (0;1 3)
-Actual: (1;"Dictionary key must be a symbol, got IntegerValue")
-──────────────────────────────────────────────────────────────────────────
-Test: dyadic_divide_dot_apply.k
-Input: (%) . (20; 4)
-Expected: 5.0
-Actual: 20 4
-──────────────────────────────────────────────────────────────────────────
-Test: dyadic_minus_dot_apply.k
-Input: (-) . (10; 3)
-Expected: 7
-Actual: 10 3
-──────────────────────────────────────────────────────────────────────────
-Test: dyadic_multiply_dot_apply.k
-Input: (*) . (4; 6)
-Expected: 24
-Actual: 4 6
-──────────────────────────────────────────────────────────────────────────
-Test: dyadic_plus_dot_apply.k
-Input: (+) . (3; 5)
-Expected: 8
-Actual: 3 5
 ──────────────────────────────────────────────────────────────────────────
 Test: format_braces_complex_expressions.k
 Input: sum:{[a;b] a+b}
