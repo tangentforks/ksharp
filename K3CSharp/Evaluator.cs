@@ -92,6 +92,36 @@ namespace K3CSharp
             return EvaluateNode(node) ?? new NullValue();
         }
 
+        /// <summary>
+        /// Evaluate a system variable (niladic getter like _d, _n, _t, etc.)
+        /// </summary>
+        private K3Value EvaluateSystemVariable(string name)
+        {
+            return name switch
+            {
+                "_d" => DirectoryFunction(new NullValue()),
+                "_n" => NullFunction(new NullValue()),
+                "_t" => TimeFunction(new NullValue()),
+                "_T" => TFunction(new NullValue()),
+                "_i" => IndexFunction(new NullValue()),
+                "_f" => FunctionFunction(new NullValue()),
+                "_s" => SpaceFunction(new NullValue()),
+                "_h" => HostFunction(new NullValue()),
+                "_p" => PortFunction(new NullValue()),
+                "_P" => ProcessIdFunction(new NullValue()),
+                "_w" => WhoFunction(new NullValue()),
+                "_u" => UserFunction(new NullValue()),
+                "_a" => AddressFunction(new NullValue()),
+                "_k" => VersionFunction(new NullValue()),
+                "_o" => OsFunction(new NullValue()),
+                "_c" => CoresFunction(new NullValue()),
+                "_r" => RamFunction(new NullValue()),
+                "_m" => MachineIdFunction(new NullValue()),
+                "_y" => StackFunction(new NullValue()),
+                _ => throw new Exception($"Unknown system variable: {name}")
+            };
+        }
+
         private K3Value? EvaluateNode(ASTNode? node)
         {
             if (node == null)
@@ -104,6 +134,13 @@ namespace K3CSharp
 
                 case ASTNodeType.Variable:
                     var name = node.Value is SymbolValue symbol ? symbol.Value : node.Value?.ToString() ?? "";
+                    // Strip leading backtick if present (symbol literals like `_d)
+                    var cleanName = name.StartsWith("`") ? name.Substring(1) : name;
+                    // Check if this is a system variable (like _d, _n, _t, etc.)
+                    if (VerbRegistry.IsSystemVariable(cleanName))
+                    {
+                        return EvaluateSystemVariable(cleanName);
+                    }
                     return GetVariable(name);
 
                 case ASTNodeType.Assignment:

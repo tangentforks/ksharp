@@ -326,6 +326,7 @@ namespace K3CSharp
                 TokenType.SHIFT => "_shift",
                 TokenType.LSQ => "_lsq",
                 TokenType.DIV => "_div",
+                TokenType.DIRECTORY => "_d",
                 TokenType.IN => "_in",
                 TokenType.BIN => "_bin",
                 TokenType.BINL => "_binl",

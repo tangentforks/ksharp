@@ -40,6 +40,7 @@ namespace K3CSharp.Parsing
                 TokenType.NULL => ParseNull(token),
                 TokenType.SS => ParseSystemVerb(token),
                 TokenType.TIME => ParseSystemVariable(token, "_t"),
+                TokenType.DIRECTORY => ParseSystemVariable(token, "_d"),
                 _ => throw new Exception($"Unsupported atomic token type: {token.Type}({token.Lexeme})")
             };
         }
@@ -293,8 +294,8 @@ namespace K3CSharp.Parsing
                 TokenType.DRAW => ASTNode.MakeLiteral(new SymbolValue("_draw")),
                 TokenType.GETENV => ASTNode.MakeLiteral(new SymbolValue("_getenv")),
                 TokenType.SIZE => ASTNode.MakeLiteral(new SymbolValue("_size")),
-                TokenType.DIRECTORY => ASTNode.MakeLiteral(new SymbolValue("_d")),
-                TokenType.TIME => ASTNode.MakeLiteral(new SymbolValue("_t")),
+                TokenType.DIRECTORY => ASTNode.MakeVariable("_d"),
+                TokenType.TIME => ASTNode.MakeVariable("_t"),
                 TokenType.EVAL => ASTNode.MakeLiteral(new SymbolValue("_eval")),
                 TokenType.PARSE => ASTNode.MakeLiteral(new SymbolValue("_parse")),
                 TokenType.GETHINT => ASTNode.MakeLiteral(new SymbolValue("_gethint")),
