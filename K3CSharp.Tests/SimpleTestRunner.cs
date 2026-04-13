@@ -2214,7 +2214,9 @@ namespace K3CSharp.Tests
 
                 ("ffi_assembly_load.k", "`._dotnet.System.String"),
 
-                ("ffi_type_marshalling.k", "`float`string`list"),
+                ("ffi_type_marshalling_float.k", "`float"),
+                ("ffi_type_marshalling_string.k", "`string"),
+                ("ffi_type_marshalling_list.k", "`list"),
 
 
 
@@ -2222,7 +2224,7 @@ namespace K3CSharp.Tests
 
 
 
-("ffi_constructor.k", ".((`real;2.0;);(`imag;3.0;))"),
+("ffi_constructor.k", ".((`real;2.0;);(`imag;3.0;);(`instance;1;);(`type;1;))"),
 
 
 

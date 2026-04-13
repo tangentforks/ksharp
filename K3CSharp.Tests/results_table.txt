@@ -916,11 +916,13 @@ while[i < 3; i: i + 1] │                      │                      ║
 ║ math_xor_vector.k                                  │ 1 2 3                │ 1 2 3                │                      ║
 ║ ffi_simple_assembly.k                              │ str:"System.Private.CoreLib" 2: `System.String; str │ `._dotnet.Syste...   │                      ║
 ║ ffi_assembly_load.k                                │ "System.Private.CoreLib" 2: `System.String │ `._dotnet.Syste...   │                      ║
-║ ffi_type_marshalling.k                             │ f:3.14159;f _sethint `float;s:"hello";s _sethint `string;l:1 2 3 4 5;l: _sethint `list │                      │ `float`string`list   ║
+║ ffi_type_marshalling_float.k                       │ f:3.14159;f _sethint: `float;_gethint f │ `float               │                      ║
+║ ffi_type_marshalling_string.k                      │ s:"hello";s _sethint: `string;_gethint s │ `string              │                      ║
+║ ffi_type_marshalling_list.k                        │ l:1 2 3 4 5;l _sethint: `list;_gethint l │ `list                │                      ║
 ║ ffi_constructor.k                                  │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
 complex_new:complex[`constructor]
 c1:complex_new[2;3]
-.((`real;c1[`Real]);(`imag;c1[`Imaginary]);(`instance;!c1);(`type;!complex)) │ .((`real;2.0;);...   │ .((`real;2.0;);...   ║
+.((`real;c1[`Real]);(`imag;c1[`Imaginary]);(`instance;6<#!c1);(`type;10<#!complex)) │ .((`real;2.0;);...   │                      ║
 ║ ffi_dispose.k                                      │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
 complex_new:complex[`constructor]
 c1:complex_new[2;3]
@@ -1108,7 +1110,7 @@ _eval (`",";,`a`b`c;(`",";,`d;`v)) │ `a`b`c`d`e`f         │                 
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 849/868 tests passed (97.8%)                                                                               ║
+║ SUMMARY: 853/870 tests passed (98.0%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -1148,19 +1150,6 @@ Test: k_tree_verify_root.k
 Input: .k
 Expected: 
 Actual: .()
-──────────────────────────────────────────────────────────────────────────
-Test: ffi_type_marshalling.k
-Input: f:3.14159;f _sethint `float;s:"hello";s _sethint `string;l:1 2 3 4 5;l: _sethint `list
-Expected: `float`string`list
-Actual: 
-──────────────────────────────────────────────────────────────────────────
-Test: ffi_constructor.k
-Input: complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
-complex_new:complex[`constructor]
-c1:complex_new[2;3]
-.((`real;c1[`Real]);(`imag;c1[`Imaginary]);(`instance;!c1);(`type;!complex))
-Expected: .((`real;2.0;);(`imag;3.0;))
-Actual: .((`real;2.0;);(`imag;3.0;);(`instance;`get_Imaginary`get_Real`_this`Abs`Equals`GetHashCode`ToString`GetType;);(`type;`name`fullname`namespace`assembly`isclass`isinterface`isenum`isabstract`ispublic`isstatic`.ctor`constructor`FromPolarCoordinates`Negate`Add`Subtract`Multiply`Divide`op_UnaryNegation`op_Addition`op_Subtraction`op_Multiply`op_Division`Abs`Conjugate`Reciprocal`op_Equality`op_Inequality`Sin`Sinh`Asin`Cos`Cosh`Acos`Tan`Tanh`Atan`IsFinite`IsInfinity`IsNaN`Log`Log10`Exp`Sqrt`Pow`op_Explicit`op_Implicit`op_Decrement`op_Increment`CreateChecked`CreateSaturating`CreateTruncating`IsComplexNumber`IsEvenInteger`IsImaginaryNumber`IsInteger`IsNegative`IsNegativeInfinity`IsNormal`IsOddInteger`IsPositive`IsPositiveInfinity`IsRealNumber`IsSubnormal`MaxMagnitude`MinMagnitude`Parse`TryParse`op_UnaryPlus`get_Real`get_Imaginary`get_Magnitude`get_Phase`Equals`GetHashCode`ToString`TryFormat`GetType`Real`Imaginary`Magnitude`Phase`Zero`One`ImaginaryOne`NaN`Infinity;))
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_dispose.k
 Input: complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
