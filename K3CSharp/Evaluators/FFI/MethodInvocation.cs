@@ -91,6 +91,26 @@ namespace K3CSharp
                 }
             }
             
+            // Handle empty brackets (identity operation)
+            if (right is NullValue)
+            {
+                // For vectors: return the vector itself
+                if (left is VectorValue)
+                {
+                    return left;
+                }
+                // For dictionaries: return the values
+                if (left is DictionaryValue dictionary)
+                {
+                    var values = new List<K3Value>();
+                    foreach (var entry in dictionary.Entries.Values)
+                    {
+                        values.Add(entry.Value);
+                    }
+                    return new VectorValue(values);
+                }
+            }
+            
             // Handle array indexing
             if (left is VectorValue vector)
             {
@@ -121,7 +141,7 @@ namespace K3CSharp
                 throw new Exception("Object dictionary missing _this entry");
             }
             
-            var handle = thisEntry.Value.ToString();
+            var handle = (thisEntry.Value is SymbolValue handleSym) ? handleSym.Value : thisEntry.Value.ToString();
             var target = ObjectRegistry.GetObject(handle);
             
             if (target == null)
@@ -162,7 +182,16 @@ namespace K3CSharp
         private static K3Value IndexDictionary(DictionaryValue dict, K3Value index)
         {
             // Try to get by index key
-            var indexKey = new SymbolValue(index.ToString());
+            SymbolValue indexKey;
+            if (index is SymbolValue sym)
+            {
+                indexKey = sym;
+            }
+            else
+            {
+                indexKey = new SymbolValue(index.ToString());
+            }
+            
             if (dict.Entries.TryGetValue(indexKey, out var entry))
             {
                 return entry.Value;
@@ -194,6 +223,22 @@ namespace K3CSharp
             
             if (methods.Count == 0)
             {
+                // Fall back to property access
+                var property = type.GetProperty(methodName, BindingFlags.Public | BindingFlags.Instance);
+                if (property != null && args.Count == 0)
+                {
+                    var propValue = property.GetValue(target);
+                    return TypeMarshalling.NetToK3(propValue);
+                }
+                
+                // Also check fields
+                var field = type.GetField(methodName, BindingFlags.Public | BindingFlags.Instance);
+                if (field != null && args.Count == 0)
+                {
+                    var fieldValue = field.GetValue(target);
+                    return TypeMarshalling.NetToK3(fieldValue);
+                }
+                
                 throw new Exception($"Method '{methodName}' not found");
             }
             

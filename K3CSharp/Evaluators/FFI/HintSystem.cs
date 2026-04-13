@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace K3CSharp
 {
@@ -16,7 +17,10 @@ namespace K3CSharp
             // Basic types
             ["int"] = typeof(int),
             ["integer"] = typeof(int),
+            ["short"] = typeof(short),
+            ["ushort"] = typeof(ushort),
             ["long"] = typeof(long),
+            ["ulong"] = typeof(ulong),
             ["float"] = typeof(double),
             ["double"] = typeof(double),
             ["char"] = typeof(char),
@@ -25,6 +29,9 @@ namespace K3CSharp
             ["symbol"] = typeof(string),
             ["bool"] = typeof(bool),
             ["boolean"] = typeof(bool),
+            ["datetime"] = typeof(DateTime),
+            ["timespan"] = typeof(TimeSpan),
+            ["stringbuilder"] = typeof(StringBuilder),
             
             // Collection types
             ["list"] = typeof(List<object>),

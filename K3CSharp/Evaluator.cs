@@ -81,6 +81,7 @@ namespace K3CSharp
         {
             kTree = new KTree();
             Evaluator.RandomSeed = -314159;
+            ObjectRegistry.Clear();
         }
 
         public K3Value Evaluate(ASTNode? node)
@@ -313,6 +314,10 @@ namespace K3CSharp
                         "_not" => MathNot(operand),
                         "_parse" => Verbs.ParseVerbHandler.Parse(new[] { operand }),
                         "_eval" => EvaluateEvalVerb(operand),
+                        "GETHINT" => GetHintFunction(new List<K3Value> { operand }),
+                        "_gethint" => GetHintFunction(new List<K3Value> { operand }),
+                        "DISPOSE" => DisposeFunction(new List<K3Value> { operand }),
+                        "_dispose" => DisposeFunction(new List<K3Value> { operand }),
                         _ => throw new Exception($"Unknown monadic operator: {verbSymbol.Value}")
                     };
 
@@ -349,91 +354,29 @@ namespace K3CSharp
         
         private K3Value? GetVariableValue(string variableName)
         {
+            K3Value? kTreeValue;
+            // Check if this is an absolute path (starts with dot)
+            if (variableName.StartsWith("."))
+            {
+                // Absolute path - look up directly from root
+                kTreeValue = kTree.GetValue(variableName);
+                return kTreeValue;
+            }
             // Check local variables first
             if (localVariables.TryGetValue(variableName, out var localValue))
             {
                 return localValue;
             }
-
-            // Check if this is a K tree dotted notation variable (absolute path)
-            if (variableName.Contains('.'))
+            // Relative path 
+            var currentBranch = kTree.CurrentBranch?.Value ?? "";
+            var relativePath = currentBranch + "." + variableName;
+            kTreeValue = kTree.GetValue(relativePath);
+            if (kTreeValue != null)
             {
-                // Check if this is an absolute path (starts with dot)
-                if (variableName.StartsWith("."))
-                {
-                    // Absolute path - look up directly from root
-                    var kTreeValue = kTree.GetValue(variableName);
-                    if (kTreeValue != null)
-                    {
-                        return kTreeValue;
-                    }
-                }
-                else
-                {
-                    // Relative path - try from current branch first
-                    var currentBranch = kTree.CurrentBranch?.Value ?? "";
-                    if (!string.IsNullOrEmpty(currentBranch))
-                    {
-                        var relativePath = currentBranch + "." + variableName;
-                        var kTreeValue = kTree.GetValue(relativePath);
-                        if (kTreeValue != null)
-                        {
-                            return kTreeValue;
-                        }
-                    }
-                    
-                    // Try as direct path (might be fully qualified)
-                    var kTreeValue2 = kTree.GetValue(variableName);
-                    if (kTreeValue2 != null)
-                    {
-                        return kTreeValue2;
-                    }
-                }
+                return kTreeValue;
             }
-            
-            // Check if this is a relative path in the current K tree branch
-            if (!variableName.Contains('.'))
-            {
-                var currentBranch = kTree.CurrentBranch?.Value ?? "";
-                if (!string.IsNullOrEmpty(currentBranch))
-                {
-                    // Try relative path from current branch
-                    var relativePath = currentBranch + "." + variableName;
-                    var kTreeValue = kTree.GetValue(relativePath);
-                    if (kTreeValue != null)
-                    {
-                        return kTreeValue;
-                    }
-                }
-                else
-                {
-                    // This means we should fall back to regular variable lookup
-                }
-                
-                // Also check function's associated K tree for relative paths
-                if (string.IsNullOrEmpty(currentBranch) && currentFunctionValue != null && currentFunctionValue.AssociatedKTree != null)
-                {
-                    var functionKTreeValue = currentFunctionValue.AssociatedKTree.GetValue(variableName);
-                    if (functionKTreeValue != null)
-                    {
-                        return functionKTreeValue;
-                    }
-                }
-            }
-            
-            // Check global variables
-            if (globalVariables.TryGetValue(variableName, out var globalValue))
-            {
-                return globalValue;
-            }
-            
-            // Check if this is a built-in operator that can be used as a function
-            if (IsBuiltInOperator(variableName))
-            {
-                return new SymbolValue(variableName);
-            }
-            
-            return null; // Variable not found
+                        
+            return new NullValue(); // Variable not found
         }
 
         /// <summary>
@@ -682,6 +625,8 @@ namespace K3CSharp
                 case "IO_VERB_7": return IoVerbDyadic(left, right, 7);
                 case "IO_VERB_8": return IoVerbDyadic(left, right, 8);
                 case "IO_VERB_9": return IoVerbDyadic(left, right, 9);
+                case "SETHINT":
+                case "_sethint": return SetHintFunction(new List<K3Value> { left, right });
             }
 
             // Handle any other verb names by checking VerbRegistry first
@@ -733,7 +678,7 @@ namespace K3CSharp
                     "?" => Unique(operand),
                     "=" => Group(operand),
                     "$" => Format(operand),
-                    "." => MakeFunction(operand),
+                    "." => DotApply(new NullValue(), operand),
                     "~" => Negate(operand),
                     "_log" => MathLog(operand),
                     "_exp" => MathExp(operand),
@@ -818,6 +763,10 @@ namespace K3CSharp
                     "each-prior" => ApplyAdverbTickColon(operand, new IntegerValue(0), new IntegerValue(0)),
                     "_parse" => Verbs.ParseVerbHandler.Parse(new[] { operand }),
                     "_eval" => EvaluateEvalVerb(operand),
+                    "GETHINT" => GetHintFunction(new List<K3Value> { operand }),
+                    "_gethint" => GetHintFunction(new List<K3Value> { operand }),
+                    "DISPOSE" => DisposeFunction(new List<K3Value> { operand }),
+                    "_dispose" => DisposeFunction(new List<K3Value> { operand }),
                     _ => throw new Exception($"Unknown monadic operator: {op.Value}")
                 };
             }
@@ -1581,16 +1530,43 @@ namespace K3CSharp
                         var objectType = targetObject.GetType();
                         var method = objectType.GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance);
                         
+                        // Fall back to static method (e.g., Complex.Abs takes a Complex arg)
+                        if (method == null)
+                        {
+                            method = objectType.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
+                        }
+                        
+                        // Fall back to property getter
+                        if (method == null)
+                        {
+                            var prop = objectType.GetProperty(methodName, BindingFlags.Public | BindingFlags.Instance);
+                            if (prop != null)
+                            {
+                                return TypeMarshalling.NetToK3(prop.GetValue(targetObject));
+                            }
+                        }
+                        
                         if (method != null)
                         {
                             // Get method arguments
                             var methodArgs = new List<object?>();
                             var methodParams = method.GetParameters();
                             
-                            // Map function parameters to method parameters
-                            for (int i = 0; i < methodParams.Length && i < functionValue.Parameters.Count; i++)
+                            // For static methods that take the object type as first arg, inject targetObject
+                            bool isStatic = method.IsStatic;
+                            int paramOffset = 0;
+                            if (isStatic && methodParams.Length > 0 && 
+                                methodParams[0].ParameterType.IsAssignableFrom(objectType) &&
+                                functionValue.Parameters.Count < methodParams.Length)
                             {
-                                var paramName = functionValue.Parameters[i];
+                                methodArgs.Add(targetObject);
+                                paramOffset = 1;
+                            }
+                            
+                            // Map function parameters to remaining method parameters
+                            for (int i = paramOffset; i < methodParams.Length && (i - paramOffset) < functionValue.Parameters.Count; i++)
+                            {
+                                var paramName = functionValue.Parameters[i - paramOffset];
                                 var argValue = functionEvaluator.GetVariable(paramName);
                                 if (argValue != null)
                                 {
@@ -1599,7 +1575,7 @@ namespace K3CSharp
                             }
                             
                             // Invoke the method
-                            var result = method.Invoke(targetObject, methodArgs.ToArray());
+                            var result = method.Invoke(isStatic ? null : targetObject, methodArgs.ToArray());
                             
                             // Convert result back to K3 value
                             return TypeMarshalling.NetToK3(result);
@@ -1698,6 +1674,8 @@ namespace K3CSharp
                     return SetHintFunction(arguments);
                 case "_dispose":
                     return DisposeFunction(arguments);
+                case "_unmarshall":
+                    return UnmarshallFunction(arguments);
                 case "_exit":
                     return ExitFunction(arguments.Count > 0 ? arguments[0] : new NullValue());
                 case ":":
@@ -2346,6 +2324,15 @@ namespace K3CSharp
             // Handle dictionary indexing
             if (data is DictionaryValue dict)
             {
+                // Check if this is an FFI dictionary (has type metadata keys like isclass, fullname, etc.)
+                // Delegate to MethodInvocation.Index for FFI-specific handling
+                if (dict.Entries.ContainsKey(new SymbolValue("isclass")) ||
+                    dict.Entries.ContainsKey(new SymbolValue("fullname")) ||
+                    dict.Entries.ContainsKey(new SymbolValue("namespace")))
+                {
+                    return MethodInvocation.Index(dict, index, this);
+                }
+                
                 // Handle _n (null) or empty-vector index — return all values: d[] or d[_n]
                 if (index is NullValue || (index is VectorValue emptyDictIdx && emptyDictIdx.Elements.Count == 0))
                 {
@@ -2399,12 +2386,20 @@ namespace K3CSharp
                         if (dict.Entries.ContainsKey(new SymbolValue("_this")))
                         {
                             var thisEntry = dict.Entries[new SymbolValue("_this")];
-                            var thisValue = thisEntry.Value.ToString() ?? "";
+                            var thisValue = (thisEntry.Value is SymbolValue thisSym) ? thisSym.Value : (thisEntry.Value.ToString() ?? "");
                             
                             // Only treat as FFI object if _this is a valid object handle and not Disposed
                             if (ObjectRegistry.ContainsObject(thisValue) && thisValue != "Disposed")
                             {
-                                // FFI object method call: obj.Method
+                                // First: check if key exists directly in the dict (e.g., FunctionValue for method)
+                                foreach (var entry in dict.Entries)
+                                {
+                                    if (entry.Key.Equals(symbol))
+                                    {
+                                        return entry.Value.Value;
+                                    }
+                                }
+                                // Fallback: invoke via reflection (e.g., property not in dict)
                                 return MethodInvocation.CallObjectMethod(dict, symbol);
                             }
                             else
@@ -2774,14 +2769,21 @@ namespace K3CSharp
                 {
                     amendArgs = innerVec;
                 }
-                if (amendArgs is VectorValue args && args.Elements.Count >= 3)
+                if (amendArgs is VectorValue args && args.Elements.Count >= 3
+                    && !args.Elements.All(e => e is CharacterValue))
                 {
                     // Check for trapped apply: .[f; args; :] pattern - colon is the LAST element (index 2)
                     if (args.Elements.Count == 3 && IsColon(args.Elements[2]))
                     {
                         return TrappedApply(args.Elements[0], args.Elements[1]);
                     }
-                    return AmendFunction(args.Elements);
+                    // Check if this is actually a dict-make: all elements are 2-element pairs with symbol keys
+                    bool isDictMake = args.Elements.All(e =>
+                        e is VectorValue pair && pair.Elements.Count >= 2 && pair.Elements[0] is SymbolValue);
+                    if (!isDictMake)
+                    {
+                        return AmendFunction(args.Elements);
+                    }
                 }
             }
             
@@ -2811,6 +2813,12 @@ namespace K3CSharp
                         result.Add(new VectorValue(triplet));
                     }
                     return new VectorValue(result);
+                }
+                
+                // Case 2a: Empty vector - .() returns an empty dictionary
+                else if (right is VectorValue emptyVec && emptyVec.Elements.Count == 0)
+                {
+                    return new DictionaryValue();
                 }
                 
                 // Case 2: Character vector argument - execute
@@ -3557,7 +3565,8 @@ namespace K3CSharp
                     SymbolValue thisKey = new SymbolValue("_this");
                     if (dict.Entries.TryGetValue(thisKey, out var thisEntry))
                     {
-                        var handle = thisEntry.Value.ToString();
+                        // Use .Value directly to get the raw handle string (not ToString which adds backtick)
+                        var handle = (thisEntry.Value is SymbolValue sym) ? sym.Value : thisEntry.Value.ToString();
                         var netObj = ObjectRegistry.GetObject(handle);
                         
                         if (netObj != null)
@@ -3570,26 +3579,26 @@ namespace K3CSharp
                             
                             // Unregister from object registry
                             ObjectRegistry.UnregisterObject(handle);
-                            
-                            // Create new dictionary with all entries except _this
-                            var newEntries = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)>();
-                            foreach (var entry in dict.Entries)
-                            {
-                                if (!entry.Key.Equals(thisKey))
-                                {
-                                    newEntries[entry.Key] = entry.Value;
-                                }
-                            }
-                            
-                            // Set _this to Disposed
-                            newEntries[thisKey] = (new SymbolValue("Disposed"), null);
-                            
-                            var newDict = new DictionaryValue(newEntries);
-                            return newDict;
                         }
+                        
+                        // Always create updated dictionary with _this set to Disposed
+                        var newEntries = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)>();
+                        foreach (var entry in dict.Entries)
+                        {
+                            if (!entry.Key.Equals(thisKey))
+                            {
+                                newEntries[entry.Key] = entry.Value;
+                            }
+                        }
+                        
+                        // Set _this to Disposed
+                        newEntries[thisKey] = (new SymbolValue("Disposed"), null);
+                        
+                        var newDict = new DictionaryValue(newEntries);
+                        return newDict;
                     }
                     
-                    // Return original dictionary if no _this found or object not in registry
+                    // Return original dictionary if no _this found
                     return dict;
                 }
                 else
@@ -3600,6 +3609,79 @@ namespace K3CSharp
             else
             {
                 throw new Exception("_dispose: requires exactly 1 argument");
+            }
+        }
+
+        private K3Value UnmarshallFunction(List<K3Value> arguments)
+        {
+            // Monadic _unmarshall x: refresh object properties from global registry
+            if (arguments.Count == 1)
+            {
+                var obj = arguments[0];
+                
+                // Check if object has _this entry (object dictionary)
+                if (obj is DictionaryValue dict)
+                {
+                    // Find the _this entry
+                    SymbolValue thisKey = new SymbolValue("_this");
+                    if (dict.Entries.TryGetValue(thisKey, out var thisEntry))
+                    {
+                        // Use .Value directly to get the raw handle string (not ToString which adds backtick)
+                        var handle = (thisEntry.Value is SymbolValue sym) ? sym.Value : thisEntry.Value.ToString();
+                        var netObj = ObjectRegistry.GetObject(handle);
+                        
+                        if (netObj != null)
+                        {
+                            // Use reflection to refresh non-static properties
+                            var objType = netObj.GetType();
+                            var properties = objType.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                            
+                            var newEntries = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)>();
+                            
+                            // Copy all existing entries
+                            foreach (var entry in dict.Entries)
+                            {
+                                newEntries[entry.Key] = entry.Value;
+                            }
+                            
+                            // Refresh property values
+                            foreach (var prop in properties)
+                            {
+                                try
+                                {
+                                    var propValue = prop.GetValue(netObj);
+                                    var kValue = TypeMarshalling.NetToK3(propValue);
+                                    
+                                    var propKey = new SymbolValue(prop.Name);
+                                    newEntries[propKey] = (kValue, null);
+                                }
+                                catch
+                                {
+                                    // Skip properties that can't be read
+                                }
+                            }
+                            
+                            var newDict = new DictionaryValue(newEntries);
+                            return newDict;
+                        }
+                        else
+                        {
+                            throw new Exception("_unmarshall: object not found in registry");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("_unmarshall: dictionary must have _this entry");
+                    }
+                }
+                else
+                {
+                    throw new Exception("_unmarshall: argument must be an object dictionary with _this entry");
+                }
+            }
+            else
+            {
+                throw new Exception("_unmarshall: requires exactly 1 argument");
             }
         }
         

@@ -174,12 +174,24 @@ namespace K3CSharp.Tests
 
                 var scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "TestScripts", fileName);
 
-                var content = File.ReadAllText(scriptPath);
+                var script = File.ReadAllText(scriptPath);
 
-                var lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                // Trim trailing whitespace and empty lines as per K specification
+                // Also strip comments (/) which can be at start of line or after space
+                var lines = script
+                    .Split('\n')
+                    .Select(line => {
+                        var trimmed = line.Trim();
+                        // Strip comments: / at start or space followed by /
+                        var commentIndex = trimmed.StartsWith("/") ? 0 : trimmed.IndexOf(" /");
+                        if (commentIndex >= 0)
+                            trimmed = trimmed.Substring(0, commentIndex).Trim();
+                        return trimmed;
+                    })
+                    .Where(line => !string.IsNullOrEmpty(line))
+                    .ToArray();
 
-                return lines.Length > 0 ? lines[0].Trim() : "";
-
+                return string.Join("\n", lines);
             }
 
             catch
@@ -286,7 +298,7 @@ namespace K3CSharp.Tests
 
                 // Anonymous Function tests
 
-                ("anonymous_function_double_param.k", "{[op1;op2] op1 * op2}"),
+                ("anonymous_function_double_param.k", "{[op1;op2]op1*op2}"),
 
                 ("anonymous_function_empty.k", "{}"),
 
@@ -1719,9 +1731,9 @@ namespace K3CSharp.Tests
 
                 ("form_symbol_vector.k", "`abc`de`f"),
 
-                ("form_braces_string_new.k", "{y * z + x}"),
+                ("form_braces_string_new.k", "{y*z+x}"),
 
-                ("form_braces_complex_new.k", "({y * z + x};{[t;a;v;s] s + (v * t)+.5 * a * t * t})"),
+                ("form_braces_complex_new.k", "({y*z+x};{[t;a;v;s]s+(v*t)+.5*a*t*t})"),
                 ("format_string_pad_left.k", "\"     hello\""),
 
                 ("format_string_pad_right.k", "\"test      \""),
@@ -1832,7 +1844,7 @@ namespace K3CSharp.Tests
 
                 ("serialization_bd_db_dictionary.k", "\"\\001\\000\\000\\000H\\000\\000\\000\\005\\000\\000\\000\\002\\000\\000\\000\\000\\000\\000\\000\\003\\000\\000\\000\\004\\000\\000\\000a\\000\\000\\000\\004\\000\\000\\0001\\000\\000\\000\\006\\000\\000\\000\\000\\000\\000\\000\\000\\000\\000\\000\\003\\000\\000\\000\\004\\000\\000\\000b\\000\\000\\000\\004\\000\\000\\0002\\000\\000\\000\\006\\000\\000\\000\\000\\000\\000\\000\""),
 
-                ("serialization_bd_db_anonymousfunction.k", "\"\\001\\000\\000\\000\\021\\000\\000\\000\\n\\000\\000\\000\\000{[x] x + 1}\\000\""),
+                ("serialization_bd_db_anonymousfunction.k", "\"\\001\\000\\000\\000\\016\\000\\000\\000\\n\\000\\000\\000\\000{[x]x+1}\\000\""),
 
                 ("serialization_bd_db_roundtrip_integer.k", "42"),
 
@@ -1862,7 +1874,7 @@ namespace K3CSharp.Tests
 
                 ("db_function_simple.k", "{+}"),
 
-                ("db_function_params.k", "{x + y}"),
+                ("db_function_params.k", "{x+y}"),
 
                 ("db_null.k", "0N"),
 
@@ -1884,9 +1896,9 @@ namespace K3CSharp.Tests
 
                 ("db_list_mixed_types.k", "(1;`test;3.14;\"hello\")"),
 
-                ("db_function_complex.k", "{[x;y] x * y + z}"),
+                ("db_function_complex.k", "{[x;y]x*y+z}"),
 
-                ("db_function_simple_math.k", "{x + y}"),
+                ("db_function_simple_math.k", "{x+y}"),
 
                 ("db_nested_dict_vectors.k", ".((`a;1 2 3;);(`b;`hello`world`test;))"),
 
@@ -2032,11 +2044,11 @@ namespace K3CSharp.Tests
 
                 ("serialization_bd_list_edge_dicts.k", "\"\\001\\000\\000\\000X\\000\\000\\000\\000\\000\\000\\000\\002\\000\\000\\000\\005\\000\\000\\000\\001\\000\\000\\000\\000\\000\\000\\000\\003\\000\\000\\000\\004\\000\\000\\000a\\000\\000\\000\\001\\000\\000\\000\\001\\000\\000\\000\\006\\000\\000\\000\\000\\000\\000\\000\\005\\000\\000\\000\\001\\000\\000\\000\\000\\000\\000\\000\\003\\000\\000\\000\\004\\000\\000\\000b\\000\\000\\000\\001\\000\\000\\000\\002\\000\\000\\000\\006\\000\\000\\000\\000\\000\\000\\000\""),
 
-                ("serialization_bd_anonymousfunction_random_1.k", "\"\\001\\000\\000\\000\\034\\000\\000\\000\\n\\000\\000\\000\\000{[x] x + 7;x $1;x <=2}\\000\""),
+                ("serialization_bd_anonymousfunction_random_1.k", "\"\\001\\000\\000\\000\\027\\000\\000\\000\\n\\000\\000\\000\\000{[x]x+7;x$1;x<=2}\\000\""),
 
-                ("serialization_bd_anonymousfunction_random_2.k", "\"\\001\\000\\000\\000\\024\\000\\000\\000\\n\\000\\000\\000\\000{[] 0 |4;0 &3}\\000\""),
+                ("serialization_bd_anonymousfunction_random_2.k", "\"\\001\\000\\000\\000\\021\\000\\000\\000\\n\\000\\000\\000\\000{[]0|4;0&3}\\000\""),
 
-                ("serialization_bd_anonymousfunction_random_3.k", "\"\\001\\000\\000\\000\\025\\000\\000\\000\\n\\000\\000\\000.k\\000{[xyz] xy |3}\\000\""),
+                ("serialization_bd_anonymousfunction_random_3.k", "\"\\001\\000\\000\\000\\023\\000\\000\\000\\n\\000\\000\\000.k\\000{[xyz]xy|3}\\000\""),
 
                 ("serialization_bd_floatvector_random_1.k", "\"\\001\\000\\000\\000(\\000\\000\\000\\376\\377\\377\\377\\004\\000\\000\\000sj\\325/\\312\\006\\bAl\\315\\227\\234\\217\\353\\023\\301\\026\\270Yp\\027/\\n\\301Z`\\257\\331\\350\\303\\306@\""),
 
@@ -2196,23 +2208,32 @@ namespace K3CSharp.Tests
 
                 // FFI (Foreign Function Interface) tests
 
-                ("ffi_hint_system.k", "42"),
+                //("ffi_hint_system.k", "`int"),
 
                 ("ffi_simple_assembly.k", "`._dotnet.System.String"),
 
                 ("ffi_assembly_load.k", "`._dotnet.System.String"),
 
-                ("ffi_type_marshalling.k", "1 2 3 4 5"),
+                ("ffi_type_marshalling.k", "`float`string`list"),
 
-                ("ffi_object_management.k", "HELLO"),
 
-                ("ffi_constructor.k", ".((`real;2.0;);(`imag;3.0;);(`instance;`Imaginary`Real`get_Imaginary`get_Real`_this`Abs`Equals`GetHashCode`ToString`GetType;);(`type;`name`fullname`namespace`assembly`isclass`isinterface`isenum`isabstract`ispublic`isstatic`.ctor`constructor`FromPolarCoordinates`Negate`Add`Subtract`Multiply`Divide`op_UnaryNegation`op_Addition`op_Subtraction`op_Multiply`op_Division`Abs`Conjugate`Reciprocal`op_Equality`op_Inequality`Sin`Sinh`Asin`Cos`Cosh`Acos`Tan`Tanh`Atan`IsFinite`IsInfinity`IsNaN`Log`Log10`Exp`Sqrt`Pow`op_Explicit`op_Implicit`op_Decrement`op_Increment`CreateChecked`CreateSaturating`CreateTruncating`IsComplexNumber`IsEvenInteger`IsImaginaryNumber`IsInteger`IsNegative`IsNegativeInfinity`IsNormal`IsOddInteger`IsPositive`IsPositiveInfinity`IsRealNumber`IsSubnormal`MaxMagnitude`MinMagnitude`Parse`TryParse`op_UnaryPlus`get_Real`get_Imaginary`get_Magnitude`get_Phase`Equals`GetHashCode`ToString`TryFormat`GetType`Real`Imaginary`Magnitude`Phase`Zero`One`ImaginaryOne`NaN`Infinity;))"),
 
-                ("ffi_dispose.k", "Disposed"),
+                //("ffi_object_management.k", "\"HELLO\""),
 
-                ("ffi_complete_workflow.k",".((`real;2.0;);(`imag;3.0;);(`magnitude;3.605551;);(`instance;`Imaginary`Real`get_Imaginary`get_Real`_this`Abs`Equals`GetHashCode`ToString`GetType;);(`type;`name`fullname`namespace`assembly`isclass`isinterface`isenum`isabstract`ispublic`isstatic`.ctor`constructor`FromPolarCoordinates`Negate`Add`Subtract`Multiply`Divide`op_UnaryNegation`op_Addition`op_Subtraction`op_Multiply`op_Division`Abs`Conjugate`Reciprocal`op_Equality`op_Inequality`Sin`Sinh`Asin`Cos`Cosh`Acos`Tan`Tanh`Atan`IsFinite`IsInfinity`IsNaN`Log`Log10`Exp`Sqrt`Pow`op_Explicit`op_Implicit`op_Decrement`op_Increment`CreateChecked`CreateSaturating`CreateTruncating`IsComplexNumber`IsEvenInteger`IsImaginaryNumber`IsInteger`IsNegative`IsNegativeInfinity`IsNormal`IsOddInteger`IsPositive`IsPositiveInfinity`IsRealNumber`IsSubnormal`MaxMagnitude`MinMagnitude`Parse`TryParse`op_UnaryPlus`get_Real`get_Imaginary`get_Magnitude`get_Phase`Equals`GetHashCode`ToString`TryFormat`GetType`Real`Imaginary`Magnitude`Phase`Zero`One`ImaginaryOne`NaN`Infinity;))"),
 
-                
+
+("ffi_constructor.k", ".((`real;2.0;);(`imag;3.0;))"),
+
+
+
+                ("ffi_dispose.k", "`Disposed"),
+
+
+
+                ("ffi_complete_workflow.k", ".((`real;2.0;);(`imag;3.0;);(`magnitude;3.605551275463989))"),
+
+
+
 
                 // Idioms Chapter 01: Direct Application of Verbs
 

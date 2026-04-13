@@ -193,6 +193,29 @@ namespace K3CSharp
         {
             var vector = ((VectorValue)kValue).Elements;
             
+            // Debug: log targetType
+            // Special handling for string target type (convert char vector to string)
+            if (targetType == typeof(string))
+            {
+                var chars = vector.Select(e => e is CharacterValue cv ? cv.Value[0] : e.ToString()[0]).ToArray();
+                return new string(chars);
+            }
+            
+            // Special handling for char[] target type (convert char vector to char[])
+            if (targetType == typeof(char[]))
+            {
+                var chars = vector.Select(e => e is CharacterValue cv ? cv.Value[0] : e.ToString()[0]).ToArray();
+                return chars;
+            }
+            
+            // Special handling for char* target type (convert char vector to char[] then to string)
+            if (targetType == typeof(char*))
+            {
+                // char* is unsafe, convert to string instead
+                var chars = vector.Select(e => e is CharacterValue cv ? cv.Value[0] : e.ToString()[0]).ToArray();
+                return new string(chars);
+            }
+            
             if (targetType.IsArray)
             {
                 return MarshalToArray(vector, targetType.GetElementType()!);
@@ -327,23 +350,17 @@ namespace K3CSharp
             var entries = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)>();
             var type = netValue.GetType();
             
-            // Add properties
-            foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
-            {
-                if (property.CanRead)
-                {
-                    var key = new SymbolValue(property.Name);
-                    var value = NetToK3(property.GetValue(netValue));
-                    entries[key] = (value, null);
-                }
-            }
-            
             // Add properties as callable entries with getters/setters
             foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
-                var key = new SymbolValue(property.Name);
-                var value = NetToK3(property.GetValue(netValue));
-                entries[key] = (value, null);
+                // Skip properties that return the same type as the containing object (circular reference)
+                if (property.PropertyType == type)
+                {
+                    continue;
+                }
+                
+                // Don't store property values directly - they have marshalling issues
+                // Only store getter/setter functions
                 
                 // Add property getter/setter functions
                 if (property.CanRead)
@@ -374,9 +391,8 @@ namespace K3CSharp
             // Add fields with getter/setter functions
             foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Instance))
             {
-                var key = new SymbolValue(field.Name);
-                var value = NetToK3(field.GetValue(netValue));
-                entries[key] = (value, null);
+                // Don't store field values directly - they have marshalling issues
+                // Only store getter/setter functions
                 
                 // Add field getter/setter functions
                 var getterKey = new SymbolValue($"get_{field.Name}");
@@ -575,7 +591,14 @@ namespace K3CSharp
             return type.IsPrimitive || 
                    type == typeof(string) || 
                    type == typeof(decimal) ||
-                   type == typeof(char);
+                   type == typeof(char) ||
+                   type == typeof(double) ||
+                   type == typeof(float) ||
+                   type == typeof(int) ||
+                   type == typeof(long) ||
+                   type == typeof(short) ||
+                   type == typeof(byte) ||
+                   type == typeof(bool);
         }
 
         private static bool IsCollectionType(Type type)

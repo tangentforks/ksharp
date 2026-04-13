@@ -606,12 +606,13 @@ public partial class Evaluator
             
             // Extract the simple type name (without namespace) for dotnet branch
             var dotnetPath = $"_dotnet.{type.Namespace}.{type.Name}";
+            var absolutePath = $".{dotnetPath}";
             
-            // Store the type dictionary directly in the KTree (bypassing underscore restriction)
-            kTree.SetValue(dotnetPath, typeDict);
+            // Store the type dictionary directly in the KTree using absolute path
+            kTree.SetValue(absolutePath, typeDict);
             
-            // Return the symbol path to the constructor
-            return new SymbolValue($".{dotnetPath}");
+            // Return the absolute path symbol as specified in the spec
+            return new SymbolValue(absolutePath);
         }
         catch (Exception ex)
         {

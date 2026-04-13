@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.VisualBasic;
 
 namespace K3CSharp.Parsing
 {
@@ -582,6 +583,7 @@ namespace K3CSharp.Parsing
             }
             
             // Extract complete original source text from opening brace to current position
+            // Disable spacing for lambda bodies (no spaces around operators)
             string originalSourceText = ExtractOriginalSourceText(braceStartPos, position);
             
             // Create Function AST node with FunctionValue
@@ -666,62 +668,47 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
+        /// Determine whether a token's lexeme ends with a character valid for use in an identifier (alphanumeric, underscore or period)
+        /// </summary>
+        /// <param name="token">token to be analyzed</param>
+        /// <returns> true if a token's lexeme ends with a character valid for use in an identifier (alphanumeric, underscore or period), false otherwise
+        private static bool EndsInNameRange(K3CSharp.Token token)
+        {
+            char lastChar = Char.ToUpperInvariant(token.Lexeme.ToCharArray().Last());
+            return  lastChar == '.' || lastChar == '_' || lastChar >= '0' && lastChar <= '1' || lastChar >= 'A' && lastChar <= 'Z';
+        }
+
+        /// <summary>
+        /// Determine whether a token's lexeme begins with a character valid for use in an identifier (alphabetic, underscore or period)
+        /// </summary>
+        /// <param name="token">token to be analyzed</param>
+        /// <returns> true if a token's lexeme begins with a character valid for use in an identifier (alphabetic, underscore or period), false otherwise
+        private static bool StartsInNameRange(K3CSharp.Token token)
+        {
+            char firstChar = Char.ToUpperInvariant(token.Lexeme.ToCharArray()[0]);
+            return  firstChar == '.' || firstChar == '_' || firstChar >= 'A' && firstChar <= 'Z';
+        }
+
+        /// <summary>
         /// Extract original source text from token range
         /// </summary>
         /// <param name="startPos">Start position (including opening brace)</param>
         /// <param name="endPos">End position (before closing brace)</param>
+        /// <param name="addSpacing">Whether to add spacing between tokens (false for lambda bodies)</param>
         /// <returns>Original source text with proper K formatting</returns>
         private string ExtractOriginalSourceText(int startPos, int endPos)
         {
             var sourceText = new StringBuilder();
-            
             for (int i = startPos; i < endPos; i++)
             {
                 var token = tokens[i];
                 var nextToken = i < endPos - 1 ? tokens[i + 1] : null;
                 
                 sourceText.Append(token.Lexeme);
-                
-                // Add space only in specific cases for K syntax:
-                // 1. After identifiers/numbers, except before brackets, semicolons, or closing brace
-                // 2. After operators, except before brackets, semicolons, or closing brace
-                // 3. After closing bracket, except before closing brace
-                // 4. NOT after opening brace
-                // 5. NOT after semicolons
-                // 6. NOT before closing bracket or brace
+                // Add disambiguating spaces:
                 if (nextToken != null)
                 {
-                    bool addSpace = false;
-                    
-                    if (token.Type == TokenType.IDENTIFIER || 
-                        token.Type == TokenType.INTEGER || 
-                        token.Type == TokenType.FLOAT ||
-                        token.Type == TokenType.LONG)
-                    {
-                        // Add space after identifiers/numbers, except before brackets, semicolons, or closing brace
-                        addSpace = nextToken.Type != TokenType.LEFT_BRACKET &&
-                                  nextToken.Type != TokenType.RIGHT_BRACKET &&
-                                  nextToken.Type != TokenType.RIGHT_BRACE &&
-                                  nextToken.Type != TokenType.RIGHT_PAREN &&
-                                  nextToken.Type != TokenType.SEMICOLON;
-                    }
-                    else if (IsOperator(token.Type))
-                    {
-                        // Add space after operators, except before brackets, semicolons, or closing brace
-                        addSpace = nextToken.Type != TokenType.LEFT_BRACKET &&
-                                  nextToken.Type != TokenType.RIGHT_BRACKET &&
-                                  nextToken.Type != TokenType.RIGHT_BRACE &&
-                                  nextToken.Type != TokenType.RIGHT_PAREN &&
-                                  nextToken.Type != TokenType.SEMICOLON;
-                    }
-                    else if (token.Type == TokenType.RIGHT_BRACKET)
-                    {
-                        // Add space after closing bracket, except before closing brace
-                        addSpace = nextToken.Type != TokenType.RIGHT_BRACE &&
-                                  nextToken.Type != TokenType.RIGHT_PAREN;
-                    }
-                    
-                    if (addSpace)
+                    if (EndsInNameRange(token) && StartsInNameRange(nextToken))
                     {
                         sourceText.Append(' ');
                     }
@@ -730,21 +717,6 @@ namespace K3CSharp.Parsing
             
             return sourceText.ToString();
         }
-        
-        /// <summary>
-        /// Check if a token type represents an operator
-        /// </summary>
-        private bool IsOperator(TokenType tokenType)
-        {
-            return tokenType == TokenType.PLUS ||
-                   tokenType == TokenType.MINUS ||
-                   tokenType == TokenType.MULTIPLY ||
-                   tokenType == TokenType.DIVIDE ||
-                   tokenType == TokenType.MODULUS ||
-                   tokenType == TokenType.POWER ||
-                   tokenType == TokenType.DOT_APPLY ||
-                   tokenType == TokenType.APPLY;
-        }
-        
-        }
+            
+    }
 }

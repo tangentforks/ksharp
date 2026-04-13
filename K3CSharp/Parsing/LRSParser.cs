@@ -58,6 +58,7 @@ namespace K3CSharp.Parsing
         /// Preprocess tokens to combine adjacent DOT_APPLY + IDENTIFIER sequences
         /// into single IDENTIFIER tokens with dotted notation (e.g., .k.d becomes a single Variable ".k.d")
         /// Only applies when the DOT_APPLY and IDENTIFIER are adjacent (no space between them).
+        /// Also handles DOT + UNDERSCORE + IDENTIFIER for paths like ._dotnet.
         /// </summary>
         private static List<Token> PreprocessDottedPaths(List<Token> tokens)
         {
@@ -66,6 +67,40 @@ namespace K3CSharp.Parsing
             
             while (i < tokens.Count)
             {
+                // Check for DOT_APPLY followed by UNDERSCORE + IDENTIFIER (e.g., ._dotnet)
+                if (tokens[i].Type == TokenType.DOT_APPLY && 
+                    i + 2 < tokens.Count &&
+                    tokens[i + 1].Type == TokenType.UNDERSCORE &&
+                    (tokens[i + 2].Type == TokenType.IDENTIFIER || tokens[i + 2].Type == TokenType.SYMBOL))
+                {
+                    // Check adjacency - the tokens must be consecutive (no spaces between them)
+                    bool underscoreAdjacent = (tokens[i].Position + tokens[i].Lexeme.Length) == tokens[i + 1].Position;
+                    bool identifierAdjacent = (tokens[i + 1].Position + tokens[i + 1].Lexeme.Length) == tokens[i + 2].Position;
+                    
+                    if (underscoreAdjacent && identifierAdjacent)
+                    {
+                        // Combine DOT_APPLY + UNDERSCORE + first IDENTIFIER into a single IDENTIFIER
+                        var dottedPath = "._" + tokens[i + 2].Lexeme;
+                        int startPos = tokens[i].Position;
+                        int j = i + 3;
+                        
+                        // Continue consuming .identifier sequences
+                        while (j + 1 < tokens.Count && 
+                               tokens[j].Type == TokenType.DOT_APPLY &&
+                               (tokens[j + 1].Type == TokenType.IDENTIFIER || tokens[j + 1].Type == TokenType.SYMBOL) &&
+                               (tokens[j].Position + tokens[j].Lexeme.Length) == tokens[j + 1].Position)
+                        {
+                            dottedPath += "." + tokens[j + 1].Lexeme;
+                            j += 2;
+                        }
+                        
+                        // Create a single IDENTIFIER token with the full dotted path
+                        result.Add(new Token(TokenType.IDENTIFIER, dottedPath, startPos));
+                        i = j;
+                        continue;
+                    }
+                }
+                
                 // Check for DOT_APPLY followed by adjacent IDENTIFIER pattern
                 if (tokens[i].Type == TokenType.DOT_APPLY && 
                     i + 1 < tokens.Count &&
@@ -132,6 +167,10 @@ namespace K3CSharp.Parsing
             
             if (expressionTokens.Count == 0)
                 return null;
+            
+            // Single token: directly create a node (same as BuildParseTreeFromRight)
+            if (expressionTokens.Count == 1)
+                return CreateNodeFromToken(expressionTokens[0]);
             
             // CRITICAL: Check for projection patterns BEFORE bracket function call handling
             // Pattern: +[;2] (operator with bracket containing semicolon)
@@ -232,12 +271,21 @@ namespace K3CSharp.Parsing
             // Find the first bracket position (prefix is everything before it)
             {
                 int firstBracket = -1;
-                for (int i = 1; i < expressionTokens.Count; i++)
                 {
-                    if ((int)expressionTokens[i].Type == (int)TokenType.LEFT_BRACKET)
+                    // Find first [ at top level (depth 0), respecting ( ) and { } nesting.
+                    // If token[0] is ( or {, start depth at 1 so [ inside are not top-level.
+                    var t0 = expressionTokens[0].Type;
+                    int scanDepth = (t0 == TokenType.LEFT_PAREN || t0 == TokenType.LEFT_BRACE) ? 1 : 0;
+                    for (int i = 1; i < expressionTokens.Count; i++)
                     {
-                        firstBracket = i;
-                        break;
+                        var tt = expressionTokens[i].Type;
+                        if (tt == TokenType.LEFT_BRACKET && scanDepth == 0)
+                        {
+                            firstBracket = i;
+                            break;
+                        }
+                        if (tt == TokenType.LEFT_PAREN || tt == TokenType.LEFT_BRACE || tt == TokenType.LEFT_BRACKET) scanDepth++;
+                        else if (tt == TokenType.RIGHT_PAREN || tt == TokenType.RIGHT_BRACE || tt == TokenType.RIGHT_BRACKET) scanDepth--;
                     }
                 }
                 
@@ -308,6 +356,38 @@ namespace K3CSharp.Parsing
                         {
                             // Parse the base (prefix before first bracket)
                             var prefixTokens = expressionTokens.GetRange(0, firstBracket);
+                            
+                            // Special case: r:f[x;y] — prefix is an assignment (IDENT COLON FUNC)
+                            // Detect pattern: [IDENT, COLON, ...rest] in prefix, where rest is the function to call
+                            // The bracket args belong to the function call, not to the assignment result
+                            if (prefixTokens.Count >= 3 &&
+                                prefixTokens[0].Type == TokenType.IDENTIFIER &&
+                                prefixTokens[1].Type == TokenType.COLON)
+                            {
+                                // Build the function-call RHS (rest of prefix + all brackets)
+                                // e.g., for r:f[2;3], prefix=[r,:,f], rhsTokens = [f] + all bracket groups
+                                var rhsFuncTokens = prefixTokens.GetRange(2, prefixTokens.Count - 2);
+                                // Reconstruct rhs as func + bracket groups
+                                var rhsAllTokens = new List<Token>(rhsFuncTokens);
+                                foreach (var (gs, ge) in bracketGroups)
+                                    for (int bi = gs; bi <= ge; bi++)
+                                        rhsAllTokens.Add(expressionTokens[bi]);
+                                // Use ParseExpression's bracket-call logic via a fresh parser
+                                // (this handles semicolons as arg separators correctly via SplitBracketArguments)
+                                var tmpParser = new LRSParser(rhsAllTokens, BuildParseTree);
+                                int tmpPos = 0;
+                                var rhsNode = tmpParser.ParseExpression(ref tmpPos);
+                                // Fall back to the bracket-call logic directly if needed
+                                if (rhsNode != null)
+                                {
+                                    var assignNode = new ASTNode(ASTNodeType.Assignment);
+                                    assignNode.Value = new SymbolValue(prefixTokens[0].Lexeme);
+                                    assignNode.Children.Add(rhsNode);
+                                    assignNode.IsTerminalAssignment = true;
+                                    return assignNode;
+                                }
+                            }
+                            
                             ASTNode? currentNode;
                             if (BuildParseTree)
                                 currentNode = BuildParseTreeFromRight(prefixTokens);
@@ -1145,13 +1225,11 @@ namespace K3CSharp.Parsing
                 {
                     var identifier = expressionTokens[0];
                     var indexTokens = expressionTokens.GetRange(2, bracketEnd - 2);
-                    var indexNode = BuildParseTreeFromRight(indexTokens);
+                    var indexNode = EvaluateFromRight(indexTokens);
                     var identifierNode = CreateNodeFromToken(identifier);
                     
-                    // Create @ (apply/index) operation
-                    var applyNode = ASTNode.MakeLiteral(new SymbolValue("@"));
                     return ASTNode.MakeDyadicOp(TokenType.APPLY, identifierNode, 
-                        ASTNode.MakeDyadicOp(TokenType.APPLY, applyNode, indexNode ?? ASTNode.MakeLiteral(new NullValue())));
+                        indexNode ?? ASTNode.MakeLiteral(new NullValue()));
                 }
             }
             

@@ -362,19 +362,75 @@ namespace K3CSharp
         
         private bool HasUndefinedVariables(K3CSharp.FunctionValue func)
         {
-            if (func.PreParsedTokens == null || func.PreParsedTokens.Count == 0)
-                return false;
-                
             var parameterSet = new HashSet<string>(func.Parameters, StringComparer.Ordinal);
             
-            foreach (var token in func.PreParsedTokens)
+            // If PreParsedTokens are available, use them
+            if (func.PreParsedTokens != null && func.PreParsedTokens.Count > 0)
             {
-                // Check for identifiers that are not parameters and not keywords
-                if (token.Type == TokenType.IDENTIFIER && 
-                    !parameterSet.Contains(token.Lexeme) &&
-                    !IsKKeyword(token.Lexeme))
+                foreach (var token in func.PreParsedTokens)
                 {
-                    return true; // Found undefined variable
+                    // Check for identifiers that are not parameters and not keywords
+                    if (token.Type == TokenType.IDENTIFIER && 
+                        !parameterSet.Contains(token.Lexeme) &&
+                        !IsKKeyword(token.Lexeme))
+                    {
+                        return true; // Found undefined variable
+                    }
+                }
+                return false;
+            }
+            
+            // Fallback: parse the source text to detect undefined variables
+            var functionSourceText = !string.IsNullOrEmpty(func.OriginalSourceText) 
+                ? func.OriginalSourceText 
+                : "{" + "[" + string.Join(";", func.Parameters) + "]" + func.BodyText + "}";
+            
+            // Extract the body part (inside the braces)
+            var bodyStart = functionSourceText.IndexOf('[');
+            var bodyEnd = functionSourceText.LastIndexOf('}');
+            
+            if (bodyStart >= 0 && bodyEnd > bodyStart)
+            {
+                var bodyText = functionSourceText.Substring(bodyStart, bodyEnd - bodyStart);
+                
+                // Extract identifiers by finding alphabetic sequences
+                // Skip anything that starts with a digit or is an operator
+                var identifiers = new List<string>();
+                var currentIdentifier = new StringBuilder();
+                
+                foreach (char c in bodyText)
+                {
+                    if (char.IsLetter(c) || (currentIdentifier.Length > 0 && char.IsDigit(c)))
+                    {
+                        currentIdentifier.Append(c);
+                    }
+                    else if (currentIdentifier.Length > 0)
+                    {
+                        identifiers.Add(currentIdentifier.ToString());
+                        currentIdentifier.Clear();
+                    }
+                }
+                
+                if (currentIdentifier.Length > 0)
+                {
+                    identifiers.Add(currentIdentifier.ToString());
+                }
+                
+                foreach (var identifier in identifiers)
+                {
+                    // Skip if it's a keyword, number, or empty
+                    if (IsKKeyword(identifier) || string.IsNullOrEmpty(identifier))
+                        continue;
+                    
+                    // Skip if it's purely numeric
+                    if (double.TryParse(identifier, out _))
+                        continue;
+                    
+                    // Check if it's an identifier not in parameters
+                    if (!parameterSet.Contains(identifier))
+                    {
+                        return true; // Found potential undefined variable
+                    }
                 }
             }
             

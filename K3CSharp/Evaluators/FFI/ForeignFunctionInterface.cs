@@ -94,13 +94,106 @@ namespace K3CSharp
         /// <returns>Best matching constructor</returns>
         private static ConstructorInfo FindBestConstructorMatch(ConstructorInfo[] constructors, List<K3Value> args)
         {
-            // Simple matching: find constructor with closest parameter count
-            var exactMatch = constructors.FirstOrDefault(c => c.GetParameters().Length == args.Count);
-            if (exactMatch != null)
-                return exactMatch;
+            // Filter out constructors with complex types that we can't marshal
+            var filteredConstructors = constructors.Where(c => 
+            {
+                foreach (var param in c.GetParameters())
+                {
+                    // Skip unsafe pointer types
+                    if (param.ParameterType.IsPointer)
+                        return false;
+                    
+                    // Skip span and readonly span types
+                    if (param.ParameterType.IsGenericType && 
+                        (param.ParameterType.GetGenericTypeDefinition() == typeof(Span<>) ||
+                         param.ParameterType.GetGenericTypeDefinition() == typeof(ReadOnlySpan<>)))
+                        return false;
+                }
+                return true;
+            }).ToArray();
             
-            // Find constructor with closest parameter count
-            return constructors.OrderBy(c => Math.Abs(c.GetParameters().Length - args.Count)).First();
+            // First try to find exact parameter count match
+            var exactCountMatches = filteredConstructors.Where(c => c.GetParameters().Length == args.Count).ToList();
+            
+            if (exactCountMatches.Count == 1)
+                return exactCountMatches[0];
+            
+            if (exactCountMatches.Count > 1)
+            {
+                // Multiple constructors with same parameter count - score and rank them
+                var scoredConstructors = exactCountMatches.Select(ctor => new
+                {
+                    Constructor = ctor,
+                    Score = ScoreConstructor(ctor, args)
+                }).OrderByDescending(x => x.Score).First();
+                
+                return scoredConstructors.Constructor;
+            }
+            
+            // No exact count match - find closest parameter count
+            return filteredConstructors.OrderBy(c => Math.Abs(c.GetParameters().Length - args.Count)).First();
+        }
+        
+        /// <summary>
+        /// Score a constructor based on how well it matches the arguments
+        /// </summary>
+        private static int ScoreConstructor(ConstructorInfo ctor, List<K3Value> args)
+        {
+            var parameters = ctor.GetParameters();
+            int score = 0;
+            
+            for (int i = 0; i < parameters.Length && i < args.Count; i++)
+            {
+                var paramType = parameters[i].ParameterType;
+                var arg = args[i];
+                
+                // Heavily penalize unsafe pointer types (char*, void*, etc.)
+                if (paramType.IsPointer)
+                {
+                    score -= 1000; // Never select unsafe constructors
+                    continue;
+                }
+                
+                // Prefer string over char[] for character vectors
+                if (arg is VectorValue vector && vector.VectorType == -3)
+                {
+                    if (paramType == typeof(string))
+                        score += 100; // Strong preference for string
+                    else if (paramType == typeof(char[]))
+                        score -= 50; // Penalize char[]
+                }
+                
+                // Type compatibility bonus
+                if (IsTypeCompatible(arg, paramType))
+                    score += 10;
+            }
+            
+            return score;
+        }
+        
+        /// <summary>
+        /// Check if a K3Value is compatible with a .NET type
+        /// </summary>
+        private static bool IsTypeCompatible(K3Value kValue, Type targetType)
+        {
+            // Character vectors (strings) are compatible with string type
+            if (kValue is VectorValue charVector && charVector.VectorType == -3 && targetType == typeof(string))
+                return true;
+            
+            // Character vectors are also compatible with char[]
+            if (kValue is VectorValue vector && vector.VectorType == -3 && targetType == typeof(char[]))
+                return true;
+            
+            // Integers are compatible with numeric types
+            if (kValue is IntegerValue && (targetType == typeof(int) || targetType == typeof(long) || 
+                targetType == typeof(float) || targetType == typeof(double)))
+                return true;
+            
+            // Floats are compatible with numeric types
+            if (kValue is FloatValue && (targetType == typeof(float) || targetType == typeof(double)))
+                return true;
+            
+            return false;
         }
 
         /// <summary>

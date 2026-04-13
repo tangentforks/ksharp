@@ -297,6 +297,9 @@ namespace K3CSharp.Parsing
                 TokenType.TIME => ASTNode.MakeLiteral(new SymbolValue("_t")),
                 TokenType.EVAL => ASTNode.MakeLiteral(new SymbolValue("_eval")),
                 TokenType.PARSE => ASTNode.MakeLiteral(new SymbolValue("_parse")),
+                TokenType.GETHINT => ASTNode.MakeLiteral(new SymbolValue("_gethint")),
+                TokenType.DISPOSE => ASTNode.MakeLiteral(new SymbolValue("_dispose")),
+                TokenType.SETHINT => ASTNode.MakeLiteral(new SymbolValue("_sethint")),
                 
                 // Linear algebra operations
                 TokenType.DOT_PRODUCT => ASTNode.MakeLiteral(new SymbolValue("_dot")),
