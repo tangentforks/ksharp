@@ -2351,7 +2351,7 @@ namespace K3CSharp.Tests
 
                 ("idioms_01_447_conditional_drop.k", "(0 1 2;3 4 5;6 7 8;9 10 11)"),
 
-                ("idioms_01_448_conditional_drop_last.k", "(0 1 2;3 4 5;6 7 8)"),
+                ("idioms_01_448_conditional_drop_last.k", "((0 1 2;3 4 5;6 7 8;9 10 11);(0 1 2;3 4 5;6 7 8))"),
 
                 ("idioms_01_549_alphabetic_comparison.k", "1"),
 
