@@ -37,7 +37,7 @@ A comprehensive C# implementation of the K3 programming language core, a high-pe
 - [� .NET Integration](#-net-integration)
   - [Foreign Function Interface (FFI)](#foreign-function-interface-ffi)
   - [Dyadic 2: Assembly Loading](#dyadic-2-assembly-loading)
-  - [Hint System with _hint](#hint-system-with-_hint)
+  - [Hint System with _gethint and _sethint](#hint-system-with-_gethint-and-_sethint)
   - [Object Management and Disposal](#object-management-and-disposal)
   - [The _dotnet Tree](#the-_dotnet-tree)
   - [Object Instantiation](#object-instantiation)
@@ -361,41 +361,63 @@ v[]             // Returns: 1 2 3 4 (equivalent to @_n)
 - **Right Argument**: Type name (fully qualified .NET type)
 - **Result**: Dictionary containing type metadata, methods, properties, constructors
 
-### **Hint System with _hint**
+### **Hint System with _gethint and _sethint**
 
-The `_hint` verb provides type marshalling control and object creation hints.
+The `_gethint` and `sethint` verbs provide type marshalling control and object creation hints.
 
 ```k3
 // Create a .NET string object from K3 string
-"hello" _hint `object
+s:"hello" 
+s _sethint `string
 
 // Get type information
-"hello" _hint `type
-
-// Convert to character vector
-"hello" _hint `charvec
+s _gethint
 ```
 
 **Hint Types:**
-- `` `object``: Convert to .NET object
-- `` `type``: Get type information
-- `` `charvec``: Convert to character vector
-- `` `string``: Convert to string
+- `` `bool`` - System.Boolean, subtype of K int
+- `` `byte`` - System.Byte \(unsigned int8\), subtype of K char \(default\)
+- `` `sbyte`` - System.SByte \(int8\), subtype of K char
+- `` `short`` - System.Int16 \(int16\), subtype of K int
+- `` `ushort`` - System.UInt16 \(uint16\), subtype of K int
+- `` `int`` - System.Int32 \(int32\), subtype of K int \(default for any value other than 0N\)
+- `` `uint`` - System.UInt32 \(uint32\), subtype of K long int
+- `` `long`` - System.Int64 \(int64\), subtype of K long int \(default for any value other than 0Nj\)
+- `` `ulong`` - System.UInt64 \(uint64\), subtype of K long int
+- `` `float`` - System.Single \(float\), subtype of K float
+- `` `double`` - System.Double \(double\), subtype of K float \(default\)
+- `` `object`` - System.Object \(object\), subtype of K dictionary
+- `` `datetime`` - System.DateTime, subtype of K int or K float
+- `` `timespan`` - System.TimeSpan, subtype of K int or K float
+- `` `dictionary`` - System.Collections.Hashtable, subtype of K dictionary \(default\)
+- `` `list`` - System.Collections.Generic.List\<System.Object\>, subtype of K lists and vectors \(default for all except character vectors\) 
+- `` `string`` - System.String, subtype of K symbol and K character vector \(default\)
+- `` `stringbuilder`` - System.Text.StringBuilder, subtype of K string
+- `` `null`` - System.DBNull, subtype of K int and long int \(default conversion for 0 and 0N\)
+- `` `method`` - System.Delegate, subtype of K function
 
-### **Object Management and Disposal**
+### **Object Instantiation and Disposal**
 
 K3CSharp includes automatic object lifecycle management with explicit disposal capabilities.
 
 ```k3
+// Bind .NET dll
+complex:`System.Runtime.Numerics.dll 2: `System.Numerics.Complex
+
+// K verb constructor
+complex_new:complex[`constructor]
+
 // Create object
-obj: "hello" _hint `object
+c1:complex_new[2;3]
 
 // Dispose object when done
-_dispose obj
+_dispose c1
 
 // Check object status (returns handle information)
-obj._this
+c1._this
 ```
+
+NOTE: When a .NET Object is instantiated, a copy of its data will be mapped onto a K dictionary. This dictionary is an independent copy and changes will not be propagated back to .NET. Changing the .NET object must be done through accessors and methods.
 
 **Object Registry:**
 - Thread-safe global object tracking
@@ -405,14 +427,14 @@ obj._this
 
 ### **The _dotnet Tree**
 
-The `_dotnet` global tree stores loaded assemblies and type information for efficient reuse.
+The `._dotnet` global tree stores loaded assemblies and type information for efficient reuse.
 
 ```k3
-// Access loaded assemblies
-_dotnet.0  // First loaded assembly
+// Access static methods for loaded assemblies
+conj_func: ._dotnet.System.Numerics.Complex.Conjugate
 
-// Browse assembly metadata
-_dotnet.`System.Private.CoreLib
+// Enumerate metadata
+!._dotnet.System.Numerics.Complex
 
 // Type information is cached for performance
 ```
@@ -421,29 +443,6 @@ _dotnet.`System.Private.CoreLib
 - Numeric indices: Assembly references
 - Symbol keys: Assembly names
 - Nested dictionaries: Type metadata
-
-### **Object Instantiation**
-
-Create instances of .NET objects using constructor information from type dictionaries.
-
-```k3
-// Get type information
-stringType: "System.Private.CoreLib" 2: `System.String
-
-// Access constructor information
-stringType.constructors
-
-// Create instance (when constructor binding is implemented)
-// stringType.constructors[0]("hello")
-```
-
-NOTE: When a .NET Object is instantiated, a copy of its data will be mapped onto a K dictionary. This dictionary is an independent copy and changes will not be propagated back to .NET. Changing the .NET object must be done through accessors and methods.
-
-**Constructor Features:**
-- Overload resolution
-- Parameter type matching
-- Automatic argument marshalling
-- Error handling for invalid calls
 
 ### **Method Invocation**
 
@@ -470,20 +469,6 @@ str.Chars[0]       // Indexer access
 - Field access
 - Indexer support
 - Argument marshalling
-
-### **Type Marshalling**
-
-Automatic conversion between K3 and .NET types:
-
-| K3 Type | .NET Type | Notes |
-|----------|-----------|-------|
-| Integer | `Int32`, `Int64` | Automatic sizing |
-| Float | `Double`, `Single` | Precision preservation |
-| String | `String` | Direct mapping |
-| Symbol | `String` | Name conversion |
-| Character | `Char` | Single character |
-| Vector | Arrays, Lists | Element-wise conversion |
-| Dictionary | Custom types | Structured mapping |
 
 ### **Error Handling**
 
