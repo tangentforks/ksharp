@@ -1115,6 +1115,16 @@ y:"quaquaqua"
 ║ idioms_02_239_sum_recip.k                          │ x:10 9 10 7 8
 y:80 63 70 63 64
 +/y%x │ 39                   │                      ║
+║ division_integer_zero_by_zero.k                    │ 0%0                  │ 0                    │                      ║
+║ division_long_zero_by_zero.k                       │ 0j%0j                │ 0j                   │                      ║
+║ division_float_zero_by_zero.k                      │ 0.0%0.0              │ 0.0                  │                      ║
+║ division_mixed_int_float_zero_by_zero.k            │ 0%0.0                │ 0.0                  │                      ║
+║ division_mixed_float_int_zero_by_zero.k            │ 0.0%0                │ 0.0                  │                      ║
+║ division_mixed_long_float_zero_by_zero.k           │ 0j%0.0               │ 0.0                  │                      ║
+║ division_mixed_float_long_zero_by_zero.k           │ 0.0%0j               │ 0.0                  │                      ║
+║ division_vector_zero_by_zero_normal.k              │ 10 0 10 % 1 0 1      │ (10.0;0;10.0)        │                      ║
+║ division_vector_zero_by_zero_large_positive.k      │ 1e308 0 10 % 1 0 1   │ (1e+308;0i;10)       │                      ║
+║ division_vector_zero_by_zero_large_negative.k      │ -1e308 0 10 % 1 0 1  │ (-1e+308;-0i;10)     │                      ║
 ║ idioms_02_242_sum_squares.k                        │ x:1 2 3 4 5
 +/x*x    │ 55                   │                      ║
 ║ idioms_02_243_dot_product.k                        │ x:1 2 3 4 5
@@ -1232,7 +1242,7 @@ _eval (`",";,`a`b`c;(`",";,`d;`v)) │ `a`b`c`d`e`f         │                 
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 903/921 tests passed (98.0%)                                                                               ║
+║ SUMMARY: 913/931 tests passed (98.1%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:

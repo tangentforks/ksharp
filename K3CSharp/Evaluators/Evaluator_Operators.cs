@@ -171,10 +171,15 @@ namespace K3CSharp
             if (a is IntegerValue && b is IntegerValue)
             {
                 int divisor = ((IntegerValue)b).Value;
+                int dividend = ((IntegerValue)a).Value;
+                
+                // Special case: 0%0 returns 0 (per K specification)
+                if (divisor == 0 && dividend == 0)
+                    return new IntegerValue(0);
+                
                 if (divisor == 0)
                     throw new Exception("Division by zero");
                 
-                int dividend = ((IntegerValue)a).Value;
                 // In K, division always promotes to float
                 return new FloatValue((double)dividend / divisor);
             }
@@ -183,10 +188,15 @@ namespace K3CSharp
             if (a is LongValue && b is LongValue)
             {
                 long divisor = ((LongValue)b).Value;
+                long dividend = ((LongValue)a).Value;
+                
+                // Special case: 0j%0j returns 0j (per K specification)
+                if (divisor == 0 && dividend == 0)
+                    return new LongValue(0);
+                
                 if (divisor == 0)
                     throw new Exception("Division by zero");
                 
-                long dividend = ((LongValue)a).Value;
                 // In K, division always promotes to float
                 return new FloatValue((double)dividend / divisor);
             }
@@ -209,39 +219,69 @@ namespace K3CSharp
             if (a is IntegerValue && b is FloatValue)
             {
                 double divisor = ((FloatValue)b).Value;
+                int dividend = ((IntegerValue)a).Value;
+                
+                // Special case: 0%0.0 returns 0.0 (per K specification - type promotion case)
+                if (divisor == 0.0 && dividend == 0)
+                    return new FloatValue(0.0);
+                
                 if (divisor == 0)
                     throw new Exception("Division by zero");
-                return new FloatValue(((IntegerValue)a).Value / divisor);
+                return new FloatValue(dividend / divisor);
             }
             if (a is FloatValue && b is IntegerValue)
             {
                 int divisor = ((IntegerValue)b).Value;
+                double dividend = ((FloatValue)a).Value;
+                
+                // Special case: 0.0%0 returns 0.0 (per K specification - type promotion case)
+                if (divisor == 0 && dividend == 0.0)
+                    return new FloatValue(0.0);
+                
                 if (divisor == 0)
                     throw new Exception("Division by zero");
-                return new FloatValue(((FloatValue)a).Value / divisor);
+                return new FloatValue(dividend / divisor);
             }
             if (a is LongValue && b is FloatValue)
             {
                 double divisor = ((FloatValue)b).Value;
+                long dividend = ((LongValue)a).Value;
+                
+                // Special case: 0j%0.0 returns 0.0 (per K specification - type promotion case)
+                if (divisor == 0.0 && dividend == 0)
+                    return new FloatValue(0.0);
+                
                 if (divisor == 0)
                     throw new Exception("Division by zero");
-                return new FloatValue(((LongValue)a).Value / divisor);
+                return new FloatValue(dividend / divisor);
             }
             if (a is FloatValue && b is LongValue)
             {
                 long divisor = ((LongValue)b).Value;
+                double dividend = ((FloatValue)a).Value;
+                
+                // Special case: 0.0%0j returns 0.0 (per K specification - type promotion case)
+                if (divisor == 0 && dividend == 0.0)
+                    return new FloatValue(0.0);
+                
                 if (divisor == 0)
                     throw new Exception("Division by zero");
-                return new FloatValue(((FloatValue)a).Value / divisor);
+                return new FloatValue(dividend / divisor);
             }
             
             // Handle same type float operations
             if (a is FloatValue && b is FloatValue)
             {
                 double divisor = ((FloatValue)b).Value;
+                double dividend = ((FloatValue)a).Value;
+                
+                // Special case: 0.0%0.0 returns 0.0 (per K specification)
+                if (divisor == 0.0 && dividend == 0.0)
+                    return new FloatValue(0.0);
+                
                 if (divisor == 0)
                     throw new Exception("Division by zero");
-                return new FloatValue(((FloatValue)a).Value / divisor);
+                return new FloatValue(dividend / divisor);
             }
             
             // Handle vector operations
