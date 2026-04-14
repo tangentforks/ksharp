@@ -332,6 +332,7 @@ namespace K3CSharp
                 TokenType.BINL => "_binl",
                 TokenType.LIN => "_lin",
                 TokenType.DV => "_dv",
+                TokenType.DVL => "_dvl",
                 TokenType.DI => "_di",
                 TokenType.VS => "_vs",
                 TokenType.SV => "_sv",
@@ -716,6 +717,8 @@ namespace K3CSharp
             RegisterVerb("BINL", VerbType.SystemFunction, new[] { 2 }, null);
             RegisterVerb("_dv", VerbType.SystemFunction, new[] { 2 }, null);
             RegisterVerb("DV", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("_dvl", VerbType.SystemFunction, new[] { 2 }, null);
+            RegisterVerb("DVL", VerbType.SystemFunction, new[] { 2 }, null);
             RegisterVerb("_di", VerbType.SystemFunction, new[] { 2 }, null);
             RegisterVerb("DI", VerbType.SystemFunction, new[] { 2 }, null);
             RegisterVerb("_sv", VerbType.SystemFunction, new[] { 2 }, null);

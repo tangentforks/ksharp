@@ -624,6 +624,7 @@ namespace K3CSharp
                 { "_binl", Binl },
                 { "_lin", Lin },
                 { "_dv", Dv },
+                { "_dvl", Dvl },
                 { "_di", Di },
                 { "_sm", Sm },
                 { "_sv", Sv },

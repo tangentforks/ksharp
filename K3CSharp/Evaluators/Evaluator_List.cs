@@ -288,6 +288,36 @@ namespace K3CSharp
             }
         }
 
+        private K3Value Dvl(K3Value left, K3Value right)
+        {
+            // _dvl (Delete by Value List) function
+            // Equivalent to _dv/: - applies _dv with each-right adverb
+            // Returns a copy of left with all occurrences of elements in right removed
+            // For dictionaries, returns left as is (they are atomic)
+            
+            // Handle dictionary case - dictionaries are atomic, so return as is
+            if (left is DictionaryValue)
+            {
+                return left;
+            }
+            
+            // Handle right as a list/vector - apply Dv for each element
+            if (right is VectorValue rightVec)
+            {
+                K3Value result = left;
+                foreach (var element in rightVec.Elements)
+                {
+                    result = Dv(result, element);
+                }
+                return result;
+            }
+            else
+            {
+                // If right is not a list, just use Dv
+                return Dv(left, right);
+            }
+        }
+
         private K3Value Di(K3Value left, K3Value right)
         {
             // _di (Delete by Index) function

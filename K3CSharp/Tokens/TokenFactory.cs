@@ -110,6 +110,7 @@ namespace K3CSharp
                 TokenType.BINL => new SystemFunctionToken(tokenType, lexeme, position, line, column),
                 TokenType.LIN => new SystemFunctionToken(tokenType, lexeme, position, line, column),
                 TokenType.DV => new SystemFunctionToken(tokenType, lexeme, position, line, column),
+                TokenType.DVL => new SystemFunctionToken(tokenType, lexeme, position, line, column),
                 TokenType.DI => new SystemFunctionToken(tokenType, lexeme, position, line, column),
                 TokenType.VS => new SystemFunctionToken(tokenType, lexeme, position, line, column),
                 TokenType.SV => new SystemFunctionToken(tokenType, lexeme, position, line, column),

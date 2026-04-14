@@ -94,6 +94,7 @@ namespace K3CSharp
                 TokenType.BINL => SystemFunctionType.Binl,
                 TokenType.LIN => SystemFunctionType.Lin,
                 TokenType.DV => SystemFunctionType.Dv,
+                TokenType.DVL => SystemFunctionType.Dvl,
                 TokenType.DI => SystemFunctionType.Di,
                 TokenType.VS => SystemFunctionType.Vs,
                 TokenType.SV => SystemFunctionType.Sv,
@@ -135,6 +136,7 @@ namespace K3CSharp
             SystemFunctionType.Binl => "_binl",
             SystemFunctionType.Lin => "_lin",
             SystemFunctionType.Dv => "_dv",
+            SystemFunctionType.Dvl => "_dvl",
             SystemFunctionType.Di => "_di",
             SystemFunctionType.Vs => "_vs",
             SystemFunctionType.Sv => "_sv",
@@ -174,6 +176,7 @@ namespace K3CSharp
             SystemFunctionType.Binl => new[] { 2 },
             SystemFunctionType.Lin => new[] { 2 },
             SystemFunctionType.Dv => new[] { 2 },
+            SystemFunctionType.Dvl => new[] { 2 },
             SystemFunctionType.Di => new[] { 2 },
             SystemFunctionType.Vs => new[] { 1 },
             SystemFunctionType.Sv => new[] { 2 },
@@ -261,7 +264,7 @@ namespace K3CSharp
     {
         Bd, Db, Getenv, Setenv, Size, Draw, Div, And, Or, Xor, Not,
         Rot, Shift, Dot, Mul, Inv, Lsq, In, Bin, Binl, Lin,
-        Dv, Di, Vs, Sv, Ss, Sm, Ci, Ic, Gtime, Ltime, Lt, Jd, Dj
+        Dv, Dvl, Di, Vs, Sv, Ss, Sm, Ci, Ic, Gtime, Ltime, Lt, Jd, Dj
     }
 
     public enum IOOperatorType

@@ -128,6 +128,7 @@ namespace K3CSharp
         CI,             // _ci character from integer
         IC,             // _ic integer from character
         DV,             // _dv delete by value
+        DVL,            // _dvl delete by value list
         DI,             // _di delete by index
         GETENV,         // _getenv get environment variable
         SETENV,         // _setenv set environment variable

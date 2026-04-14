@@ -83,6 +83,7 @@ namespace K3CSharp
                 TokenType.BINL => "_binl",
                 TokenType.LIN => "_lin",
                 TokenType.DV => "_dv",
+                TokenType.DVL => "_dvl",
                 TokenType.DI => "_di",
                 TokenType.VS => "_vs",
                 TokenType.SV => "_sv",

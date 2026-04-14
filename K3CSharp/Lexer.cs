@@ -896,6 +896,7 @@ namespace K3CSharp
                 "_ci" => new Token(TokenType.CI, opName, start),
                 "_ic" => new Token(TokenType.IC, opName, start),
                 "_dv" => new Token(TokenType.DV, opName, start),
+                "_dvl" => new Token(TokenType.DVL, opName, start),
                 "_di" => new Token(TokenType.DI, opName, start),
                 "_d" => new Token(TokenType.DIRECTORY, opName, start),
                 "_do" => new Token(TokenType.DO, opName, start),
