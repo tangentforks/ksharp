@@ -1114,7 +1114,7 @@ y:"quaquaqua"
 +/x=y │ 3                    │                      ║
 ║ idioms_02_239_sum_recip.k                          │ x:10 9 10 7 8
 y:80 63 70 63 64
-+/y%x │ 39                   │ 39.0                 ║
++/y%x │ 39                   │                      ║
 ║ idioms_02_242_sum_squares.k                        │ x:1 2 3 4 5
 +/x*x    │ 55                   │                      ║
 ║ idioms_02_243_dot_product.k                        │ x:1 2 3 4 5
@@ -1232,7 +1232,7 @@ _eval (`",";,`a`b`c;(`",";,`d;`v)) │ `a`b`c`d`e`f         │                 
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 902/921 tests passed (97.9%)                                                                               ║
+║ SUMMARY: 903/921 tests passed (98.0%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -1282,13 +1282,6 @@ conj_func: ._dotnet.System.Numerics.Complex.Conjugate
 .((`real;c1[`Real]);(`imag;c1[`Imaginary]);(`magnitude;magnitude);(`instance;!c1);(`type;!complex))
 Expected: .((`real;2.0;);(`imag;3.0;);(`magnitude;3.605551275463989))
 Actual: .((`real;2.0;);(`imag;3.0;);(`magnitude;3.605551;);(`instance;`get_Imaginary`get_Real`_this`Abs`Equals`GetHashCode`ToString`GetType;);(`type;`name`fullname`namespace`assembly`isclass`isinterface`isenum`isabstract`ispublic`isstatic`.ctor`constructor`FromPolarCoordinates`Negate`Add`Subtract`Multiply`Divide`op_UnaryNegation`op_Addition`op_Subtraction`op_Multiply`op_Division`Abs`Conjugate`Reciprocal`op_Equality`op_Inequality`Sin`Sinh`Asin`Cos`Cosh`Acos`Tan`Tanh`Atan`IsFinite`IsInfinity`IsNaN`Log`Log10`Exp`Sqrt`Pow`op_Explicit`op_Implicit`op_Decrement`op_Increment`CreateChecked`CreateSaturating`CreateTruncating`IsComplexNumber`IsEvenInteger`IsImaginaryNumber`IsInteger`IsNegative`IsNegativeInfinity`IsNormal`IsOddInteger`IsPositive`IsPositiveInfinity`IsRealNumber`IsSubnormal`MaxMagnitude`MinMagnitude`Parse`TryParse`op_UnaryPlus`get_Real`get_Imaginary`get_Magnitude`get_Phase`Equals`GetHashCode`ToString`TryFormat`GetType`Real`Imaginary`Magnitude`Phase`Zero`One`ImaginaryOne`NaN`Infinity;))
-──────────────────────────────────────────────────────────────────────────
-Test: idioms_02_239_sum_recip.k
-Input: x:10 9 10 7 8
-y:80 63 70 63 64
-+/y%x
-Expected: 39.0
-Actual: 39
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_02_361_parity.k
 Input: x:2 _vs !8

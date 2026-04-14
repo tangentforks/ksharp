@@ -2373,7 +2373,7 @@ namespace K3CSharp.Tests
                 ("idioms_02_374_sum.k", "15"),
                 ("idioms_02_370_count_ones.k", "4"),
                 ("idioms_02_362_count_occur.k", "3"),
-                ("idioms_02_239_sum_recip.k", "39.0"),
+                ("idioms_02_239_sum_recip.k", "39"),
                 ("idioms_02_242_sum_squares.k", "55"),
                 ("idioms_02_243_dot_product.k", "550"),
                 ("idioms_02_372_sum_columns.k", "15 18 21 24"),
