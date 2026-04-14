@@ -1171,7 +1171,7 @@ x?" "     │ 2                    │                      ║
 x2:9
 x:2 5#"y1:x1y2:x2"
 r:.:'x
-y1+y2 │ Error: Verb '.'...   │ 13                   ║
+(y1;y2) │ Error: Verb '.'...   │ (4;9)                ║
 ║ idioms_02_518_cond_transpose.k                     │ x:2 3#!6
 1 +:/x      │ Error: Cannot a...   │ (0 3;1 4;2 5)        ║
 ║ idioms_02_533_cond_reverse.k                       │ x:1 2 3 4 5
@@ -1325,8 +1325,8 @@ Input: x1:4
 x2:9
 x:2 5#"y1:x1y2:x2"
 r:.:'x
-y1+y2
-Expected: 13
+(y1;y2)
+Expected: (4;9)
 Actual: Error: Verb '.' is registered as monadic but not implemented in ApplyMonadicVerb
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_02_518_cond_transpose.k
