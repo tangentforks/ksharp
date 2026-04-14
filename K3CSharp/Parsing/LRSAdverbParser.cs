@@ -155,7 +155,9 @@ namespace K3CSharp.Parsing
                 return null;
 
             // Check if all remaining tokens are atomic - if so, create a vector
+            // But only for actual literals, not identifiers which need runtime resolution
             bool allAtomic = true;
+            bool hasIdentifier = false;
             for (int i = position; i < tokens.Count; i++)
             {
                 if (!LRSAtomicParser.IsAtomicToken(tokens[i].Type))
@@ -163,11 +165,21 @@ namespace K3CSharp.Parsing
                     allAtomic = false;
                     break;
                 }
+                if (tokens[i].Type == TokenType.IDENTIFIER)
+                    hasIdentifier = true;
             }
 
-            if (allAtomic && tokens.Count > position)
+            // Single identifier: return as variable node for runtime resolution
+            if (allAtomic && tokens.Count - position == 1 && hasIdentifier)
             {
-                // Create a VectorValue from all remaining atomic tokens
+                var node = LRSAtomicParser.ParseAtomicToken(tokens[position]);
+                position++;
+                return node;
+            }
+
+            if (allAtomic && !hasIdentifier && tokens.Count > position)
+            {
+                // Create a VectorValue from all remaining atomic literal tokens
                 var values = new List<K3Value>();
                 while (position < tokens.Count)
                 {

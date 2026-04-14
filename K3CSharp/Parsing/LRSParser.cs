@@ -498,19 +498,22 @@ namespace K3CSharp.Parsing
             }
             
             // Check for verb-immediate-left adverb patterns FIRST (highest priority)
-            // Pattern: verb'args or verb/args or verb\args
+            // Pattern: verb'args or verb/args or verb\args or verb':args or verb/:args or verb\:args
             // This must be checked BEFORE any other parsing to prevent the expression from being parsed as a regular operation
             if (tokens.Count >= 2)
             {
                 var potentialVerb = tokens[0];
                 var potentialAdverb = tokens[1];
                 
-                // Check if first token is a verb and second token is a single-glyph adverb that supports verb-immediate-left
+                // Check if first token is a verb and second token is an adverb
                 bool isVerb = VerbRegistry.IsVerbToken(potentialVerb.Type);
                 bool isAdverb = VerbRegistry.IsAdverbToken(potentialAdverb.Type);
                 bool isSingleGlyphAdverb = potentialAdverb.Type == TokenType.ADVERB_TICK || 
                                           potentialAdverb.Type == TokenType.ADVERB_SLASH || 
                                           potentialAdverb.Type == TokenType.ADVERB_BACKSLASH;
+                bool isTwoGlyphAdverb = potentialAdverb.Type == TokenType.ADVERB_TICK_COLON ||
+                                       potentialAdverb.Type == TokenType.ADVERB_SLASH_COLON ||
+                                       potentialAdverb.Type == TokenType.ADVERB_BACKSLASH_COLON;
                 
                 if (isVerb && isAdverb && isSingleGlyphAdverb)
                 {
@@ -518,6 +521,13 @@ namespace K3CSharp.Parsing
                     var adverbParser = new LRSAdverbParser(tokens, BuildParseTree);
                     int position = 1; // Start at adverb position
                     var adverbResult = adverbParser.ParseVerbImmediateLeftAdverb(ref position);
+                    if (adverbResult != null)
+                        return adverbResult;
+                }
+                else if (isVerb && isAdverb && isTwoGlyphAdverb)
+                {
+                    // Delegate two-glyph adverb patterns to EvaluateFromRight which handles them correctly
+                    var adverbResult = EvaluateFromRight(tokens);
                     if (adverbResult != null)
                         return adverbResult;
                 }
@@ -1297,6 +1307,27 @@ namespace K3CSharp.Parsing
                 return tempGroupingParser.ParseBraces(ref position);
             }
             
+            // Check for verb+adverb patterns (e.g., |/x in ~|/x)
+            // Must be checked before monadic to avoid splitting verb+adverb incorrectly
+            if (tokens.Count >= 2)
+            {
+                bool hasAdverb = false;
+                for (int i = 0; i < tokens.Count; i++)
+                {
+                    if (VerbRegistry.IsAdverbToken(tokens[i].Type))
+                    {
+                        hasAdverb = true;
+                        break;
+                    }
+                }
+                if (hasAdverb)
+                {
+                    var adverbResult = EvaluateFromRight(tokens);
+                    if (adverbResult != null)
+                        return adverbResult;
+                }
+            }
+            
             // Check if this is a nested monadic operation (e.g., ,`a in ^,`a)
             if (tokens.Count >= 2 && OperatorDetector.SupportsMonadic(tokens[0].Type))
             {
@@ -1935,6 +1966,65 @@ namespace K3CSharp.Parsing
             // Create verb node
             var verbNode = CreateNodeFromToken(verbToken);
             
+            // Check for chained adverbs: verb/'x, verb//x, verb/\x, etc.
+            // Per spec: "a modified verb is also a verb" — adverbs bind closest to the verb first.
+            // One-adverb-at-a-time: build nested 2-child nodes where each outer adverb wraps
+            // the inner modified verb. Inner modified verb is ADVERB(verb) with 1 child.
+            // Outermost adverb is ADVERB(inner_modified_verb, argument) with 2 children.
+            if (expressionTokens.Count >= 3 && VerbRegistry.IsAdverbToken(expressionTokens[2].Type))
+            {
+                // Build innermost modified verb: ADVERB(verb) — 1 child, no arguments
+                var innerNode = new ASTNode(ASTNodeType.DyadicOp);
+                innerNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbToken.Type));
+                innerNode.Children.Add(verbNode);
+                
+                // Wrap with successive adverbs (each is 1-child until the outermost)
+                int chainPos = 2;
+                while (chainPos < expressionTokens.Count - 1 && VerbRegistry.IsAdverbToken(expressionTokens[chainPos].Type))
+                {
+                    // Check if the NEXT token is also an adverb — if so, this is still an inner adverb (1-child)
+                    if (chainPos + 1 < expressionTokens.Count && VerbRegistry.IsAdverbToken(expressionTokens[chainPos + 1].Type))
+                    {
+                        var midAdverb = expressionTokens[chainPos];
+                        var midNode = new ASTNode(ASTNodeType.DyadicOp);
+                        midNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(midAdverb.Type));
+                        midNode.Children.Add(innerNode);
+                        innerNode = midNode;
+                        chainPos++;
+                    }
+                    else
+                    {
+                        break; // This is the outermost adverb — handle below with arguments
+                    }
+                }
+                
+                // The token at chainPos is the outermost adverb
+                var outerAdverbToken = expressionTokens[chainPos];
+                
+                // Parse remaining tokens as the argument
+                var remainingTokens = expressionTokens.Skip(chainPos + 1).ToList();
+                ASTNode? chainArg = null;
+                if (remainingTokens.Count == 1 && remainingTokens[0].Type == TokenType.IDENTIFIER)
+                {
+                    chainArg = LRSAtomicParser.ParseAtomicToken(remainingTokens[0], this);
+                }
+                else if (remainingTokens.Count > 0)
+                {
+                    chainArg = EvaluateFromRight(remainingTokens);
+                }
+                
+                // Build outermost adverb node: ADVERB(inner_modified_verb, argument) — 2 children
+                var outerNode = new ASTNode(ASTNodeType.DyadicOp);
+                outerNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(outerAdverbToken.Type));
+                outerNode.Children.Add(innerNode);
+                if (chainArg != null)
+                    outerNode.Children.Add(chainArg);
+                else
+                    outerNode.Children.Add(ASTNode.MakeLiteral(new NullValue()));
+                
+                return outerNode;
+            }
+            
             // Parse arguments (everything after the adverb)
             var argTokens = expressionTokens.Skip(2).ToList();
             ASTNode? argNode = null;
@@ -1942,7 +2032,9 @@ namespace K3CSharp.Parsing
             if (argTokens.Count > 0)
             {
                 // Check if all argument tokens are atomic - if so, create a vector directly
+                // But single identifiers should remain as Variable nodes for runtime resolution
                 bool allAtomic = true;
+                bool hasIdentifier = false;
                 foreach (var token in argTokens)
                 {
                     if (!LRSAtomicParser.IsAtomicToken(token.Type))
@@ -1950,11 +2042,18 @@ namespace K3CSharp.Parsing
                         allAtomic = false;
                         break;
                     }
+                    if (token.Type == TokenType.IDENTIFIER)
+                        hasIdentifier = true;
                 }
                 
-                if (allAtomic)
+                if (allAtomic && argTokens.Count == 1 && hasIdentifier)
                 {
-                    // Create a vector node from the atomic argument tokens
+                    // Single identifier: return as variable node for runtime resolution
+                    argNode = LRSAtomicParser.ParseAtomicToken(argTokens[0], this);
+                }
+                else if (allAtomic && !hasIdentifier)
+                {
+                    // Create a vector node from the atomic literal tokens
                     var argNodes = new List<ASTNode>();
                     foreach (var token in argTokens)
                     {
@@ -1964,13 +2063,11 @@ namespace K3CSharp.Parsing
                 }
                 else
                 {
-                    // Parse the arguments as a sub-expression for complex cases
-                    int argPosition = 0;
-                    var argParser = new LRSExpressionProcessor(argTokens, BuildParseTree, this);
-                    argNode = argParser.ProcessExpression(ref argPosition);
+                    // Parse the arguments as a full expression
+                    // This handles complex cases like x*y, (1 2 3;4 5 6), etc.
+                    argNode = EvaluateFromRight(argTokens);
                     
-                    // If we couldn.t parse the arguments, try using the LRSParser directly
-                    // This handles complex expressions like (1 2 3;4 5 6) with semicolons
+                    // Fallback to BuildParseTreeFromTokens if EvaluateFromRight fails
                     if (argNode == null && argTokens.Count > 0)
                     {
                         argNode = BuildParseTreeFromTokens(argTokens);
@@ -2139,15 +2236,7 @@ namespace K3CSharp.Parsing
         /// </summary>
         private string GetVerbName(TokenType tokenType)
         {
-            return tokenType switch
-            {
-                TokenType.PLUS => "+",
-                TokenType.MINUS => "-",
-                TokenType.MULTIPLY => "*",
-                TokenType.DIVIDE => "%",
-                TokenType.DOT_PRODUCT => "_dot",
-                _ => tokenType.ToString()
-            };
+            return VerbRegistry.TokenTypeToVerbName(tokenType);
         }
         
         /// <summary>

@@ -220,3 +220,15 @@ ktree_enumerate_absolute_path :: regex:\s+`:` :: Compact representation
 ktree_enumerate_relative_name :: regex:\s+`:` :: Compact representation
 ktree_enumerate_relative_path :: regex:\s+`:` :: Compact representation
 eval_dot_repl_dir :: regex:\s+`:` :: Compact representation
+
+# Chapter 2 idioms - Compact representation for nested vectors
+idioms_02_189_add_each_row :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_02_192_add_each_col :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_02_273_join_scalar_each :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_02_344_pairwise_match :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_02_398_diag_from_cols :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_02_399_cols_from_diag :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_02_518_cond_transpose :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_02_589_2col_matrix :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_02_611_mult_rows_by_vec :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+idioms_02_419_pairwise_ratios :: regex:\.0\b: :: smart integer division

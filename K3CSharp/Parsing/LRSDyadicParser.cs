@@ -106,12 +106,27 @@ namespace K3CSharp.Parsing
         {
             if (tokens.Count < 3) return null; // Need at least: left op right
             
-            // Check for verb+adverb patterns anywhere in the token list
+            // Check for verb+adverb patterns anywhere in the token list at depth 0
             // This handles cases like (1 2 3) +' (4 5 6) where the verb+adverb is in the middle
+            // Must respect grouping depth to avoid matching inside parenthesized sub-expressions
+            int adverbScanDepth = 0;
             for (int i = 0; i < tokens.Count - 1; i++)
             {
-                if (IsDyadicOperatorDirect(tokens[i].Type) && IsAdverbToken(tokens[i + 1].Type))
+                if (tokens[i].Type == TokenType.LEFT_PAREN || tokens[i].Type == TokenType.LEFT_BRACKET || tokens[i].Type == TokenType.LEFT_BRACE)
+                    adverbScanDepth++;
+                else if (tokens[i].Type == TokenType.RIGHT_PAREN || tokens[i].Type == TokenType.RIGHT_BRACKET || tokens[i].Type == TokenType.RIGHT_BRACE)
+                    adverbScanDepth--;
+                    
+                if (adverbScanDepth == 0 && IsDyadicOperatorDirect(tokens[i].Type) && IsAdverbToken(tokens[i + 1].Type))
                 {
+                    // Skip if the token immediately before this verb is another verb at depth 0
+                    // This indicates a monadic verb chain, not a left argument for the adverb
+                    // E.g., in ~=':x, the ~ before = is monadic, not the left arg of =':
+                    if (i > 0 && IsDyadicOperatorDirect(tokens[i - 1].Type) && 
+                        OperatorDetector.SupportsMonadic(tokens[i - 1].Type))
+                    {
+                        continue;
+                    }
                     var verbToken = tokens[i];
                     // Consume all consecutive adverbs after the verb
                     int adverbEnd = i + 1;
@@ -513,6 +528,28 @@ namespace K3CSharp.Parsing
                 var implicitVector = TryCreateImplicitVector(tokens);
                 if (implicitVector != null)
                     return implicitVector;
+            }
+            
+            // Delegate to EvaluateFromRight when there are adverb patterns
+            // This ensures correct right-to-left precedence for expressions like ~=':x
+            // (monadic verb before verb+adverb)
+            if (parentParser != null && tokens.Count >= 3)
+            {
+                bool hasAdverb = false;
+                for (int i = 0; i < tokens.Count; i++)
+                {
+                    if (IsAdverbToken(tokens[i].Type))
+                    {
+                        hasAdverb = true;
+                        break;
+                    }
+                }
+                if (hasAdverb)
+                {
+                    var adverbResult = parentParser.EvaluateFromRight(tokens);
+                    if (adverbResult != null)
+                        return adverbResult;
+                }
             }
             
             // Try dyadic operation (monadic parsing is handled at main LRS level)

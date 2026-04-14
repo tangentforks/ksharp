@@ -895,17 +895,28 @@ namespace K3CSharp
                  op.Value.ToString() == "each-left" || op.Value.ToString() == "each-prior"))
             {
                 var verbNode2 = node.Children[0];
-                var arg2 = Evaluate(node.Children[1]);
+                
+                // One-adverb-at-a-time: if verbNode is a modified verb (1-child adverb node),
+                // consume only the outermost adverb and pass inner modified verb as-is
+                bool isModifiedVerb2 = verbNode2.Type == ASTNodeType.DyadicOp && 
+                    verbNode2.Children.Count == 1 && verbNode2.Value is SymbolValue;
+                if (isModifiedVerb2)
+                {
+                    var arg2 = Evaluate(node.Children[1]);
+                    return ApplyOuterAdverbWithModifiedVerb(op.Value.ToString(), verbNode2, arg2);
+                }
+                
+                var arg2val = Evaluate(node.Children[1]);
                 var verbValue2 = Evaluate(verbNode2);
                 var monadicLeft2 = new IntegerValue(0);
                 return op.Value.ToString() switch
                 {
-                    "over" => ApplyAdverbSlash(verbValue2, monadicLeft2, arg2),
-                    "scan" => ApplyAdverbBackslash(verbValue2, monadicLeft2, arg2),
-                    "each" => HandleAdverbTick(verbValue2, monadicLeft2, arg2),
-                    "each-right" => ApplyAdverbSlashColon(verbValue2, monadicLeft2, arg2),
-                    "each-left" => ApplyAdverbBackslashColon(verbValue2, monadicLeft2, arg2),
-                    "each-prior" => ApplyAdverbTickColon(verbValue2, monadicLeft2, arg2),
+                    "over" => ApplyAdverbSlash(verbValue2, monadicLeft2, arg2val),
+                    "scan" => ApplyAdverbBackslash(verbValue2, monadicLeft2, arg2val),
+                    "each" => HandleAdverbTick(verbValue2, monadicLeft2, arg2val),
+                    "each-right" => ApplyAdverbSlashColon(verbValue2, monadicLeft2, arg2val),
+                    "each-left" => ApplyAdverbBackslashColon(verbValue2, monadicLeft2, arg2val),
+                    "each-prior" => ApplyAdverbTickColon(verbValue2, monadicLeft2, arg2val),
                     _ => throw new Exception($"Unknown adverb: {op.Value}")
                 };
             }
@@ -985,6 +996,20 @@ namespace K3CSharp
                 // Handle 2-argument adverb structure from LRS parser: ADVERB(verb, argument)
                 var verbNode = node.Children[0];
                 var argument = Evaluate(node.Children[1]);
+                
+                // One-adverb-at-a-time: if verbNode is itself a modified verb (1-child adverb node),
+                // consume only the outermost adverb. For each element during iteration, construct
+                // a new 2-child node with the inner modified verb and the element, then evaluate it.
+                bool isModifiedVerb = verbNode.Type == ASTNodeType.DyadicOp && 
+                    verbNode.Children.Count == 1 && verbNode.Value is SymbolValue;
+                
+                if (isModifiedVerb)
+                {
+                    // The verb is a modified verb (e.g., +/ in +/'x, ,/ in ,//x)
+                    // Apply just the outer adverb, passing the inner modified verb AST as-is
+                    var adverbName = op.Value.ToString();
+                    return ApplyOuterAdverbWithModifiedVerb(adverbName, verbNode, argument);
+                }
                 
                 // Parse the verb with adverbs
                 var verbWithAdverbs = VerbAdverbParser.ParseVerbWithAdverbs(verbNode);
@@ -1086,6 +1111,147 @@ namespace K3CSharp
             else
             {
                 throw new Exception($"Dyadic operator must have exactly 2 children, got {node.Children.Count}");
+            }
+        }
+        
+        /// <summary>
+        /// One-adverb-at-a-time: apply only the outermost adverb, keeping the inner modified verb
+        /// as an AST node that gets re-evaluated for each element during iteration.
+        /// </summary>
+        private K3Value ApplyOuterAdverbWithModifiedVerb(string adverbName, ASTNode modifiedVerbNode, K3Value argument)
+        {
+            // Helper: apply the modified verb to a single argument by building a temp 2-child AST node
+            K3Value ApplyModifiedVerbTo(K3Value arg)
+            {
+                var tempNode = new ASTNode(ASTNodeType.DyadicOp);
+                tempNode.Value = modifiedVerbNode.Value;
+                // Copy the verb child from the modified verb node
+                tempNode.Children.Add(modifiedVerbNode.Children[0]);
+                // Add the argument as a literal child
+                tempNode.Children.Add(ASTNode.MakeLiteral(arg));
+                return Evaluate(tempNode);
+            }
+            
+            // Helper: apply the modified verb dyadically (left, right)
+            K3Value ApplyModifiedVerbDyadic(K3Value left, K3Value right)
+            {
+                var tempNode = new ASTNode(ASTNodeType.DyadicOp);
+                // The modified verb's adverb becomes the outer structure with 3 children
+                tempNode.Value = modifiedVerbNode.Value;
+                tempNode.Children.Add(modifiedVerbNode.Children[0]);
+                tempNode.Children.Add(ASTNode.MakeLiteral(left));
+                tempNode.Children.Add(ASTNode.MakeLiteral(right));
+                return Evaluate(tempNode);
+            }
+
+            switch (adverbName)
+            {
+                case "each" or "'":
+                {
+                    // Apply modified verb to each element of the argument
+                    if (argument is VectorValue vec)
+                    {
+                        var results = new List<K3Value>();
+                        foreach (var elem in vec.Elements)
+                            results.Add(ApplyModifiedVerbTo(elem));
+                        return new VectorValue(results);
+                    }
+                    // Scalar: apply directly
+                    return ApplyModifiedVerbTo(argument);
+                }
+                
+                case "over" or "/":
+                {
+                    // Over-Monad applied to the modified verb: convergence pattern
+                    // f/x means apply f repeatedly until result matches previous or initial
+                    // e.g., ,//x means apply ,/ repeatedly until flat
+                    if (argument is VectorValue vec && vec.Elements.Count > 0)
+                    {
+                        // Apply modified verb repeatedly until convergence (result matches previous or initial)
+                        var current = argument;
+                        var initial = current;
+                        for (int i = 0; i < 1000; i++) // safety limit
+                        {
+                            var next = ApplyModifiedVerbTo(current);
+                            // Check convergence: result matches previous or initial
+                            if (next.ToString() == current.ToString() || next.ToString() == initial.ToString())
+                                return next;
+                            current = next;
+                        }
+                        return current;
+                    }
+                    return argument; // scalar: return as-is
+                }
+                
+                case "scan" or "\\":
+                {
+                    // Scan-Monad applied to the modified verb: trace convergence
+                    // f\x means apply f repeatedly, collecting all intermediate results
+                    if (argument is VectorValue || argument is K3Value)
+                    {
+                        var results = new List<K3Value>();
+                        var current = argument;
+                        var initial = current;
+                        results.Add(current);
+                        for (int i = 0; i < 1000; i++) // safety limit
+                        {
+                            var next = ApplyModifiedVerbTo(current);
+                            results.Add(next);
+                            if (next.ToString() == current.ToString() || next.ToString() == initial.ToString())
+                                break;
+                            current = next;
+                        }
+                        return new VectorValue(results);
+                    }
+                    return argument;
+                }
+                
+                case "each-prior" or "':":
+                {
+                    // Each-prior with modified verb
+                    if (argument is VectorValue vec && vec.Elements.Count > 1)
+                    {
+                        var results = new List<K3Value>();
+                        for (int i = 0; i < vec.Elements.Count; i++)
+                        {
+                            if (i == 0)
+                                results.Add(vec.Elements[i]);
+                            else
+                                results.Add(ApplyModifiedVerbDyadic(vec.Elements[i], vec.Elements[i - 1]));
+                        }
+                        return new VectorValue(results);
+                    }
+                    return argument;
+                }
+                
+                case "each-right" or "/:":
+                {
+                    // Each-right with modified verb: apply to each item of the argument
+                    if (argument is VectorValue vec)
+                    {
+                        var results = new List<K3Value>();
+                        foreach (var elem in vec.Elements)
+                            results.Add(ApplyModifiedVerbTo(elem));
+                        return new VectorValue(results);
+                    }
+                    return ApplyModifiedVerbTo(argument);
+                }
+                
+                case "each-left" or "\\":
+                {
+                    // Each-left with modified verb
+                    if (argument is VectorValue vec)
+                    {
+                        var results = new List<K3Value>();
+                        foreach (var elem in vec.Elements)
+                            results.Add(ApplyModifiedVerbTo(elem));
+                        return new VectorValue(results);
+                    }
+                    return ApplyModifiedVerbTo(argument);
+                }
+                
+                default:
+                    throw new Exception($"Unknown adverb in one-adverb-at-a-time: {adverbName}");
             }
         }
         
@@ -4301,7 +4467,7 @@ namespace K3CSharp
                 // Set current verb context
                 currentVerb = verbWithAdverbs.BaseVerb;
                 
-                // Special handling for over adverb - apply directly to arguments without base verb first
+                // Special handling for over adverb
                 if (verbWithAdverbs.Adverbs.Contains("over"))
                 {
                     // Check if we have initialization (left argument is not dummy 0)
@@ -4317,7 +4483,7 @@ namespace K3CSharp
                     }
                 }
                 
-                // Special handling for scan adverb - apply directly to arguments without base verb first
+                // Special handling for scan adverb
                 if (verbWithAdverbs.Adverbs.Contains("scan"))
                 {
                     // Check if we have initialization (left argument is not dummy 0)

@@ -971,6 +971,13 @@ namespace K3CSharp
                 return new LongValue(-longA.Value);
             if (a is FloatValue floatA)
                 return new FloatValue(-floatA.Value);
+            if (a is VectorValue vecA)
+            {
+                var result = new List<K3Value>();
+                foreach (var element in vecA.Elements)
+                    result.Add(MonadicMinus(element));
+                return new VectorValue(result);
+            }
             
             throw new Exception($"Cannot apply monadic minus to {a.Type}");
         }
