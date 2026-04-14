@@ -2348,9 +2348,17 @@ namespace K3CSharp
 
         private K3Value AtIndexOperation(K3Value data, K3Value index)
         {
-            // Handle symbol as path to a dictionary
+            // Handle symbol as path to a dictionary or function
             if (data is SymbolValue sym)
             {
+                // Per spec: f[x] is (f).,(x) — if symbol names a known verb,
+                // call it as a function with the index as a single argument
+                if (VerbRegistry.GetVerb(sym.Value) != null)
+                {
+                    var args = new List<K3Value> { index };
+                    return CallVariableFunction(sym.Value, args);
+                }
+                
                 var resolvedValue = GetVariableValuePublic(sym.Value);
                 if (resolvedValue != null)
                 {

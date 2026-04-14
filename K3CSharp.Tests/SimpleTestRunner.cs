@@ -980,6 +980,10 @@ namespace K3CSharp.Tests
 
                 ("square_bracket_vector_single.k", "14"),
 
+                ("bracket_sysverb_ic.k", "32 97 65 48"),
+
+                ("bracket_sysverb_atan.k", "0.5235988"),
+
                 
 
                 // String representation tests
