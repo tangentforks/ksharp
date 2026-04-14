@@ -22,16 +22,13 @@ namespace K3CSharp.Parsing
         }
         
         /// <summary>
-        /// Find the rightmost (or leftmost in Pure LRS) dyadic operator in token list
-        /// Safe LRS mode: Find rightmost operator (original behavior for fallback compatibility)
-        /// Pure LRS mode: Find leftmost operator with grouping depth tracking (improved behavior)
+        /// Find the leftmost dyadic operator at the lowest nesting depth
+        /// For LRS: the leftmost operator splits the expression (left is atomic, right is recursively parsed)
         /// </summary>
         /// <param name="tokens">Tokens to search</param>
         /// <returns>Index of dyadic operator, or -1 if none found</returns>
         public int FindRightmostOperator(List<Token> tokens)
         {
-            // LRS RULE: Always find LEFTMOST operator for true right-to-left evaluation
-            // This ensures expressions like "5 + 2 * 3" parse as "5 + (2 * 3)" = 11
             // The leftmost operator splits: left side is atomic, right side is recursively parsed
             
             int depth = 0;
@@ -462,7 +459,11 @@ namespace K3CSharp.Parsing
                     firstToken.Type == TokenType.LEFT_BRACE)
                 {
                     // Check if this is a complete grouping construct
+                    // CRITICAL: Track when the FIRST opening delimiter closes.
+                    // Only treat as fully-wrapped if the first open closes at the last token.
+                    // E.g., ($x),":y" — first ( closes at index 3, NOT at the end.
                     int depth = 0;
+                    bool firstOpenClosed = false;
                     TokenType openType = firstToken.Type;
                     TokenType closeType = openType == TokenType.LEFT_PAREN ? TokenType.RIGHT_PAREN :
                                          openType == TokenType.LEFT_BRACKET ? TokenType.RIGHT_BRACKET :
@@ -473,27 +474,32 @@ namespace K3CSharp.Parsing
                         if (tokens[i].Type == openType) depth++;
                         else if (tokens[i].Type == closeType) depth--;
                         
-                        // If we close at the last token, this is a complete grouping
-                        if (depth == 0 && i == tokens.Count - 1)
+                        if (depth == 0 && !firstOpenClosed)
                         {
-                            // Create new grouping parser with the sub-expression tokens
-                            var subGroupingParser = new LRSGroupingParser(tokens, parentParser?.BuildParseTree ?? false, parentParser);
-                            int pos = 0;
-                            try
+                            firstOpenClosed = true;
+                            // If the first opening closes at the last position, entire expression is wrapped
+                            if (i == tokens.Count - 1)
                             {
-                                ASTNode? result;
-                                if (openType == TokenType.LEFT_PAREN)
-                                    result = subGroupingParser.ParseParentheses(ref pos);
-                                else if (openType == TokenType.LEFT_BRACKET)
-                                    result = subGroupingParser.ParseBrackets(ref pos);
-                                else
-                                    result = subGroupingParser.ParseBraces(ref pos);
-                                return result;
+                                // Create new grouping parser with the sub-expression tokens
+                                var subGroupingParser = new LRSGroupingParser(tokens, parentParser?.BuildParseTree ?? false, parentParser);
+                                int pos = 0;
+                                try
+                                {
+                                    ASTNode? result;
+                                    if (openType == TokenType.LEFT_PAREN)
+                                        result = subGroupingParser.ParseParentheses(ref pos);
+                                    else if (openType == TokenType.LEFT_BRACKET)
+                                        result = subGroupingParser.ParseBrackets(ref pos);
+                                    else
+                                        result = subGroupingParser.ParseBraces(ref pos);
+                                    return result;
+                                }
+                                catch
+                                {
+                                    // Fall through to dyadic parsing
+                                }
                             }
-                            catch
-                            {
-                                // Fall through to dyadic parsing
-                            }
+                            // If first opening closes before the end, expression is NOT fully wrapped
                             break;
                         }
                     }

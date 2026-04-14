@@ -190,7 +190,8 @@ namespace K3CSharp.Parsing
         private bool IsOperatorToken(TokenType tokenType)
         {
             return OperatorDetector.IsDyadicOperator(tokenType) || 
-                   LRSMonadicParser.CouldBeMonadicOperator(tokenType);
+                   LRSMonadicParser.CouldBeMonadicOperator(tokenType) ||
+                   VerbRegistry.IsVerbToken(tokenType);
         }
         
         /// <summary>

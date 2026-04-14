@@ -899,7 +899,6 @@ namespace K3CSharp.Parsing
         /// <returns>AST node representing parsed expression</returns>
         internal ASTNode? EvaluateFromRight(List<Token> expressionTokens)
         {
-            
             if (expressionTokens.Count == 0)
             {
                 return null;

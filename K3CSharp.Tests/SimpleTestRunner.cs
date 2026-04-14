@@ -583,6 +583,8 @@ namespace K3CSharp.Tests
 
                 ("join_operator.k", "3 5"),
 
+                ("join_chain_parens_string.k", "\"vartest:y\""),
+
                 
 
                 // Less than operator
@@ -1610,6 +1612,8 @@ namespace K3CSharp.Tests
 
                 ("where_operator.k", "0 2 3"),
 
+                ("where_monadic_lin_dyadic.k", "0 2 5 7"),
+
                 ("where_vector_counts.k", "0 0 0 1 1 2"),
 
                 
@@ -2305,7 +2309,7 @@ namespace K3CSharp.Tests
 
                 ("idioms_01_495_indices_occurrences.k", "0 2 5 7"),
 
-                ("idioms_01_504_replace_satisfying.k", "\" bcd f i \""),
+                ("idioms_01_504_replace_satisfying.k", "\" bcd f  i \""),
 
                 ("idioms_01_569_change_to_one.k", "10 1 7 1 1"),
 
