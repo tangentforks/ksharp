@@ -2599,6 +2599,12 @@ namespace K3CSharp
                             var thisEntry = dict.Entries[new SymbolValue("_this")];
                             var thisValue = (thisEntry.Value is SymbolValue thisSym) ? thisSym.Value : (thisEntry.Value.ToString() ?? "");
                             
+                            // Special handling for _this access on disposed objects
+                            if (symbol.Value == "_this" && ObjectRegistry.IsDisposed(thisValue))
+                            {
+                                return new SymbolValue("Disposed");
+                            }
+                            
                             // Only treat as FFI object if _this is a valid object handle and not Disposed
                             if (ObjectRegistry.ContainsObject(thisValue) && thisValue != "Disposed")
                             {
@@ -3814,25 +3820,12 @@ namespace K3CSharp
                                 disposable.Dispose();
                             }
                             
-                            // Unregister from object registry
-                            ObjectRegistry.UnregisterObject(handle);
+                            // Mark as disposed in registry (keep it registered to prevent reuse)
+                            ObjectRegistry.MarkAsDisposed(handle);
                         }
                         
-                        // Always create updated dictionary with _this set to Disposed
-                        var newEntries = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)>();
-                        foreach (var entry in dict.Entries)
-                        {
-                            if (!entry.Key.Equals(thisKey))
-                            {
-                                newEntries[entry.Key] = entry.Value;
-                            }
-                        }
-                        
-                        // Set _this to Disposed
-                        newEntries[thisKey] = (new SymbolValue("Disposed"), null);
-                        
-                        var newDict = new DictionaryValue(newEntries);
-                        return newDict;
+                        // Return the original dictionary - _this will show "Disposed" when accessed via indexing
+                        return dict;
                     }
                     
                     // Return original dictionary if no _this found

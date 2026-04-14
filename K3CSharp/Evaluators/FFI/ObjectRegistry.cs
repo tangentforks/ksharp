@@ -12,6 +12,7 @@ namespace K3CSharp
     {
         private static readonly ConcurrentDictionary<string, object> _objects = new ConcurrentDictionary<string, object>();
         private static readonly ConcurrentDictionary<object, string> _handles = new ConcurrentDictionary<object, string>();
+        private static readonly ConcurrentDictionary<string, bool> _disposedObjects = new ConcurrentDictionary<string, bool>();
         private static int _nextHandle = 1;
 
         /// <summary>
@@ -121,6 +122,31 @@ namespace K3CSharp
                 return false;
             
             return _objects.ContainsKey(handle);
+        }
+
+        /// <summary>
+        /// Mark an object as disposed while keeping it in the registry
+        /// </summary>
+        /// <param name="handle">Handle of object to mark as disposed</param>
+        public static void MarkAsDisposed(string? handle)
+        {
+            if (handle != "null" && handle != null)
+            {
+                _disposedObjects[handle] = true;
+            }
+        }
+
+        /// <summary>
+        /// Check if an object is marked as disposed
+        /// </summary>
+        /// <param name="handle">Handle to check</param>
+        /// <returns>True if object is disposed</returns>
+        public static bool IsDisposed(string? handle)
+        {
+            if (handle == "null" || handle == null)
+                return false;
+            
+            return _disposedObjects.ContainsKey(handle);
         }
     }
 }

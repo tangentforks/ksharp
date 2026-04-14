@@ -937,7 +937,7 @@ c1:complex_new[2;3]
 complex_new:complex[`constructor]
 c1:complex_new[2;3]
 _dispose c1
-c1 @ `_this │ `obj1                │ `Disposed            ║
+c1 @ `_this │ `Disposed            │                      ║
 ║ ffi_complete_workflow.k                            │ complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
 complex_new:complex[`constructor]
 c1:complex_new[2;3]
@@ -1232,7 +1232,7 @@ _eval (`",";,`a`b`c;(`",";,`d;`v)) │ `a`b`c`d`e`f         │                 
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 900/921 tests passed (97.7%)                                                                               ║
+║ SUMMARY: 901/921 tests passed (97.8%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -1272,15 +1272,6 @@ Test: k_tree_verify_root.k
 Input: .k
 Expected: 
 Actual: .()
-──────────────────────────────────────────────────────────────────────────
-Test: ffi_dispose.k
-Input: complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
-complex_new:complex[`constructor]
-c1:complex_new[2;3]
-_dispose c1
-c1 @ `_this
-Expected: `Disposed
-Actual: `obj1
 ──────────────────────────────────────────────────────────────────────────
 Test: ffi_complete_workflow.k
 Input: complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
