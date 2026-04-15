@@ -255,7 +255,7 @@ namespace K3CSharp.Parsing
                 TokenType.INTEGER or TokenType.LONG or TokenType.FLOAT or 
                 TokenType.CHARACTER or TokenType.CHARACTER_VECTOR or 
                 TokenType.SYMBOL or TokenType.IDENTIFIER or TokenType.NULL or
-                TokenType.TIME => true,
+                TokenType.TIME or TokenType.DIRECTORY => true,
                 _ => false
             };
         }
@@ -265,68 +265,27 @@ namespace K3CSharp.Parsing
         /// </summary>
         public static ASTNode CreateOperatorNode(TokenType tokenType)
         {
-            return tokenType switch
+            // Delimiters for parse tree representation - not verbs, so handled separately
+            if (tokenType == TokenType.LEFT_PAREN) return ASTNode.MakeLiteral(new SymbolValue("("));
+            if (tokenType == TokenType.RIGHT_PAREN) return ASTNode.MakeLiteral(new SymbolValue(")"));
+            if (tokenType == TokenType.LEFT_BRACKET) return ASTNode.MakeLiteral(new SymbolValue("["));
+            if (tokenType == TokenType.RIGHT_BRACKET) return ASTNode.MakeLiteral(new SymbolValue("]"));
+            if (tokenType == TokenType.LEFT_BRACE) return ASTNode.MakeLiteral(new SymbolValue("{"));
+            if (tokenType == TokenType.RIGHT_BRACE) return ASTNode.MakeLiteral(new SymbolValue("}"));
+            if (tokenType == TokenType.SEMICOLON) return ASTNode.MakeLiteral(new SymbolValue(";"));
+
+            // Use VerbRegistry to get verb name - LRS principle: parser is verb-agnostic
+            string verbName = VerbRegistry.TokenTypeToVerbName(tokenType);
+            
+            // Check if this is a system variable (niladic)
+            var verbInfo = VerbRegistry.GetVerb(verbName);
+            if (verbInfo != null && verbInfo.IsSystemVariable)
             {
-                TokenType.PLUS => ASTNode.MakeLiteral(new SymbolValue("+")),
-                TokenType.MINUS => ASTNode.MakeLiteral(new SymbolValue("-")),
-                TokenType.MULTIPLY => ASTNode.MakeLiteral(new SymbolValue("*")),
-                TokenType.DIVIDE => ASTNode.MakeLiteral(new SymbolValue("%")),
-                TokenType.POWER => ASTNode.MakeLiteral(new SymbolValue("^")),
-                TokenType.MODULUS => ASTNode.MakeLiteral(new SymbolValue("!")),
-                TokenType.JOIN => ASTNode.MakeLiteral(new SymbolValue(",")),
-                TokenType.MATCH => ASTNode.MakeLiteral(new SymbolValue("~")),
-                TokenType.NEGATE => ASTNode.MakeLiteral(new SymbolValue("~")),
-                TokenType.DOLLAR => ASTNode.MakeLiteral(new SymbolValue("$")),
-                TokenType.QUESTION => ASTNode.MakeLiteral(new SymbolValue("?")),
-                TokenType.HASH => ASTNode.MakeLiteral(new SymbolValue("#")),
-                TokenType.UNDERSCORE => ASTNode.MakeLiteral(new SymbolValue("_")),
-                TokenType.COLON => ASTNode.MakeLiteral(new SymbolValue(":")),
-                TokenType.SEMICOLON => ASTNode.MakeLiteral(new SymbolValue(";")),
-                TokenType.DOT_APPLY => ASTNode.MakeLiteral(new SymbolValue(".")),
-                TokenType.APPLY => ASTNode.MakeLiteral(new SymbolValue("@")),
-                
-                // System verbs
-                TokenType.CI => ASTNode.MakeLiteral(new SymbolValue("_ci")),
-                TokenType.IC => ASTNode.MakeLiteral(new SymbolValue("_ic")),
-                TokenType.SV => ASTNode.MakeLiteral(new SymbolValue("_sv")),
-                TokenType.SS => ASTNode.MakeLiteral(new SymbolValue("_ss")),
-                TokenType.SM => ASTNode.MakeLiteral(new SymbolValue("_sm")),
-                TokenType.DRAW => ASTNode.MakeLiteral(new SymbolValue("_draw")),
-                TokenType.GETENV => ASTNode.MakeLiteral(new SymbolValue("_getenv")),
-                TokenType.SIZE => ASTNode.MakeLiteral(new SymbolValue("_size")),
-                TokenType.DIRECTORY => ASTNode.MakeVariable("_d"),
-                TokenType.TIME => ASTNode.MakeVariable("_t"),
-                TokenType.EVAL => ASTNode.MakeLiteral(new SymbolValue("_eval")),
-                TokenType.PARSE => ASTNode.MakeLiteral(new SymbolValue("_parse")),
-                TokenType.GETHINT => ASTNode.MakeLiteral(new SymbolValue("_gethint")),
-                TokenType.DISPOSE => ASTNode.MakeLiteral(new SymbolValue("_dispose")),
-                TokenType.SETHINT => ASTNode.MakeLiteral(new SymbolValue("_sethint")),
-                
-                // Linear algebra operations
-                TokenType.DOT_PRODUCT => ASTNode.MakeLiteral(new SymbolValue("_dot")),
-                TokenType.MUL => ASTNode.MakeLiteral(new SymbolValue("_mul")),
-                TokenType.INV => ASTNode.MakeLiteral(new SymbolValue("_inv")),
-                TokenType.LSQ => ASTNode.MakeLiteral(new SymbolValue("_lsq")),
-                
-                // Control flow statements
-                TokenType.DO => ASTNode.MakeLiteral(new SymbolValue("_do")),
-                TokenType.WHILE => ASTNode.MakeLiteral(new SymbolValue("_while")),
-                TokenType.IF_FUNC => ASTNode.MakeLiteral(new SymbolValue("_if")),
-                
-                // MAX and MIN operators (use glyphs as expected by evaluator)
-                TokenType.MAX => ASTNode.MakeLiteral(new SymbolValue("|")),
-                TokenType.MIN => ASTNode.MakeLiteral(new SymbolValue("&")),
-                
-                // Delimiters for parse tree representation
-                TokenType.LEFT_PAREN => ASTNode.MakeLiteral(new SymbolValue("(")),
-                TokenType.RIGHT_PAREN => ASTNode.MakeLiteral(new SymbolValue(")")),
-                TokenType.LEFT_BRACKET => ASTNode.MakeLiteral(new SymbolValue("[")),
-                TokenType.RIGHT_BRACKET => ASTNode.MakeLiteral(new SymbolValue("]")),
-                TokenType.LEFT_BRACE => ASTNode.MakeLiteral(new SymbolValue("{")),
-                TokenType.RIGHT_BRACE => ASTNode.MakeLiteral(new SymbolValue("}")),
-                
-                _ => throw new Exception($"Unsupported operator token type: {tokenType}")
-            };
+                return ASTNode.MakeVariable(verbName);
+            }
+            
+            // Return as literal symbol value
+            return ASTNode.MakeLiteral(new SymbolValue(verbName));
         }
     }
 }

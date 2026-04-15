@@ -1468,6 +1468,8 @@ namespace K3CSharp.Tests
 
                 ("test_vs_dyadic.k", "1 9 9 5"),
 
+                ("list_vs_vector_right.k", "(0 0 0 0 1 1 1 1;0 0 1 1 0 0 1 1;0 1 0 1 0 1 0 1)"),
+
                 ("test_ic_vector.k", "65 66 67"),
 
                 ("test_monadic_colon.k", "42"),

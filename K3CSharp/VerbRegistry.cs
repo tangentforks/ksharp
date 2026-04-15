@@ -780,7 +780,6 @@ namespace K3CSharp
             RegisterVerb("_r", VerbType.SystemVariable, new[] { 0 }, null);
             RegisterVerb("_m", VerbType.SystemVariable, new[] { 0 }, null);
             RegisterVerb("_y", VerbType.SystemVariable, new[] { 0 }, null);            
-            RegisterVerb("DIRECTORY", VerbType.Operator, new[] { 0 }, null);
             
             // Also register NULL for TokenType.NULL
             RegisterVerb("NULL", VerbType.SystemVariable, new[] { 0 }, null);
@@ -900,53 +899,7 @@ namespace K3CSharp
                     }
                 }
             });
-            
-            UpdateVerbImplementations("/:", new Func<K3Value[], K3Value>?[] { 
-                args => {
-                    // Monadic /: is "each-right" - identity
-                    return args[0];
-                },
-                args => {
-                    // Dyadic /: is "each-right" - apply right argument to each element of left
-                    if (args[0] is VectorValue vec)
-                    {
-                        var elements = new List<K3Value>();
-                        foreach (var elem in vec.Elements)
-                        {
-                            elements.Add(elem.Divide(args[1]));
-                        }
-                        return new VectorValue(elements);
-                    }
-                    else
-                    {
-                        return args[0].Divide(args[1]);
-                    }
-                }
-            });
-            
-            UpdateVerbImplementations("\\:", new Func<K3Value[], K3Value>?[] { 
-                args => {
-                    // Monadic \: is "each-left" - identity
-                    return args[0];
-                },
-                args => {
-                    // Dyadic \: is "each-left" - apply left argument to each element of right
-                    if (args[1] is VectorValue vec)
-                    {
-                        var elements = new List<K3Value>();
-                        foreach (var elem in vec.Elements)
-                        {
-                            elements.Add(args[0].Divide(elem));
-                        }
-                        return new VectorValue(elements);
-                    }
-                    else
-                    {
-                        return args[0].Divide(args[1]);
-                    }
-                }
-            });
-            
+                        
             // System operators - need to access Evaluator methods
             // These will be handled by the evaluator's method dispatch
             UpdateVerbImplementations("GTIME", new Func<K3Value[], K3Value>?[] { null, null });

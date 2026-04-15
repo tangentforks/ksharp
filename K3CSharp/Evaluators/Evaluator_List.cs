@@ -541,19 +541,64 @@ namespace K3CSharp
             else if (right is VectorValue rightVec)
             {
                 // Vector case - convert each integer to vector
-                var results = new List<K3Value>();
+                // Result is a matrix (list of lists of equal length) where each column
+                // is the corresponding digits from conversion of all items in right argument
+                // When a is an integer and V is a vector of integers, a _vs V is the same as a _vs\: V
+                var results = new List<List<K3Value>>();
+                var maxLength = 0;
+                
+                // First, convert each integer to its digit vector
                 foreach (var element in rightVec.Elements)
                 {
                     if (element is IntegerValue intVal)
                     {
-                        results.Add(VsSingle(left, (int)intVal.Value));
+                        var result = VsSingle(left, (int)intVal.Value);
+                        if (result is VectorValue vec)
+                        {
+                            var digitList = vec.Elements.ToList();
+                            results.Add(digitList);
+                            if (digitList.Count > maxLength)
+                            {
+                                maxLength = digitList.Count;
+                            }
+                        }
+                        else
+                        {
+                            results.Add(new List<K3Value> { result });
+                            if (maxLength < 1)
+                            {
+                                maxLength = 1;
+                            }
+                        }
                     }
                     else
                     {
                         throw new Exception("_vs: all elements in right argument must be integers");
                     }
                 }
-                return new VectorValue(results);
+                
+                // Pad shorter vectors with leading zeros to make them equal length
+                for (int i = 0; i < results.Count; i++)
+                {
+                    while (results[i].Count < maxLength)
+                    {
+                        results[i].Insert(0, new IntegerValue(0));
+                    }
+                }
+                
+                // Transpose the matrix so each column becomes a row
+                var transposed = new List<K3Value>();
+                for (int col = 0; col < maxLength; col++)
+                {
+                    var column = new List<K3Value>();
+                    for (int row = 0; row < results.Count; row++)
+                    {
+                        column.Add(results[row][col]);
+                    }
+                    transposed.Add(new VectorValue(column));
+                }
+                
+                return new VectorValue(transposed);
             }
             else
             {

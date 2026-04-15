@@ -569,6 +569,7 @@ square:{[x] x*x}
 ║ test_ci_vector.k                                   │ _ci 65 66 67         │ "ABC"                │                      ║
 ║ test_ic_basic.k                                    │ _ic "A"              │ 65                   │                      ║
 ║ test_vs_dyadic.k                                   │ 10 _vs 1995          │ 1 9 9 5              │                      ║
+║ list_vs_vector_right.k                             │ 2 _vs !8             │ (0 0 0 0 1 1 1 ...   │                      ║
 ║ test_ic_vector.k                                   │ _ic "ABC"            │ 65 66 67             │                      ║
 ║ test_monadic_colon.k                               │ : 42                 │ 42                   │                      ║
 ║ test_sm_basic.k                                    │ `foo _sm `foo        │ 1                    │                      ║
@@ -1133,7 +1134,7 @@ y:10 20 30 40 50
 ║ idioms_02_372_sum_columns.k                        │ x:1+3 4#!12
 +/x      │ 15 18 21 24          │                      ║
 ║ idioms_02_361_parity.k                             │ x:2 _vs !8
-(+/x)!2   │ Error: Vector s...   │ 0 1 1 0 1 0 0 1      ║
+(+/x)!2   │ 0 1 1 0 1 0 0 1      │                      ║
 ║ idioms_02_310_running_sum.k                        │ x:1 20 300 4000
 +\x  │ 1 21 321 4321        │                      ║
 ║ idioms_02_285_moving_sum.k                         │ ms:{((y-1)_ a)-0,(-y)_ a:+\x}
@@ -1242,7 +1243,7 @@ _eval (`",";,`a`b`c;(`",";,`d;`v)) │ `a`b`c`d`e`f         │                 
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 913/931 tests passed (98.1%)                                                                               ║
+║ SUMMARY: 915/932 tests passed (98.2%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -1292,12 +1293,6 @@ conj_func: ._dotnet.System.Numerics.Complex.Conjugate
 .((`real;c1[`Real]);(`imag;c1[`Imaginary]);(`magnitude;magnitude);(`instance;!c1);(`type;!complex))
 Expected: .((`real;2.0;);(`imag;3.0;);(`magnitude;3.605551275463989))
 Actual: .((`real;2.0;);(`imag;3.0;);(`magnitude;3.605551;);(`instance;`get_Imaginary`get_Real`_this`Abs`Equals`GetHashCode`ToString`GetType;);(`type;`name`fullname`namespace`assembly`isclass`isinterface`isenum`isabstract`ispublic`isstatic`.ctor`constructor`FromPolarCoordinates`Negate`Add`Subtract`Multiply`Divide`op_UnaryNegation`op_Addition`op_Subtraction`op_Multiply`op_Division`Abs`Conjugate`Reciprocal`op_Equality`op_Inequality`Sin`Sinh`Asin`Cos`Cosh`Acos`Tan`Tanh`Atan`IsFinite`IsInfinity`IsNaN`Log`Log10`Exp`Sqrt`Pow`op_Explicit`op_Implicit`op_Decrement`op_Increment`CreateChecked`CreateSaturating`CreateTruncating`IsComplexNumber`IsEvenInteger`IsImaginaryNumber`IsInteger`IsNegative`IsNegativeInfinity`IsNormal`IsOddInteger`IsPositive`IsPositiveInfinity`IsRealNumber`IsSubnormal`MaxMagnitude`MinMagnitude`Parse`TryParse`op_UnaryPlus`get_Real`get_Imaginary`get_Magnitude`get_Phase`Equals`GetHashCode`ToString`TryFormat`GetType`Real`Imaginary`Magnitude`Phase`Zero`One`ImaginaryOne`NaN`Infinity;))
-──────────────────────────────────────────────────────────────────────────
-Test: idioms_02_361_parity.k
-Input: x:2 _vs !8
-(+/x)!2
-Expected: 0 1 1 0 1 0 0 1
-Actual: Error: Vector size mismatch for addition
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_02_285_moving_sum.k
 Input: ms:{((y-1)_ a)-0,(-y)_ a:+\x}
