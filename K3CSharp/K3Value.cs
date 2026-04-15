@@ -1364,7 +1364,14 @@ namespace K3CSharp
                 return "," + Elements[0].ToString();
             }
 
-            // 3) Identify vector type and apply appropriate rules
+            // 3) Check if this is a projection (contains :: symbols) - always use generic list format
+            bool hasProjectionMarker = Elements.Any(e => e is SymbolValue sv && sv.Value == "::");
+            if (hasProjectionMarker)
+            {
+                return FormatGenericList();
+            }
+
+            // 4) Identify vector type and apply appropriate rules
             var vectorType = VectorType ?? 0; // Default to generic list if no type specified
 
             // For typed vectors (-1, -2, -3, -4, -64), use type-specific rules
@@ -1422,7 +1429,13 @@ namespace K3CSharp
             string FormatGenericList()
             {
                 // Generic list: enclosing parentheses and elements separated by semicolons
-                var elementsStr = string.Join(";", Elements.Select(e => e.ToString()));
+                // Special handling for :: projection markers - display without quotes
+                var elementsStr = string.Join(";", Elements.Select(e => 
+                {
+                    if (e is SymbolValue sv && sv.Value == "::")
+                        return "::";
+                    return e.ToString();
+                }));
                 return "(" + elementsStr + ")";
             }
         }
@@ -1657,7 +1670,9 @@ namespace K3CSharp
 
         public override string ToString()
         {
-            return OperatorName;
+            // Monadic projections (arity 1) should be displayed with a colon
+            // Dyadic projections (arity 2) are displayed without colon
+            return RequiredArguments == 1 ? OperatorName + ":" : OperatorName;
         }
 
         public override K3Value Add(K3Value other)

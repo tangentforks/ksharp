@@ -315,8 +315,7 @@ namespace K3CSharp.Tests
                 // Projected Function tests
 
                 ("test_projected_function.k", "%"),
-
-
+                ("test_projected_function_monadic.k", "%:"),
 
                 // Atom tests
 
@@ -2449,9 +2448,9 @@ namespace K3CSharp.Tests
                 ("test_semicolon_parsing.k", "1 2 3"),
                 ("test_parse_monadic_star.k", $"(`\"*:\";1 2 3 4)"),
                 ("parse_atomic_value_no_verb.k", ",`a"),
-                ("parse_projection_dyadic_plus.k", "`\"+\"`\"::\"`\"::\""),
-                ("parse_projection_dyadic_plus_fixed_left.k", "(`\"+\";,1;`\"::\")"),
-                ("parse_projection_dyadic_plus_fixed_right.k", "(`\"+\";`\"::\";,2)"),
+                ("parse_projection_dyadic_plus.k", "(`\"+\";::;::)"),
+                ("parse_projection_dyadic_plus_fixed_left.k", "(`\"+\";,1;::)"),
+                ("parse_projection_dyadic_plus_fixed_right.k", "(`\"+\";::;,2)"),
                 ("parse_monadic_shape_atomic.k", "(`\"^:\";(`\",:\";,`a))"),
                 ("parse_apply_and_assign.k", "(`\"+:\";`i;1)"),
                 ("eval_dyadic_plus.k", "6 8 10 12"),

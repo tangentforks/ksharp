@@ -170,7 +170,38 @@ namespace K3CSharp.Parsing
             
             // Single token: directly create a node (same as BuildParseTreeFromRight)
             if (expressionTokens.Count == 1)
+            {
+                // Handle standalone verb as projection
+                if (VerbRegistry.IsVerbToken(expressionTokens[0].Type))
+                {
+                    var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
+                    var operatorSymbol = VerbRegistry.GetDyadicOperatorSymbol(expressionTokens[0].Type);
+                    projectedNode.Value = new SymbolValue(operatorSymbol);
+                    
+                    // Determine arity from VerbRegistry - use highest supported arity as default
+                    var verb = VerbRegistry.GetVerb(operatorSymbol);
+                    int defaultArity = verb?.SupportedArities?.Max() ?? 2;
+                    projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(defaultArity)));
+                    
+                    return projectedNode;
+                }
                 return CreateNodeFromToken(expressionTokens[0]);
+            }
+            
+            // Check for verb followed by colon (monadic projection disambiguation)
+            if (expressionTokens.Count == 2 &&
+                VerbRegistry.IsVerbToken(expressionTokens[0].Type) &&
+                expressionTokens[1].Type == TokenType.COLON)
+            {
+                var projectedNode = new ASTNode(ASTNodeType.ProjectedFunction);
+                var operatorSymbol = VerbRegistry.GetDyadicOperatorSymbol(expressionTokens[0].Type);
+                projectedNode.Value = new SymbolValue(operatorSymbol);
+                
+                // Monadic projection has arity 1
+                projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(1)));
+                
+                return projectedNode;
+            }
             
             // CRITICAL: Check for projection patterns BEFORE bracket function call handling
             // Pattern: +[;2] (operator with bracket containing semicolon)
@@ -479,6 +510,17 @@ namespace K3CSharp.Parsing
                     return statementParser.ParseStatement(tokens);
                 if (tokens[1].Type == TokenType.GLOBAL_ASSIGNMENT)
                     return statementParser.ParseStatement(tokens);
+            }
+            
+            // Check for projection patterns BEFORE grouping constructs
+            // 1. Parenthesized operator: (+) - projection with both arguments missing
+            // 2. Postfix projection: 1+ - left fixed, right missing
+            // 3. Prefix projection in brackets: +[;2] - left missing, right fixed
+            if (tokens.Count >= 2)
+            {
+                var projectionResult = TryParseProjection(tokens);
+                if (projectionResult != null)
+                    return projectionResult;
             }
             
             // Check for grouping constructs (parentheses, braces, brackets)
