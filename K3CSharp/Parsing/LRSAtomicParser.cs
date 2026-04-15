@@ -40,7 +40,24 @@ namespace K3CSharp.Parsing
                 TokenType.NULL => ParseNull(token),
                 TokenType.SS => ParseSystemVerb(token),
                 TokenType.TIME => ParseSystemVariable(token, "_t"),
+                TokenType.DAYS => ParseSystemVariable(token, "_T"),
                 TokenType.DIRECTORY => ParseSystemVariable(token, "_d"),
+                TokenType.VARIABLE => ParseSystemVariable(token, "_v"),
+                TokenType.INDEX => ParseSystemVariable(token, "_i"),
+                TokenType.FUNCTION => ParseSystemVariable(token, "_f"),
+                TokenType.SPACE => ParseSystemVariable(token, "_s"),
+                TokenType.HOST => ParseSystemVariable(token, "_h"),
+                TokenType.PORT => ParseSystemVariable(token, "_p"),
+                TokenType.PID => ParseSystemVariable(token, "_P"),
+                TokenType.WHO => ParseSystemVariable(token, "_w"),
+                TokenType.USER => ParseSystemVariable(token, "_u"),
+                TokenType.ADDRESS => ParseSystemVariable(token, "_a"),
+                TokenType.VERSION => ParseSystemVariable(token, "_k"),
+                TokenType.OS => ParseSystemVariable(token, "_o"),
+                TokenType.CORES => ParseSystemVariable(token, "_c"),
+                TokenType.RAM => ParseSystemVariable(token, "_r"),
+                TokenType.MACHID => ParseSystemVariable(token, "_m"),
+                TokenType.STACK => ParseSystemVariable(token, "_y"),
                 _ => throw new Exception($"Unsupported atomic token type: {token.Type}({token.Lexeme})")
             };
         }
@@ -246,16 +263,58 @@ namespace K3CSharp.Parsing
         }
 
         /// <summary>
-        /// Check if token type represents an atomic value
+        /// Check if token type can be an element in an implicit vector
+        /// Implicit vectors only consist of literal values: integers, longs, floats, characters, symbols
+        /// System variables, identifiers, and other tokens cannot be implicit vector elements
         /// </summary>
-        public static bool IsAtomicToken(TokenType tokenType)
+        public static bool CanBeImplicitVectorElement(TokenType tokenType)
+        {
+            return tokenType switch
+            {
+                TokenType.INTEGER or TokenType.LONG or TokenType.FLOAT or 
+                TokenType.CHARACTER or TokenType.CHARACTER_VECTOR or 
+                TokenType.SYMBOL => true,
+                _ => false
+            };
+        }
+
+        /// <summary>
+        /// Check if token type represents an atomic verb (glyphs, identifiers with verb assignments)
+        /// This is used to determine if a token can be used as a verb in verb+adverb patterns
+        /// </summary>
+        public static bool IsAtomicVerb(TokenType tokenType)
+        {
+            // Glyphs (operator symbols) and identifiers can be verbs
+            // Integers, floats, etc are NOT verbs
+            return tokenType switch
+            {
+                TokenType.PLUS or TokenType.MINUS or TokenType.MULTIPLY or TokenType.DIVIDE or
+                TokenType.MODULUS or TokenType.POWER or TokenType.LESS or TokenType.GREATER or
+                TokenType.EQUAL or TokenType.MATCH or TokenType.DOLLAR or
+                TokenType.QUESTION or TokenType.HASH or TokenType.UNDERSCORE or
+                TokenType.IDENTIFIER => true,
+                _ => false
+            };
+        }
+
+        /// <summary>
+        /// Check if token type can be handled by the atomic parser
+        /// This includes literals, identifiers, system variables, and other atomic expressions
+        /// </summary>
+        public static bool CanBeParsedByAtomicParser(TokenType tokenType)
         {
             return tokenType switch
             {
                 TokenType.INTEGER or TokenType.LONG or TokenType.FLOAT or 
                 TokenType.CHARACTER or TokenType.CHARACTER_VECTOR or 
                 TokenType.SYMBOL or TokenType.IDENTIFIER or TokenType.NULL or
-                TokenType.TIME or TokenType.DIRECTORY => true,
+                TokenType.TIME or TokenType.DAYS or TokenType.DIRECTORY or
+                TokenType.VARIABLE or TokenType.INDEX or TokenType.FUNCTION or
+                TokenType.SPACE or TokenType.HOST or TokenType.PORT or
+                TokenType.PID or TokenType.WHO or TokenType.USER or
+                TokenType.ADDRESS or TokenType.VERSION or TokenType.OS or
+                TokenType.CORES or TokenType.RAM or TokenType.MACHID or
+                TokenType.STACK => true,
                 _ => false
             };
         }

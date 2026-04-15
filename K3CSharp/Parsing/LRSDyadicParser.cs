@@ -297,7 +297,7 @@ namespace K3CSharp.Parsing
             }
             
             // Check if all tokens are atomic - if so, create a vector
-            bool allAtomic = tokens.All(t => LRSAtomicParser.IsAtomicToken(t.Type));
+            bool allAtomic = tokens.All(t => LRSAtomicParser.CanBeImplicitVectorElement(t.Type));
             if (allAtomic)
             {
                 var argNodes = new List<ASTNode>();
@@ -586,7 +586,7 @@ namespace K3CSharp.Parsing
             foreach (var token in tokens)
             {
                 // Check if token is an atomic literal
-                if (!LRSAtomicParser.IsAtomicToken(token.Type))
+                if (!LRSAtomicParser.CanBeImplicitVectorElement(token.Type))
                     return null; // Not all atomic - can't be implicit vector
                 
                 // Parse the token and add to elements
@@ -650,7 +650,7 @@ namespace K3CSharp.Parsing
         /// </summary>
         private ASTNode? CreateNodeFromToken(Token token)
         {
-            if (LRSAtomicParser.IsAtomicToken(token.Type))
+            if (LRSAtomicParser.CanBeParsedByAtomicParser(token.Type))
             {
                 return LRSAtomicParser.ParseAtomicToken(token);
             }

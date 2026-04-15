@@ -870,7 +870,6 @@ namespace K3CSharp
                 "_inv" => new Token(TokenType.INV, opName, start),
                 
                 // System functions
-                "_t" => new Token(TokenType.TIME, opName, start),
                 "_draw" => new Token(TokenType.DRAW, opName, start),
                 "_getenv" => new Token(TokenType.GETENV, opName, start),
                 "_setenv" => new Token(TokenType.SETENV, opName, start),
@@ -879,8 +878,8 @@ namespace K3CSharp
                 "_bd" => new Token(TokenType.BD, opName, start),
                 "_db" => new Token(TokenType.DB, opName, start),
                 "_in" => new Token(TokenType.IN, opName, start),
-                "_bin" => new Token(TokenType.BIN, opName, start),
                 "_binl" => new Token(TokenType.BINL, opName, start),
+                "_bin" => new Token(TokenType.BIN, opName, start),
                 "_lsq" => new Token(TokenType.LSQ, opName, start),
                 "_lin" => new Token(TokenType.LIN, opName, start),
                 "_ceil" => new Token(TokenType.CEIL, opName, start),
@@ -898,10 +897,6 @@ namespace K3CSharp
                 "_dv" => new Token(TokenType.DV, opName, start),
                 "_dvl" => new Token(TokenType.DVL, opName, start),
                 "_di" => new Token(TokenType.DI, opName, start),
-                "_d" => new Token(TokenType.DIRECTORY, opName, start),
-                "_do" => new Token(TokenType.DO, opName, start),
-                "_while" => new Token(TokenType.WHILE, opName, start),
-                "_if" => new Token(TokenType.IF_FUNC, opName, start),
                 "_exit" => new Token(TokenType.EXIT, opName, start),
                 "_parse" => new Token(TokenType.PARSE, opName, start),
                 "_eval" => new Token(TokenType.EVAL, opName, start),
@@ -909,6 +904,7 @@ namespace K3CSharp
                 "_sethint" => new Token(TokenType.SETHINT, opName, start),
                 
                 // Integer and bitwise operations
+
                 "_div" => new Token(TokenType.DIV, opName, start),
                 "_and" => new Token(TokenType.AND, opName, start),
                 "_or" => new Token(TokenType.OR, opName, start),
@@ -916,12 +912,33 @@ namespace K3CSharp
                 "_not" => new Token(TokenType.NOT, opName, start),
                 "_rot" => new Token(TokenType.ROT, opName, start),
                 "_shift" => new Token(TokenType.SHIFT, opName, start),
-                
+
                 // Control flow functions without underscores (K3 syntax)
                 "do" => new Token(TokenType.DO, opName, start),
                 "while" => new Token(TokenType.WHILE, opName, start),
                 "if" => new Token(TokenType.IF_FUNC, opName, start),
-                
+
+                // Niladic system variables
+                "_d" => new Token(TokenType.DIRECTORY, opName, start),
+                "_t" => new Token(TokenType.TIME, opName, start),
+                "_T" => new Token(TokenType.DAYS, opName, start),
+                "_v" => new Token(TokenType.VARIABLE, opName, start),
+                "_i" => new Token(TokenType.INDEX, opName, start),
+                "_f" => new Token(TokenType.FUNCTION, opName, start),
+                "_s" => new Token(TokenType.SPACE, opName, start),
+                "_h" => new Token(TokenType.HOST, opName, start),
+                "_p" => new Token(TokenType.PORT, opName, start),
+                "_P" => new Token(TokenType.PID, opName, start),
+                "_w" => new Token(TokenType.WHO, opName, start),
+                "_u" => new Token(TokenType.USER, opName, start),
+                "_a" => new Token(TokenType.ADDRESS, opName, start),
+                "_k" => new Token(TokenType.VERSION, opName, start),
+                "_o" => new Token(TokenType.OS, opName, start),
+                "_c" => new Token(TokenType.CORES, opName, start),
+                "_r" => new Token(TokenType.RAM, opName, start),
+                "_m" => new Token(TokenType.MACHID, opName, start),
+                "_y" => new Token(TokenType.STACK, opName, start),
+                                                
                 _ => null
             };
             

@@ -110,6 +110,7 @@ namespace K3CSharp
         
         // System functions (missing from current implementation)
         TIME,           // _t current time
+        DAYS,           // _T current time in days
         DRAW,           // _draw random number generation
         IN,             // _in search/find function
         BIN,            // _bin binary search
@@ -134,6 +135,24 @@ namespace K3CSharp
         SETENV,         // _setenv set environment variable
         SIZE,           // _size file size
         DIRECTORY,      // _d directory operations
+        
+        // Niladic system variables
+        VARIABLE,       // _v script name
+        INDEX,          // _i command line args
+        FUNCTION,       // _f current function
+        SPACE,          // _s memory info
+        HOST,           // _h hostname
+        PORT,           // _p IPC port
+        PID,            // _P process ID
+        WHO,            // _w calling port
+        USER,           // _u calling username
+        ADDRESS,        // _a calling ipv4 address
+        VERSION,        // _k version
+        OS,             // _o operating system
+        CORES,          // _c number of cores
+        RAM,            // _r amount of RAM
+        MACHID,         // _m machine ID
+        STACK,          // _y stack trace
         BD,             // _bd bytes from data
         DB,             // _db data from bytes
         DO,             // _do control flow

@@ -36,7 +36,7 @@ namespace K3CSharp.Parsing
             var token = tokens[position];
             
             // Route to appropriate parser based on token type
-            if (LRSAtomicParser.IsAtomicToken(token.Type))
+            if (LRSAtomicParser.CanBeParsedByAtomicParser(token.Type))
             {
                 return ProcessAtomicExpression(ref position);
             }
@@ -234,7 +234,7 @@ namespace K3CSharp.Parsing
         /// </summary>
         public bool CanHandle(TokenType tokenType)
         {
-            return LRSAtomicParser.IsAtomicToken(tokenType) ||
+            return LRSAtomicParser.CanBeParsedByAtomicParser(tokenType) ||
                    tokenType == TokenType.LEFT_PAREN ||
                    tokenType == TokenType.LEFT_BRACKET ||
                    tokenType == TokenType.LEFT_BRACE ||

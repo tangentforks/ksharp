@@ -534,7 +534,7 @@ namespace K3CSharp.Parsing
             }
             
             // Check for atomic-only sequences (implicit vector creation)
-            if (tokens.Count > 1 && tokens.All(t => LRSAtomicParser.IsAtomicToken(t.Type)))
+            if (tokens.Count > 1 && tokens.All(t => LRSAtomicParser.CanBeImplicitVectorElement(t.Type)))
             {
                 return TryCreateImplicitVector(tokens);
             }
@@ -1800,7 +1800,7 @@ namespace K3CSharp.Parsing
                 return ParseAdverbOperation(token);
             }
             
-            if (LRSAtomicParser.IsAtomicToken(token.Type))
+            if (LRSAtomicParser.CanBeParsedByAtomicParser(token.Type))
             {
                 return LRSAtomicParser.ParseAtomicToken(token, this);
             }
@@ -1879,7 +1879,7 @@ namespace K3CSharp.Parsing
                     bool hasValidArgs = true;
                     for (int i = 2; i < expressionTokens.Count; i++)
                     {
-                        if (!LRSAtomicParser.IsAtomicToken(expressionTokens[i].Type) &&
+                        if (!LRSAtomicParser.CanBeParsedByAtomicParser(expressionTokens[i].Type) &&
                             expressionTokens[i].Type != TokenType.LEFT_PAREN &&
                             expressionTokens[i].Type != TokenType.LEFT_BRACE &&
                             expressionTokens[i].Type != TokenType.LEFT_BRACKET)
@@ -2037,7 +2037,7 @@ namespace K3CSharp.Parsing
                 bool hasIdentifier = false;
                 foreach (var token in argTokens)
                 {
-                    if (!LRSAtomicParser.IsAtomicToken(token.Type))
+                    if (!LRSAtomicParser.CanBeParsedByAtomicParser(token.Type))
                     {
                         allAtomic = false;
                         break;
@@ -2147,7 +2147,7 @@ namespace K3CSharp.Parsing
                     var argNodes = new List<ASTNode>();
                     foreach (var token in argTokens)
                     {
-                        if (LRSAtomicParser.IsAtomicToken(token.Type))
+                        if (LRSAtomicParser.CanBeParsedByAtomicParser(token.Type))
                         {
                             argNodes.Add(LRSAtomicParser.ParseAtomicToken(token, this));
                         }
@@ -2331,7 +2331,7 @@ namespace K3CSharp.Parsing
             foreach (var token in tokens)
             {
                 // Check if token is an atomic literal
-                if (!LRSAtomicParser.IsAtomicToken(token.Type))
+                if (!LRSAtomicParser.CanBeImplicitVectorElement(token.Type))
                     return null; // Not all atomic - can't be implicit vector
                 
                 // Parse the token and add to elements

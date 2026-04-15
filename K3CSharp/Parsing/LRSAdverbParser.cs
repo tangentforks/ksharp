@@ -126,7 +126,7 @@ namespace K3CSharp.Parsing
             }
             
             // Handle atomic verbs (identifiers, symbols) as fallback
-            if (LRSAtomicParser.IsAtomicToken(verbToken.Type))
+            if (LRSAtomicParser.CanBeParsedByAtomicParser(verbToken.Type))
             {
                 return LRSAtomicParser.ParseAtomicToken(verbToken);
             }
@@ -160,7 +160,7 @@ namespace K3CSharp.Parsing
             bool hasIdentifier = false;
             for (int i = position; i < tokens.Count; i++)
             {
-                if (!LRSAtomicParser.IsAtomicToken(tokens[i].Type))
+                if (!LRSAtomicParser.CanBeImplicitVectorElement(tokens[i].Type))
                 {
                     allAtomic = false;
                     break;
@@ -352,7 +352,7 @@ namespace K3CSharp.Parsing
             var currentToken = tokens[position];
             
             // Handle different types of verbs
-            if (LRSAtomicParser.IsAtomicToken(currentToken.Type))
+            if (LRSAtomicParser.CanBeParsedByAtomicParser(currentToken.Type))
             {
                 // Atomic value (literal, identifier, symbol)
                 position++;

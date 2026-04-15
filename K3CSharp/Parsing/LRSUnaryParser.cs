@@ -273,7 +273,7 @@ namespace K3CSharp.Parsing
                 throw new Exception($"Cannot process COLON token without parent parser: {token.Type}({token.Lexeme})");
             }
             
-            if (!LRSAtomicParser.IsAtomicToken(token.Type))
+            if (!LRSAtomicParser.CanBeParsedByAtomicParser(token.Type))
             {
                 throw new Exception($"CreateNodeFromToken called with non-atomic token: {token.Type}({token.Lexeme})");
             }
