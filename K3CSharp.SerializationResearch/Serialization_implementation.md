@@ -77,7 +77,7 @@ int totalSize = 5 + symbolData.Length; // 4 bytes flag + symbol data + null
 int paddingNeeded = (4 - (totalSize % 4)) % 4;
 ```
 
-### Null (Type 6)
+### Null \(Type 6\)
 ```
 [4 bytes] Type Flag (6)
 ```

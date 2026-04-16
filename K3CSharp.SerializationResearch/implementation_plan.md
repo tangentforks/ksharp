@@ -184,7 +184,7 @@ private byte[] SerializeSymbol(string symbol)
 }
 ```
 
-#### **Null (Type 6)**
+#### **Null \(Type 6\)**
 ```csharp
 private byte[] SerializeNull()
 {

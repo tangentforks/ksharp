@@ -2409,7 +2409,7 @@ namespace K3CSharp.Tests
                 ("idioms_02_442_first_diff.k", "1 2 3 4 5"),
                 ("idioms_02_484_right_left_scan.k", "15 14 12 9 5"),
                 ("idioms_02_511_apply_over_all.k", "300"),
-                ("idioms_02_098_exec_rows.k", "(4;9)"),
+                ("idioms_02_098_exec_rows.k", "4 9"),
                 ("idioms_02_518_cond_transpose.k", "(0 3;1 4;2 5)"),
                 ("idioms_02_533_cond_reverse.k", "5 4 3 2 1"),
                 ("idioms_02_562_index_y_in_x.k", "6 1 4 5 4 0 8 5 1 4"),

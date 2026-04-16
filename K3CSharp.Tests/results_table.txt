@@ -1183,7 +1183,7 @@ x?" "     │ 2                    │                      ║
 x2:9
 x:2 5#"y1:x1y2:x2"
 r:.:'x
-(y1;y2) │ Error: Verb '.'...   │ (4;9)                ║
+(y1;y2) │ 4 9                  │                      ║
 ║ idioms_02_518_cond_transpose.k                     │ x:2 3#!6
 1 +:/x      │ (0 3;1 4;2 5)        │                      ║
 ║ idioms_02_533_cond_reverse.k                       │ x:1 2 3 4 5
@@ -1244,7 +1244,7 @@ _eval (`",";,`a`b`c;(`",";,`d;`v)) │ `a`b`c`d`e`f         │                 
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 919/933 tests passed (98.5%)                                                                               ║
+║ SUMMARY: 920/933 tests passed (98.6%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -1324,15 +1324,6 @@ Input: x:(1 2 3 4 5;10 6 7 8 9;14 15 11 12 13;18 19 20 16 17;22 23 24 25 21)
 (!5)!'x
 Expected: (1 2 3 4 5;6 7 8 9 10;11 12 13 14 15;16 17 18 19 20;21 22 23 24 25)
 Actual: Error: Modulus operator requires integer arguments or vector+integer combinations
-──────────────────────────────────────────────────────────────────────────
-Test: idioms_02_098_exec_rows.k
-Input: x1:4
-x2:9
-x:2 5#"y1:x1y2:x2"
-r:.:'x
-(y1;y2)
-Expected: (4;9)
-Actual: Error: Verb '.' is registered as monadic but not implemented in ApplyMonadicVerb
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_02_615_first_atom.k
 Input: x:2 2 2 2#!8

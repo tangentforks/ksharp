@@ -226,6 +226,8 @@ namespace K3CSharp
                         "?:" => Unique(operand),  // Monadic unique
                         "=" => Group(operand),
                         "=:" => Group(operand),  // Monadic group
+                        "." => MakeFunction(operand),  // Monadic make/execute
+                        ".:" => MakeFunction(operand),  // Monadic make/execute
                         "~" => Negate(operand),
                         "~:" => Negate(operand),  // Monadic negate
                         _ => throw new Exception($"Verb '{verbName}' is registered as monadic but not implemented in ApplyMonadicVerb")
@@ -919,6 +921,10 @@ namespace K3CSharp
             // Handle monadic verb with vector data (e.g., #:' 1 2 3)
             if (IsScalar(verb) && data is VectorValue vec)
             {
+                // Special case: monadic dot (execute) with each should preserve list structure
+                // This handles .:'x where x is a character matrix - results should be a general list
+                bool isMonadicDot = verb is SymbolValue vs && vs.Value == ".";
+                
                 var result = new List<K3Value>();
                 foreach (var element in vec.Elements)
                 {
@@ -941,8 +947,15 @@ namespace K3CSharp
                         }
                     }
                 }
+                
+                // For monadic dot, return as general list (type 0) to preserve structure
+                if (isMonadicDot)
+                {
+                    return new VectorValue(result, 0, null);
+                }
+                
                 int vectorType = DetermineVectorType(result);
-                return new VectorValue(result, vectorType);
+                return new VectorValue(result, vectorType, null);
             }
             
             // Legacy 2-argument call for backward compatibility
