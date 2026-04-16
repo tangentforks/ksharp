@@ -179,6 +179,16 @@ namespace K3CSharp
                 return new LongValue(Value + longVal.Value);
             if (other is FloatValue floatVal)
                 return new FloatValue(Value + floatVal.Value);
+            if (other is VectorValue vec)
+            {
+                // Scalar + vector: add scalar to each element
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(element.Add(this));
+                }
+                return new VectorValue(result);
+            }
             
             throw new InvalidOperationException($"Cannot add Integer to {other.Type}");
         }
@@ -264,6 +274,16 @@ namespace K3CSharp
             }
             if (other is FloatValue floatVal)
                 return new FloatValue(Value + floatVal.Value);
+            if (other is VectorValue vec)
+            {
+                // Scalar + vector: add scalar to each element
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(element.Add(this));
+                }
+                return new VectorValue(result);
+            }
             
             throw new InvalidOperationException($"Cannot add Long to {other.Type}");
         }
@@ -400,6 +420,16 @@ namespace K3CSharp
                 return new FloatValue(Value + longVal.Value);
             if (other is FloatValue floatVal)
                 return new FloatValue(Value + floatVal.Value);
+            if (other is VectorValue vec)
+            {
+                // Scalar + vector: add scalar to each element
+                var result = new List<K3Value>();
+                foreach (var element in vec.Elements)
+                {
+                    result.Add(element.Add(this));
+                }
+                return new VectorValue(result);
+            }
             
             throw new InvalidOperationException($"Cannot add Float to {other.Type}");
         }
