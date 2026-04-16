@@ -13,13 +13,14 @@ c1:complex_new[2;3]
 // Step 4: Call instance method (Abs - magnitude)
 magnitude: c1[`Abs][]
 
-// Step 5: Call property getter methods (not working)
-// real: c1[`get_Real][]
-// imag: c1[`get_Imaginary][]
+// Step 5: Call property getter methods 
+real: c1[`Real][]
+imag: c1[`Imaginary]
 
-// Step 6: Call static method (Conjugate) (not working)
+// Step 6: Call static method (Conjugate)
 conj_func: ._dotnet.System.Numerics.Complex.Conjugate
-//conj_result: conj_func[c1]
+conj_result: conj_func[c1]
+
 
 // Step 7: Display object information
-.((`real;c1[`Real]);(`imag;c1[`Imaginary]);(`magnitude;magnitude);(`instance;!c1);(`type;!complex))
+.((`real;c1[`Real]);(`imag;c1[`Imaginary]);(`magnitude;magnitude);(`conj_real;conj_result[`Real]);(`conj_imag;conj_result[`Imaginary]);(`instance_more_than_5_methods;5<#!c1);(`type_more_than_20_methods;20<#!complex))

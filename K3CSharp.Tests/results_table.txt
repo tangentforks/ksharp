@@ -944,8 +944,11 @@ c1 @ `_this │ `Disposed            │                      ║
 complex_new:complex[`constructor]
 c1:complex_new[2;3]
 magnitude: c1[`Abs][]
+real: c1[`Real][]
+imag: c1[`Imaginary]
 conj_func: ._dotnet.System.Numerics.Complex.Conjugate
-.((`real;c1[`Real]);(`imag;c1[`Imaginary]);(`magnitude;magnitude);(`instance;!c1);(`type;!complex)) │ .((`real;2.0;);...   │ .((`real;2.0;);...   ║
+conj_result: conj_func[c1]
+.((`real;c1[`Real]);(`imag;c1[`Imaginary]);(`magnitude;magnitude);(`conj_real;conj_result[`Real]);(`conj_imag;conj_result[`Imaginary]);(`instance_more_than_5_methods;5<#!c1);(`type_more_than_20_methods;20<#!complex)) │ .((`real;2.0;);...   │                      ║
 ║ idioms_01_575_kronecker_delta.k                    │ x:0 0 1 1
 y:0 1 0 1
 x=y │ 1 0 0 1              │                      ║
@@ -1244,7 +1247,7 @@ _eval (`",";,`a`b`c;(`",";,`d;`v)) │ `a`b`c`d`e`f         │                 
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 921/933 tests passed (98.7%)                                                                               ║
+║ SUMMARY: 922/933 tests passed (98.8%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -1289,16 +1292,6 @@ Test: k_tree_verify_root.k
 Input: .k
 Expected: 
 Actual: .()
-──────────────────────────────────────────────────────────────────────────
-Test: ffi_complete_workflow.k
-Input: complex:"C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App\\8.0.25\\System.Runtime.Numerics.dll" 2: `System.Numerics.Complex
-complex_new:complex[`constructor]
-c1:complex_new[2;3]
-magnitude: c1[`Abs][]
-conj_func: ._dotnet.System.Numerics.Complex.Conjugate
-.((`real;c1[`Real]);(`imag;c1[`Imaginary]);(`magnitude;magnitude);(`instance;!c1);(`type;!complex))
-Expected: .((`real;2.0;);(`imag;3.0;);(`magnitude;3.605551275463989))
-Actual: .((`real;2.0;);(`imag;3.0;);(`magnitude;3.605551;);(`instance;`get_Imaginary`get_Real`_this`Abs`Equals`GetHashCode`ToString`GetType;);(`type;`name`fullname`namespace`assembly`isclass`isinterface`isenum`isabstract`ispublic`isstatic`.ctor`constructor`FromPolarCoordinates`Negate`Add`Subtract`Multiply`Divide`op_UnaryNegation`op_Addition`op_Subtraction`op_Multiply`op_Division`Abs`Conjugate`Reciprocal`op_Equality`op_Inequality`Sin`Sinh`Asin`Cos`Cosh`Acos`Tan`Tanh`Atan`IsFinite`IsInfinity`IsNaN`Log`Log10`Exp`Sqrt`Pow`op_Explicit`op_Implicit`op_Decrement`op_Increment`CreateChecked`CreateSaturating`CreateTruncating`IsComplexNumber`IsEvenInteger`IsImaginaryNumber`IsInteger`IsNegative`IsNegativeInfinity`IsNormal`IsOddInteger`IsPositive`IsPositiveInfinity`IsRealNumber`IsSubnormal`MaxMagnitude`MinMagnitude`Parse`TryParse`op_UnaryPlus`get_Real`get_Imaginary`get_Magnitude`get_Phase`Equals`GetHashCode`ToString`TryFormat`GetType`Real`Imaginary`Magnitude`Phase`Zero`One`ImaginaryOne`NaN`Infinity;))
 ──────────────────────────────────────────────────────────────────────────
 Test: idioms_02_285_moving_sum.k
 Input: ms:{((y-1)_ a)-0,(-y)_ a:+\x}

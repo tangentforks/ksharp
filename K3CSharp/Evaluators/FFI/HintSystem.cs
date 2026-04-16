@@ -156,7 +156,8 @@ namespace K3CSharp
         /// <returns>True if the hint represents a .NET member type</returns>
         public static bool IsMemberHint(string hintSymbol)
         {
-            return hintSymbol is "method" or "property" or "field" or "constructor" or "event";
+            return hintSymbol is "method" or "property" or "field" or "constructor" or "event"
+                or "static_method" or "property_getter" or "property_setter" or "field_getter" or "field_setter";
         }
     }
 }

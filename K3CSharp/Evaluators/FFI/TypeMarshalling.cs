@@ -350,109 +350,104 @@ namespace K3CSharp
             var entries = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)>();
             var type = netValue.GetType();
             
-            // Add properties as callable entries with getters/setters
+            // Register the object and get its handle first
+            var handle = ObjectRegistry.RegisterObject(netValue);
+            
+            // Add properties: store current value directly AND a setter function
             foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 // Skip properties that return the same type as the containing object (circular reference)
                 if (property.PropertyType == type)
-                {
                     continue;
-                }
                 
-                // Don't store property values directly - they have marshalling issues
-                // Only store getter/setter functions
+                // Skip indexer properties
+                if (property.GetIndexParameters().Length > 0)
+                    continue;
                 
-                // Add property getter/setter functions
                 if (property.CanRead)
                 {
-                    var getterKey = new SymbolValue($"get_{property.Name}");
-                    var getter = CreatePropertyGetter(netValue, property);
-                    entries[getterKey] = (getter, new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)>
+                    try
                     {
-                        [new SymbolValue("property")] = (new IntegerValue(1), null),
-                        [new SymbolValue("getter")] = (new IntegerValue(1), null),
-                        [new SymbolValue("hint")] = (new SymbolValue("property_getter"), null)
-                    }));
+                        var propValue = property.GetValue(netValue);
+                        var k3Value = NetToK3(propValue);
+                        entries[new SymbolValue(property.Name)] = (k3Value, null);
+                    }
+                    catch
+                    {
+                        // If property read fails, store a getter function instead
+                        var getter = CreatePropertyGetter(netValue, property, handle);
+                        entries[new SymbolValue(property.Name)] = (getter, null);
+                    }
                 }
                 
                 if (property.CanWrite)
                 {
                     var setterKey = new SymbolValue($"set_{property.Name}");
-                    var setter = CreatePropertySetter(netValue, property);
-                    entries[setterKey] = (setter, new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)>
-                    {
-                        [new SymbolValue("property")] = (new IntegerValue(1), null),
-                        [new SymbolValue("setter")] = (new IntegerValue(1), null),
-                        [new SymbolValue("hint")] = (new SymbolValue("property_setter"), null)
-                    }));
+                    var setter = CreatePropertySetter(netValue, property, handle);
+                    entries[setterKey] = (setter, null);
                 }
             }
             
-            // Add fields with getter/setter functions
+            // Add public instance fields: store current value directly
             foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Instance))
             {
-                // Don't store field values directly - they have marshalling issues
-                // Only store getter/setter functions
-                
-                // Add field getter/setter functions
-                var getterKey = new SymbolValue($"get_{field.Name}");
-                var getter = CreateFieldGetter(netValue, field);
-                entries[getterKey] = (getter, new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)>
+                try
                 {
-                    [new SymbolValue("field")] = (new IntegerValue(1), null),
-                    [new SymbolValue("getter")] = (new IntegerValue(1), null),
-                    [new SymbolValue("hint")] = (new SymbolValue("field_getter"), null)
-                }));
+                    var fieldValue = field.GetValue(netValue);
+                    var k3Value = NetToK3(fieldValue);
+                    entries[new SymbolValue(field.Name)] = (k3Value, null);
+                }
+                catch
+                {
+                    var getter = CreateFieldGetter(netValue, field, handle);
+                    entries[new SymbolValue(field.Name)] = (getter, null);
+                }
                 
                 if (!field.IsInitOnly && !field.IsLiteral)
                 {
                     var setterKey = new SymbolValue($"set_{field.Name}");
-                    var setter = CreateFieldSetter(netValue, field);
-                    entries[setterKey] = (setter, new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)>
-                    {
-                        [new SymbolValue("field")] = (new IntegerValue(1), null),
-                        [new SymbolValue("setter")] = (new IntegerValue(1), null),
-                        [new SymbolValue("hint")] = (new SymbolValue("field_setter"), null)
-                    }));
+                    var setter = CreateFieldSetter(netValue, field, handle);
+                    entries[setterKey] = (setter, null);
                 }
             }
             
             // Add special _this entry for object reference
-            var handle = ObjectRegistry.RegisterObject(netValue);
             entries[new SymbolValue("_this")] = (new SymbolValue(handle), null);
             
-            // Add methods as callable entries
+            // Add instance methods as callable entries
             foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance))
             {
                 if (!method.IsSpecialName) // Exclude property accessors, etc.
                 {
                     var key = new SymbolValue(method.Name);
                     var methodFunc = CreateMethodFunction(netValue, method);
-                    entries[key] = (methodFunc, new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)>
-                    {
-                        [new SymbolValue("method")] = (new IntegerValue(1), null),
-                        [new SymbolValue("hint")] = (new SymbolValue("method"), null)
-                    }));
+                    entries[key] = (methodFunc, null);
                 }
             }
             
-            // Add static methods (excluding those already in _dotnet tree)
+            // Add static methods as callable entries (so instance can call e.g. Complex.Abs(c))
+            // The handle is encoded so the handler can automatically inject the instance as first arg
+            var assemblyName = type.Assembly.GetName().Name ?? "";
             foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
             {
                 if (!method.IsSpecialName)
                 {
                     var key = new SymbolValue(method.Name);
-                    var methodFunc = CreateStaticMethodFunction(method);
-                    entries[key] = (methodFunc, new DictionaryValue(new Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)>
-                    {
-                        [new SymbolValue("method")] = (new IntegerValue(1), null),
-                        [new SymbolValue("static")] = (new IntegerValue(1), null),
-                        [new SymbolValue("hint")] = (new SymbolValue("static_method"), null)
-                    }));
+                    // Skip the first parameter (the instance itself) for the exposed parameter list
+                    var methodParams = method.GetParameters();
+                    var remainingParams = methodParams.Length > 0 && methodParams[0].ParameterType.IsAssignableFrom(type)
+                        ? methodParams.Skip(1).Select(p => p.Name ?? "").ToList()
+                        : methodParams.Select(p => p.Name ?? "").ToList();
+                    // Format: static_method:TypeFullName|Assembly|MethodName|ObjectHandle
+                    var bodyText = $"static_method:{type.FullName}|{assemblyName}|{method.Name}|{handle}";
+                    var methodFunc = new FunctionValue(bodyText, remainingParams, null!, "", new SymbolValue("method"));
+                    entries[key] = (methodFunc, null);
                 }
             }
             
-            return new DictionaryValue(entries);
+            var result = new DictionaryValue(entries);
+            result.Hint = hint;
+            return result;
         }
 
         #endregion
@@ -481,26 +476,12 @@ namespace K3CSharp
         }
 
         /// <summary>
-        /// Create a K function that calls a static method
-        /// </summary>
-        private static FunctionValue CreateStaticMethodFunction(MethodInfo method)
-        {
-            var parameters = method.GetParameters().Select(p => p.Name ?? "").ToList();
-            return new FunctionValue(
-                $"static_method:{method.Name}",
-                parameters,
-                null!,
-                "",
-                new SymbolValue("static_method"));
-        }
-
-        /// <summary>
         /// Create a property getter function
         /// </summary>
-        private static FunctionValue CreatePropertyGetter(object target, PropertyInfo property)
+        private static FunctionValue CreatePropertyGetter(object target, PropertyInfo property, string handle)
         {
             return new FunctionValue(
-                $"get_{property.Name}",
+                $"property_getter:{property.Name}|{handle}",
                 new List<string>(),
                 null!,
                 "",
@@ -510,10 +491,10 @@ namespace K3CSharp
         /// <summary>
         /// Create a property setter function
         /// </summary>
-        private static FunctionValue CreatePropertySetter(object target, PropertyInfo property)
+        private static FunctionValue CreatePropertySetter(object target, PropertyInfo property, string handle)
         {
             return new FunctionValue(
-                $"set_{property.Name}",
+                $"property_setter:{property.Name}|{handle}",
                 new List<string> { "value" },
                 null!,
                 "",
@@ -523,10 +504,10 @@ namespace K3CSharp
         /// <summary>
         /// Create a field getter function
         /// </summary>
-        private static FunctionValue CreateFieldGetter(object target, FieldInfo field)
+        private static FunctionValue CreateFieldGetter(object target, FieldInfo field, string handle)
         {
             return new FunctionValue(
-                $"get_{field.Name}",
+                $"field_getter:{field.Name}|{handle}",
                 new List<string>(),
                 null!,
                 "",
@@ -536,10 +517,10 @@ namespace K3CSharp
         /// <summary>
         /// Create a field setter function
         /// </summary>
-        private static FunctionValue CreateFieldSetter(object target, FieldInfo field)
+        private static FunctionValue CreateFieldSetter(object target, FieldInfo field, string handle)
         {
             return new FunctionValue(
-                $"set_{field.Name}",
+                $"field_setter:{field.Name}|{handle}",
                 new List<string> { "value" },
                 null!,
                 "",

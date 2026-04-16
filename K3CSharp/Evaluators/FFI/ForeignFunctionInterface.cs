@@ -42,7 +42,7 @@ namespace K3CSharp
             var parameters = firstConstructor?.GetParameters().Select(p => p.Name ?? "").ToList() ?? new List<string>();
             
             return new FunctionValue(
-                $"constructor:{type.Name}",
+                $"constructor:{type.FullName}",
                 parameters,
                 null!,
                 "",
@@ -284,34 +284,21 @@ namespace K3CSharp
             var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
             if (constructors.Length > 0)
             {
-                foreach (var constructor in constructors)
-                {
-                    var constructorDict = CreateConstructorDictionary(constructor);
-                    entries[new SymbolValue(constructor.Name)] = (constructorDict, null);
-                }
-                // Add main constructor entry
+                // Add main constructor entry as callable function
                 entries[new SymbolValue("constructor")] = (CreateConstructorFunction(type), null);
             }
             
-            // Add static methods
+            // Add static methods as callable FunctionValues (with type name encoded for invocation)
             var staticMethods = type.GetMethods(BindingFlags.Static | BindingFlags.Public);
             if (staticMethods.Length > 0)
             {
                 foreach (var method in staticMethods)
                 {
-                    var methodDict = CreateMethodDictionary(method);
-                    entries[new SymbolValue(method.Name)] = (methodDict, null);
-                }
-            }
-            
-            // Add instance methods
-            var instanceMethods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public);
-            if (instanceMethods.Length > 0)
-            {
-                foreach (var method in instanceMethods)
-                {
-                    var methodDict = CreateMethodDictionary(method);
-                    entries[new SymbolValue(method.Name)] = (methodDict, null);
+                    if (!method.IsSpecialName)
+                    {
+                        var methodFunc = CreateStaticMethodFunction(method, type);
+                        entries[new SymbolValue(method.Name)] = (methodFunc, null);
+                    }
                 }
             }
             
@@ -346,61 +333,6 @@ namespace K3CSharp
                     var eventDict = CreateEventDictionary(eventInfo);
                     entries[new SymbolValue(eventInfo.Name)] = (eventDict, null);
                 }
-            }
-            
-            return new DictionaryValue(entries);
-        }
-
-        /// <summary>
-        /// Create a K dictionary representing a constructor
-        /// </summary>
-        private static DictionaryValue CreateConstructorDictionary(ConstructorInfo constructor)
-        {
-            var entries = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)>();
-            
-            entries[new SymbolValue("name")] = (CreateCharacterVectorFromString(constructor.Name), null);
-            entries[new SymbolValue("ispublic")] = (new IntegerValue(constructor.IsPublic ? 1 : 0), null);
-            entries[new SymbolValue("isstatic")] = (new IntegerValue(constructor.IsStatic ? 1 : 0), null);
-            
-            var parameters = constructor.GetParameters();
-            if (parameters.Length > 0)
-            {
-                var paramList = new List<K3Value>();
-                foreach (var param in parameters)
-                {
-                    var paramDict = CreateParameterDictionary(param);
-                    paramList.Add(paramDict);
-                }
-                entries[new SymbolValue("parameters")] = (new VectorValue(paramList), null);
-            }
-            
-            return new DictionaryValue(entries);
-        }
-
-        /// <summary>
-        /// Create a K dictionary representing a method
-        /// </summary>
-        private static DictionaryValue CreateMethodDictionary(MethodInfo method)
-        {
-            var entries = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)>();
-            
-            entries[new SymbolValue("name")] = (CreateCharacterVectorFromString(method.Name), null);
-            entries[new SymbolValue("isstatic")] = (new IntegerValue(method.IsStatic ? 1 : 0), null);
-            entries[new SymbolValue("ispublic")] = (new IntegerValue(method.IsPublic ? 1 : 0), null);
-            entries[new SymbolValue("isvirtual")] = (new IntegerValue(method.IsVirtual ? 1 : 0), null);
-            entries[new SymbolValue("isabstract")] = (new IntegerValue(method.IsAbstract ? 1 : 0), null);
-            entries[new SymbolValue("returntype")] = (CreateCharacterVectorFromString(method.ReturnType.Name), null);
-            
-            var parameters = method.GetParameters();
-            if (parameters.Length > 0)
-            {
-                var paramList = new List<K3Value>();
-                foreach (var param in parameters)
-                {
-                    var paramDict = CreateParameterDictionary(param);
-                    paramList.Add(paramDict);
-                }
-                entries[new SymbolValue("parameters")] = (new VectorValue(paramList), null);
             }
             
             return new DictionaryValue(entries);
@@ -455,21 +387,6 @@ namespace K3CSharp
         }
 
         /// <summary>
-        /// Create a K dictionary representing a method parameter
-        /// </summary>
-        private static DictionaryValue CreateParameterDictionary(ParameterInfo parameter)
-        {
-            var entries = new Dictionary<SymbolValue, (K3Value Value, DictionaryValue? Attribute)>();
-            
-            entries[new SymbolValue("name")] = (CreateCharacterVectorFromString(parameter.Name ?? ""), null);
-            entries[new SymbolValue("type")] = (CreateCharacterVectorFromString(parameter.ParameterType.Name), null);
-            entries[new SymbolValue("position")] = (new IntegerValue(parameter.Position), null);
-            entries[new SymbolValue("isoptional")] = (new IntegerValue(parameter.IsOptional ? 1 : 0), null);
-            
-            return new DictionaryValue(entries);
-        }
-
-        /// <summary>
         /// Get a specific assembly from the _dotnet tree
         /// </summary>
         /// <param name="assemblyName">The assembly name to retrieve</param>
@@ -482,6 +399,24 @@ namespace K3CSharp
                 return assemblyEntry.Value as DictionaryValue;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Create a callable FunctionValue for a static method, encoding the type's AssemblyQualifiedName
+        /// so that ExecuteFFIFunction can look it up via reflection.
+        /// Body format: "static_method:TypeFullName|AssemblyName|MethodName"
+        /// </summary>
+        private static FunctionValue CreateStaticMethodFunction(MethodInfo method, Type declaringType)
+        {
+            var parameters = method.GetParameters().Select(p => p.Name ?? "").ToList();
+            var assemblyName = declaringType.Assembly.GetName().Name ?? "";
+            var bodyText = $"static_method:{declaringType.FullName}|{assemblyName}|{method.Name}";
+            return new FunctionValue(
+                bodyText,
+                parameters,
+                null!,
+                "",
+                new SymbolValue("method"));
         }
 
         /// <summary>

@@ -1477,6 +1477,18 @@ namespace K3CSharp
                 }
                 return VectorIndex(leftValue, arguments[0]);
             }
+            
+            // Handle SymbolValue: may be a KTree path or a variable name that resolves to a dict/vector
+            if (leftValue is SymbolValue symVal)
+            {
+                // Delegate to AtIndexOperation which handles symbol resolution
+                if (arguments.Count == 0)
+                    return AtIndexOperation(symVal, new NullValue());
+                if (arguments.Count == 1)
+                    return AtIndexOperation(symVal, arguments[0]);
+                // Multiple args: wrap in vector (semicolon list)
+                return AtIndexOperation(symVal, new VectorValue(arguments));
+            }
 
             // Handle function calls differently based on the function node type
             if (functionNode.Type == ASTNodeType.Function)
@@ -1712,7 +1724,7 @@ namespace K3CSharp
                     foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
                     {
                         var types = assembly.GetTypes();
-                        foundType = types.FirstOrDefault(t => t.FullName == typeName || t.Name == typeName);
+                        foundType = types.FirstOrDefault(t => t.FullName == typeName);
                         if (foundType != null) break;
                     }
                     
@@ -1807,6 +1819,123 @@ namespace K3CSharp
                     
                     // If we can't find the object, throw an informative error
                     throw new Exception($"Cannot invoke instance method '{methodName}' - target object not found or handle '{objectHandle}' is invalid.");
+                }
+                
+                // Parse static method function body: "static_method:TypeFullName|AssemblyName|MethodName[|ObjectHandle]"
+                else if (bodyText.StartsWith("static_method:"))
+                {
+                    var rest = bodyText.Substring("static_method:".Length);
+                    var parts = rest.Split('|');
+                    var typeFullName = parts[0];
+                    var assemblyName = parts.Length > 1 ? parts[1] : "";
+                    var methodName = parts.Length > 2 ? parts[2] : parts[0];
+                    var instanceHandle = parts.Length > 3 ? parts[3] : null;
+                    
+                    // Find the type across loaded assemblies
+                    Type? foundType = null;
+                    foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+                    {
+                        if (!string.IsNullOrEmpty(assemblyName) && asm.GetName().Name != assemblyName)
+                            continue;
+                        foundType = asm.GetType(typeFullName);
+                        if (foundType != null) break;
+                    }
+                    
+                    if (foundType == null)
+                        throw new Exception($"Cannot find type '{typeFullName}' for static method '{methodName}'");
+                    
+                    // Find the method - may have multiple overloads
+                    var candidateMethods = foundType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                        .Where(m => m.Name == methodName)
+                        .ToArray();
+                    
+                    if (candidateMethods.Length == 0)
+                        throw new Exception($"Static method '{methodName}' not found on type '{typeFullName}'");
+                    
+                    // Collect explicit arguments from function parameters
+                    var args = new List<K3Value>();
+                    foreach (var param in functionValue.Parameters)
+                    {
+                        var argValue = functionEvaluator.GetVariable(param);
+                        if (argValue != null) args.Add(argValue);
+                    }
+                    
+                    // If instance handle is encoded, prepend the instance as first argument
+                    object? instanceObj = null;
+                    if (!string.IsNullOrEmpty(instanceHandle))
+                        instanceObj = ObjectRegistry.GetObject(instanceHandle);
+                    
+                    // Find best overload: count = args + (1 if instanceObj) 
+                    int totalArgs = args.Count + (instanceObj != null ? 1 : 0);
+                    MethodInfo? bestMethod = candidateMethods.FirstOrDefault(m => m.GetParameters().Length == totalArgs)
+                        ?? candidateMethods.OrderBy(m => Math.Abs(m.GetParameters().Length - totalArgs)).First();
+                    
+                    var methodParams = bestMethod.GetParameters();
+                    var netArgs = new object?[methodParams.Length];
+                    int argOffset = 0;
+                    
+                    // Fill first param with instance object if present
+                    if (instanceObj != null && methodParams.Length > 0)
+                    {
+                        netArgs[0] = instanceObj;
+                        argOffset = 1;
+                    }
+                    
+                    for (int i = argOffset; i < methodParams.Length && (i - argOffset) < args.Count; i++)
+                    {
+                        var argVal = args[i - argOffset];
+                        // If arg is object dictionary, unwrap to actual .NET object
+                        if (argVal is DictionaryValue dictArg && dictArg.Hint?.Value == "object")
+                        {
+                            if (dictArg.Entries.TryGetValue(new SymbolValue("_this"), out var thisEntry)
+                                && thisEntry.Value is SymbolValue thisHandleInner)
+                            {
+                                var obj = ObjectRegistry.GetObject(thisHandleInner.Value);
+                                if (obj != null)
+                                {
+                                    netArgs[i] = obj;
+                                    continue;
+                                }
+                            }
+                        }
+                        netArgs[i] = TypeMarshalling.K3ToNet(argVal, methodParams[i].ParameterType);
+                    }
+                    
+                    var staticResult = bestMethod.Invoke(null, netArgs);
+                    return TypeMarshalling.NetToK3(staticResult);
+                }
+                // Parse property getter: "property_getter:PropertyName|ObjectHandle"
+                else if (bodyText.StartsWith("property_getter:"))
+                {
+                    var rest = bodyText.Substring("property_getter:".Length);
+                    var parts = rest.Split('|');
+                    var propName = parts[0];
+                    var objHandle = parts.Length > 1 ? parts[1] : null;
+                    var targetObject = ObjectRegistry.GetObject(objHandle);
+                    if (targetObject == null)
+                        throw new Exception($"Cannot get property '{propName}': object not found");
+                    var prop = targetObject.GetType().GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
+                    if (prop == null)
+                        throw new Exception($"Property '{propName}' not found");
+                    return TypeMarshalling.NetToK3(prop.GetValue(targetObject));
+                }
+                // Parse property setter: "property_setter:PropertyName|ObjectHandle"
+                else if (bodyText.StartsWith("property_setter:"))
+                {
+                    var rest = bodyText.Substring("property_setter:".Length);
+                    var parts = rest.Split('|');
+                    var propName = parts[0];
+                    var objHandle = parts.Length > 1 ? parts[1] : null;
+                    var targetObject = ObjectRegistry.GetObject(objHandle);
+                    if (targetObject == null)
+                        throw new Exception($"Cannot set property '{propName}': object not found");
+                    var prop = targetObject.GetType().GetProperty(propName, BindingFlags.Public | BindingFlags.Instance);
+                    if (prop == null)
+                        throw new Exception($"Property '{propName}' not found");
+                    var valueArg = functionEvaluator.GetVariable("value");
+                    if (valueArg != null)
+                        prop.SetValue(targetObject, TypeMarshalling.K3ToNet(valueArg, prop.PropertyType));
+                    return new NullValue();
                 }
                 
                 throw new Exception("FFI function execution failed: cannot parse function body");
@@ -2740,6 +2869,13 @@ namespace K3CSharp
                 
                 // Call the function
                 return CallFunction(function, args);
+            }
+            
+            // Scalar indexed with empty args: x[] returns x (atom identity)
+            if (index is NullValue || (index is VectorValue emptyIdx2 && emptyIdx2.Elements.Count == 0))
+            {
+                if (data is IntegerValue || data is LongValue || data is FloatValue || data is CharacterValue || data is SymbolValue)
+                    return data;
             }
             
             throw new Exception("Index operation requires dictionary or vector");

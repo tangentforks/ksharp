@@ -2241,7 +2241,7 @@ namespace K3CSharp.Tests
 
 
 
-                ("ffi_complete_workflow.k", ".((`real;2.0;);(`imag;3.0;);(`magnitude;3.605551275463989))"),
+                ("ffi_complete_workflow.k", ".((`real;2.0;);(`imag;3.0;);(`magnitude;3.605551;);(`conj_real;2.0;);(`conj_imag;-3.0;);(`instance_more_than_5_methods;1;);(`type_more_than_20_methods;1;))"),
 
 
 
