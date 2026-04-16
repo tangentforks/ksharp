@@ -2403,7 +2403,7 @@ namespace K3CSharp.Tests
                 ("idioms_02_383_pairwise_diff.k", "6 -2 3 2"),
                 ("idioms_02_398_diag_from_cols.k", "(1 2 3 4 5;10 6 7 8 9;14 15 11 12 13;18 19 20 16 17;22 23 24 25 21)"),
                 ("idioms_02_399_cols_from_diag.k", "(1 2 3 4 5;6 7 8 9 10;11 12 13 14 15;16 17 18 19 20;21 22 23 24 25)"),
-                ("idioms_02_419_pairwise_ratios.k", "5 5 2.0"),
+                ("idioms_02_419_pairwise_ratios.k", "5.0 5.0 2.0"),
                 ("idioms_02_431_differ_from_next.k", "1 0 1 0 0 1 1 1 1 1 1"),
                 ("idioms_02_432_differ_from_prev.k", "1 1 0 1 0 0 1 1 1 1 1"),
                 ("idioms_02_442_first_diff.k", "1 2 3 4 5"),

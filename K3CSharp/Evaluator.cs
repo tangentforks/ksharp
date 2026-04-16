@@ -646,8 +646,9 @@ namespace K3CSharp
             {
                 // Adverbs must be agnostic to the verb they modify
                 // Pass the actual verb (left operand) to the adverb handler
-                case "over": return Over(left, new IntegerValue(0), right);
-                case "scan": return Scan(left, new IntegerValue(0), right);
+                // For over/scan: left argument is the initialization value (per spec)
+                case "over": return Over(left, left, right);
+                case "scan": return Scan(left, left, right);
                 case "each": return HandleAdverbTick(left, new IntegerValue(0), right);
                 case "/:": return EachRight(left, new IntegerValue(0), right);
                 case "\\:": return EachLeft(left, new IntegerValue(0), right);
@@ -1051,6 +1052,24 @@ namespace K3CSharp
                 var verbNode = node.Children[0];
                 var leftArg = Evaluate(node.Children[1]);
                 var rightArg = Evaluate(node.Children[2]);
+                
+                // Special case for disambiguating colon pattern: left_arg + verb + colon + adverb + right_arg
+                // When leftArg is truthy and verb has monadic variant, apply monadic variant to rightArg
+                // Check verb symbol from AST node BEFORE it's evaluated
+                if (op.Value.ToString() == "over" && leftArg is IntegerValue leftInt && leftInt.Value != 0)
+                {
+                    // Check if verb has monadic variant (from the AST node, not evaluated value)
+                    if (verbNode.Type == ASTNodeType.Literal && verbNode.Value is SymbolValue verbSymbol)
+                    {
+                        string monadicVariant = verbSymbol.Value + ":";
+                        bool hasMonadicVariant = VerbRegistry.IsVerb(monadicVariant);
+                        if (hasMonadicVariant)
+                        {
+                            // Apply monadic variant to right argument
+                            return ApplyMonadicVerb(monadicVariant, rightArg);
+                        }
+                    }
+                }
                 
                 // Parse the verb with adverbs
                 var verbWithAdverbs = VerbAdverbParser.ParseVerbWithAdverbs(verbNode);
@@ -4461,9 +4480,37 @@ namespace K3CSharp
                 // Set current verb context
                 currentVerb = verbWithAdverbs.BaseVerb;
                 
+                // Check if verb is monadic (has disambiguating colon suffix)
+                bool isMonadicVerb = verbWithAdverbs.BaseVerb.EndsWith(":");
+                
+                // Also check verb arity from VerbRegistry
+                var verbInfo = VerbRegistry.GetVerb(verbWithAdverbs.BaseVerb);
+                bool isMonadicOnly = verbInfo != null && verbInfo.SupportedArities.Length == 1 && verbInfo.SupportedArities[0] == 1;
+                
+                // Check if verb has a monadic variant (e.g., + has +:)
+                string monadicVariant = verbWithAdverbs.BaseVerb + ":";
+                bool hasMonadicVariant = VerbRegistry.IsVerb(monadicVariant);
+                
                 // Special handling for over adverb
                 if (verbWithAdverbs.Adverbs.Contains("over"))
                 {
+                    // If verb is monadic (either by colon suffix or monadic-only), ignore left argument
+                    if ((isMonadicVerb || isMonadicOnly) && arguments.Length >= 2)
+                    {
+                        // Apply monadic verb to right argument
+                        string verbToUse = isMonadicVerb ? verbWithAdverbs.BaseVerb : monadicVariant;
+                        return evaluator.ApplyMonadicVerb(verbToUse, arguments[1]);
+                    }
+                    
+                    // If verb has a monadic variant and we have a left argument, use the monadic variant
+                    // This handles cases like 1 +:/x where the disambiguating colon should force monadic interpretation
+                    // Check if the left argument is a truthy value (non-zero) - this indicates conditional application
+                    if (hasMonadicVariant && arguments.Length >= 2 && arguments[0] is IntegerValue initVal && initVal.Value != 0)
+                    {
+                        // Use monadic variant instead of dyadic
+                        return evaluator.ApplyMonadicVerb(monadicVariant, arguments[1]);
+                    }
+                    
                     // Check if we have initialization (left argument is not dummy 0)
                     if (arguments.Length == 2 && arguments[0] is IntegerValue leftInt && leftInt.Value != 0)
                     {
@@ -4653,13 +4700,43 @@ namespace K3CSharp
                     }
                     else
                     {
-                        // Reduce operation: start with initialization, apply verb cumulatively
-                        K3Value result = initialization;
-                        foreach (var element in vector.Elements)
+                        // Check if the verb is monadic (has disambiguating colon suffix)
+                        string verb = GetVerbFromContext(originalArguments);
+                        
+                        // Check verb arity from VerbRegistry
+                        var verbInfo = VerbRegistry.GetVerb(verb);
+                        bool isMonadicOnly = verbInfo != null && verbInfo.SupportedArities.Length == 1 && verbInfo.SupportedArities[0] == 1;
+                        
+                        // Also check for colon suffix which forces monadic interpretation
+                        bool hasDisambiguatingColon = verb.EndsWith(":");
+                        
+                        // Check if verb has a monadic variant (e.g., + has +:)
+                        string monadicVariant = verb + ":";
+                        bool hasMonadicVariant = VerbRegistry.IsVerb(monadicVariant);
+                        
+                        // Special case: if verb has a monadic variant and initialization is truthy (non-zero),
+                        // this is a conditional operation - apply monadic variant to the right argument
+                        if (hasMonadicVariant && initialization is IntegerValue initVal && initVal.Value != 0)
                         {
-                            result = ApplyBaseVerb(GetVerbFromContext(originalArguments), new[] { result, element });
+                            return evaluator.ApplyMonadicVerb(monadicVariant, verbResult);
                         }
-                        return result;
+                        
+                        if (isMonadicOnly || hasDisambiguatingColon)
+                        {
+                            // For monadic verbs with initialization, ignore initialization and apply monadic verb to the vector
+                            // This handles cases like 1 +:/x where 1 is a conditional selector, not initialization
+                            return evaluator.ApplyMonadicVerb(verb, verbResult);
+                        }
+                        else
+                        {
+                            // Reduce operation: start with initialization, apply verb cumulatively
+                            K3Value result = initialization;
+                            foreach (var element in vector.Elements)
+                            {
+                                result = ApplyBaseVerb(verb, new[] { result, element });
+                            }
+                            return result;
+                        }
                     }
                 }
                 return verbResult;

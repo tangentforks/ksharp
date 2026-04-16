@@ -200,20 +200,34 @@ namespace K3CSharp
                         "_ci" => Ci(operand),
                         "_ic" => Ic(operand),
                         // Basic operators
-                        "+" => operand,  // Identity operation
+                        "+" => Transpose(operand),  
+                        "+:" => Transpose(operand),  // Monadic transpose
                         "-" => ArithmeticNegate(operand),
+                        "-:" => ArithmeticNegate(operand),  // Monadic negate
                         "*" => First(operand),
+                        "*:" => First(operand),  // Monadic first
                         "%" => Reciprocal(operand),
+                        "%:" => Reciprocal(operand),  // Monadic reciprocal
                         "&" => Where(operand),
+                        "&:" => Where(operand),  // Monadic where
                         "|" => Reverse(operand),
+                        "|:" => Reverse(operand),  // Monadic reverse
                         "^" => Shape(operand),
+                        "^:" => Shape(operand),  // Monadic shape
                         "!" => Enumerate(operand),
+                        "!:" => Enumerate(operand),  // Monadic enumerate
                         "," => Enlist(operand),
+                        ",:" => Enlist(operand),  // Monadic enlist
                         "#" => Count(operand),
+                        "#:" => Count(operand),  // Monadic count
                         "_" => Floor(operand),
+                        "_:" => Floor(operand),  // Monadic floor
                         "?" => Unique(operand),
+                        "?:" => Unique(operand),  // Monadic unique
                         "=" => Group(operand),
+                        "=:" => Group(operand),  // Monadic group
                         "~" => Negate(operand),
+                        "~:" => Negate(operand),  // Monadic negate
                         _ => throw new Exception($"Verb '{verbName}' is registered as monadic but not implemented in ApplyMonadicVerb")
                     };
                 }
@@ -258,14 +272,28 @@ namespace K3CSharp
             // If left is vector and right is scalar, use Each (e.g., (1 2 3) %/ 2)
             // If left is vector and right is vector, use Each (e.g., (1 2 3) %/ (4 5 6))
             // If only right argument, use Over (e.g., %/ 1 2 3)
+            // SPECIAL CASE: If left is truthy (non-zero) and verb has monadic variant, apply monadic variant to right
+            // This handles cases like 1 +:/x where the disambiguating colon should force monadic interpretation
             
             // Noun form: both args are sentinel 0 — return projected function (e.g. +/ used as a value)
             bool leftSentinel = left is IntegerValue lv && lv.Value == 0;
             bool rightSentinel = right is IntegerValue rv && rv.Value == 0;
             if (leftSentinel && rightSentinel)
             {
-                string verbStr = verb is SymbolValue vs ? vs.Value : verb.ToString() ?? "";
+                string verbStr = verb is SymbolValue vs1 ? vs1.Value : verb.ToString() ?? "";
                 return new AdverbProjectedFunctionValue("over", verbStr, 1);
+            }
+            
+            // Special case: if verb has a monadic variant and left is truthy (non-zero),
+            // this is a conditional operation - apply monadic variant to the right argument
+            if (verb is SymbolValue vs2 && left is IntegerValue leftInt && leftInt.Value != 0)
+            {
+                string monadicVariant = vs2.Value + ":";
+                bool hasMonadicVariant = VerbRegistry.IsVerb(monadicVariant);
+                if (hasMonadicVariant)
+                {
+                    return this.ApplyMonadicVerb(monadicVariant, right);
+                }
             }
             
             // Check for "over" case: left is dummy 0 and right is vector
@@ -490,14 +518,29 @@ namespace K3CSharp
         
         private K3Value OverVectorWithProvidedInit(K3Value verb, K3Value initialization, VectorValue dataVec)
         {
+            // Check if verb has a monadic variant (e.g., + has +:)
+            if (verb is SymbolValue vs)
+            {
+                string monadicVariant = vs.Value + ":";
+                bool hasMonadicVariant = VerbRegistry.IsVerb(monadicVariant);
+                
+                // Special case: if verb has a monadic variant and initialization is truthy (non-zero),
+                // this is a conditional operation - apply monadic variant to the right argument
+                if (hasMonadicVariant && initialization is IntegerValue initVal && initVal.Value != 0)
+                {
+                    // Apply monadic variant to the entire vector
+                    return this.ApplyMonadicVerb(monadicVariant, dataVec);
+                }
+            }
+            
             var result = initialization;
             
-            if (verb is SymbolValue verbSymbol)
+            if (verb is SymbolValue verbSym)
             {
                 // Apply verb to each element of vector, accumulating result
                 for (int i = 0; i < dataVec.Elements.Count; i++)
                 {
-                    result = ApplySymbolVerb(verbSymbol.Value, result, dataVec.Elements[i]);
+                    result = ApplySymbolVerb(verbSym.Value, result, dataVec.Elements[i]);
                 }
             }
             else

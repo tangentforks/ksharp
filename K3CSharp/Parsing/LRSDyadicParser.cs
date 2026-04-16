@@ -82,6 +82,14 @@ namespace K3CSharp.Parsing
             // with dyadic support is automatically recognized
             var verbName = VerbRegistry.TokenTypeToVerbName(tokenType);
             var verb = VerbRegistry.GetVerb(verbName);
+            
+            // Special case: verbs with disambiguating colon (e.g., +:, |:) are monadic-only
+            // They should not be treated as dyadic operators
+            if (verbName != null && verbName.EndsWith(":"))
+            {
+                return false;
+            }
+            
             var result = verb?.SupportedArities.Contains(2) ?? false;
             
             return result;
@@ -106,7 +114,7 @@ namespace K3CSharp.Parsing
         {
             if (tokens.Count < 3) return null; // Need at least: left op right
             
-            // Check for verb+adverb patterns anywhere in the token list at depth 0
+            // Find the leftmost dyadic operator at the lowest nesting depth in the token list at depth 0
             // This handles cases like (1 2 3) +' (4 5 6) where the verb+adverb is in the middle
             // Must respect grouping depth to avoid matching inside parenthesized sub-expressions
             int adverbScanDepth = 0;

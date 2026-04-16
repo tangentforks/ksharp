@@ -178,7 +178,6 @@ namespace K3CSharp.Parsing
                     var operatorSymbol = VerbRegistry.GetDyadicOperatorSymbol(expressionTokens[0].Type);
                     projectedNode.Value = new SymbolValue(operatorSymbol);
                     
-                    // Determine arity from VerbRegistry - use highest supported arity as default
                     var verb = VerbRegistry.GetVerb(operatorSymbol);
                     int defaultArity = verb?.SupportedArities?.Max() ?? 2;
                     projectedNode.Children.Add(ASTNode.MakeLiteral(new IntegerValue(defaultArity)));
@@ -491,6 +490,21 @@ namespace K3CSharp.Parsing
             if (tokens.Count == 1)
                 return CreateNodeFromToken(tokens[0]);
             
+            // Check for disambiguating colon pattern: left_arg + verb + colon + adverb
+            // Pattern: 1 +:/x (e.g., 1 +:/x for conditional transpose)
+            // MUST be checked FIRST to avoid being split into left/op/right
+            if (tokens.Count >= 4)
+            {
+                if (IsVerbToken(tokens[1].Type) &&
+                    tokens[2].Type == TokenType.COLON &&
+                    (tokens[3].Type == TokenType.ADVERB_SLASH ||
+                     tokens[3].Type == TokenType.ADVERB_BACKSLASH ||
+                     tokens[3].Type == TokenType.ADVERB_TICK))
+                {
+                    return ParseGenericVerbAdverbWithColon(tokens, 1);
+                }
+            }
+            
             // Check for statements first (statements have lower precedence than verbs but higher than separators)
             if (tokens.Count >= 2)
             {
@@ -643,24 +657,6 @@ namespace K3CSharp.Parsing
                     return projectionResult;
             }
             
-            // Check for disambiguating colon pattern: verb + colon + adverb
-            // Pattern: #:' args (e.g., #:' (1 2;3 4) for count each)
-            // MUST be checked BEFORE arity detection because # followed by : would be detected as dyadic
-            // Note that while / \ and ' support both monadic and dyadic verbs, 
-            // /: \: and ': support only dyadic verbs and should always result in an  
-            // error if used with a monadic verb
-            if (tokens.Count >= 3)
-            {
-                if (VerbRegistry.IsVerbToken(tokens[0].Type) &&
-                    tokens[1].Type == TokenType.COLON &&
-                    (tokens[2].Type == TokenType.ADVERB_SLASH ||
-                     tokens[2].Type == TokenType.ADVERB_BACKSLASH ||
-                     tokens[2].Type == TokenType.ADVERB_TICK))
-                {
-                    return ParseGenericVerbAdverbWithColon(tokens);
-                }
-            }
-            
             // Use arity detection to determine parsing order for multi-token expressions
             if (tokens.Count > 2)
             {
@@ -729,6 +725,21 @@ namespace K3CSharp.Parsing
                 var monadicChainResult = TryParseMonadicChain(tokens);
                 if (monadicChainResult != null)
                     return monadicChainResult;
+            }
+            
+            // Check for disambiguating colon pattern: left_arg + verb + colon + adverb
+            // Pattern: 1 +:/x (e.g., 1 +:/x for conditional transpose)
+            // MUST be checked BEFORE dyadic parsing to avoid being split
+            if (tokens.Count >= 4)
+            {
+                if (IsVerbToken(tokens[1].Type) &&
+                    tokens[2].Type == TokenType.COLON &&
+                    (tokens[3].Type == TokenType.ADVERB_SLASH ||
+                     tokens[3].Type == TokenType.ADVERB_BACKSLASH ||
+                     tokens[3].Type == TokenType.ADVERB_TICK))
+                {
+                    return ParseGenericVerbAdverbWithColon(tokens, 1);
+                }
             }
             
             // Handle multi-token expressions using dyadic parser (right-to-left evaluation)
@@ -1047,21 +1058,6 @@ namespace K3CSharp.Parsing
                 }
             }
             
-            // Check for disambiguating colon pattern: verb + colon + adverb
-            // Pattern: #:' args (e.g., #:' (1 2;3 4) for count each)
-            // This MUST be checked FIRST because other verb-related checks would otherwise intercept
-            if (expressionTokens.Count >= 3)
-            {
-                if (VerbRegistry.IsVerbToken(expressionTokens[0].Type) &&
-                    expressionTokens[1].Type == TokenType.COLON &&
-                    (expressionTokens[2].Type == TokenType.ADVERB_SLASH ||
-                     expressionTokens[2].Type == TokenType.ADVERB_BACKSLASH ||
-                     expressionTokens[2].Type == TokenType.ADVERB_TICK))
-                {
-                    return ParseGenericVerbAdverbWithColon(expressionTokens);
-                }
-            }
-            
             // Check for statements first (statements have lower precedence than verbs but higher than separators)
             // This is critical for assignment parsing in Pure LRS mode
             if (expressionTokens.Count >= 2)
@@ -1168,22 +1164,6 @@ namespace K3CSharp.Parsing
                 if (LRSStatementParser.CouldBeStatement(firstToken.Type))
                 {
                     return statementParser.ParseStatement(expressionTokens);
-                }
-            }
-            
-            // Check for disambiguating colon pattern: verb + colon + adverb
-            // Pattern: #:' args (e.g., #:' (1 2;3 4) for count each)
-            // This MUST be checked BEFORE the system operators check because
-            // the verb token check would otherwise dispatch to the function parser
-            if (expressionTokens.Count >= 3)
-            {
-                if (VerbRegistry.IsVerbToken(expressionTokens[0].Type) &&
-                    expressionTokens[1].Type == TokenType.COLON &&
-                    (expressionTokens[2].Type == TokenType.ADVERB_SLASH ||
-                     expressionTokens[2].Type == TokenType.ADVERB_BACKSLASH ||
-                     expressionTokens[2].Type == TokenType.ADVERB_TICK))
-                {
-                    return ParseGenericVerbAdverbWithColon(expressionTokens);
                 }
             }
             
@@ -1964,7 +1944,19 @@ namespace K3CSharp.Parsing
                      expressionTokens[2].Type == TokenType.ADVERB_BACKSLASH ||
                      expressionTokens[2].Type == TokenType.ADVERB_TICK))
                 {
-                    return ParseGenericVerbAdverbWithColon(expressionTokens);
+                    return ParseGenericVerbAdverbWithColon(expressionTokens, 0);
+                }
+                
+                // Pattern with left argument: left_arg + verb + colon + adverb
+                // Pattern: 1 +:/x (e.g., 1 +:/x for conditional transpose)
+                if (expressionTokens.Count >= 4 &&
+                    IsVerbToken(expressionTokens[1].Type) &&
+                    expressionTokens[2].Type == TokenType.COLON &&
+                    (expressionTokens[3].Type == TokenType.ADVERB_SLASH ||
+                     expressionTokens[3].Type == TokenType.ADVERB_BACKSLASH ||
+                     expressionTokens[3].Type == TokenType.ADVERB_TICK))
+                {
+                    return ParseGenericVerbAdverbWithColon(expressionTokens, 1);
                 }
             }
             
@@ -1990,7 +1982,7 @@ namespace K3CSharp.Parsing
         /// Check if a token represents a verb (operator or system function)
         /// Uses VerbRegistry to include all verbs, not just hardcoded operators
         /// </summary>
-        private bool IsVerbToken(TokenType tokenType)
+        internal bool IsVerbToken(TokenType tokenType)
         {
             // Use VerbRegistry to check all registered verbs (operators + system functions)
             return VerbRegistry.IsVerbToken(tokenType);
@@ -2155,17 +2147,19 @@ namespace K3CSharp.Parsing
         /// Handles disambiguating colon patterns like #:' (count each), +:/ (sum over)
         /// The colon indicates monadic interpretation of the verb
         /// </summary>
-        private ASTNode ParseGenericVerbAdverbWithColon(List<Token> expressionTokens)
+        /// <param name="expressionTokens">Token list</param>
+        /// <param name="offset">Offset of the verb in the token list (0 for verb at start, 1 for verb after left arg)</param>
+        internal ASTNode ParseGenericVerbAdverbWithColon(List<Token> expressionTokens, int offset = 0)
         {
-            var verbToken = expressionTokens[0];
-            var colonToken = expressionTokens[1];  // COLON - disambiguating
-            var adverbToken = expressionTokens[2];
+            var verbToken = expressionTokens[offset];
+            var colonToken = expressionTokens[offset + 1];  // COLON - disambiguating
+            var adverbToken = expressionTokens[offset + 2];
             
             // Create verb node (the colon indicates monadic interpretation, but we still use the verb as-is)
             var verbNode = CreateNodeFromToken(verbToken);
             
             // Parse arguments (everything after the adverb)
-            var argTokens = expressionTokens.Skip(3).ToList();
+            var argTokens = expressionTokens.Skip(offset + 3).ToList();
             ASTNode? argNode = null;
             
             if (argTokens.Count > 0)
@@ -2203,12 +2197,36 @@ namespace K3CSharp.Parsing
             }
             
             // Create adverb node: DyadicOp(adverb_symbol, verb, arguments)
-            // Disambiguating colon forces monadic interpretation - use 2-child structure
+            // Disambiguating colon forces monadic interpretation - use 3-child structure: verb, left, arg
             var adverbNode = new ASTNode(ASTNodeType.DyadicOp);
             adverbNode.Value = new SymbolValue(VerbRegistry.GetAdverbType(adverbToken.Type));
+            
+            // Add verb node FIRST (evaluator expects verb at Children[0])
             adverbNode.Children.Add(verbNode);
             
-            // No dummy left argument - disambiguating colon means monadic
+            // If there's a left argument (offset > 0), parse it and add as second child
+            if (offset > 0)
+            {
+                var leftArgTokens = expressionTokens.Take(offset).ToList();
+                if (leftArgTokens.Count > 0)
+                {
+                    int leftPosition = 0;
+                    var leftParser = new LRSExpressionProcessor(leftArgTokens, BuildParseTree, this);
+                    var leftNode = leftParser.ProcessExpression(ref leftPosition);
+                    
+                    if (leftNode == null && leftArgTokens.Count > 0)
+                    {
+                        leftNode = BuildParseTreeFromTokens(leftArgTokens);
+                    }
+                    
+                    if (leftNode != null)
+                    {
+                        adverbNode.Children.Add(leftNode);
+                    }
+                }
+            }
+            
+            // Add argument node if present as third child
             if (argNode != null)
             {
                 adverbNode.Children.Add(argNode);

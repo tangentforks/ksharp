@@ -231,5 +231,5 @@ idioms_02_399_cols_from_diag :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact represent
 idioms_02_518_cond_transpose :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 idioms_02_589_2col_matrix :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 idioms_02_611_mult_rows_by_vec :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
-idioms_02_419_pairwise_ratios :: regex:\.0\b: :: smart integer division
+idioms_02_419_pairwise_ratios :: regex:\5\5.0 :: smart integer division
 idioms_02_239_sum_recip :: regex:\.0\b: :: smart integer division
