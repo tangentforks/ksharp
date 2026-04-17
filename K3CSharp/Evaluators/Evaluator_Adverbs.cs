@@ -286,18 +286,6 @@ namespace K3CSharp
                 return new AdverbProjectedFunctionValue("over", verbStr, 1);
             }
             
-            // Special case: if verb has a monadic variant and left is truthy (non-zero),
-            // this is a conditional operation - apply monadic variant to the right argument
-            if (verb is SymbolValue vs2 && left is IntegerValue leftInt && leftInt.Value != 0)
-            {
-                string monadicVariant = vs2.Value + ":";
-                bool hasMonadicVariant = VerbRegistry.IsVerb(monadicVariant);
-                if (hasMonadicVariant)
-                {
-                    return this.ApplyMonadicVerb(monadicVariant, right);
-                }
-            }
-            
             // Check for "over" case: left is dummy 0 and right is vector
             if (leftSentinel && right is VectorValue)
             {
@@ -520,21 +508,6 @@ namespace K3CSharp
         
         private K3Value OverVectorWithProvidedInit(K3Value verb, K3Value initialization, VectorValue dataVec)
         {
-            // Check if verb has a monadic variant (e.g., + has +:)
-            if (verb is SymbolValue vs)
-            {
-                string monadicVariant = vs.Value + ":";
-                bool hasMonadicVariant = VerbRegistry.IsVerb(monadicVariant);
-                
-                // Special case: if verb has a monadic variant and initialization is truthy (non-zero),
-                // this is a conditional operation - apply monadic variant to the right argument
-                if (hasMonadicVariant && initialization is IntegerValue initVal && initVal.Value != 0)
-                {
-                    // Apply monadic variant to the entire vector
-                    return this.ApplyMonadicVerb(monadicVariant, dataVec);
-                }
-            }
-            
             var result = initialization;
             
             if (verb is SymbolValue verbSym)
