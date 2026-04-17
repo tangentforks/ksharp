@@ -685,6 +685,25 @@ namespace K3CSharp
                 int vectorType = GetVectorType(rightVec);
                 return new VectorValue(result, vectorType);
             }
+            else if (left is VectorValue leftVec2 && right is VectorValue rightVec2)
+            {
+                // Vector + Vector: apply element-wise (for 'each' adverb)
+                // Each element of left rotates the corresponding element of right
+                var result = new List<K3Value>();
+                int minLength = Math.Min(leftVec2.Elements.Count, rightVec2.Elements.Count);
+
+                for (int i = 0; i < minLength; i++)
+                {
+                    var leftElement = leftVec2.Elements[i];
+                    var rightElement = rightVec2.Elements[i];
+
+                    // Recursively apply ModRotate to each pair
+                    var pairResult = ModRotate(leftElement, rightElement);
+                    result.Add(pairResult);
+                }
+
+                return new VectorValue(result);
+            }
             else
             {
                 throw new Exception("Modulus operator requires integer arguments or vector+integer combinations");
