@@ -690,7 +690,7 @@ d@_n │ 1 2                  │                      ║
 ║ dyadic_plus_dot_apply.k                            │ (+) . (3; 5)         │ 8                    │                      ║
 ║ format_braces_complex_expressions.k                │ sum:{[a;b] a+b}
 product:{[x;y] x*y}
-{}$("sum[3;4]*2";"product[sum[2;3];4]";"sum[product[2;3];4]") │ Error: Error ev...   │ 14 20 10             ║
+{}$("sum[3;4]*2";"product[sum[2;3];4]";"sum[product[2;3];4]") │ 14 20 10             │                      ║
 ║ format_float_precision_complex_mixed.k             │ 10.3$(1.234;2.567;3.890;4.123) │ ("     1.234";"...   │                      ║
 ║ format_float_vector.k                              │ 0.0$(1;2.5;3.14;42)  │ (,"1";,"2";,"3"...   │                      ║
 ║ format_int_vector.k                                │ 0$(1;2.5;3.14;42)    │ ("";"";"";"")        │                      ║
@@ -1251,7 +1251,7 @@ _eval (`",";,`a`b`c;(`",";,`d;`v)) │ `a`b`c`d`e`f         │                 
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 932/936 tests passed (99.6%)                                                                               ║
+║ SUMMARY: 933/936 tests passed (99.7%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -1274,13 +1274,6 @@ result5
 globalVar
 Expected: 30
 Actual: Error: Function execution error: Function execution error: Assignment requires a variable name on the left side, but got IntegerValue with value 100
-──────────────────────────────────────────────────────────────────────────
-Test: format_braces_complex_expressions.k
-Input: sum:{[a;b] a+b}
-product:{[x;y] x*y}
-{}$("sum[3;4]*2";"product[sum[2;3];4]";"sum[product[2;3];4]")
-Expected: 14 20 10
-Actual: Error: Error evaluating string expression 'product[sum[2;3];4]': Function execution error: Cannot multiply Function and Integer
 ──────────────────────────────────────────────────────────────────────────
 Test: k_tree_verify_root.k
 Input: .k

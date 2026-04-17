@@ -1258,23 +1258,40 @@ namespace K3CSharp.Parsing
                 return adverbResult;
             }
             
-            // Check for bracket indexing pattern: identifier[expression]
-            // This is equivalent to identifier @ expression (index at depth)
+            // Check for bracket indexing pattern: identifier[expression] or identifier[a;b;...]
+            // Only fires when the bracket group spans to the end of the token list.
             if (expressionTokens.Count >= 4 &&
                 expressionTokens[0].Type == TokenType.IDENTIFIER &&
                 expressionTokens[1].Type == TokenType.LEFT_BRACKET)
             {
                 var bracketEnd = FindMatchingBracket(expressionTokens, 1);
                 
-                if (bracketEnd != -1)
+                if (bracketEnd != -1 && bracketEnd == expressionTokens.Count - 1)
                 {
                     var identifier = expressionTokens[0];
-                    var indexTokens = expressionTokens.GetRange(2, bracketEnd - 2);
-                    var indexNode = EvaluateFromRight(indexTokens);
                     var identifierNode = CreateNodeFromToken(identifier);
+                    var bracketContent = expressionTokens.GetRange(2, bracketEnd - 2);
                     
-                    return ASTNode.MakeDyadicOp(TokenType.APPLY, identifierNode, 
-                        indexNode ?? ASTNode.MakeLiteral(new NullValue()));
+                    // Split by top-level semicolons to handle multi-arg calls: f[a;b;c]
+                    var splitArgs = SplitBracketArguments(bracketContent, int.MaxValue);
+                    if (splitArgs.Count == 1)
+                    {
+                        var indexNode = splitArgs[0].Count > 0
+                            ? EvaluateFromRight(splitArgs[0])
+                            : null;
+                        return ASTNode.MakeDyadicOp(TokenType.APPLY, identifierNode,
+                            indexNode ?? ASTNode.MakeLiteral(new NullValue()));
+                    }
+                    else
+                    {
+                        var argNodes = new List<ASTNode>();
+                        foreach (var argTokens in splitArgs)
+                        {
+                            var argNode = argTokens.Count > 0 ? EvaluateFromRight(argTokens) : ASTNode.MakeLiteral(new NullValue());
+                            argNodes.Add(argNode ?? ASTNode.MakeLiteral(new NullValue()));
+                        }
+                        return ASTNode.MakeFunctionCall(identifierNode, argNodes);
+                    }
                 }
             }
             
@@ -1284,7 +1301,11 @@ namespace K3CSharp.Parsing
             // Parse based on the determined arity - no trial and error
             if (determinedArity == 1)
             {
-                return monadicParser.ParseMonadicOperator(expressionTokens);
+                var monadicResult = monadicParser.ParseMonadicOperator(expressionTokens);
+                if (monadicResult != null)
+                    return monadicResult;
+                // Fall through to dyadic fallback if monadic parsing failed
+                // (e.g., IDENTIFIER[args]*value where IDENTIFIER is treated as arity-1 but is really a dyadic sub-expression)
             }
             else if (determinedArity == 2)
             {
@@ -1295,8 +1316,9 @@ namespace K3CSharp.Parsing
                 return ParseMultiAryOperation(expressionTokens);
             }
             
-            // FALLBACK: If arity detection at position 0 failed, try dyadic parsing anyway
-            // This handles patterns like "d . `keyA" where position 0 is an operand, not an operator
+            // FALLBACK: If arity detection at position 0 failed or monadic parsing returned null,
+            // try dyadic parsing. This handles patterns like "d . `keyA" and "sum[3;4]*2"
+            // where position 0 is an operand, not an operator.
             if (expressionTokens.Count >= 3)
             {
                 var dyadicResult = dyadicParser.ParseDyadicOperation(expressionTokens);

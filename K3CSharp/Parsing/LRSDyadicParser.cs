@@ -611,6 +611,12 @@ namespace K3CSharp.Parsing
                 }
             }
             
+            // Last resort: delegate to parent parser's EvaluateFromRight.
+            // This handles patterns that dyadic/monadic parsers don't recognize,
+            // e.g., identifier[args] sub-expressions like sum[3;4] within larger expressions.
+            if (parentParser != null)
+                return parentParser.EvaluateFromRight(tokens);
+            
             return null;
         }
         
