@@ -737,7 +737,7 @@ foo       │ 42                   │                      ║
 .k[`foo]  │ 42                   │                      ║
 ║ k_tree_nested_indexing.k                           │ .k.dd: .((`a;1);(`b;2);(`c;3))
 .k.dd[`b] │ 2                    │                      ║
-║ k_tree_verify_root.k                               │ .k                   │ .()                  │                      ║
+║ k_tree_verify_root.k                               │ .k                   │                      │                      ║
 ║ k_tree_flip_dictionary.k                           │ .+(`a`b`c;1 2 3)     │ .((`a;1;);(`b;2...   │                      ║
 ║ k_tree_null_to_dict_conversion.k                   │ .k.foo: 42
 .k        │ .,(`foo;42;)         │                      ║
@@ -1251,7 +1251,7 @@ _eval (`",";,`a`b`c;(`",";,`d;`v)) │ `a`b`c`d`e`f         │                 
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 933/936 tests passed (99.7%)                                                                               ║
+║ SUMMARY: 934/936 tests passed (99.8%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -1274,9 +1274,4 @@ result5
 globalVar
 Expected: 30
 Actual: Error: Function execution error: Function execution error: Assignment requires a variable name on the left side, but got IntegerValue with value 100
-──────────────────────────────────────────────────────────────────────────
-Test: k_tree_verify_root.k
-Input: .k
-Expected: 
-Actual: .()
 ──────────────────────────────────────────────────────────────────────────
