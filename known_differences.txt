@@ -6,6 +6,7 @@ adverb_backslash_colon_basic :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact represent
 adverb_slash_colon_basic :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 amend_simple :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 amend_test :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+statement_amend_index_assign :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 time_t :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 rand_draw_select :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 rand_draw_deal :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation

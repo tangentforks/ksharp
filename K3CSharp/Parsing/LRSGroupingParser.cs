@@ -260,16 +260,13 @@ namespace K3CSharp.Parsing
             // If we detected semicolons (projection syntax), create a projection node
             if (hasSemicolon)
             {
-                // For projections, we need to create a vector with the projection arguments
+                // For projections, preserve null slots as NullValue sentinels so the
+                // evaluator can distinguish blank args (f[1;;3]) from provided args.
                 var projectionElements = new List<ASTNode>();
                 
-                // Add all non-null projection arguments
                 foreach (var slot in projectionSlots)
                 {
-                    if (slot != null)
-                    {
-                        projectionElements.Add(slot);
-                    }
+                    projectionElements.Add(slot ?? ASTNode.MakeLiteral(new NullValue()));
                 }
                 
                 return ASTNode.MakeVector(projectionElements);

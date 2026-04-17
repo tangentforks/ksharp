@@ -165,6 +165,68 @@ namespace K3CSharp.Parsing
                 return applyAndAssignNode;
             }
             
+            // Case 3: indexed apply-and-assign: IDENTIFIER [indices...] VERB COLON expression
+            // e.g., a[1;0 2]+:100 — amend a at index path [1; 0 2] by applying + with 100
+            if (assignmentToken.Type == TokenType.COLON &&
+                leftTokens.Count >= 4 &&
+                leftTokens[0].Type == TokenType.IDENTIFIER &&
+                leftTokens[1].Type == TokenType.LEFT_BRACKET &&
+                VerbRegistry.IsVerbToken(leftTokens[leftTokens.Count - 1].Type))
+            {
+                // Find the matching right bracket
+                int depth = 0;
+                int rightBracket = -1;
+                for (int i = 1; i < leftTokens.Count; i++)
+                {
+                    if (leftTokens[i].Type == TokenType.LEFT_BRACKET) depth++;
+                    else if (leftTokens[i].Type == TokenType.RIGHT_BRACKET)
+                    {
+                        depth--;
+                        if (depth == 0) { rightBracket = i; break; }
+                    }
+                }
+                // The verb should be right after the closing bracket
+                if (rightBracket != -1 && rightBracket == leftTokens.Count - 2 &&
+                    VerbRegistry.IsVerbToken(leftTokens[rightBracket + 1].Type))
+                {
+                    var varName = leftTokens[0].Lexeme;
+                    var indexTokens = leftTokens.GetRange(2, rightBracket - 2);
+                    var verbToken = leftTokens[rightBracket + 1];
+                    var opSymbol = VerbRegistry.GetDyadicOperatorSymbol(verbToken.Type);
+                    
+                    // Split index tokens by semicolons to support multi-level paths like a[1;0 2]
+                    var indexParts = SplitByTopLevelSemicolons(indexTokens);
+                    ASTNode indexNode;
+                    if (indexParts.Count == 1)
+                    {
+                        var parsed = ParseRightSideExpression(indexParts[0]);
+                        if (parsed == null) return null;
+                        indexNode = parsed;
+                    }
+                    else
+                    {
+                        var indexLevels = new List<ASTNode>();
+                        foreach (var part in indexParts)
+                        {
+                            var parsed = ParseRightSideExpression(part);
+                            if (parsed != null) indexLevels.Add(parsed);
+                        }
+                        indexNode = new ASTNode(ASTNodeType.Block, null, indexLevels);
+                    }
+                    
+                    var applyRightNode = ParseRightSideExpression(rightTokens);
+                    if (applyRightNode == null)
+                        return null;
+                    
+                    var indexedAmendNode = new ASTNode(ASTNodeType.ApplyAndAssign);
+                    indexedAmendNode.Value = new SymbolValue(varName);
+                    indexedAmendNode.Children.Add(ASTNode.MakeLiteral(new SymbolValue(opSymbol)));
+                    indexedAmendNode.Children.Add(applyRightNode);
+                    indexedAmendNode.Children.Add(indexNode); // index as 3rd child
+                    return indexedAmendNode;
+                }
+            }
+            
             // Parse left side (variable name)
             var variableNode = ParseVariableName(leftTokens);
             if (variableNode == null)
@@ -395,6 +457,30 @@ namespace K3CSharp.Parsing
             return parentParser.BuildParseTreeFromRight(argTokens);
         }
         
+        /// <summary>
+        /// Split token list by top-level semicolons (respecting bracket/paren/brace depth)
+        /// </summary>
+        private List<List<Token>> SplitByTopLevelSemicolons(List<Token> tokens)
+        {
+            var parts = new List<List<Token>>();
+            var current = new List<Token>();
+            int depth = 0;
+            foreach (var token in tokens)
+            {
+                if (token.Type == TokenType.LEFT_PAREN || token.Type == TokenType.LEFT_BRACKET || token.Type == TokenType.LEFT_BRACE) depth++;
+                else if (token.Type == TokenType.RIGHT_PAREN || token.Type == TokenType.RIGHT_BRACKET || token.Type == TokenType.RIGHT_BRACE) depth--;
+                else if (token.Type == TokenType.SEMICOLON && depth == 0)
+                {
+                    parts.Add(current);
+                    current = new List<Token>();
+                    continue;
+                }
+                current.Add(token);
+            }
+            parts.Add(current);
+            return parts;
+        }
+
         /// <summary>
         /// Find the assignment operator in the token list
         /// </summary>

@@ -163,9 +163,32 @@ namespace K3CSharp
                         
                         if (operatorSymbol != null)
                         {
+                            var opName = operatorSymbol.Value;
+                            
+                            // Indexed apply-and-assign: a[i]+:y — amend at index path
+                            if (node.Children.Count >= 3)
+                            {
+                                var currentData = GetVariable(variableName);
+                                // Build path from Children[2]: Block means multi-level, else single level
+                                var indexNode = node.Children[2];
+                                List<K3Value> path;
+                                if (indexNode.Type == ASTNodeType.Block)
+                                {
+                                    path = indexNode.Children.Select(c => Evaluate(c)).ToList();
+                                }
+                                else
+                                {
+                                    path = new List<K3Value> { Evaluate(indexNode) };
+                                }
+                                // Build function (dyadic verb to apply)
+                                var opFunc = new SymbolValue(opName);
+                                var amended = AmendAtPath(currentData, path, 0, opFunc, rightArgument);
+                                SetVariable(variableName, amended);
+                                return amended;
+                            }
+                            
                             // Get current value of variable
                             var currentValue = GetVariable(variableName);
-                            var opName = operatorSymbol.Value;
                             
                             // Apply operator to current value and right argument
                             var opNode = new ASTNode(ASTNodeType.DyadicOp);
@@ -1518,6 +1541,36 @@ namespace K3CSharp
             }
         }
 
+        private K3Value CreateSlotProjectedFunction(FunctionValue originalFunction, List<string> parameters, List<K3Value> arguments)
+        {
+            // Slot-based projection: f[1;;3] — some args are NullValue (blank), others are fixed.
+            // Build a new function whose parameters are only the blank slots, with the fixed values
+            // substituted into the body as literals.
+            var remainingParameters = new List<string>();
+            var bodyText = originalFunction.BodyText;
+            
+            for (int i = 0; i < parameters.Count; i++)
+            {
+                if (arguments[i] is NullValue)
+                {
+                    remainingParameters.Add(parameters[i]);
+                }
+                else
+                {
+                    // Substitute the fixed argument into the body text (whole-word replacement)
+                    var paramName = parameters[i];
+                    var argLiteral = arguments[i].ToString();
+                    bodyText = System.Text.RegularExpressions.Regex.Replace(
+                        bodyText,
+                        $@"\b{System.Text.RegularExpressions.Regex.Escape(paramName)}\b",
+                        argLiteral);
+                }
+            }
+            
+            var projected = new FunctionValue(bodyText, remainingParameters);
+            return projected;
+        }
+
         private K3Value CreateProjectedFunction(FunctionValue originalFunction, List<K3Value> providedArguments)
         {
             // Create a new function with reduced valence
@@ -1570,15 +1623,14 @@ namespace K3CSharp
             
                         
             // Vector argument unpacking: if we have 1 vector argument but need multiple parameters, unpack it
-            // Only unpack if the vector has multiple elements (for single-param functions, keep as is)
-            if (arguments.Count == 1 && parameters.Count > 1 && arguments[0] is VectorValue vectorArg && vectorArg.Elements.Count > 1)
+            // Also unpack for implicit-param functions when the vector contains NullValue slots (projection)
+            if (arguments.Count == 1 && arguments[0] is VectorValue vectorArg && vectorArg.Elements.Count > 1)
             {
-                var unpackedArgs = new List<K3Value>();
-                foreach (var element in vectorArg.Elements)
+                if (parameters.Count > 1 ||
+                    (parameters.Count == 0 && vectorArg.Elements.Any(e => e is NullValue)))
                 {
-                    unpackedArgs.Add(element);
+                    arguments = new List<K3Value>(vectorArg.Elements);
                 }
-                arguments = unpackedArgs;
             }
             
             // Handle implicit parameters (x, y, z) for functions with no explicit params
@@ -1590,6 +1642,13 @@ namespace K3CSharp
                 if (arguments.Count >= 2) implicitParams.Add("y");
                 if (arguments.Count >= 3) implicitParams.Add("z");
                 parameters = implicitParams;
+            }
+
+            // Check for slot-based projection: any argument is NullValue (blank slot, e.g. f[1;;3])
+            if (parameters.Count > 0 && arguments.Count == parameters.Count &&
+                arguments.Any(a => a is NullValue))
+            {
+                return CreateSlotProjectedFunction(functionValue, parameters, arguments);
             }
 
             // Check for projection: fewer arguments than expected valence

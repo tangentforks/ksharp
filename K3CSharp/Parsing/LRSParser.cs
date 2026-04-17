@@ -444,6 +444,12 @@ namespace K3CSharp.Parsing
                                         
                                         foreach (var splitArgTokens in splitArgs)
                                         {
+                                            if (splitArgTokens.Count == 0)
+                                            {
+                                                // Blank slot (e.g. f[1;;3]) — preserve as NullValue sentinel for projection
+                                                argNodes.Add(ASTNode.MakeLiteral(new NullValue()));
+                                                continue;
+                                            }
                                             ASTNode? argNode;
                                             if (BuildParseTree)
                                                 argNode = BuildParseTreeFromRight(splitArgTokens);

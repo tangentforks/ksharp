@@ -1549,6 +1549,12 @@ namespace K3CSharp.Tests
 
                 ("amend_test.k", "(1 2 13 4 5;6 7 8 9 10)"),
 
+                // Function projection with blank arguments
+                ("function_projection_basic.k", "6"),
+
+                // Statement-form amend: v[i]+:y
+                ("statement_amend_index_assign.k", "(1 2 3;104 5 106)"),
+
                 // Find operator tests
 
                 ("find_basic.k", "2"),
