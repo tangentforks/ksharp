@@ -175,18 +175,22 @@ namespace K3CSharp.Parsing
             var position = 0;
             var expressions = new List<ASTNode>();
             
+            // Use the preprocessed tokens from lrsParser for position checks,
+            // since ParseExpression advances position in the preprocessed token list.
+            var ptokens = lrsParser?.ProcessedTokens ?? (IReadOnlyList<Token>)tokens;
+            
             // Skip leading whitespace-only lines (top-level only)
             // Per K spec: whitespace-only lines at top level are ignored
-            while (position < tokens.Count && 
-                   (tokens[position].Type == TokenType.NEWLINE || 
-                    tokens[position].Type == TokenType.SEMICOLON))
+            while (position < ptokens.Count && 
+                   (ptokens[position].Type == TokenType.NEWLINE || 
+                    ptokens[position].Type == TokenType.SEMICOLON))
             {
                 position++;
             }
             
             // Parse expressions sequentially left-to-right
             // CRITICAL: Sequential evaluation for stateful operations (assignments, I/O, side effects)
-            while (position < tokens.Count)
+            while (position < ptokens.Count)
             {
                 // Debug for ktree tests
                 if (ParserConfig.EnableDebugging)
@@ -194,12 +198,12 @@ namespace K3CSharp.Parsing
                     // Debug logging disabled
                 }
                 // Check for EOF
-                if (tokens[position].Type == TokenType.EOF)
+                if (ptokens[position].Type == TokenType.EOF)
                     break;
                 
                 // Check for empty expression (consecutive separators with semicolon)
                 // Per K spec: semicolons create null elements, newlines don't
-                if (tokens[position].Type == TokenType.SEMICOLON)
+                if (ptokens[position].Type == TokenType.SEMICOLON)
                 {
                     // This is an empty expression - add null
                     expressions.Add(ASTNode.MakeLiteral(new NullValue()));
@@ -209,7 +213,7 @@ namespace K3CSharp.Parsing
                 
                 // Skip newlines (but not semicolons - they mark empty expressions)
                 // Per K spec: newlines are separators but don't create null elements at top level
-                if (tokens[position].Type == TokenType.NEWLINE)
+                if (ptokens[position].Type == TokenType.NEWLINE)
                 {
                     position++;
                     continue;
@@ -225,10 +229,10 @@ namespace K3CSharp.Parsing
                     var startPosition = position;
                     
                     // Try to skip ahead to next newline/semicolon/EOF to see if there's more content
-                    while (position < tokens.Count && 
-                           tokens[position].Type != TokenType.NEWLINE && 
-                           tokens[position].Type != TokenType.SEMICOLON &&
-                           tokens[position].Type != TokenType.EOF)
+                    while (position < ptokens.Count && 
+                           ptokens[position].Type != TokenType.NEWLINE && 
+                           ptokens[position].Type != TokenType.SEMICOLON &&
+                           ptokens[position].Type != TokenType.EOF)
                     {
                         position++;
                     }
@@ -236,15 +240,15 @@ namespace K3CSharp.Parsing
                     // If we didn't advance at all (or only hit EOF), this was comment-only
                     // Skip it and continue rather than failing
                     if (position == startPosition || 
-                        (position < tokens.Count && tokens[position].Type == TokenType.EOF))
+                        (position < ptokens.Count && ptokens[position].Type == TokenType.EOF))
                     {
                         // Skip the EOF and continue
-                        if (position < tokens.Count && tokens[position].Type == TokenType.EOF)
+                        if (position < ptokens.Count && ptokens[position].Type == TokenType.EOF)
                             position++;
                         
                         // Skip any following newlines
-                        while (position < tokens.Count && 
-                               tokens[position].Type == TokenType.NEWLINE)
+                        while (position < ptokens.Count && 
+                               ptokens[position].Type == TokenType.NEWLINE)
                         {
                             position++;
                         }
@@ -258,21 +262,21 @@ namespace K3CSharp.Parsing
                 expressions.Add(result);
                 
                 // After expression, skip trailing newlines but preserve semicolons
-                while (position < tokens.Count && 
-                       tokens[position].Type == TokenType.NEWLINE)
+                while (position < ptokens.Count && 
+                       ptokens[position].Type == TokenType.NEWLINE)
                 {
                     position++;
                 }
             }
             
             // Skip final EOF token if present
-            if (position < tokens.Count && tokens[position].Type == TokenType.EOF)
+            if (position < ptokens.Count && ptokens[position].Type == TokenType.EOF)
             {
                 position++;
             }
             
             // Validate that we consumed all tokens
-            if (position < tokens.Count)
+            if (position < ptokens.Count)
             {
                 return null; // Incomplete parse
             }

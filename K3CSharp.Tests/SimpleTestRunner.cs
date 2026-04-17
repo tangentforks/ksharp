@@ -362,7 +362,7 @@ namespace K3CSharp.Tests
 
                 ("test_character_single.k", "\"a\""),
 
-                ("test_string_escape.k", "\"hello\nworld"),
+                ("test_string_escape.k", "\"hello\nworld\""),
 
                 ("test_symbol_escape.k", "`\"hello\nworld\""),
 

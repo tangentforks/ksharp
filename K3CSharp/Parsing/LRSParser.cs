@@ -12,6 +12,7 @@ namespace K3CSharp.Parsing
     public class LRSParser
     {
         private readonly List<Token> tokens;
+        public IReadOnlyList<Token> ProcessedTokens => tokens;
         private readonly LRSExpressionParser expressionParser;
         private readonly LRSDyadicParser dyadicParser;
         private readonly LRSMonadicParser monadicParser;

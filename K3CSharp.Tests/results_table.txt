@@ -59,7 +59,7 @@
 ║ test_character_single.k                            │ "a"                  │ "a"                  │                      ║
 ║ test_string_escape.k                               │ "hello
 world"        │ Error: Untermin...   │ "hello
-world         ║
+world"        ║
 ║ test_symbol_escape.k                               │ `"hello\nworld"      │ `"hello
 world"       │                      ║
 ║ complex_function.k                                 │ distance:{[d0;v;a;t] d1:v*t; d2:a*t*t%2; d0+d1+d2}
@@ -1245,13 +1245,13 @@ d[`keyB] │ 1 3 5                │                      ║
 ║ eval_monadic_star_nested.k                         │ _eval (`"*";2;(`"+";4;7)) │ 22                   │                      ║
 ║ eval_dot_execute_path.k                            │ v:`e`f
 _eval (`",";,`a`b`c;(`",";,`d;`v)) │ `a`b`c`d`e`f         │                      ║
-║ eval_dot_repl_dir.k                                │ ."\\d ^";.d:_d;."\\d .k";(.d;_d) │ Error: Undefine...   │ ``.k                 ║
+║ eval_dot_repl_dir.k                                │ ."\\d ^";.d:_d;."\\d .k";(.d;_d) │ ``.k                 │                      ║
 ║ eval_dot_parse_and_eval.k                          │ a:7
 . "a+4"          │ 11                   │                      ║
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 931/936 tests passed (99.5%)                                                                               ║
+║ SUMMARY: 932/936 tests passed (99.6%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -1260,7 +1260,7 @@ Test: test_string_escape.k
 Input: "hello
 world"
 Expected: "hello
-world
+world"
 Actual: Error: Unterminated string literal
 ──────────────────────────────────────────────────────────────────────────
 Test: variable_scoping_global_assignment.k
@@ -1286,9 +1286,4 @@ Test: k_tree_verify_root.k
 Input: .k
 Expected: 
 Actual: .()
-──────────────────────────────────────────────────────────────────────────
-Test: eval_dot_repl_dir.k
-Input: ."\\d ^";.d:_d;."\\d .k";(.d;_d)
-Expected: ``.k
-Actual: Error: Undefined variable: ;
 ──────────────────────────────────────────────────────────────────────────
