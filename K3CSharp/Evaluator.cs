@@ -1001,13 +1001,13 @@ namespace K3CSharp
                 }
                 else
                 {
-                    // Regular dyadic operation - use existing logic
-                    var left = Evaluate(node.Children[0]);
-                    
+                    // Regular dyadic operation - evaluate right before left (K right-to-left semantics)
                     bool previousIntermediate2 = isIntermediateAssignment;
                     isIntermediateAssignment = true; // Mark as intermediate for right side evaluation
                     var right = Evaluate(node.Children[1]);
                     isIntermediateAssignment = previousIntermediate2; // Restore previous context
+
+                    var left = Evaluate(node.Children[0]);
 
                     return EvaluateDyadicOperatorWithRegistry(op.Value.ToString(), left!, right!);
                 }

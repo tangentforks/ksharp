@@ -555,7 +555,14 @@ namespace K3CSharp.Parsing
                     TokenType.LEFT_BRACE => tempGrouping.ParseBraces(ref pos),
                     _ => groupingParser.ParseBrackets(tokens)
                 };
-                if (groupingResult != null)
+                // Only return the grouping result if it consumed the entire token list.
+                // If tokens remain after the closing delimiter, the group is the left operand
+                // of a larger expression (e.g. "((y-1)_ a) - 0,...") — fall through to
+                // dyadic/monadic parsing so the outer operator is handled correctly.
+                bool allConsumed = firstTok.Type == TokenType.LEFT_BRACKET
+                    ? true   // ParseBrackets always takes the full list
+                    : pos >= tokens.Count;
+                if (groupingResult != null && allConsumed)
                     return groupingResult;
             }
             

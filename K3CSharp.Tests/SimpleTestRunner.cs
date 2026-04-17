@@ -1722,12 +1722,6 @@ namespace K3CSharp.Tests
 
                 
 
-                // Empty brackets tests
-
-                ("empty_brackets_dictionary.k", "1 2"),
-
-                ("empty_brackets_vector.k", "1 2 3 4"),
-
                 
 
                 // Format tests

@@ -108,8 +108,24 @@ namespace K3CSharp
                     }
                     else if (position + 1 < input.Length && char.IsDigit(input[position + 1]))
                     {
-                        // Negative number like -2147483648
-                        tokens.Add(ReadNumber());
+                        // Determine if '-' is a binary minus or the start of a negative literal.
+                        // '-' is a binary minus operator when the immediately preceding character
+                        // (no whitespace gap) is a value-producing token: ), ], }, alphanumeric, _.
+                        // With any whitespace gap, '-' starts a new negative literal.
+                        bool preceded_directly_by_value = position > 0 &&
+                            (input[position - 1] == ')' || input[position - 1] == ']' || input[position - 1] == '}' ||
+                             char.IsLetterOrDigit(input[position - 1]) || input[position - 1] == '_');
+                        if (preceded_directly_by_value)
+                        {
+                            // '-' is a binary minus operator, not part of a negative literal
+                            tokens.Add(new Token(TokenType.MINUS, "-", position));
+                            Advance();
+                        }
+                        else
+                        {
+                            // Negative number like -2147483648
+                            tokens.Add(ReadNumber());
+                        }
                     }
                     else
                     {

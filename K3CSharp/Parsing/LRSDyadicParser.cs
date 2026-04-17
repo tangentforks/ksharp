@@ -147,6 +147,16 @@ namespace K3CSharp.Parsing
                     {
                         continue;
                     }
+                    // Skip if the token immediately before this verb is a colon (assignment).
+                    // The verb is then the start of an inline assignment's RHS, not a dyadic
+                    // operator with the entire left side as its left argument.
+                    // E.g., in `((y-1)_ a)-0,(-y)_ a:+\x`, `+\` is the RHS of `a:`, not a
+                    // dyadic adverb application of `+\` to `((y-1)_ a)-0,(-y)_ a:`.
+                    if (i > 0 && (tokens[i - 1].Type == TokenType.COLON || 
+                                  tokens[i - 1].Type == TokenType.GLOBAL_ASSIGNMENT))
+                    {
+                        continue;
+                    }
                     var verbToken = tokens[i];
                     // Determine if this is a VERB COLON ADVERB pattern
                     bool hasDisambiguatingColon = hasColonAdverb;
