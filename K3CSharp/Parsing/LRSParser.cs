@@ -2161,8 +2161,9 @@ namespace K3CSharp.Parsing
             var colonToken = expressionTokens[offset + 1];  // COLON - disambiguating
             var adverbToken = expressionTokens[offset + 2];
             
-            // Create verb node (the colon indicates monadic interpretation, but we still use the verb as-is)
-            var verbNode = CreateNodeFromToken(verbToken);
+            // Create verb node using the monadic form (verb + ':') so Over Monad dispatch recognises it
+            string monadicVerbName = GetVerbName(verbToken.Type) + ":";
+            var verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(monadicVerbName));
             
             // Parse arguments (everything after the adverb)
             var argTokens = expressionTokens.Skip(offset + 3).ToList();

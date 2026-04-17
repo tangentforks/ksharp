@@ -4671,12 +4671,13 @@ namespace K3CSharp
                 // Special handling for over adverb
                 if (verbWithAdverbs.Adverbs.Contains("over"))
                 {
-                    // If verb is monadic (either by colon suffix or monadic-only), ignore left argument
+                    // If verb is monadic (either by colon suffix or monadic-only), use Over Monad
                     if ((isMonadicVerb || isMonadicOnly) && arguments.Length >= 2)
                     {
-                        // Apply monadic verb to right argument
                         string verbToUse = isMonadicVerb ? verbWithAdverbs.BaseVerb : monadicVariant;
-                        return evaluator.ApplyMonadicVerb(verbToUse, arguments[1]);
+                        var left = arguments[0];
+                        var x = arguments[1];
+                        return evaluator.OverMonad(verbToUse, left, x);
                     }
                     
                     // Check if we have initialization (left argument is not dummy 0)
@@ -4695,6 +4696,15 @@ namespace K3CSharp
                 // Special handling for scan adverb
                 if (verbWithAdverbs.Adverbs.Contains("scan"))
                 {
+                    // If verb is monadic (either by colon suffix or monadic-only), use Scan Monad
+                    if ((isMonadicVerb || isMonadicOnly) && arguments.Length >= 2)
+                    {
+                        string verbToUse = isMonadicVerb ? verbWithAdverbs.BaseVerb : monadicVariant;
+                        var left = arguments[0];
+                        var x = arguments[1];
+                        return evaluator.ScanMonad(verbToUse, left, x);
+                    }
+
                     // Check if we have initialization (left argument is not dummy 0)
                     if (arguments.Length == 2 && arguments[0] is IntegerValue leftInt && leftInt.Value != 0)
                     {

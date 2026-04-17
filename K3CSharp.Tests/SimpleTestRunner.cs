@@ -294,6 +294,12 @@ namespace K3CSharp.Tests
 
                 ("adverb_scan_with_initialization.k", "2 2 4 12"),
 
+                ("adverb_scan_monad_do_transpose.k", "((0 1 2;3 4 5);(0 3;1 4;2 5))"),
+
+                ("adverb_scan_monad_do_reverse.k", "(1 2 3 4 5;5 4 3 2 1)"),
+
+                ("adverb_scan_monad_fixedpoint_first.k", "((((0 1;2 3);(4 5;6 7));((0 1;2 3);(4 5;6 7)));((0 1;2 3);(4 5;6 7));(0 1;2 3);0 1;0)"),
+
                 
 
                 // Anonymous Function tests

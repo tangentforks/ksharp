@@ -267,6 +267,93 @@ namespace K3CSharp
             }
         }
 
+        /// <summary>
+        /// Returns true if the verb string denotes a monadic-only verb (ends with ':' disambiguating colon,
+        /// or is a verb that only supports arity 1 in the registry).
+        /// </summary>
+        private bool IsMonadicOnlyVerb(string verbName)
+        {
+            if (verbName.EndsWith(":"))
+                return true;
+            var info = VerbRegistry.GetVerb(verbName);
+            return info != null && info.SupportedArities.Length == 1 && info.SupportedArities[0] == 1;
+        }
+
+        /// <summary>
+        /// Over Monad: apply monadic verb f iteratively to x.
+        ///   f/ x        — iterate until result matches previous or initial (fixed-point)
+        ///   n f/ x      — apply exactly n times (Adverbial Do)
+        ///   b f/ x      — apply while b[x] != 0 (Adverbial While)
+        /// </summary>
+        internal K3Value OverMonad(string verbName, K3Value left, K3Value x)
+        {
+            bool leftSentinel = left is IntegerValue lv0 && lv0.Value == 0;
+
+            // n f/ x — Adverbial Do: apply n times
+            if (!leftSentinel && left is IntegerValue nVal)
+            {
+                var current = x;
+                for (int i = 0; i < nVal.Value; i++)
+                    current = ApplyMonadicVerb(verbName, current);
+                return current;
+            }
+
+            // b f/ x — Adverbial While: apply while b[current] != 0
+            if (!leftSentinel && (left is FunctionValue || left is SymbolValue))
+            {
+                var current = x;
+                const int maxIter = 1000000;
+                for (int i = 0; i < maxIter; i++)
+                {
+                    var condition = left is FunctionValue bf
+                        ? ExecuteFunction(bf, new List<K3Value> { current })
+                        : ApplyMonadicVerb((left as SymbolValue)!.Value, current);
+                    if (condition is IntegerValue cv && cv.Value == 0) break;
+                    if (condition is LongValue lv && lv.Value == 0L) break;
+                    current = ApplyMonadicVerb(verbName, current);
+                }
+                return current;
+            }
+
+            // f/ x — fixed-point: iterate until result matches previous or initial
+            {
+                var initial = x;
+                var prev = x;
+                var current = ApplyMonadicVerb(verbName, x);
+                const int maxIter = 1000000;
+                for (int i = 0; i < maxIter; i++)
+                {
+                    // Stop if result matches previous or initial
+                    bool matchesPrev = ValuesMatch(current, prev);
+                    bool matchesInitial = ValuesMatch(current, initial);
+                    if (matchesPrev || matchesInitial)
+                        return prev; // return next-to-last
+                    prev = current;
+                    current = ApplyMonadicVerb(verbName, current);
+                }
+                return prev;
+            }
+        }
+
+        /// <summary>Deep structural equality check used by Over Monad fixed-point detection.</summary>
+        private bool ValuesMatch(K3Value a, K3Value b)
+        {
+            if (a.Type != b.Type) return false;
+            if (a is IntegerValue ia && b is IntegerValue ib) return ia.Value == ib.Value;
+            if (a is LongValue la && b is LongValue lb) return la.Value == lb.Value;
+            if (a is FloatValue fa && b is FloatValue fb) return fa.Value == fb.Value;
+            if (a is CharacterValue ca && b is CharacterValue cb) return ca.Value == cb.Value;
+            if (a is SymbolValue sa && b is SymbolValue sb) return sa.Value == sb.Value;
+            if (a is VectorValue va && b is VectorValue vb)
+            {
+                if (va.Elements.Count != vb.Elements.Count) return false;
+                for (int i = 0; i < va.Elements.Count; i++)
+                    if (!ValuesMatch(va.Elements[i], vb.Elements[i])) return false;
+                return true;
+            }
+            return a.ToString() == b.ToString();
+        }
+
         private K3Value ApplyAdverbSlash(K3Value verb, K3Value left, K3Value right)
         {
             // For adverb slash /:
@@ -274,16 +361,26 @@ namespace K3CSharp
             // If left is vector and right is scalar, use Each (e.g., (1 2 3) %/ 2)
             // If left is vector and right is vector, use Each (e.g., (1 2 3) %/ (4 5 6))
             // If only right argument, use Over (e.g., %/ 1 2 3)
-            // SPECIAL CASE: If left is truthy (non-zero) and verb has monadic variant, apply monadic variant to right
-            // This handles cases like 1 +:/x where the disambiguating colon should force monadic interpretation
-            
-            // Noun form: both args are sentinel 0 — return projected function (e.g. +/ used as a value)
+
             bool leftSentinel = left is IntegerValue lv && lv.Value == 0;
             bool rightSentinel = right is IntegerValue rv && rv.Value == 0;
+
+            string verbName = verb is SymbolValue vs1 ? vs1.Value : verb.ToString() ?? "";
+
+            // Over Monad dispatch: verb is monadic (ends with ':' or registry says monadic-only)
+            // Handles: f:/ x (fixed-point), n f:/ x (adverbial do), b f:/ x (adverbial while)
+            if (IsMonadicOnlyVerb(verbName))
+            {
+                // Noun form — return projected function
+                if (leftSentinel && rightSentinel)
+                    return new AdverbProjectedFunctionValue("over", verbName, 1);
+                return OverMonad(verbName, left, right);
+            }
+
+            // Noun form: both args are sentinel 0 — return projected function (e.g. +/ used as a value)
             if (leftSentinel && rightSentinel)
             {
-                string verbStr = verb is SymbolValue vs1 ? vs1.Value : verb.ToString() ?? "";
-                return new AdverbProjectedFunctionValue("over", verbStr, 1);
+                return new AdverbProjectedFunctionValue("over", verbName, 1);
             }
             
             // Check for "over" case: left is dummy 0 and right is vector
@@ -308,15 +405,87 @@ namespace K3CSharp
             return Over(verb, left ?? new IntegerValue(0), right ?? new IntegerValue(0));
         }
 
+        /// <summary>
+        /// Scan Monad: apply monadic verb f iteratively to x, collecting all intermediate results.
+        ///   f:\ x       — iterate until fixed-point, return all values including x (excluding repeated last)
+        ///   n f:\ x     — apply exactly n times, return [x, f[x], ..., f^n[x]]
+        ///   b f:\ x     — apply while b[current]!=0, return all collected values
+        /// </summary>
+        internal K3Value ScanMonad(string verbName, K3Value left, K3Value x)
+        {
+            bool leftSentinel = left is IntegerValue lv0 && lv0.Value == 0;
+
+            // n f:\ x — Adverbial Do: collect x, f[x], ..., f^n[x]
+            if (!leftSentinel && left is IntegerValue nVal)
+            {
+                var results = new List<K3Value> { x };
+                var current = x;
+                for (int i = 0; i < nVal.Value; i++)
+                {
+                    current = ApplyMonadicVerb(verbName, current);
+                    results.Add(current);
+                }
+                return new VectorValue(results);
+            }
+
+            // b f:\ x — Adverbial While: collect values while b[current] != 0
+            if (!leftSentinel && (left is FunctionValue || left is SymbolValue))
+            {
+                var results = new List<K3Value> { x };
+                var current = x;
+                const int maxIter = 1000000;
+                for (int i = 0; i < maxIter; i++)
+                {
+                    var condition = left is FunctionValue bf
+                        ? ExecuteFunction(bf, new List<K3Value> { current })
+                        : ApplyMonadicVerb((left as SymbolValue)!.Value, current);
+                    if (condition is IntegerValue cv && cv.Value == 0) break;
+                    if (condition is LongValue lv && lv.Value == 0L) break;
+                    current = ApplyMonadicVerb(verbName, current);
+                    results.Add(current);
+                }
+                return new VectorValue(results);
+            }
+
+            // f:\ x — fixed-point scan: collect x, f[x], f[f[x]], ... until fixed-point
+            {
+                var results = new List<K3Value> { x };
+                var prev = x;
+                var current = ApplyMonadicVerb(verbName, x);
+                const int maxIter = 1000000;
+                for (int i = 0; i < maxIter; i++)
+                {
+                    bool matchesPrev = ValuesMatch(current, prev);
+                    bool matchesInitial = ValuesMatch(current, x);
+                    if (matchesPrev || matchesInitial)
+                        break; // stop — don't add the repeated value
+                    results.Add(current);
+                    prev = current;
+                    current = ApplyMonadicVerb(verbName, current);
+                }
+                return new VectorValue(results);
+            }
+        }
+
         private K3Value ApplyAdverbBackslash(K3Value verb, K3Value left, K3Value right)
         {
             // Noun form: both args are sentinel 0 — return projected function (e.g. +\ used as a value)
             bool leftSentinel = left is IntegerValue lv && lv.Value == 0;
             bool rightSentinel = right is IntegerValue rv && rv.Value == 0;
+
+            string verbName = verb is SymbolValue vs1 ? vs1.Value : verb.ToString() ?? "";
+
+            // Scan Monad dispatch: verb is monadic (ends with ':' or registry says monadic-only)
+            if (IsMonadicOnlyVerb(verbName))
+            {
+                if (leftSentinel && rightSentinel)
+                    return new AdverbProjectedFunctionValue("scan", verbName, 1);
+                return ScanMonad(verbName, left, right);
+            }
+
             if (leftSentinel && rightSentinel)
             {
-                string verbStr = verb is SymbolValue vs ? vs.Value : verb.ToString() ?? "";
-                return new AdverbProjectedFunctionValue("scan", verbStr, 1);
+                return new AdverbProjectedFunctionValue("scan", verbName, 1);
             }
             // Natural nested evaluation: call Scan with the verb and arguments
             return Scan(verb, left ?? new IntegerValue(0), right ?? new IntegerValue(0));

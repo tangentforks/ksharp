@@ -56,10 +56,16 @@ namespace K3CSharp.Parsing
                 // Only consider operators at depth 0 (not inside grouping constructs)
                 if (depth == 0 && IsDyadicOperatorDirect(currentToken.Type))
                 {
-                    // Skip verb+adverb patterns
+                    // Skip verb+adverb patterns (VERB ADVERB or VERB COLON ADVERB)
                     if (i + 1 < tokens.Count && IsAdverbToken(tokens[i + 1].Type))
                     {
                         i++; // Skip the adverb too
+                        continue;
+                    }
+                    // Skip VERB COLON ADVERB (disambiguating colon before adverb: e.g. +:/)
+                    if (i + 2 < tokens.Count && tokens[i + 1].Type == TokenType.COLON && IsAdverbToken(tokens[i + 2].Type))
+                    {
+                        i += 2; // Skip the colon and adverb
                         continue;
                     }
                     
@@ -125,23 +131,32 @@ namespace K3CSharp.Parsing
                 else if (tokens[i].Type == TokenType.RIGHT_PAREN || tokens[i].Type == TokenType.RIGHT_BRACKET || tokens[i].Type == TokenType.RIGHT_BRACE)
                     adverbScanDepth--;
                     
-                if (adverbScanDepth == 0 && IsDyadicOperatorDirect(tokens[i].Type) && IsAdverbToken(tokens[i + 1].Type))
+                // Also handle VERB COLON ADVERB (disambiguating colon: e.g. +:/)
+                bool hasColonAdverb = adverbScanDepth == 0 &&
+                                      i + 2 < tokens.Count &&
+                                      IsDyadicOperatorDirect(tokens[i].Type) &&
+                                      tokens[i + 1].Type == TokenType.COLON &&
+                                      IsAdverbToken(tokens[i + 2].Type);
+                if (adverbScanDepth == 0 && IsDyadicOperatorDirect(tokens[i].Type) && (IsAdverbToken(tokens[i + 1].Type) || hasColonAdverb))
                 {
                     // Skip if the token immediately before this verb is another verb at depth 0
                     // This indicates a monadic verb chain, not a left argument for the adverb
-                    // E.g., in ~=':x, the ~ before = is monadic, not the left arg of =':
+                    // E.g., in ~=':x, the ~ before = is monadic, not the left arg of =':   
                     if (i > 0 && IsDyadicOperatorDirect(tokens[i - 1].Type) && 
                         OperatorDetector.SupportsMonadic(tokens[i - 1].Type))
                     {
                         continue;
                     }
                     var verbToken = tokens[i];
-                    // Consume all consecutive adverbs after the verb
-                    int adverbEnd = i + 1;
+                    // Determine if this is a VERB COLON ADVERB pattern
+                    bool hasDisambiguatingColon = hasColonAdverb;
+                    // Consume all consecutive adverbs after the verb (skipping over colon if present)
+                    int adverbStart = hasDisambiguatingColon ? i + 2 : i + 1;
+                    int adverbEnd = adverbStart;
                     while (adverbEnd < tokens.Count && IsAdverbToken(tokens[adverbEnd].Type))
                         adverbEnd++;
                     // adverbEnd is now the index of the first non-adverb token after the verb
-                    var adverbTokens = tokens.GetRange(i + 1, adverbEnd - i - 1); // all adverb tokens
+                    var adverbTokens = tokens.GetRange(adverbStart, adverbEnd - adverbStart); // all adverb tokens
                     var adverbToken = adverbTokens[adverbTokens.Count - 1]; // outermost adverb
                     // Extract the tokens for the adverb operation
                     // Everything before the verb is the left operand
@@ -153,8 +168,17 @@ namespace K3CSharp.Parsing
                     var leftNode = adverbLeftTokens.Count > 0 ? BuildParseTreeFromTokens(adverbLeftTokens) : null;
                     var rightNode = adverbRightTokens.Count > 0 ? BuildParseTreeFromTokens(adverbRightTokens) : null;
                     
-                    // Create base verb node
-                    var verbNode = CreateNodeFromToken(verbToken);
+                    // Create base verb node — if disambiguating colon was present, use monadic verb name (e.g. "+:")
+                    ASTNode? verbNode;
+                    if (hasDisambiguatingColon)
+                    {
+                        string monadicVerbName = VerbRegistry.TokenTypeToVerbName(verbToken.Type) + ":";
+                        verbNode = new ASTNode(ASTNodeType.Literal, new SymbolValue(monadicVerbName));
+                    }
+                    else
+                    {
+                        verbNode = CreateNodeFromToken(verbToken);
+                    }
                     if (verbNode == null)
                     {
                         throw new Exception($"Failed to create verb node from token: {verbToken.Type}({verbToken.Lexeme})");
