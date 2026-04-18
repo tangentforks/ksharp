@@ -237,3 +237,4 @@ idioms_02_239_sum_recip :: regex:\.0\b: :: smart integer division
 adverb_scan_monad_do_transpose :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 adverb_scan_monad_do_reverse :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
 adverb_scan_monad_fixedpoint_first :: regex:^\s+|\s+$|\s*\n\s*:\; :: Compact representation
+variable_scoping_global_assignment :: regex:^\d+\n: :: Multi-line output, K3Sharp captures last result only

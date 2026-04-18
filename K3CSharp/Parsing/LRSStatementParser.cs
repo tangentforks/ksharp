@@ -140,7 +140,9 @@ namespace K3CSharp.Parsing
             
             // Check if this is a modified assignment operator (apply and assign)
             // Case 1: compound token like "+:" (lexeme ends with ":")
-            if (assignmentToken.Lexeme.Length > 1 && assignmentToken.Lexeme.EndsWith(":"))
+            // Exclude GLOBAL_ASSIGNMENT (::) which also ends with ":" but is not apply-and-assign
+            if (assignmentToken.Type != TokenType.GLOBAL_ASSIGNMENT &&
+                assignmentToken.Lexeme.Length > 1 && assignmentToken.Lexeme.EndsWith(":"))
             {
                 return ParseApplyAndAssignStatement(leftTokens, assignmentToken, rightTokens);
             }
@@ -245,6 +247,14 @@ namespace K3CSharp.Parsing
                 return null;
             
             // Create assignment node
+            if (assignmentToken.Type == TokenType.GLOBAL_ASSIGNMENT)
+            {
+                var globalAssignNode = new ASTNode(ASTNodeType.GlobalAssignment);
+                globalAssignNode.Value = variableNode.Value; // Variable name
+                globalAssignNode.Children.Add(rightNode);
+                return globalAssignNode;
+            }
+            
             var assignmentNode = new ASTNode(ASTNodeType.Assignment);
             assignmentNode.Value = variableNode.Value; // Variable name
             assignmentNode.Children.Add(rightNode);

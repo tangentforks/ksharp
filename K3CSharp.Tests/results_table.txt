@@ -437,7 +437,7 @@ inner . x * 2
 globalVar}
 result5: test5 . 10
 result5
-globalVar │ Error: Function...   │ 30                   ║
+globalVar │ 30                   │                      ║
 ║ variable_scoping_global_unchanged.k                │ globalVar: 100
 test2: {[x]
 globalVar: x * 2
@@ -1251,7 +1251,7 @@ _eval (`",";,`a`b`c;(`",";,`d;`v)) │ `a`b`c`d`e`f         │                 
 ║ test_eval_monadic_star.k                           │ _eval (`"*:";1 2 3 4) │ 1                    │                      ║
 ║ test_eval_monadic_star_atomic.k                    │ _eval (`"*:";,1)     │ 1                    │                      ║
 ╠═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ SUMMARY: 934/936 tests passed (99.8%)                                                                               ║
+║ SUMMARY: 935/936 tests passed (99.9%)                                                                               ║
 ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 FAILING TESTS DETAILS:
@@ -1262,16 +1262,4 @@ world"
 Expected: "hello
 world"
 Actual: Error: Unterminated string literal
-──────────────────────────────────────────────────────────────────────────
-Test: variable_scoping_global_assignment.k
-Input: globalVar: 100
-test5: {[x]
-inner: {[y] globalVar :: x + y}
-inner . x * 2
-globalVar}
-result5: test5 . 10
-result5
-globalVar
-Expected: 30
-Actual: Error: Function execution error: Function execution error: Assignment requires a variable name on the left side, but got IntegerValue with value 100
 ──────────────────────────────────────────────────────────────────────────

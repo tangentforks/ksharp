@@ -569,6 +569,11 @@ namespace K3CSharp
                 // Set in current evaluator's global scope
                 globalVariables[variableName] = value;
                 
+                // Also use kTree so GetVariable finds the new value via kTree lookup
+                var branch = kTree.CurrentBranch?.Value ?? ".k"; // Default branch is .k
+                var path = string.IsNullOrEmpty(branch) ? variableName : branch + "." + variableName;
+                kTree.SetValue(path, value);
+                
                 // Also set variable in EvalVerbHandler for _eval operations
                 K3CSharp.Verbs.EvalVerbHandler.SetVariable(variableName, value);
                 
@@ -1647,12 +1652,6 @@ namespace K3CSharp
             // Create a new evaluator scope for this function call
             var functionEvaluator = new Evaluator();
             functionEvaluator.parentEvaluator = this; // Set parent for global access
-            
-            // Copy global variables to function scope
-            foreach (var kvp in globalVariables)
-            {
-                functionEvaluator.globalVariables[kvp.Key] = kvp.Value;
-            }
             
             // Copy local variables to function scope (for nested functions)
             foreach (var kvp in localVariables)
