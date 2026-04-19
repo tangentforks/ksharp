@@ -15,6 +15,7 @@ namespace K3CSharp.IPC.Tests
             bool allPassed = true;
             allPassed &= K3CodecTests.RunAll();
             allPassed &= K3IpcRoundTripTests.RunAll();
+            allPassed &= K3ShellIpcDemoTests.RunAll();
 
             Console.WriteLine();
             Console.WriteLine(allPassed ? "All K3CSharp.IPC tests passed." : "One or more tests FAILED.");

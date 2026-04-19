@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\K3CSharp.IPC\K3CSharp.IPC.csproj" />
+    <ProjectReference Include="..\K3CSharp\K3CSharp.csproj" />
   </ItemGroup>
 
 </Project>
